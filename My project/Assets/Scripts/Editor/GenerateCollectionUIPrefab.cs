@@ -285,7 +285,7 @@ public class GenerateCollectionUIPrefab
         tmp.color = color;
         tmp.fontSize = size;
         tmp.alignment = align;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
         return tmp;
     }
 }

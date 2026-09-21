@@ -63,7 +63,7 @@ public class GenerateCareerUIPrefab
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.fontSize = 24;
             tmp.fontStyle = FontStyles.Bold;
-            tmp.enableWordWrapping = false;
+            tmp.textWrappingMode = TextWrappingModes.NoWrap;
 
             // Underline
             GameObject underlineObj = CreateRect("Underline", tabBtnObj.transform);
@@ -122,7 +122,7 @@ public class GenerateCareerUIPrefab
         tmp.color = color;
         tmp.fontSize = size;
         tmp.alignment = align;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
         return tmp;
     }
 

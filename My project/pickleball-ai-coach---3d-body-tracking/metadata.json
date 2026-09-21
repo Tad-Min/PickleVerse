@@ -1,0 +1,10 @@
+{
+  "name": "Pickleball AI Coach - 3D Body Tracking",
+  "description": "Ứng dụng phân tích kỹ thuật vung vợt và tư thế di chuyển pickleball thời gian thực với body tracking camera điều khiển mô hình 3D, bắt lỗi độ trễ siêu thấp và phản hồi âm thanh trực quan.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

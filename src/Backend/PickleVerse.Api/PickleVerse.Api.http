@@ -1,0 +1,6 @@
+@PickleVerse.Api_HostAddress = http://localhost:5294
+
+GET {{PickleVerse.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
