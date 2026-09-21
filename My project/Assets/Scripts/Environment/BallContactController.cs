@@ -57,6 +57,7 @@ public class BallContactController : MonoBehaviour
 
     public void ResetBall()
     {
+        if (TryGetComponent<BallTrajectoryTrail>(out var trail)) trail.ResetTrail();
         _body.position = spawnPosition;
         if (_tracker != null && _tracker.IsTracking && _tracker.CurrentFrame.LocalJoints != null)
             _body.position = _tracker.CurrentFrame.RightWristWorldPosition + new Vector3(0, 0.65f, 0);

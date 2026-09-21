@@ -20,9 +20,22 @@ public static class OfflineTrainingValidation
             Require(calibration.IsCalibrated, "Calibration did not complete");
             Vector3 origin = calibration.MapRootPosition(Vector2.zero, .2f);
             Require(calibration.MapRootPosition(new Vector2(.1f, .1f), .2f).x > origin.x, "Horizontal mapping");
-            Require(calibration.MapRootPosition(Vector2.zero, .1f).z > origin.z, "Depth mapping");
+            float sideline = PickleballCourtSpec.HalfCourtWidth - .2f;
+            Require(Mathf.Abs(calibration.MapRootPosition(new Vector2(-.4f, 0), .2f).x + sideline) < .001f, "Webcam left edge maps to left sideline");
+            Require(Mathf.Abs(calibration.MapRootPosition(new Vector2(.4f, 0), .2f).x - sideline) < .001f, "Webcam right edge maps to right sideline");
+            Require(Mathf.Abs(calibration.MapRootPosition(new Vector2(.5f, 0), .2f).x - sideline) < .001f, "Horizontal movement clamps at sideline");
+            Vector3 nearCamera = calibration.MapRootPosition(Vector2.zero, .4f);
+            Vector3 farCamera = calibration.MapRootPosition(Vector2.zero, .1f);
+            Require(nearCamera.z > origin.z && Mathf.Abs(nearCamera.z) < Mathf.Abs(origin.z), "Near camera moves toward net at Z=0");
+            Require(farCamera.z < origin.z && Mathf.Abs(farCamera.z) > Mathf.Abs(origin.z), "Far camera moves away from net");
+            Require(Mathf.Abs(calibration.MapRootPosition(Vector2.zero, .2f).z - origin.z) < .001f, "Reference distance preserves root");
+            Require(Mathf.Abs(calibration.MapRootPosition(Vector2.zero, .001f).z - origin.z) <= 2.001f, "Depth remains bounded");
             calibration.BeginCalibration();
             Require(!calibration.IsCalibrated, "Recalibration reset");
+            for (int i = 0; i < 21; i++) calibration.ProcessSample(new Vector2(.12f, 0), .2f, .1f);
+            Require(Mathf.Abs(calibration.MapRootPosition(new Vector2(.12f, 0), .2f).x) < .001f, "Off-centre calibration preserves neutral position");
+            Require(Mathf.Abs(calibration.MapRootPosition(new Vector2(-.4f, 0), .2f).x + sideline) < .001f, "Off-centre calibration preserves left sideline");
+            Require(Mathf.Abs(calibration.MapRootPosition(new Vector2(.4f, 0), .2f).x - sideline) < .001f, "Off-centre calibration preserves right sideline");
 
             var paddleObject = new GameObject("TestPaddle");
             SceneManager.MoveGameObjectToScene(paddleObject, scene);

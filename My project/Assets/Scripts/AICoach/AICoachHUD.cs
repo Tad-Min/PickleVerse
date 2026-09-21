@@ -9,6 +9,16 @@ public class AICoachHUD : MonoBehaviour
     private BallContactController _ball;
     private Text _telemetry;
     private RawImage _preview;
+    private TMPro.TextMeshProUGUI _previewToggleLabel;
+    public bool CameraPreviewVisible => _preview != null && _preview.gameObject.activeSelf;
+
+    public void ToggleCameraPreview()
+    {
+        if (_preview == null) return;
+        bool visible = !CameraPreviewVisible;
+        _preview.gameObject.SetActive(visible);
+        _previewToggleLabel.text = visible ? "Hide camera" : "Show camera";
+    }
 
     private void Start()
     {
@@ -50,6 +60,9 @@ public class AICoachHUD : MonoBehaviour
         _telemetry = CreateText("Telemetry", canvasObject.transform, font, 20, Color.white, new Vector2(20, -20), new Vector2(510, 145), new Vector2(0, 1));
         _preview = new GameObject("CameraPreview").AddComponent<RawImage>();
         _preview.transform.SetParent(canvasObject.transform, false);
+        _preview.raycastTarget = false;
+        // Hiding the preview never stops the webcam or tracking worker.
+        _preview.gameObject.SetActive(false);
         var previewRect = _preview.rectTransform;
         previewRect.anchorMin = previewRect.anchorMax = new Vector2(1, 0);
         previewRect.pivot = new Vector2(1, 0);
@@ -69,6 +82,29 @@ public class AICoachHUD : MonoBehaviour
         CreateText("Label", button.transform, font, 18, Color.white, Vector2.zero, buttonRect.sizeDelta, new Vector2(.5f, .5f)).alignment = TextAnchor.MiddleCenter;
         button.GetComponentInChildren<Text>().text = "Recalibrate";
         button.onClick.AddListener(() => _tracker?.Recalibrate());
+
+        var previewButton = new GameObject("CameraPreviewToggleButton", typeof(RectTransform)).AddComponent<UnityEngine.UI.Button>();
+        previewButton.transform.SetParent(canvasObject.transform, false);
+        var previewButtonImage = previewButton.gameObject.AddComponent<UnityEngine.UI.Image>();
+        previewButtonImage.color = new Color(.1f, .45f, .7f, .9f);
+        previewButtonImage.raycastTarget = true;
+        previewButton.targetGraphic = previewButtonImage;
+        var toggleRect = previewButton.GetComponent<RectTransform>();
+        toggleRect.anchorMin = toggleRect.anchorMax = new Vector2(0, 1);
+        toggleRect.pivot = new Vector2(0, 1);
+        toggleRect.anchoredPosition = new Vector2(20, -234);
+        toggleRect.sizeDelta = new Vector2(180, 42);
+        _previewToggleLabel = new GameObject("Label", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
+        _previewToggleLabel.transform.SetParent(previewButton.transform, false);
+        _previewToggleLabel.rectTransform.anchorMin = Vector2.zero;
+        _previewToggleLabel.rectTransform.anchorMax = Vector2.one;
+        _previewToggleLabel.rectTransform.offsetMin = _previewToggleLabel.rectTransform.offsetMax = Vector2.zero;
+        _previewToggleLabel.fontSize = 18;
+        _previewToggleLabel.alignment = TMPro.TextAlignmentOptions.Center;
+        _previewToggleLabel.color = Color.white;
+        _previewToggleLabel.raycastTarget = false;
+        _previewToggleLabel.text = "Show camera";
+        previewButton.onClick.AddListener(ToggleCameraPreview);
     }
 
     private static Text CreateText(string name, Transform parent, Font font, int size, Color color, Vector2 position, Vector2 dimensions, Vector2 anchor)
