@@ -1,15 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 /// <summary>Offline runtime HUD for camera, calibration and physics diagnostics.</summary>
 public class AICoachHUD : MonoBehaviour
 {
+    [SerializeField] private TMPro.TMP_FontAsset coachFont;
     private SentisPoseTracker _tracker;
     private PaddleKinematicController _paddle;
     private BallContactController _ball;
-    private Text _telemetry;
-    private RawImage _preview;
-    private TMPro.TextMeshProUGUI _previewToggleLabel;
+    [SerializeField] private Text _telemetry;
+    [SerializeField] private RawImage _preview;
+    [SerializeField] private TMPro.TextMeshProUGUI _previewToggleLabel;
+    [SerializeField] private UnityEngine.UI.Button recalibrateButton, cameraButton;
     public bool CameraPreviewVisible => _preview != null && _preview.gameObject.activeSelf;
 
     public void ToggleCameraPreview()
@@ -20,12 +23,35 @@ public class AICoachHUD : MonoBehaviour
         _previewToggleLabel.text = visible ? "Hide camera" : "Show camera";
     }
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += SceneLoaded;
+        SceneManager.sceneUnloaded += SceneUnloaded;
+        BindGameplay();
+    }
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= SceneLoaded;
+        SceneManager.sceneUnloaded -= SceneUnloaded;
+    }
     private void Start()
     {
-        _tracker = FindFirstObjectByType<SentisPoseTracker>();
-        _paddle = FindFirstObjectByType<PaddleKinematicController>();
-        _ball = FindFirstObjectByType<BallContactController>();
-        CreateHud();
+        BindGameplay();
+        if (_preview) _preview.gameObject.SetActive(false);
+        if (_previewToggleLabel) _previewToggleLabel.text = "Show camera";
+    }
+    private void SceneLoaded(Scene scene, LoadSceneMode mode) => BindGameplay();
+    private void SceneUnloaded(Scene scene) => BindGameplay();
+    public void Recalibrate() { if (_tracker) _tracker.Recalibrate(); }
+    private void BindGameplay()
+    {
+        _tracker = FindAnyObjectByType<SentisPoseTracker>();
+        _paddle = FindAnyObjectByType<PaddleKinematicController>();
+        _ball = FindAnyObjectByType<BallContactController>();
+        if (_preview) _preview.texture = null;
+        if (recalibrateButton) recalibrateButton.interactable = _tracker != null;
+        if (cameraButton) cameraButton.interactable = _tracker != null;
+        if (!_tracker && _telemetry) _telemetry.text = "PickleVerse UI — waiting for Training";
     }
 
     private void Update()
@@ -42,11 +68,15 @@ public class AICoachHUD : MonoBehaviour
             $"Paddle: {paddleSpeed.magnitude:F1} m/s  Ball: {ballVelocity.magnitude:F1} m/s  Hits: {hits}";
     }
 
-    private void CreateHud()
+#if UNITY_EDITOR
+    // Editor-only construction. Runtime reads the saved, editable scene hierarchy.
+    public void BuildLayout()
     {
-        if (UnityEngine.EventSystems.EventSystem.current == null)
+        if (GetComponentInChildren<Canvas>(true)) return;
+        if (!GetComponentInChildren<UnityEngine.EventSystems.EventSystem>(true))
         {
             var events = new GameObject("TrainingEventSystem", typeof(UnityEngine.EventSystems.EventSystem));
+            events.transform.SetParent(transform, false);
             events.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
         }
         var canvasObject = new GameObject("OfflineTrainingHUD");
@@ -81,7 +111,8 @@ public class AICoachHUD : MonoBehaviour
         buttonRect.sizeDelta = new Vector2(180, 42);
         CreateText("Label", button.transform, font, 18, Color.white, Vector2.zero, buttonRect.sizeDelta, new Vector2(.5f, .5f)).alignment = TextAnchor.MiddleCenter;
         button.GetComponentInChildren<Text>().text = "Recalibrate";
-        button.onClick.AddListener(() => _tracker?.Recalibrate());
+        recalibrateButton = button;
+        UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, Recalibrate);
 
         var previewButton = new GameObject("CameraPreviewToggleButton", typeof(RectTransform)).AddComponent<UnityEngine.UI.Button>();
         previewButton.transform.SetParent(canvasObject.transform, false);
@@ -104,7 +135,10 @@ public class AICoachHUD : MonoBehaviour
         _previewToggleLabel.color = Color.white;
         _previewToggleLabel.raycastTarget = false;
         _previewToggleLabel.text = "Show camera";
-        previewButton.onClick.AddListener(ToggleCameraPreview);
+        cameraButton = previewButton;
+        UnityEditor.Events.UnityEventTools.AddPersistentListener(previewButton.onClick, ToggleCameraPreview);
+        CoachPanel.Create(canvasObject.transform, coachFont);
+        _telemetry.text = "PickleVerse Offline Training";
     }
 
     private static Text CreateText(string name, Transform parent, Font font, int size, Color color, Vector2 position, Vector2 dimensions, Vector2 anchor)
@@ -123,4 +157,5 @@ public class AICoachHUD : MonoBehaviour
         rect.sizeDelta = dimensions;
         return text;
     }
+#endif
 }

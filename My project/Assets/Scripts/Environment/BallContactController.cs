@@ -11,6 +11,7 @@ public class BallContactController : MonoBehaviour
     [SerializeField] private float resetAfterSeconds = 12f;
 
     public int HitCount { get; private set; }
+    public event System.Action<PaddleHitInfo> PaddleHit;
     public Vector3 Velocity => _body == null ? Vector3.zero : _body.linearVelocity;
 
     private Rigidbody _body;
@@ -53,6 +54,10 @@ public class BallContactController : MonoBehaviour
             paddlePointVelocity * paddleVelocityTransfer;
         _body.linearVelocity = Vector3.ClampMagnitude(outgoing, maximumBallSpeed);
         HitCount++;
+        PaddleHit?.Invoke(new PaddleHitInfo {
+            Timestamp = Time.time, IncomingVelocity = _incomingVelocity,
+            OutgoingVelocity = _body.linearVelocity, PaddleVelocity = paddlePointVelocity
+        });
     }
 
     public void ResetBall()

@@ -21,7 +21,7 @@ public static class SetupOfflineTrackingTrainingScene
         var calibration = GetOrAdd<CalibrationProfile>(player);
         var presenter = GetOrAdd<SkeletonPresenter>(player);
         var tracker = GetOrAdd<SentisPoseTracker>(player);
-        GetOrAdd<AICoachHUD>(player);
+        GetOrAdd<TrainingUiSceneLoader>(player);
 
         tracker.ModelAsset = AssetDatabase.LoadAssetAtPath<Unity.InferenceEngine.ModelAsset>("Assets/Models/movenet_lightning.onnx");
         tracker.HandModelAsset = AssetDatabase.LoadAssetAtPath<Unity.InferenceEngine.ModelAsset>("Assets/Models/hand_landmark.onnx");

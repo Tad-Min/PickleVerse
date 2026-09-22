@@ -60,9 +60,9 @@ public class SetupAICoachScene : EditorWindow
             tracker.ModelAsset = model;
         }
 
-        if (playerRoot.GetComponent<AICoachHUD>() == null)
+        if (playerRoot.GetComponent<TrainingUiSceneLoader>() == null)
         {
-            playerRoot.AddComponent<AICoachHUD>();
+            playerRoot.AddComponent<TrainingUiSceneLoader>();
         }
 
         // 5. Load and Instantiate Paddle under player

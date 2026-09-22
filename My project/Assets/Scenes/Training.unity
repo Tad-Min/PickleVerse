@@ -1178,10 +1178,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1683000837}
-  - component: {fileID: 1683000835}
   - component: {fileID: 1683000840}
   - component: {fileID: 1683000839}
   - component: {fileID: 1683000838}
+  - component: {fileID: 1683000843}
+  - component: {fileID: 1683000842}
+  - component: {fileID: 1683000841}
+  - component: {fileID: 1683000844}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -1189,18 +1192,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1683000835
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1683000834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6933c9c549e601b46b565ae2ca47199f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AICoachHUD
 --- !u!4 &1683000837
 Transform:
   m_ObjectHideFlags: 0
@@ -1281,10 +1272,150 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CalibrationProfile
   calibrationDuration: 2
   calibratedCourtPosition: {x: 0, y: 1, z: -4.5}
-  horizontalMetersPerNormalizedUnit: 5
+  cameraHorizontalInset: 0.1
+  courtSidelineMargin: 0.2
   verticalMetersPerNormalizedUnit: 3
   depthMetersAtFullScaleChange: 2.5
   maximumDepthOffset: 2
+--- !u!114 &1683000841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683000834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c73c82eb61e0f984e8f02a884fa05a0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OfflineCoach
+  settings: {fileID: 11400000, guid: 8e75faf99d584b7448c7ef808d07f83c, type: 2}
+  coachEnabled: 1
+--- !u!114 &1683000842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683000834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10ce3df824da7514bb24c5391b518f51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoachVoicePlayer
+  InsufficientData: {fileID: 8300000, guid: 60059f25551244b48b5bc8af463f42fa, type: 3}
+  StraightKnees: {fileID: 8300000, guid: 37e0b519bfd41a24186be00dfd64aa54, type: 3}
+  ShortFinish: {fileID: 8300000, guid: 7a4c9478e0e17cf46aabef4875f696f7, type: 3}
+  Recorded: {fileID: 8300000, guid: c4a054ff2ddf17c409707f7adcbb7bbe, type: 3}
+--- !u!82 &1683000843
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683000834}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1683000844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683000834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 133f6141ded9e534096673611339af44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrainingUiSceneLoader
 --- !u!21 &1914492730
 Material:
   serializedVersion: 8

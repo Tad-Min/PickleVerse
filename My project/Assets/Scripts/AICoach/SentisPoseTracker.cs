@@ -43,6 +43,8 @@ public class SentisPoseTracker : MonoBehaviour
     public PoseFrame CurrentFrame { get; private set; }
     public bool MirrorCamera => mirrorCamera;
     public float HandPresence { get; private set; }
+    public event System.Action<PoseFrame> PoseSampled;
+    public event System.Action SessionReset;
 
     private Worker _bodyWorker;
     private Worker _handWorker;
@@ -57,6 +59,8 @@ public class SentisPoseTracker : MonoBehaviour
     private float[] _handInput;
     private readonly Vector3[] _filteredLocalJoints = new Vector3[PoseFrame.JointCount];
     private readonly float[] _confidence = new float[PoseFrame.JointCount];
+    private readonly float[] _observedConfidence = new float[PoseFrame.JointCount];
+    private readonly Vector3[] _observedJoints = new Vector3[PoseFrame.JointCount];
     private readonly Vector3[] _lastValidLocalJoints = new Vector3[PoseFrame.JointCount];
     private float _lastValidBodyTime = float.NegativeInfinity;
     private Vector3 _previousWristPosition;
@@ -94,6 +98,7 @@ public class SentisPoseTracker : MonoBehaviour
 
     public void Recalibrate()
     {
+        SessionReset?.Invoke();
         calibration.BeginCalibration();
         Status = "Calibration: stand facing the camera";
     }
@@ -159,6 +164,13 @@ public class SentisPoseTracker : MonoBehaviour
         if (!TryRunBodyModel(out float[] output)) { IsTracking = IsHandTracking = false; return; }
         BuildBodyFrame(output);
         TryUpdateHandFrame(output);
+        var observation = CurrentFrame;
+        observation.ObservedJoints = _observedJoints;
+        observation.ObservedConfidence = _observedConfidence;
+        observation.ObservationTimestamp = Time.time;
+        observation.ObservedWristTracked = _observedConfidence[10] >= bodyConfidenceThreshold;
+        CurrentFrame = observation;
+        PoseSampled?.Invoke(observation);
         if (IsTracking) skeletonPresenter.Present(CurrentFrame);
         if (paddle != null) paddle.SetTrackingTarget(CurrentFrame, Time.time);
     }
@@ -225,13 +237,16 @@ public class SentisPoseTracker : MonoBehaviour
         for (int i = 0; i < PoseFrame.JointCount; i++)
         {
             float score = output[i * 3 + 2];
-            _confidence[i] = float.IsFinite(score) && float.IsFinite(output[i * 3]) && float.IsFinite(output[i * 3 + 1]) && score >= bodyConfidenceThreshold ? score : 0f;
-            if (_confidence[i] <= 0f) continue;
+            _observedConfidence[i] = float.IsFinite(score) && float.IsFinite(output[i * 3]) && float.IsFinite(output[i * 3 + 1]) ? Mathf.Clamp01(score) : 0f;
             float imageX = output[i * 3 + 1] - 0.5f;
-            unscaled[i] = new Vector3(mirrorCamera ? -imageX : imageX, 0.5f - output[i * 3], 0f);
+            Vector3 observed = new Vector3(mirrorCamera ? -imageX : imageX, 0.5f - output[i * 3], 0f);
+            // Restore source image aspect ratio for geometric angles and distances.
+            _observedJoints[i] = _observedConfidence[i] > 0 ? new Vector3(observed.x * WebCam.width / WebCam.height, observed.y, 0) : Vector3.zero;
+            if (_observedConfidence[i] < bodyConfidenceThreshold) continue;
+            unscaled[i] = observed;
             validCount++;
         }
-        if (validCount == 0 || _confidence[11] <= 0f || _confidence[12] <= 0f || _confidence[5] <= 0f || _confidence[6] <= 0f)
+        if (validCount == 0 || _observedConfidence[11] < bodyConfidenceThreshold || _observedConfidence[12] < bodyConfidenceThreshold || _observedConfidence[5] < bodyConfidenceThreshold || _observedConfidence[6] < bodyConfidenceThreshold)
         {
             KeepLastFrameWhenTrackingIsBrieflyLost();
             return;
@@ -246,6 +261,7 @@ public class SentisPoseTracker : MonoBehaviour
         if (CurrentFrame.LocalJoints != null) root = Vector3.Lerp(CurrentFrame.RootPosition, root, blend);
         for (int i = 0; i < PoseFrame.JointCount; i++)
         {
+            _confidence[i] = _observedConfidence[i] >= bodyConfidenceThreshold ? _observedConfidence[i] : 0f;
             if (_confidence[i] > 0f)
             {
                 Vector3 target = (unscaled[i] - hipOrigin) * bodyScale;

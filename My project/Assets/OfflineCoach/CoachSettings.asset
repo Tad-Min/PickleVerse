@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e1ec84ad9dafb04bbbe84fd2556f778, type: 3}
+  m_Name: CoachSettings
+  m_EditorClassIdentifier: Assembly-CSharp::CoachSettings
+  MinimumConfidence: 0.3
+  StartSpeed: 2.5
+  StartDuration: 0.1
+  EndSpeed: 0.8
+  EndDuration: 0.25
+  MaximumSwingSeconds: 2
+  CooldownSeconds: 0.6
+  MaximumTrackingGap: 0.2
+  MinimumValidRatio: 0.8
+  PreparationSeconds: 0.4
+  OutsideShoulderMargin: 0.05
+  MinimumInwardTravel: 0.15
+  StraightKneeAngle: 170
+  StraightKneeRatio: 0.8
+  MinimumFollowThrough: 0.2
+  VoiceInterval: 4
+  RepeatInterval: 12
+  VoiceExpiry: 3

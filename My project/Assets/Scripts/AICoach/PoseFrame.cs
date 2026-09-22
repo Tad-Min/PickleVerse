@@ -8,6 +8,12 @@ public struct PoseFrame
 
     public Vector3[] LocalJoints;
     public float[] Confidence;
+    // Fresh inference only. Display Confidence may include held skeleton joints.
+    // Borrowed buffers: subscribers must copy synchronously before the next sample.
+    public Vector3[] ObservedJoints;
+    public float[] ObservedConfidence;
+    public float ObservationTimestamp;
+    public bool ObservedWristTracked;
     public Vector3 RootPosition;
     public Vector3 HandForward;
     public Vector3 HandUp;
