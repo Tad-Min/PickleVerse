@@ -1,0 +1,3 @@
+[submodule ".agents/plugins/sdd-hybrid"]
+	path = .agents/plugins/sdd-hybrid
+	url = https://github.com/Huy19N/sdd-hybrid-antigravity-plugin.git
