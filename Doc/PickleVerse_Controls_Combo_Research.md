@@ -2,7 +2,7 @@
 
 Ngày nghiên cứu: 06/10/2026. Phiên bản đề xuất: 0.1.
 
-Tài liệu này đề xuất cơ chế điều khiển cho máy tính và điện thoại dựa trên bộ 20 animation của PickleVerse. Mục tiêu là giữ WASD để di chuyển, Shift để chạy, dùng J/K/L/U/I để chọn kỹ thuật, và tạo kỹ thuật khác bằng tổ hợp tối đa hai nút đánh bóng.
+Tài liệu này đề xuất cơ chế điều khiển cho máy tính và điện thoại dựa trên bộ 20 animation của PickleVerse. Mục tiêu là giữ WASD để di chuyển, Shift/space để chạy, dùng J/K/L/U/I để chọn kỹ thuật, và tạo kỹ thuật khác bằng tổ hợp tối đa hai nút đánh bóng.
 
 Đây là tài liệu thiết kế để thảo luận và kiểm chứng bằng thử nghiệm người chơi. Chưa có cơ chế nào trong tài liệu được lập trình, tích hợp hoặc kiểm thử trong game. Các mốc timing, khoảng cách và chỉ tiêu thử nghiệm là giả thuyết thiết kế, không phải thông số đã được xác nhận.
 
@@ -26,7 +26,7 @@ Ba tổ hợp giữa các cú gốc tạo ba lựa chọn chiến thuật rõ r�
 | J + L | Overhead smash đứng | Chọn tấn công bóng cao bằng động tác trên đầu |
 | K + L | Volley mềm/Reset volley | Chặn bóng trước nảy để giảm nhịp và đưa bóng ngắn trở lại |
 
-Các tổ hợp với U/I mở rộng lực hoặc hướng của ba cú gốc. Mỗi cú đánh sử dụng tối đa **hai nút thuộc J/K/L/U/I**; phím di chuyển và Shift được dùng đồng thời như bình thường.
+Các tổ hợp với U/I mở rộng lực hoặc hướng của ba cú gốc. Mỗi cú đánh sử dụng tối đa **hai nút thuộc J/K/L/U/I**; phím di chuyển và Shift/space được dùng đồng thời như bình thường.
 
 Trên điện thoại, dùng ba nút Drive/Dink/Volley và hai lựa chọn Tấn công/Chéo. Combo giữa các cú gốc được thực hiện bằng **chạm nút đầu, trượt sang nút thứ hai, nhấc ngón tay**. Người chơi không phải đặt hai ngón tay lên hai nút đánh trong lúc ngón còn lại điều khiển di chuyển.
 
@@ -57,7 +57,7 @@ Trong thuật ngữ pickleball, Groundstroke là đánh sau nảy; Volley là đ
 |---|---|---|
 | 01 | `PKV_Idle_Ready` | Tự phát khi chờ/đứng ổn định; cũng là tư thế chờ chọn cú |
 | 02 | `PKV_Walk_Forward` | Di chuyển tốc độ thường; bước vào/ra Kitchen hợp lệ |
-| 03 | `PKV_Run_Forward` | WASD + Shift hoặc joystick vùng chạy |
+| 03 | `PKV_Run_Forward` | WASD + Shift/space hoặc joystick vùng chạy |
 | 04 | `PKV_Jump` | Hành động phụ trợ tùy chọn; chưa cần bật trong điều khiển thi đấu mặc định |
 | 05 | `PKV_Overhead_Smash` | J + L khi bóng cao và trong tầm với; ưu tiên smash đứng |
 | 06 | `PKV_Serve_FH_Underhand` | J trong trạng thái giao bóng; J + U/J + I thay thông số giao bóng |
@@ -114,14 +114,14 @@ Không đưa chuỗi ba hoặc bốn nút vào bản đầu. Độ khó nên đ�
 | S | Lùi khỏi lưới |
 | A/D | Di chuyển ngang trái/phải theo góc nhìn gameplay |
 | Hai hướng WASD cùng lúc | Di chuyển chéo; tốc độ tổng không cao hơn di chuyển thẳng |
-| Giữ Shift + WASD | Chạy khi di chuyển, phù hợp với khoảng cách và trạng thái nhân vật |
+| Giữ Shift/space + WASD | Chạy khi di chuyển, phù hợp với khoảng cách và trạng thái nhân vật |
 | Không có hướng di chuyển | Về Ready khi phù hợp |
 
 WASD luôn điều khiển di chuyển, không đổi thành aim khi giữ nút đánh. Sau đổi bên sân, W vẫn có ý nghĩa tiến về lưới; tránh bắt người chơi đảo trí nhớ điều khiển vì nhân vật đổi phía.
 
 Shuffle được dùng cho di chuyển ngang ở tốc độ thấp/vừa gần lưới; Backpedal cho lùi ngắn. Khi chạy xa, nhân vật cần định hướng thân/chân phù hợp với hướng chạy. Không thể khẳng định một clip Run Forward tạo được mọi hướng chân chỉ bằng đổi tên state.
 
-Shift chỉ là chạy, không tự tăng lực bóng, đổi kỹ thuật hoặc phát Jump. Nhảy không bắt buộc để Smash. Nếu bật Jump sau này, Space là ứng viên nút riêng, nằm ngoài bộ nút đánh J/K/L/U/I.
+Shift/space chỉ là chạy, không tự tăng lực bóng, đổi kỹ thuật hoặc phát Jump. Nhảy không bắt buộc để Smash. Nếu bật Jump sau này, Space là ứng viên nút riêng, nằm ngoài bộ nút đánh J/K/L/U/I.
 
 ### 5.2 Ba cú gốc
 
