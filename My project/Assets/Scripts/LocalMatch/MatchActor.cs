@@ -48,6 +48,7 @@ namespace PickleVerse.LocalMatch
         }
         public void Initialize()
         {
+            PickleVerse.CharacterMotion.CharacterSecondaryMotion.Attach(visual.gameObject,playerId==0);
             var bones = visual.GetComponentsInChildren<Transform>(true);
             if (!leftHand) leftHand = Array.Find(bones, t => t.name == "mixamorig:LeftHand");
             animationPlayer = visual.GetComponent<Animation>();

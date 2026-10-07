@@ -1,0 +1,360 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 577cb0717dd6abc42be051c9851d9c88, type: 3}
+  m_Name: FemaleMotion
+  m_EditorClassIdentifier: PickleVerse.CharacterMotion::PickleVerse.CharacterMotion.CharacterMotionProfile
+  mesh: {fileID: 4300000, guid: 47e6ac65080b6ee4d9047cbcc8a571e6, type: 2}
+  foreheadMesh: {fileID: 4300000, guid: 73f4e93daf2c17b4e9571dbec1e1cd6c, type: 2}
+  foreheadMaterial: {fileID: 2100000, guid: ec8b882d39e08c141aa27484d334a667, type: 2}
+  originalVertexCount: 19021
+  originalBoneCount: 59
+  originalBoneNames:
+  - mixamorig:Hips
+  - mixamorig:Spine
+  - mixamorig:Spine1
+  - mixamorig:Spine2
+  - mixamorig:Neck
+  - mixamorig:Head
+  - mixamorig:HeadTop_End
+  - headfront
+  - mixamorig:LeftShoulder
+  - mixamorig:LeftArm
+  - mixamorig:LeftForeArm
+  - mixamorig:LeftHand
+  - mixamorig:LeftHandMiddle4
+  - mixamorig:LeftHandIndex1
+  - mixamorig:LeftHandIndex2
+  - mixamorig:LeftHandIndex3
+  - mixamorig:LeftHandMiddle1
+  - mixamorig:LeftHandMiddle2
+  - mixamorig:LeftHandMiddle3
+  - mixamorig:LeftHandRing1
+  - mixamorig:LeftHandRing2
+  - mixamorig:LeftHandRing3
+  - mixamorig:LeftHandPinky1
+  - mixamorig:LeftHandPinky2
+  - mixamorig:LeftHandPinky3
+  - mixamorig:LeftHandThumb1
+  - mixamorig:LeftHandThumb2
+  - mixamorig:LeftHandThumb3
+  - mixamorig:RightShoulder
+  - mixamorig:RightArm
+  - mixamorig:RightForeArm
+  - mixamorig:RightHand
+  - mixamorig:RightHandMiddle4
+  - mixamorig:RightHandIndex1
+  - mixamorig:RightHandIndex2
+  - mixamorig:RightHandIndex3
+  - mixamorig:RightHandMiddle1
+  - mixamorig:RightHandMiddle2
+  - mixamorig:RightHandMiddle3
+  - mixamorig:RightHandRing1
+  - mixamorig:RightHandRing2
+  - mixamorig:RightHandRing3
+  - mixamorig:RightHandPinky1
+  - mixamorig:RightHandPinky2
+  - mixamorig:RightHandPinky3
+  - mixamorig:RightHandThumb1
+  - mixamorig:RightHandThumb2
+  - mixamorig:RightHandThumb3
+  - PKV_PaddleSocket_R
+  - mixamorig:LeftUpLeg
+  - mixamorig:LeftLeg
+  - mixamorig:LeftFoot
+  - mixamorig:LeftToeBase
+  - mixamorig:LeftToe_End
+  - mixamorig:RightUpLeg
+  - mixamorig:RightLeg
+  - mixamorig:RightFoot
+  - mixamorig:RightToeBase
+  - mixamorig:RightToe_End
+  joints:
+  - name: Pony_0
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: 0.0448716, y: 0.13092498, z: -0.30033278}
+    endOffset: {x: 0.04248193, y: -0.12810215, z: 0.027643144}
+    part: 0
+    stiffness: 150
+    damping: 8
+    maximumAngle: 22
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.014951689, y: 1.575, z: -0.14952594}
+    meshEnd: {x: 0.06617341, y: 1.4475, z: -0.13957153}
+  - name: Pony_1
+    anchor: mixamorig:Head
+    parent: 0
+    localPosition: {x: 0.04248193, y: -0.12810215, z: 0.027643144}
+    endOffset: {x: 0.000358589, y: -0.12380784, z: 0.041775197}
+    part: 0
+    stiffness: 170
+    damping: 8
+    maximumAngle: 22
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.06617341, y: 1.4475, z: -0.13957153}
+    meshEnd: {x: 0.07606791, y: 1.32, z: -0.11274731}
+  - name: Pony_2
+    anchor: mixamorig:Head
+    parent: 1
+    localPosition: {x: 0.000358589, y: -0.12380784, z: 0.041775197}
+    endOffset: {x: -0.044421785, y: -0.12654555, z: -0.0066107213}
+    part: 0
+    stiffness: 190
+    damping: 8
+    maximumAngle: 22
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.07606791, y: 1.32, z: -0.11274731}
+    meshEnd: {x: 0.038456272, y: 1.1925, z: -0.1317176}
+  - name: Pony_3
+    anchor: mixamorig:Head
+    parent: 2
+    localPosition: {x: -0.044421785, y: -0.12654555, z: -0.0066107213}
+    endOffset: {x: -0.00842106, y: -0.1258601, z: 0.019129261}
+    part: 0
+    stiffness: 210
+    damping: 8
+    maximumAngle: 22
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.038456272, y: 1.1925, z: -0.1317176}
+    meshEnd: {x: 0.03829539, y: 1.065, z: -0.12709746}
+  - name: Skirt_0_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: 0.012220733, y: 0.006810396, z: 0.08311539}
+    endOffset: {x: 0.0012991261, y: -0.062284958, z: 0.021096729}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.0057082465, y: 0.868, z: 0.16775952}
+    meshEnd: {x: 0.00670719, y: 0.804, z: 0.18289834}
+  - name: Skirt_0_1
+    anchor: mixamorig:Hips
+    parent: 4
+    localPosition: {x: 0.0012991261, y: -0.062284958, z: 0.021096729}
+    endOffset: {x: 0.0007481063, y: -0.07604419, z: 0.013711393}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 0
+    blendShapeZ: 1
+    meshPivot: {x: 0.00670719, y: 0.804, z: 0.18289834}
+    meshEnd: {x: 0.0071353083, y: 0.727, z: 0.1893864}
+  - name: Skirt_1_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: 0.09484765, y: 0.006728525, z: 0.07886479}
+    endOffset: {x: 0.015758835, y: -0.062299285, z: 0.020352863}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.088350154, y: 0.868, z: 0.16381031}
+    meshEnd: {x: 0.10381143, y: 0.804, z: 0.17825802}
+  - name: Skirt_1_1
+    anchor: mixamorig:Hips
+    parent: 6
+    localPosition: {x: 0.015758835, y: -0.062299285, z: 0.020352863}
+    endOffset: {x: 0.0069451258, y: -0.07605033, z: 0.013392597}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 2
+    blendShapeZ: 3
+    meshPivot: {x: 0.10381143, y: 0.804, z: 0.17825802}
+    meshEnd: {x: 0.11043769, y: 0.727, z: 0.18444988}
+  - name: Skirt_2_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: 0.13531573, y: -0.0008684421, z: -0.0030758248}
+    endOffset: {x: 0.022840753, y: -0.063628756, z: 0.0060132532}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.12910728, y: 0.868, z: 0.08166106}
+    meshEnd: {x: 0.15170106, y: 0.804, z: 0.08173264}
+  - name: Skirt_2_1
+    anchor: mixamorig:Hips
+    parent: 8
+    localPosition: {x: 0.022840753, y: -0.063628756, z: 0.0060132532}
+    endOffset: {x: 0.009980217, y: -0.07662011, z: 0.007247055}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 4
+    blendShapeZ: 5
+    meshPivot: {x: 0.15170106, y: 0.804, z: 0.08173264}
+    meshEnd: {x: 0.1613841, y: 0.727, z: 0.08176331}
+  - name: Skirt_3_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: 0.08416232, y: -0.008149041, z: -0.0779192}
+    endOffset: {x: 0.013888903, y: -0.06490286, z: -0.00708434}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.078217894, y: 0.868, z: 0.0062854737}
+    meshEnd: {x: 0.091906026, y: 0.804, z: -0.0068336753}
+  - name: Skirt_3_1
+    anchor: mixamorig:Hips
+    parent: 10
+    localPosition: {x: 0.013888903, y: -0.06490286, z: -0.00708434}
+    endOffset: {x: 0.0061437264, y: -0.077166155, z: 0.001633808}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 6
+    blendShapeZ: 7
+    meshPivot: {x: 0.091906026, y: 0.804, z: -0.0068336753}
+    meshEnd: {x: 0.09777237, y: 0.727, z: -0.0124561675}
+  - name: Skirt_4_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: 0.005810612, y: -0.009261054, z: -0.08646038}
+    endOffset: {x: 0.00017735455, y: -0.06509746, z: -0.0085790455}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.000103681334, y: 0.868, z: -0.0025975942}
+    meshEnd: {x: -0.00012182557, y: 0.804, z: -0.01727128}
+  - name: Skirt_4_1
+    anchor: mixamorig:Hips
+    parent: 12
+    localPosition: {x: 0.00017735455, y: -0.06509746, z: -0.0085790455}
+    endOffset: {x: 0.00026734732, y: -0.07724955, z: 0.0009932145}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 8
+    blendShapeZ: 9
+    meshPivot: {x: -0.00012182557, y: 0.804, z: -0.01727128}
+    meshEnd: {x: -0.00012960167, y: 0.727, z: -0.023560002}
+  - name: Skirt_5_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: -0.070683345, y: -0.008637938, z: -0.07674133}
+    endOffset: {x: -0.013209082, y: -0.06498842, z: -0.006878212}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.07663192, y: 0.868, z: 0.006868232}
+    meshEnd: {x: -0.0900425, y: 0.804, z: -0.006148934}
+  - name: Skirt_5_1
+    anchor: mixamorig:Hips
+    parent: 14
+    localPosition: {x: -0.013209082, y: -0.06498842, z: -0.006878212}
+    endOffset: {x: -0.0054696947, y: -0.07720283, z: 0.0017221421}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 10
+    blendShapeZ: 11
+    meshPivot: {x: -0.0900425, y: 0.804, z: -0.006148934}
+    meshEnd: {x: -0.095789894, y: 0.727, z: -0.01172772}
+  - name: Skirt_6_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: -0.118471414, y: -0.0036402873, z: -0.021969631}
+    endOffset: {x: -0.021571994, y: -0.064113826, z: 0.0027068388}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.1246132, y: 0.868, z: 0.06169899}
+    meshEnd: {x: -0.14642051, y: 0.804, z: 0.05827721}
+  - name: Skirt_6_1
+    anchor: mixamorig:Hips
+    parent: 16
+    localPosition: {x: -0.021571994, y: -0.064113826, z: 0.0027068388}
+    endOffset: {x: -0.009053811, y: -0.076827995, z: 0.0058300216}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 12
+    blendShapeZ: 13
+    meshPivot: {x: -0.14642051, y: 0.804, z: 0.05827721}
+    meshEnd: {x: -0.1557665, y: 0.727, z: 0.05681073}
+  - name: Skirt_7_0
+    anchor: mixamorig:Hips
+    parent: -1
+    localPosition: {x: -0.08219999, y: 0.0054719914, z: 0.07284016}
+    endOffset: {x: -0.0152245015, y: -0.06251918, z: 0.019298553}
+    part: 2
+    stiffness: 300
+    damping: 12
+    maximumAngle: 16
+    gravityScale: 0.1
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.08867623, y: 0.868, z: 0.15707237}
+    meshEnd: {x: -0.10419457, y: 0.804, z: 0.17034093}
+  - name: Skirt_7_1
+    anchor: mixamorig:Hips
+    parent: 18
+    localPosition: {x: -0.0152245015, y: -0.06251918, z: 0.019298553}
+    endOffset: {x: -0.006333448, y: -0.076144576, z: 0.012940757}
+    part: 2
+    stiffness: 250
+    damping: 11
+    maximumAngle: 20
+    gravityScale: 0.1
+    blendShapeX: 14
+    blendShapeZ: 15
+    meshPivot: {x: -0.10419457, y: 0.804, z: 0.17034093}
+    meshEnd: {x: -0.11084528, y: 0.727, z: 0.17602745}

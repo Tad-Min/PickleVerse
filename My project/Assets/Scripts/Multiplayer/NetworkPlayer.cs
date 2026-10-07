@@ -73,6 +73,7 @@ namespace PickleVerse.Multiplayer
             Animator=visual.GetComponent<Animator>() ?? visual.AddComponent<Animator>();
             Animator.runtimeAnimatorController=Female.Value?settings.femaleAnimator:settings.maleAnimator;
             Animator.applyRootMotion=false;
+            PickleVerse.CharacterMotion.CharacterSecondaryMotion.Attach(visual,Female.Value);
             RightHand=visual.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name.EndsWith("RightHand"));
             LeftHand=visual.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name.EndsWith("LeftHand"));
             if(RightHand!=null)
