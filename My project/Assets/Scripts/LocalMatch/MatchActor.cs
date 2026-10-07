@@ -123,7 +123,7 @@ namespace PickleVerse.LocalMatch
             else if (canMove && !IsReaction())
             {
                 string locomotion = Velocity.magnitude < .15f ? "PKV_Idle_Ready" : Mathf.Abs(Velocity.x) > Mathf.Abs(Velocity.z) * 1.15f ? (Vector3.Dot(Velocity, transform.right) < 0 ? "PKV_Shuffle_Left" : "PKV_Shuffle_Right") : Velocity.z * -end < -.1f ? "PKV_Backpedal" : run ? "PKV_Run_Forward" : "PKV_Walk_Forward";
-                if (clipName != "PKV_SplitStep" || clipTime > .3f) Play(locomotion);
+                if (clipName != "PKV_SplitStep" || clipTime + dt >= animationPlayer[clipName].length - .000001f || Velocity.magnitude >= .15f) Play(locomotion);
             }
             Sample(dt);
             if(paddleFace)PaddleVelocity=(paddleFace.position-previousFace)/Mathf.Max(.0001f,dt);
@@ -143,7 +143,7 @@ namespace PickleVerse.LocalMatch
             if (!animationPlayer || !Has(clipName)) return;
             clipTime += dt;
             var state = animationPlayer[clipName];
-            float duration = Swinging ? Intent.Duration : clipName == "PKV_SplitStep" ? .45f : state.length;
+            float duration = Swinging ? Intent.Duration : state.length;
             bool loop = clipName.Contains("Idle") || clipName.Contains("Walk") || clipName.Contains("Run") || clipName.Contains("Shuffle") || clipName.Contains("Backpedal");
             float time = Swinging ? swingTime : clipTime;
             float phase = Mathf.Min(time / Mathf.Max(.01f,duration),1f);

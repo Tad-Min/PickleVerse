@@ -13,6 +13,8 @@ namespace PickleVerse.Rules
         // Measurements are to the outside edges of the lines, in metres.
         public const float HalfWidth = 3.048f, HalfLength = 6.7056f, Kitchen = 2.1336f;
         public const float LineWidth = .0508f, BallRadius = .037f;
+        // 22 feet between the inside faces of the net posts.
+        public const float NetHalfSpan = 3.3528f;
         public static bool InBounds(CourtPoint p) => Math.Abs(p.x) <= HalfWidth && Math.Abs(p.z) <= HalfLength;
         public static bool InKitchen(CourtPoint foot, float soleRadius = .09f) => Math.Abs(foot.x) <= HalfWidth + soleRadius && Math.Abs(foot.z) <= Kitchen + soleRadius;
         public static bool LegalServeFeet(CourtPoint left, CourtPoint right, int end, int score)

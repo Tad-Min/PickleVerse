@@ -98,10 +98,15 @@ Vật lý là mô hình trọng lực/nảy đơn giản; chưa có khí động
 
 ## Dựng lại scene
 
-Các asset đã lưu đủ để mở scene và chơi. Khi cần dựng lại từ model nguồn:
+Các asset đã lưu đủ để mở scene và chơi. Khi cần dựng lại bằng dữ liệu hiện có:
 
-1. Từ root repository, chạy `UnityWork/BotMatch/extract_animation_data.py` để đọc chuyển động từ GLB.
-2. Chạy `UnityWork/BotMatch/prepare_scene_models.py` để tạo bản model texture 1K.
-3. Trong Unity, ở Edit Mode chọn **PickleVerse → Create or rebuild BotMatch scene**.
+1. Giữ `UnityWork/BotMatch/ClipData`, `Doc/duration_animation.md` và các model trong `Assets/LocalMatchContent/Models` để builder đọc dữ liệu. Builder tự áp dụng duration từ tài liệu khi tạo clip.
+2. Trong Unity, ở Edit Mode chọn **PickleVerse → Create or rebuild BotMatch scene**.
+
+Thư mục GLB từng animation trước đây đã được tối ưu thành `Assets/Animation/Characters/Female` và `Male`. Không cần chạy lại các bước trích xuất GLB hoặc tạo model 1K để sử dụng hay dựng lại scene từ dữ liệu hiện có. Nếu bổ sung GLB nguồn, script trích xuất hỗ trợ `--source <file.glb> --gender female|male --name PKV_<Tên>`.
+
+Thời lượng đã chuẩn hóa cho 20 clip của mỗi giới tính và bộ clip gameplay riêng. Xem `Doc/Animation_Duration_Update_Report.md` để đối chiếu từng duration và bằng chứng kiểm tra. Jump có asset 0,8 s cho cả hai giới tính, vẫn được loại khỏi gameplay của scene này.
 
 Builder giữ bản sao các scene đang có thay đổi chưa lưu trong `UnityWork/BotMatch/SceneBackups` trước khi mở scene mới. Các thư mục `ClipData` và `model-variants.json` phục vụ dựng lại; gameplay không cần đọc chúng khi chạy.
+
+Sân được khôi phục từ `Assets/Models/court/Court.glb` và lưu thành `Assets/LocalMatchContent/Court/PlayableCourt.prefab`. Khi cần thay riêng sân sau khi cập nhật model, mở BotMatch ở Edit Mode và chọn **PickleVerse → Restore court in BotMatch**. Kích thước và bằng chứng kiểm tra nằm trong `Doc/Court_Restore_Report.md`.

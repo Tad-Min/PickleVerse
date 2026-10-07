@@ -135,7 +135,7 @@ namespace PickleVerse.LocalMatch
                 Vector3 prior = BallPosition, p = BallPosition, v = BallVelocity;
                 BallFlight.Integrate(ref p, ref v, dt);
                 // Thin net uses a swept plane test; high balls and legal around-post shots pass.
-                if (prior.z * p.z < 0 && Mathf.Abs(p.x) <= 3.35f)
+                if (prior.z * p.z < 0 && Mathf.Abs(p.x) <= Court.NetHalfSpan)
                 {
                     float t = prior.z / (prior.z - p.z); Vector3 crossing = Vector3.Lerp(prior, p, t);
                     float netTop = Court.NetHeight(crossing.x);

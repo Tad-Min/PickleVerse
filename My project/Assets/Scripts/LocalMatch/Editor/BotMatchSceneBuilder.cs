@@ -40,9 +40,7 @@ namespace PickleVerse.LocalMatch.Editor
             RenderSettings.ambientSkyColor = new Color(.63f,.75f,.85f); RenderSettings.ambientEquatorColor = new Color(.48f,.58f,.58f); RenderSettings.ambientGroundColor = new Color(.23f,.29f,.26f);
             RenderSettings.fog = true; RenderSettings.fogColor = new Color(.64f,.78f,.82f); RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogStartDistance = 30; RenderSettings.fogEndDistance = 100;
             var arena = new GameObject("Arena").transform;
-            var court = Model("Assets/Models/court/Court.glb", "Court", arena);
-            // Court.glb already has the official metre scale; no arbitrary stretching.
-            court.transform.position = new Vector3(0, -.018f, 0);
+            BotMatchCourtBuilder.Create(arena);
             Primitive("ArenaFoundation", PrimitiveType.Cube, new Vector3(0,-.13f,0), new Vector3(32,.2f,30), new Color(.14f,.24f,.22f), arena);
             for (int side = -1; side <= 1; side += 2)
             {
@@ -116,10 +114,11 @@ namespace PickleVerse.LocalMatch.Editor
             paddle.transform.localScale = Vector3.one * .16537598f;
             var face = new GameObject("Paddle Contact").transform; face.SetParent(paddle.transform, false); face.localPosition = new Vector3(0,0,-.60f); actor.paddleFace = face;
             var entries = new List<ClipEntry>();
-            foreach (string path in Directory.GetFiles(basePath, "PKV_*.glb").OrderBy(p => p))
+            string dataPath = Path.GetFullPath("../UnityWork/BotMatch/ClipData/" + gender);
+            foreach (string path in Directory.GetFiles(dataPath, "PKV_*.json").OrderBy(p => p))
             {
                 string name = Path.GetFileNameWithoutExtension(path);
-                if (name.Contains("Walking") || name.Contains("Running")) continue;
+                if (name.Contains("Walking") || name.Contains("Running") || name.Contains("Jump")) continue;
                 string output = Content + "/Clips/" + gender + "/" + name + ".anim";
                 var copy = AnimationData.Create(gender, name, output);
                 entries.Add(new ClipEntry { name = name, clip = copy });
@@ -267,6 +266,12 @@ namespace PickleVerse.LocalMatch.Editor
             // Avoid glTF import here: even typed subasset loading allocates embedded textures.
             string input = Path.GetFullPath("../UnityWork/BotMatch/ClipData/" + gender + "/" + name + ".json");
             var data = JsonUtility.FromJson<Clip>(File.ReadAllText(input));
+            float start = data.channels.Min(c => c.times[0]);
+            float span = data.channels.Max(c => c.times[c.times.Length - 1]) - start;
+            float duration = AnimationDurationTools.DurationFor(name, span);
+            // Read duration from the production table so regeneration cannot restore 2s clips.
+            foreach (var channel in data.channels)
+                for (int i = 0; i < channel.times.Length; i++) channel.times[i] = (channel.times[i] - start) * duration / span;
             var idleData = JsonUtility.FromJson<Clip>(File.ReadAllText(Path.GetFullPath("../UnityWork/BotMatch/ClipData/"+gender+"/PKV_Idle_Ready.json")));
             var restHip = idleData.channels.Single(c=>c.path=="target_character/mixamorig:Hips" && c.kind=="translation").values;
             var clip = new AnimationClip { name = name, legacy = true, frameRate = 30, wrapMode = WrapMode.ClampForever };
