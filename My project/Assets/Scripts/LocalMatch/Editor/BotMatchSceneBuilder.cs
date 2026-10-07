@@ -67,13 +67,14 @@ namespace PickleVerse.LocalMatch.Editor
             match.human.ResetAt(new Vector3(1.45f,0,-7.25f), -1); match.bot.ResetAt(new Vector3(-1.45f,0,6.1f), 1);
             var ball = Model("Assets/Models/ball/pickleball_ball_cartoon.glb", "Pickleball", match.transform);
             ball.transform.localScale = Vector3.one * Court.BallRadius * 1.5f; ball.transform.position = new Vector3(1.45f,.9f,-7.25f); match.ball = ball.transform;
-            match.ballShadow = Disc("BallShadow", .14f, new Color(.04f,.09f,.12f), match.transform);
             match.landingMarker = Disc("IncomingLanding", .35f, amber, match.transform);
             match.aimMarker = Disc("ShotAim", .3f, mint, match.transform);
             var cameraObject = new GameObject("Match Camera", typeof(Camera), typeof(AudioListener)); cameraObject.tag = "MainCamera";
             var camera = cameraObject.GetComponent<Camera>(); camera.fieldOfView = 60; camera.nearClipPlane = .1f; camera.farClipPlane = 100; camera.backgroundColor = new Color(.58f,.75f,.82f); camera.clearFlags = CameraClearFlags.SolidColor;
             var follow=cameraObject.AddComponent<MatchCamera>();follow.player=match.human;follow.SnapToPlayer();
             BuildHud(match);
+            BallPresentationSetup.Configure(match);
+            BotMatchIntroSetup.Configure(match);
             if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new InvalidOperationException("Failed saving BotMatch scene.");
             if (!EditorBuildSettings.scenes.Any(s => s.path == ScenePath)) EditorBuildSettings.scenes = EditorBuildSettings.scenes.Concat(new[] { new EditorBuildSettingsScene(ScenePath, true) }).ToArray();
             AssetDatabase.SaveAssets(); Selection.activeGameObject = match.gameObject;

@@ -7,19 +7,28 @@ namespace PickleVerse.LocalMatch
     public sealed class MatchHud : MonoBehaviour
     {
         public TMP_Text scoreboard, status, timing, selection, modalTitle, modalBody, serveClock, difficultyLabel;
-        public GameObject modal, help, touchControls;
+        public GameObject modal, help, touchControls, shotPanel;
         public Button continueButton, restartButton;
         BotMatch match;
         bool helpPaused;
-        public void Bind(BotMatch owner) { match = owner; if (touchControls) touchControls.SetActive(Application.isMobilePlatform); }
+        public void Bind(BotMatch owner)
+        {
+            match = owner;
+            if(!shotPanel && selection)shotPanel=selection.transform.parent.gameObject;
+            if (touchControls) touchControls.SetActive(Application.isMobilePlatform);
+        }
         void Update()
         {
             if (!match || match.Rules == null) return;
+            if(match.Phase==MatchPhase.Cinematic)return;
             var rules = match.Rules;
             scoreboard.text = "<color=#83E6CD>BẠN</color>  " + rules.Points[0] + "   :   " + rules.Points[1] + "  <color=#F9BC7A>BOT</color>\n<size=17>GAME " + Mathf.Min(3, rules.GameNumber) + "    •    Số game thắng " + rules.Games[0] + "–" + rules.Games[1] + "    •    Đấu đơn 1v1</size>";
             status.text = match.Message;
-            timing.text = match.ShotFeedback;
-            selection.text = string.IsNullOrEmpty(match.Selection) ? "J Drive   K Dink   L Volley\n<size=16>J+K Drop   J+L Smash   K+L Reset   •   +U Lực / +I Chéo</size>" : "ĐANG CHỌN: " + match.Selection + "\n<size=16>Thả phím gốc để đánh • Backspace để hủy</size>";
+            bool choosing=!string.IsNullOrEmpty(match.SelectionKeys);
+            bool swinging=match.human.Swinging && !string.IsNullOrEmpty(match.ActiveShotKeys);
+            selection.text=choosing?"<b>"+match.SelectionKeys+"</b>\n<size=14>"+match.Selection+"</size>":swinging?"<b>"+match.ActiveShotKeys+"</b>\n<size=14>"+match.human.Intent+"</size>":"";
+            if(shotPanel)shotPanel.SetActive(!match.Paused && (choosing || swinging));
+            if(timing)timing.gameObject.SetActive(false);
             serveClock.text = match.Phase == MatchPhase.PreServe ? "GIAO BÓNG  " + Mathf.Max(0, 10f - match.ServeElapsed).ToString("0.0") + "s" : match.Phase == MatchPhase.Rally ? (rules.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY") : "";
             if(match.Phase==MatchPhase.Rally && rules.ExpectedHitter==0 && match.PredictContact(match.human.end,true,out _,out var eta,match.human.ContactOffset(new ShotIntent(ShotKind.Drive)).y))
                 serveClock.text+="\n<size=16>Thả J sau "+Mathf.Max(0,eta-.433f).ToString("0.0")+"s</size>";
@@ -34,7 +43,7 @@ namespace PickleVerse.LocalMatch
             restartButton.gameObject.SetActive(!intro);
         }
         public void Continue() { if (match) match.Continue(); }
-        public void Restart() { if (match) match.Restart(); }
+        public void Restart() { if (match) match.RestartWithIntro(); }
         public void Pause() { if (match) match.TogglePause(); }
         public void Timeout() { if (match) match.Timeout(); }
         public void ToggleHelp()

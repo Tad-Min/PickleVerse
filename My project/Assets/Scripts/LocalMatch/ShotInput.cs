@@ -21,12 +21,14 @@ namespace PickleVerse.LocalMatch
         bool locked, invalid;
         public string Feedback { get; private set; } = "";
         public string Selection { get; private set; } = "";
-        public void Cancel() { bases = 0; invalid = true; locked = true; Selection = ""; }
+        public string SelectionKeys { get; private set; } = "";
+        public string CommittedKeys { get; private set; } = "";
+        public void Cancel() { bases = 0; invalid = true; locked = true; Selection = SelectionKeys = ""; }
         public bool Tick(int mask, bool cancel, bool serve, out ShotIntent intent)
         {
             intent = default;
             if (cancel) Cancel();
-            if (mask == 0 && (locked || (previous & 7) == 0)) { previous = bases = 0; locked = invalid = false; Selection = ""; return false; }
+            if (mask == 0 && (locked || (previous & 7) == 0)) { previous = bases = 0; locked = invalid = false; Selection = SelectionKeys = ""; return false; }
             if (locked) { previous = mask; return false; }
             int currentBases = mask & 7;
             int released = (previous & 7) & ~currentBases;
@@ -34,16 +36,24 @@ namespace PickleVerse.LocalMatch
             else bases |= currentBases;
             int modifiers = mask & 24;
             int count = Count(bases) + Count(modifiers);
-            if (count > 2) { invalid = true; locked = true; Feedback = "Chỉ ghép tối đa hai nút"; Selection = ""; previous = mask; return false; }
+            if (count > 2) { invalid = true; locked = true; Feedback = "Chỉ ghép tối đa hai nút"; Selection = SelectionKeys = ""; previous = mask; return false; }
             bool valid = Resolve(bases, modifiers, serve, out intent);
             Selection = valid && bases != 0 ? intent.ToString() : "";
+            SelectionKeys = valid && bases != 0 ? Keys(bases | modifiers) : "";
             previous = mask;
             if (released == 0 || bases == 0 || invalid) return false;
-            locked = true; Selection = "";
+            CommittedKeys = SelectionKeys;
+            locked = true; Selection = SelectionKeys = "";
             if (!valid) { Feedback = serve ? "Giao bóng bằng J, J+U hoặc J+I" : "Tổ hợp không hợp lệ"; return false; }
             Feedback = ""; return true;
         }
         static int Count(int v) { int n = 0; while (v != 0) { n += v & 1; v >>= 1; } return n; }
+        public static string Keys(int mask)
+        {
+            string text=""; string[] names={"J","K","L","U","I"};
+            for(int i=0;i<names.Length;i++)if((mask&(1<<i))!=0)text+=(text.Length==0?"":" + ")+names[i];
+            return text;
+        }
         static bool Resolve(int b, int m, bool serve, out ShotIntent intent)
         {
             intent = default;

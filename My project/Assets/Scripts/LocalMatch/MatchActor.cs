@@ -12,6 +12,9 @@ namespace PickleVerse.LocalMatch
         public Transform visual, paddleFace, leftFoot, rightFoot;
         public GameObject paddle;
         public Transform upperArm, forearm, hand;
+        public Transform leftHand;
+        public Vector3 heldBallOffset = new Vector3(-.06f,.055f,0);
+        public Vector3 HeldBallPosition => leftHand ? leftHand.TransformPoint(heldBallOffset) : transform.TransformPoint(new Vector3(-.30f,1.04f,.28f));
         public ClipEntry[] clips;
         public float walkSpeed = 3.3f, runSpeed = 5.8f;
         public Vector3 Velocity { get; private set; }
@@ -45,6 +48,8 @@ namespace PickleVerse.LocalMatch
         }
         public void Initialize()
         {
+            var bones = visual.GetComponentsInChildren<Transform>(true);
+            if (!leftHand) leftHand = Array.Find(bones, t => t.name == "mixamorig:LeftHand");
             animationPlayer = visual.GetComponent<Animation>();
             if (!animationPlayer) animationPlayer = visual.gameObject.AddComponent<Animation>();
             animationPlayer.playAutomatically = false;
@@ -53,6 +58,13 @@ namespace PickleVerse.LocalMatch
             animationPlayer.enabled = false;
             foreach (var entry in clips) if (entry.clip) animationPlayer.AddClip(entry.clip, entry.name);
             Play("PKV_Idle_Ready");
+        }
+        public void RefreshPose() { Sample(0); }
+        public void SampleEntrance(AnimationClip clip,float time)
+        {
+            if(!clip)return;
+            clipName=clip.name;
+            clip.SampleAnimation(visual.gameObject,Mathf.Repeat(time,clip.length));
         }
         public void ResetAt(Vector3 p, int newEnd)
         {
