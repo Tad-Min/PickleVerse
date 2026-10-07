@@ -1,0 +1,282 @@
+[
+  {
+    "gender": "Male",
+    "clip": "Dink_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 28,
+    "contactNormalized": 0.227642283,
+    "contact": {
+      "x": 0.18562904,
+      "y": 1.19553411,
+      "z": 0.346090376
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Dink_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 62,
+    "contactNormalized": 0.504065037,
+    "contact": {
+      "x": 0.195384085,
+      "y": 0.8251356,
+      "z": 0.4666381
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Groundstroke_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 35,
+    "contactNormalized": 0.284552842,
+    "contact": {
+      "x": -0.313403,
+      "y": 0.8963242,
+      "z": 0.46106258
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Groundstroke_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 36,
+    "contactNormalized": 0.292682916,
+    "contact": {
+      "x": 0.750694633,
+      "y": 0.9823283,
+      "z": 0.1160979
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Overhead_Smash",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 38,
+    "contactNormalized": 0.3089431,
+    "contact": {
+      "x": -0.2870488,
+      "y": 0.5619262,
+      "z": 0.3321401
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Serve_FH_Underhand",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 50,
+    "contactNormalized": 0.406504065,
+    "contact": {
+      "x": -0.272429168,
+      "y": 0.699278235,
+      "z": 0.631067038
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "ThirdShotDrop_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 24,
+    "contactNormalized": 0.195121944,
+    "contact": {
+      "x": -0.7714647,
+      "y": 1.35770285,
+      "z": 0.0300484374
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "ThirdShotDrop_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 35,
+    "contactNormalized": 0.284552842,
+    "contact": {
+      "x": -0.179050863,
+      "y": 1.06511354,
+      "z": 0.548383832
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Volley_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 24,
+    "contactNormalized": 0.195121944,
+    "contact": {
+      "x": -0.123883612,
+      "y": 0.716025531,
+      "z": 0.346563578
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Male",
+    "clip": "Volley_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 27,
+    "contactNormalized": 0.2195122,
+    "contact": {
+      "x": 0.377542347,
+      "y": 0.820563555,
+      "z": -0.158090144
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Dink_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 28,
+    "contactNormalized": 0.227642283,
+    "contact": {
+      "x": 0.15483512,
+      "y": 1.194648,
+      "z": 0.482844919
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Dink_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 62,
+    "contactNormalized": 0.504065037,
+    "contact": {
+      "x": 0.144762486,
+      "y": 0.869001269,
+      "z": 0.5772125
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Groundstroke_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 35,
+    "contactNormalized": 0.284552842,
+    "contact": {
+      "x": -0.325149059,
+      "y": 0.938408434,
+      "z": 0.541525662
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Groundstroke_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 36,
+    "contactNormalized": 0.292682916,
+    "contact": {
+      "x": 0.698178649,
+      "y": 1.009656,
+      "z": 0.266989529
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Overhead_Smash",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 38,
+    "contactNormalized": 0.3089431,
+    "contact": {
+      "x": -0.293882668,
+      "y": 0.6381371,
+      "z": 0.45115906
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Serve_FH_Underhand",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 50,
+    "contactNormalized": 0.406504065,
+    "contact": {
+      "x": -0.302047342,
+      "y": 0.754755259,
+      "z": 0.7091649
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "ThirdShotDrop_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 24,
+    "contactNormalized": 0.195121944,
+    "contact": {
+      "x": -0.7445099,
+      "y": 1.33988142,
+      "z": 0.136794746
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "ThirdShotDrop_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 35,
+    "contactNormalized": 0.284552842,
+    "contact": {
+      "x": -0.202115238,
+      "y": 1.07230425,
+      "z": 0.652514338
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Volley_BH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 24,
+    "contactNormalized": 0.195121944,
+    "contact": {
+      "x": -0.15489,
+      "y": 0.777237654,
+      "z": 0.452053249
+    },
+    "validServeSample": true
+  },
+  {
+    "gender": "Female",
+    "clip": "Volley_FH",
+    "length": 2.04166675,
+    "frameRate": 60.0,
+    "contactFrame": 27,
+    "contactNormalized": 0.2195122,
+    "contact": {
+      "x": 0.340716958,
+      "y": 0.8599556,
+      "z": 0.0334567651
+    },
+    "validServeSample": true
+  }
+]

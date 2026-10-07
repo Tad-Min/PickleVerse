@@ -1,0 +1,5 @@
+{
+  "name":"PickleVerse.Multiplayer.Editor",
+  "references":["PickleVerse.Multiplayer", "Unity.Services.Core.Editor", "Unity.Services.Core.Environments.Editor", "Unity.Services.DeploymentApi", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem", "Unity.Netcode.Runtime"],
+  "includePlatforms":["Editor"]
+}

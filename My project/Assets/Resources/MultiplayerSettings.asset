@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba1df49b7c2ef99488cf3b1143f712db, type: 3}
+  m_Name: MultiplayerSettings
+  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.MultiplayerSettings
+  environment: pickleverse-test
+  singlesQueue: PickleVerse-1v1
+  doublesQueue: PickleVerse-2v2
+  maximumLatencyMs: 150
+  reconnectSeconds: 30
+  playerPrefab: {fileID: 6737982789964891341, guid: 97c0c37e9d566b242a271bb4b63b2600, type: 3}
+  matchPrefab: {fileID: 6210019421029378209, guid: 31efa4cd7424ad04795b6558197fe602, type: 3}
+  maleModel: {fileID: 8771091787928289351, guid: be500c6a3c35d2b41b87e515b6f20cc1, type: 3}
+  femaleModel: {fileID: 984576011609549836, guid: 44381dbf61431744a9d94707b7a6e67c, type: 3}
+  paddlePrefab: {fileID: 3330954190348326903, guid: 541cf7a93c809ec4887d57da96f964ec, type: 3}
+  maleAnimator: {fileID: 9100000, guid: 7ae3b9b7428c55a4fb0403e936c6b94d, type: 2}
+  femaleAnimator: {fileID: 9100000, guid: f0a88718ac6d19f45b0bfc5a5076ffad, type: 2}
+  animations: {fileID: 11400000, guid: fe35316e6bf1d7843a20a072089419b1, type: 2}
+  ballMaterial: {fileID: 2100000, guid: 3ebd8847d4874934f88709eec886e617, type: 2}
+  trailMaterial: {fileID: 2100000, guid: 0f9387f2cc78dcb429ecc47008684a8e, type: 2}
+  teamAMaterial: {fileID: 2100000, guid: e397dfe1f3d508c49b0213981b712a92, type: 2}
+  teamBMaterial: {fileID: 2100000, guid: f6f8b9bf624015d47b414b94585b69d8, type: 2}

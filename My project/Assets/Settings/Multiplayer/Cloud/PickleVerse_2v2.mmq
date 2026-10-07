@@ -1,0 +1,44 @@
+{
+  "$schema": "https://ugs-config-schemas.unity3d.com/v1/matchmaker/matchmaker-queue.schema.json",
+  "name": "PickleVerse-2v2",
+  "enabled": true,
+  "maxPlayersPerTicket": 2,
+  "defaultPool": {
+    "name": "LowPing",
+    "enabled": true,
+    "timeoutSeconds": 120,
+    "matchHosting": {
+      "type": "MatchId"
+    },
+    "matchLogic": {
+      "name": "Rules",
+      "backfillEnabled": false,
+      "matchDefinition": {
+        "teams": [
+          {
+            "name": "Team",
+            "teamCount": {
+              "min": 2,
+              "max": 2
+            },
+            "playerCount": {
+              "min": 2,
+              "max": 2
+            },
+            "teamRules": []
+          }
+        ],
+        "matchRules": [
+          {
+            "name": "SameMeasuredRegion",
+            "type": "Equality",
+            "source": "Players.CustomData.region",
+            "enableRule": true,
+            "relaxations": []
+          }
+        ]
+      }
+    }
+  },
+  "filteredPools": []
+}

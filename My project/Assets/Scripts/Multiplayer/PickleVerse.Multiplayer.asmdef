@@ -1,0 +1,6 @@
+{
+  "name": "PickleVerse.Multiplayer",
+  "rootNamespace": "PickleVerse.Multiplayer",
+  "references": ["Unity.Netcode.Runtime", "Unity.Networking.Transport", "Unity.Services.Core", "Unity.Services.Core.Environments", "Unity.Services.Authentication", "Unity.Services.Multiplayer", "Unity.Services.QoS", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem", "Unity.Collections"],
+  "autoReferenced": true
+}

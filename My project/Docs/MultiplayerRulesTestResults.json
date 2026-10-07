@@ -1,0 +1,106 @@
+{
+  "passed": 25,
+  "failed": 0,
+  "results": [
+    {
+      "name": "SearchBeginsAtSixAndExpiresAfter120SearchingSeconds",
+      "passed": true
+    },
+    {
+      "name": "RequeueKeepsElapsedTime",
+      "passed": true
+    },
+    {
+      "name": "ChordOrderDoesNotChangeShot",
+      "passed": true
+    },
+    {
+      "name": "ChordOrderDoesNotChangeShot",
+      "passed": true
+    },
+    {
+      "name": "ChordOrderDoesNotChangeShot",
+      "passed": true
+    },
+    {
+      "name": "ChordOrderDoesNotChangeShot",
+      "passed": true
+    },
+    {
+      "name": "ChordOrderDoesNotChangeShot",
+      "passed": true
+    },
+    {
+      "name": "InvalidThreeKeyChordAndTwoModifiersNeverShoot",
+      "passed": true
+    },
+    {
+      "name": "ModifierUsedOnceAndFocusResetClearsChord",
+      "passed": true
+    },
+    {
+      "name": "AttackModifierWithCombinedShotIsCancelled",
+      "passed": true
+    },
+    {
+      "name": "AttackModifierWithCombinedShotIsCancelled",
+      "passed": true
+    },
+    {
+      "name": "AttackModifierWithCombinedShotIsCancelled",
+      "passed": true
+    },
+    {
+      "name": "OpeningDoublesServerIsSecondThenSideOutStartsFirstServer",
+      "passed": true
+    },
+    {
+      "name": "DoublesSecondServerStaysInLeftCourtUntilScoring",
+      "passed": true
+    },
+    {
+      "name": "DoublesSideOutFirstServerStartsRightEvenWithOddScore",
+      "passed": true
+    },
+    {
+      "name": "OnlyServingSideScoresAndTenAllRequiresTwelveTen",
+      "passed": true
+    },
+    {
+      "name": "ServeMustBeDiagonalPastKitchenAndLinesAreIn",
+      "passed": true
+    },
+    {
+      "name": "ServeAndReturnBothMustBounceBeforeVolley",
+      "passed": true
+    },
+    {
+      "name": "KitchenMomentumOverridesDeadBallAndScoresOnce",
+      "passed": true
+    },
+    {
+      "name": "IllegalTechniqueDoesNotTurnIntoAutomaticLegalShot",
+      "passed": true
+    },
+    {
+      "name": "SecondBounceAndBodyContactEndRallyOnce",
+      "passed": true
+    },
+    {
+      "name": "WrongReceiverStillFaultsAfterServeBounce",
+      "passed": true
+    },
+    {
+      "name": "BallMustCrossNetEntirelyBeforeContact",
+      "passed": true
+    },
+    {
+      "name": "SecondBounceOutsideStillLosesForReceiver",
+      "passed": true
+    },
+    {
+      "name": "ActualGroundContactOutsideSidelineIsOut",
+      "passed": true
+    }
+  ]
+}
