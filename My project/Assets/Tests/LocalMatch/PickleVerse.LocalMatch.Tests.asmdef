@@ -1,0 +1,6 @@
+{
+  "name": "PickleVerse.LocalMatch.Tests",
+  "references": ["PickleVerse.Rules", "PickleVerse.LocalMatch"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}
