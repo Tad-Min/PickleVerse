@@ -1,0 +1,5 @@
+{
+  "name": "PickleVerse.FrontEnd",
+  "rootNamespace": "PickleVerse.FrontEnd",
+  "references": ["PickleVerse.LocalMatch", "PickleVerse.CharacterMotion", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem"]
+}

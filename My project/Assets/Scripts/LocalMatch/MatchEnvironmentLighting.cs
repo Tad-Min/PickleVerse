@@ -3,7 +3,7 @@ using UnityEngine.Rendering;
 
 namespace PickleVerse.LocalMatch
 {
-    // The pre-match menu selects the sky. Points and games keep this choice.
+    // The mode-selection scene selects the sky. Points and games keep this choice.
     [DefaultExecutionOrder(-300)]
     public sealed class MatchEnvironmentLighting : MonoBehaviour
     {
@@ -16,7 +16,7 @@ namespace PickleVerse.LocalMatch
         public bool selectedNight;
         public bool IsNight { get; private set; }
 
-        void Awake() { Apply(selectedNight); }
+        void Awake() { selectedNight = BotMatchLaunchSettings.Night; Apply(selectedNight); }
 
         public void SelectForMatch(bool night) { selectedNight = night; Apply(night); }
 

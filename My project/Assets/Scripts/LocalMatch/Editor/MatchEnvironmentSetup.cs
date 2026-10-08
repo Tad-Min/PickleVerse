@@ -65,47 +65,9 @@ namespace PickleVerse.LocalMatch.Editor
                 data.FindProperty("m_AdditionalLightShadowsSupported").boolValue=true;
                 data.ApplyModifiedPropertiesWithoutUndo();AssetDatabase.SaveAssetIfDirty(asset);
             }
-            lighting.Apply(lighting.selectedNight);ConfigureSelection(match.hud);EditorUtility.SetDirty(lighting);EditorUtility.SetDirty(sun);
+            lighting.Apply(lighting.selectedNight);EditorUtility.SetDirty(lighting);EditorUtility.SetDirty(sun);
             EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
             return "BotMatch saved with two sky materials, a morning sun and four shadow-casting corner spotlights.";
-        }
-        static void ConfigureSelection(MatchHud hud)
-        {
-            var modal=(RectTransform)hud.modal.transform;
-            var row=modal.Find("EnvironmentChoice") as RectTransform;
-            if(!row){row=new GameObject("EnvironmentChoice",typeof(RectTransform)).GetComponent<RectTransform>();row.SetParent(modal,false);}
-            row.anchorMin=row.anchorMax=row.pivot=new Vector2(.5f,0);row.anchoredPosition=new Vector2(0,75);row.sizeDelta=new Vector2(540,80);
-            var label=row.Find("Caption")?.GetComponent<TMPro.TMP_Text>();
-            if(!label)
-            {
-                var rect=new GameObject("Caption",typeof(RectTransform),typeof(TMPro.TextMeshProUGUI)).GetComponent<RectTransform>();rect.SetParent(row,false);
-                rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(.5f,1);rect.anchoredPosition=Vector2.zero;rect.sizeDelta=new Vector2(540,24);
-                label=rect.GetComponent<TMPro.TMP_Text>();label.font=hud.modalTitle.font;label.fontSize=18;label.alignment=TMPro.TextAlignmentOptions.Center;label.color=new Color(.52f,.9f,.81f);label.raycastTarget=false;
-            }
-            label.text="BỐI CẢNH TRẬN ĐẤU";
-            hud.environmentChoice=row.gameObject;
-            hud.dayButton=ChoiceButton(row,"Day","Ban ngày",-132,hud,hud.SelectDay);
-            hud.nightButton=ChoiceButton(row,"Night","Ban đêm",132,hud,hud.SelectNight);
-            EditorUtility.SetDirty(hud);
-        }
-        static UnityEngine.UI.Button ChoiceButton(RectTransform parent,string name,string text,float x,MatchHud hud,UnityEngine.Events.UnityAction action)
-        {
-            var rect=parent.Find(name) as RectTransform;
-            if(!rect){rect=new GameObject(name,typeof(RectTransform),typeof(UnityEngine.UI.Image),typeof(UnityEngine.UI.Button)).GetComponent<RectTransform>();rect.SetParent(parent,false);}
-            rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(.5f,0);rect.anchoredPosition=new Vector2(x,0);rect.sizeDelta=new Vector2(248,44);
-            var image=rect.GetComponent<UnityEngine.UI.Image>();image.color=new Color(.10f,.29f,.32f,.98f);image.raycastTarget=true;
-            var button=rect.GetComponent<UnityEngine.UI.Button>();button.targetGraphic=image;
-            var colors=button.colors;colors.disabledColor=new Color(.75f,1f,.90f,1);button.colors=colors;
-            for(int i=button.onClick.GetPersistentEventCount()-1;i>=0;i--)UnityEditor.Events.UnityEventTools.RemovePersistentListener(button.onClick,i);
-            UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick,action);
-            var label=rect.Find("Label")?.GetComponent<TMPro.TMP_Text>();
-            if(!label)
-            {
-                var child=new GameObject("Label",typeof(RectTransform),typeof(TMPro.TextMeshProUGUI)).GetComponent<RectTransform>();child.SetParent(rect,false);
-                child.anchorMin=Vector2.zero;child.anchorMax=Vector2.one;child.offsetMin=child.offsetMax=Vector2.zero;
-                label=child.GetComponent<TMPro.TMP_Text>();label.font=hud.modalTitle.font;label.fontSize=18;label.color=Color.white;label.alignment=TMPro.TextAlignmentOptions.Center;label.raycastTarget=false;
-            }
-            label.text=text;return button;
         }
         static Material SkyMaterial(string image,string name,float exposure,float rotation)
         {

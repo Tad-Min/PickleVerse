@@ -8,9 +8,7 @@ namespace PickleVerse.LocalMatch
     {
         public TMP_Text scoreboard, status, timing, selection, modalTitle, modalBody, serveClock, difficultyLabel;
         public GameObject modal, help, touchControls, shotPanel;
-        public Button continueButton, restartButton;
-        public GameObject environmentChoice;
-        public UnityEngine.UI.Button dayButton, nightButton;
+        public Button continueButton, restartButton, modeButton;
         BotMatch match;
         bool helpPaused;
         public void Bind(BotMatch owner)
@@ -39,23 +37,15 @@ namespace PickleVerse.LocalMatch
             modal.SetActive(show);
             if (!show) return;
             bool intro = match.Phase == MatchPhase.Intro;
-            ((RectTransform)modal.transform).sizeDelta=new Vector2(760,intro?430:370);
-            modalBody.rectTransform.anchoredPosition=new Vector2(0,intro?60:6);
-            modalBody.rectTransform.sizeDelta=new Vector2(710,intro?174:235);
-            modalBody.fontSize=intro?18:19;
-            if(environmentChoice)environmentChoice.SetActive(intro && !match.Paused);
-            if(intro && dayButton && nightButton)
-            {
-                var environment=match.GetComponent<MatchEnvironmentLighting>();
-                bool night=environment && environment.selectedNight;
-                dayButton.interactable=night;nightButton.interactable=!night;
-                dayButton.GetComponentInChildren<TMP_Text>().text=night?"Ban ngày":"Ban ngày (đã chọn)";
-                nightButton.GetComponentInChildren<TMP_Text>().text=night?"Ban đêm (đã chọn)":"Ban đêm";
-            }
+            ((RectTransform)modal.transform).sizeDelta=new Vector2(760,370);
+            modalBody.rectTransform.anchoredPosition=new Vector2(0,6);
+            modalBody.rectTransform.sizeDelta=new Vector2(710,235);
+            modalBody.fontSize=19;
             modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI BOT" : match.Phase == MatchPhase.MatchOver ? match.Message : match.Phase == MatchPhase.Timeout ? "TIME-OUT" : "KẾT THÚC GAME";
-            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài Kitchen • 11 điểm, cách 2 • Thắng 2/3 game\n\nChọn bối cảnh bên dưới, rồi nhấn Vào sân / Enter." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi time-out trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 time-out trong game này." : match.Phase == MatchPhase.MatchOver ? "Game thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố rally: " + match.TotalRallies + " • Rally dài nhất: " + match.LongestRally + " cú\nChơi lại để luyện timing, combo và vị trí chân." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; bot đồng ý.\nĐổi sân giữa các game và tại 6 điểm trong game quyết định.";
+            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài Kitchen • 11 điểm, cách 2 • Thắng 2/3 game\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi time-out trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 time-out trong game này." : match.Phase == MatchPhase.MatchOver ? "Game thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố rally: " + match.TotalRallies + " • Rally dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; bot đồng ý.\nĐổi sân giữa các game và tại 6 điểm trong game quyết định.";
             continueButton.GetComponentInChildren<TMP_Text>().text=intro?"Vào sân / Enter":"Enter / Tiếp tục";
-            ((RectTransform)continueButton.transform).anchoredPosition=new Vector2(intro?0:-120,20);
+            ((RectTransform)continueButton.transform).anchoredPosition=new Vector2(-245,20);
+            ((RectTransform)restartButton.transform).anchoredPosition=new Vector2(0,20);
             continueButton.gameObject.SetActive(match.Phase != MatchPhase.MatchOver);
             restartButton.gameObject.SetActive(!intro);
         }
@@ -70,13 +60,6 @@ namespace PickleVerse.LocalMatch
             else if(helpPaused && match && match.Paused){match.TogglePause();helpPaused=false;}
         }
         public void ToggleTouch() { touchControls.SetActive(!touchControls.activeSelf); }
-        public void Difficulty(int level) { if (match) match.SetDifficulty(level); }
-        public void SelectDay() { SelectEnvironment(false); }
-        public void SelectNight() { SelectEnvironment(true); }
-        void SelectEnvironment(bool night)
-        {
-            if(!match || match.Phase!=MatchPhase.Intro || match.Paused)return;
-            match.GetComponent<MatchEnvironmentLighting>()?.SelectForMatch(night);
-        }
+        public void ChooseMode() { UnityEngine.SceneManagement.SceneManager.LoadScene("ModeSelection"); }
     }
 }
