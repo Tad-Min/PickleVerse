@@ -76,6 +76,7 @@ namespace PickleVerse.LocalMatch.Editor
             BallPresentationSetup.Configure(match);
             BotMatchIntroSetup.Configure(match);
             if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new InvalidOperationException("Failed saving BotMatch scene.");
+            MatchEnvironmentSetup.Configure();
             if (!EditorBuildSettings.scenes.Any(s => s.path == ScenePath)) EditorBuildSettings.scenes = EditorBuildSettings.scenes.Concat(new[] { new EditorBuildSettingsScene(ScenePath, true) }).ToArray();
             AssetDatabase.SaveAssets(); Selection.activeGameObject = match.gameObject;
             if (SceneView.lastActiveSceneView) SceneView.lastActiveSceneView.Frame(new Bounds(Vector3.zero, new Vector3(18,6,24)), false);
