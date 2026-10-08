@@ -1,0 +1,192 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 577cb0717dd6abc42be051c9851d9c88, type: 3}
+  m_Name: MaleMotion
+  m_EditorClassIdentifier: PickleVerse.CharacterMotion::PickleVerse.CharacterMotion.CharacterMotionProfile
+  mesh: {fileID: 4300000, guid: e813a63f3587aee479d287d934e164c3, type: 2}
+  foreheadMesh: {fileID: 0}
+  foreheadMaterial: {fileID: 0}
+  originalVertexCount: 16310
+  originalBoneCount: 59
+  originalBoneNames:
+  - mixamorig:Hips
+  - mixamorig:Spine
+  - mixamorig:Spine1
+  - mixamorig:Spine2
+  - mixamorig:Neck
+  - mixamorig:Head
+  - mixamorig:HeadTop_End
+  - headfront
+  - mixamorig:LeftShoulder
+  - mixamorig:LeftArm
+  - mixamorig:LeftForeArm
+  - mixamorig:LeftHand
+  - mixamorig:LeftHandMiddle4
+  - mixamorig:RightShoulder
+  - mixamorig:RightArm
+  - mixamorig:RightForeArm
+  - mixamorig:RightHand
+  - mixamorig:RightHandMiddle4
+  - mixamorig:LeftUpLeg
+  - mixamorig:LeftLeg
+  - mixamorig:LeftFoot
+  - mixamorig:LeftToeBase
+  - mixamorig:LeftToe_End
+  - mixamorig:RightUpLeg
+  - mixamorig:RightLeg
+  - mixamorig:RightFoot
+  - mixamorig:RightToeBase
+  - mixamorig:RightToe_End
+  - mixamorig:LeftHandPinky1
+  - mixamorig:LeftHandPinky2
+  - mixamorig:LeftHandPinky3
+  - mixamorig:LeftHandRing1
+  - mixamorig:LeftHandRing2
+  - mixamorig:LeftHandRing3
+  - mixamorig:LeftHandMiddle1
+  - mixamorig:LeftHandMiddle2
+  - mixamorig:LeftHandMiddle3
+  - mixamorig:LeftHandIndex1
+  - mixamorig:LeftHandIndex2
+  - mixamorig:LeftHandIndex3
+  - mixamorig:LeftHandThumb1
+  - mixamorig:LeftHandThumb2
+  - mixamorig:LeftHandThumb3
+  - mixamorig:RightHandPinky1
+  - mixamorig:RightHandPinky2
+  - mixamorig:RightHandPinky3
+  - mixamorig:RightHandRing1
+  - mixamorig:RightHandRing2
+  - mixamorig:RightHandRing3
+  - mixamorig:RightHandMiddle1
+  - mixamorig:RightHandMiddle2
+  - mixamorig:RightHandMiddle3
+  - mixamorig:RightHandIndex1
+  - mixamorig:RightHandIndex2
+  - mixamorig:RightHandIndex3
+  - mixamorig:RightHandThumb1
+  - mixamorig:RightHandThumb2
+  - mixamorig:RightHandThumb3
+  - PKV_PaddleSocket_R
+  joints:
+  - name: HairTuft_0
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: 0.015882371, y: 0.18031152, z: 0.16670568}
+    endOffset: {x: 0.011252586, y: 0.14650322, z: 0.011362895}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.013460701, y: 1.585, z: 0.11924806}
+    meshEnd: {x: 0.01641549, y: 1.73, z: 0.14542447}
+  - name: HairTuft_1
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: 0.078405745, y: 0.17318526, z: 0.13937077}
+    endOffset: {x: 0.024977222, y: 0.14493892, z: 0.0053625554}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.074286796, y: 1.585, z: 0.08750945}
+    meshEnd: {x: 0.09059365, y: 1.73, z: 0.106718846}
+  - name: HairTuft_2
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: 0.11999809, y: 0.16128601, z: 0.051663578}
+    endOffset: {x: 0.034107246, y: 0.14232688, z: -0.013890244}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.11043323, y: 1.585, z: -0.003361346}
+    meshEnd: {x: 0.13467467, y: 1.73, z: -0.0040992023}
+  - name: HairTuft_3
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: 0.099964835, y: 0.15460655, z: -0.026622597}
+    endOffset: {x: 0.02970972, y: 0.14086065, z: -0.031075016}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.085539035, y: 1.585, z: -0.080529675}
+    meshEnd: {x: 0.1043159, y: 1.73, z: -0.09820692}
+  - name: HairTuft_4
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: 0.018735865, y: 0.15596695, z: -0.06781192}
+    endOffset: {x: 0.011878962, y: 0.14115931, z: -0.04011658}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: 0.0017525358, y: 1.585, z: -0.11625613}
+    meshEnd: {x: 0.0021372389, y: 1.73, z: -0.14177577}
+  - name: HairTuft_5
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: -0.07106922, y: 0.16451111, z: -0.04497807}
+    endOffset: {x: -0.007834345, y: 0.14303485, z: -0.03510427}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.08663475, y: 1.585, z: -0.087152384}
+    meshEnd: {x: -0.10565213, y: 1.73, z: -0.1062834}
+  - name: HairTuft_6
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: -0.09622227, y: 0.17591573, z: 0.048935276}
+    endOffset: {x: -0.013355754, y: 0.14553832, z: -0.014489144}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.10595653, y: 1.585, z: 0.008811813}
+    meshEnd: {x: -0.12921529, y: 1.73, z: 0.010746113}
+  - name: HairTuft_7
+    anchor: mixamorig:Head
+    parent: -1
+    localPosition: {x: -0.061463982, y: 0.17946613, z: 0.10669446}
+    endOffset: {x: -0.005725883, y: 0.14631766, z: -0.0018102974}
+    part: 1
+    stiffness: 650
+    damping: 16
+    maximumAngle: 5
+    gravityScale: 0
+    blendShapeX: -1
+    blendShapeZ: -1
+    meshPivot: {x: -0.067611866, y: 1.585, z: 0.064368576}
+    meshEnd: {x: -0.0824535, y: 1.73, z: 0.07849826}
