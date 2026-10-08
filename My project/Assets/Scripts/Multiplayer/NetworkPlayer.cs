@@ -1,201 +1,267 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PickleVerse.LocalMatch;
+using LocalShotInput = PickleVerse.LocalMatch.ShotInput;
 
 namespace PickleVerse.Multiplayer
 {
     [Serializable] public struct PlayerFrame : INetworkSerializable, IEquatable<PlayerFrame>
     {
-        public Vector3 position;
+        public Vector3 position, velocity;
         public uint sequence;
         public Vector2 movement;
         public bool running;
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        { serializer.SerializeValue(ref position); serializer.SerializeValue(ref sequence); serializer.SerializeValue(ref movement); serializer.SerializeValue(ref running); }
-        public bool Equals(PlayerFrame other) => position==other.position && sequence==other.sequence && movement==other.movement && running==other.running;
+        {
+            serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity);
+            serializer.SerializeValue(ref sequence); serializer.SerializeValue(ref movement);
+            serializer.SerializeValue(ref running);
+        }
+        public bool Equals(PlayerFrame other) => position == other.position && velocity == other.velocity &&
+            sequence == other.sequence && movement == other.movement && running == other.running;
     }
+
     public sealed class NetworkPlayer : NetworkBehaviour
     {
         public static readonly List<NetworkPlayer> All = new List<NetworkPlayer>();
         public NetworkVariable<FixedString64Bytes> Identity = new NetworkVariable<FixedString64Bytes>();
         public NetworkVariable<int> Team = new NetworkVariable<int>(), Index = new NetworkVariable<int>();
+        // Replicate the physical end independently of the match object's spawn order.
+        public NetworkVariable<int> CourtEnd = new NetworkVariable<int>(-1);
         public NetworkVariable<bool> Female = new NetworkVariable<bool>();
         public NetworkVariable<PlayerFrame> Frame = new NetworkVariable<PlayerFrame>();
+        public MatchActor Actor { get; private set; }
         public Animator Animator { get; private set; }
-        public Transform RightHand { get; private set; }
-        public Transform LeftHand { get; private set; }
-        public Transform PaddleContact { get; private set; }
-        public Vector3 Velocity { get; private set; }
-        public bool Connected = true;
-        struct Move { public uint sequence; public Vector2 axes; public bool run; }
-        readonly Queue<Move> received = new Queue<Move>();
-        readonly List<Move> predicted = new List<Move>();
-        readonly ShotChord chord = new ShotChord();
-        uint sequence, lastReceived;
-        double rateWindow; int receivedThisWindow;
-        Vector3 previous;
-        float swingUntil;
-        string animationState;
-        bool initialized;
-        RoomMember initialMember; int initialIndex;
-        public Vector3 ContactPosition => PaddleContact != null ? PaddleContact.position : transform.position + transform.forward*.7f + Vector3.up*.9f;
-        public Vector3 WristPosition => RightHand != null ? RightHand.position : ContactPosition;
+        public Transform RightHand => Actor ? Actor.hand : null;
+        public Transform LeftHand => Actor ? Actor.leftHand : null;
+        public Transform PaddleContact => Actor ? Actor.paddleFace : null;
+        public Vector3 Velocity => IsServer && Actor ? Actor.Velocity : IsOwner ? predictedVelocity : Frame.Value.velocity;
+        public Vector3 ContactPosition => PaddleContact ? PaddleContact.position : transform.position + transform.forward * .7f + Vector3.up * .9f;
+        public Vector3 WristPosition => RightHand ? RightHand.position : ContactPosition;
         public string Gender => Female.Value ? "Female" : "Male";
+        public bool Connected = true;
+
+        struct Move { public uint sequence; public Vector2 axes; public bool run; public float dt; }
+        readonly List<Move> predicted = new List<Move>();
+        LocalShotInput shotInput = new LocalShotInput();
+        Vector3 predictedVelocity;
+        Vector2 serverAxes;
+        bool serverRun;
+        uint sequence, lastReceived;
+        double rateWindow;
+        int receivedThisWindow;
+        RoomMember initialMember;
+        int initialIndex;
+
+        public void Initialize(RoomMember member, int index, Vector3 position)
+        { initialMember = member; initialIndex = index; transform.position = position; }
 
         public override void OnNetworkSpawn()
         {
-            if(IsServer && initialMember!=null)
+            if (IsServer && initialMember != null)
             {
-                Identity.Value=new FixedString64Bytes(initialMember.id); Team.Value=initialMember.team; Index.Value=initialIndex;
-                Female.Value=initialMember.gender=="Female"; Frame.Value=new PlayerFrame { position=transform.position };
+                Identity.Value = new FixedString64Bytes(initialMember.id);
+                Team.Value = initialMember.team; Index.Value = initialIndex;
+                Female.Value = initialMember.gender == "Female";
+                CourtEnd.Value = transform.position.z < 0 ? -1 : 1;
+                Frame.Value = new PlayerFrame { position = transform.position };
             }
-            All.Add(this); previous=transform.position; sequence=Frame.Value.sequence;
-            BuildVisual(); Frame.OnValueChanged+=Reconcile;
-            if(IsOwner) chord.ModifierMode=(ModifierMode)PlayerPrefs.GetInt("PKV_Modifier",0);
+            All.Add(this); sequence = Frame.Value.sequence;
+            BuildVisual();
+            Frame.OnValueChanged += Reconcile;
+            CourtEnd.OnValueChanged += EndChanged;
         }
-        public override void OnNetworkDespawn() { All.Remove(this); Frame.OnValueChanged-=Reconcile; }
-        public override void OnGainedOwnership() { sequence=Frame.Value.sequence; predicted.Clear(); chord.Reset(); }
-        public void Initialize(RoomMember member,int index,Vector3 position)
+        public override void OnNetworkDespawn()
         {
-            initialMember=member; initialIndex=index; transform.position=position;
+            All.Remove(this); Frame.OnValueChanged -= Reconcile;
+            CourtEnd.OnValueChanged -= EndChanged;
         }
+        public override void OnGainedOwnership()
+        { sequence = Frame.Value.sequence; ResetInput(); }
+
         void BuildVisual()
         {
-            if(initialized) return; initialized=true;
-            var settings=MultiplayerApp.Instance.Settings;
-            var visual=Instantiate(Female.Value ? settings.femaleModel : settings.maleModel,transform);
-            visual.name="CharacterVisual"; visual.transform.localPosition=Vector3.zero; visual.transform.localRotation=Quaternion.identity;
-            foreach(var c in visual.GetComponentsInChildren<Collider>()) c.enabled=false;
-            Animator=visual.GetComponent<Animator>() ?? visual.AddComponent<Animator>();
-            Animator.runtimeAnimatorController=Female.Value?settings.femaleAnimator:settings.maleAnimator;
-            Animator.applyRootMotion=false;
-            PickleVerse.CharacterMotion.CharacterSecondaryMotion.Attach(visual,Female.Value);
-            RightHand=visual.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name.EndsWith("RightHand"));
-            LeftHand=visual.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name.EndsWith("LeftHand"));
-            if(RightHand!=null)
-            {
-                var paddle=Instantiate(settings.paddlePrefab,RightHand);
-                paddle.name="Paddle"; paddle.transform.localPosition=new Vector3(0,.03f,.02f);
-                paddle.transform.localRotation=Quaternion.Euler(0,0,90);
-                foreach(var c in paddle.GetComponentsInChildren<Collider>()) c.enabled=false;
-                foreach(var r in paddle.GetComponentsInChildren<Rigidbody>()) Destroy(r);
-                PaddleContact=new GameObject("PaddleContact").transform; PaddleContact.SetParent(RightHand,false);
-                PaddleContact.localPosition=new Vector3(0,.14f,0);
-            }
-            transform.rotation=Quaternion.Euler(0,Team.Value==0?0:180,0);
-            PlayAnimation("Idle_Ready",1);
-            var marker=GameObject.CreatePrimitive(PrimitiveType.Cylinder); marker.name="TeamMarker"; marker.transform.SetParent(transform,false);
-            marker.transform.localPosition=new Vector3(0,.025f,0); marker.transform.localScale=new Vector3(.8f,.02f,.8f);
+            var settings = MultiplayerApp.Instance.Settings;
+            var prefab = Female.Value ? settings.femaleActorPrefab : settings.maleActorPrefab;
+            if (!prefab) throw new InvalidOperationException("Missing BotMatch actor prefab in MultiplayerSettings.");
+            var instance = Instantiate(prefab, transform, false);
+            instance.name = "CharacterVisual";
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            Actor = instance.GetComponent<MatchActor>();
+            if (!Actor) throw new InvalidOperationException("The multiplayer actor prefab must contain MatchActor.");
+            foreach (var collider in instance.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+            foreach (var body in instance.GetComponentsInChildren<Rigidbody>(true)) Destroy(body);
+            foreach (var animator in instance.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
+            Animator = Actor.visual.GetComponent<Animator>();
+            Actor.playerId = Female.Value ? 0 : 1;
+            Actor.Initialize();
+            ResetActor(transform.position, CourtEnd.Value);
+            Actor.RefreshPose();
+
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = "TeamMarker"; marker.transform.SetParent(transform, false);
+            marker.transform.localPosition = new Vector3(0, .025f, 0);
+            marker.transform.localScale = new Vector3(.8f, .02f, .8f);
             Destroy(marker.GetComponent<Collider>());
-            marker.GetComponent<Renderer>().sharedMaterial=Team.Value==0?settings.teamAMaterial:settings.teamBMaterial;
+            marker.GetComponent<Renderer>().sharedMaterial = Team.Value == 0 ? settings.teamAMaterial : settings.teamBMaterial;
+        }
+        bool CanMove()
+        {
+            var match = NetworkMatch.Instance;
+            return match && match.Started.Value && !match.Paused.Value && !match.Finished.Value &&
+                !match.BetweenGames.Value && !match.BetweenPoints.Value && Connected;
         }
         void Update()
         {
-            if(!IsSpawned || MultiplayerApp.Instance==null) return;
-            if(!IsOwner && !IsServer) transform.position=Vector3.Lerp(transform.position,Frame.Value.position,1-Mathf.Exp(-18*Time.deltaTime));
-            if(Time.time>=swingUntil) Locomotion();
-            if(!IsOwner || NetworkMatch.Instance==null || NetworkMatch.Instance.Paused.Value || NetworkMatch.Instance.Finished.Value) return;
-            var keyboard=Keyboard.current; if(keyboard==null) { chord.Reset(); return; }
-            chord.Modifier(keyboard.uKey.wasPressedThisFrame,keyboard.iKey.wasPressedThisFrame,keyboard.uKey.isPressed,keyboard.iKey.isPressed);
-            int mask=(keyboard.jKey.isPressed?1:0)|(keyboard.kKey.isPressed?2:0)|(keyboard.lKey.isPressed?4:0);
-            var intent=chord.Step(mask);
-            if(intent.kind!=ShotKind.None) ShotServerRpc((int)intent.kind,intent.attack,intent.crossCourt);
+            if (!IsSpawned || !Actor || !MultiplayerApp.Instance) return;
+            var match = NetworkMatch.Instance;
+            if (!IsServer)
+            {
+                if (!IsOwner)
+                    transform.position = Vector3.Lerp(transform.position, Frame.Value.position, 1 - Mathf.Exp(-18 * Time.deltaTime));
+                if (match && !match.Paused.Value)
+                    Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.Value.running, Time.deltaTime);
+            }
+            if (!IsOwner) return;
+            var keyboard = Keyboard.current;
+            if (!CanMove() || keyboard == null || !Application.isFocused)
+            { shotInput = new LocalShotInput(); return; }
+            int mask = (Held(keyboard.jKey) ? 1 : 0) | (Held(keyboard.kKey) ? 2 : 0) |
+                (Held(keyboard.lKey) ? 4 : 0) | (Held(keyboard.uKey) ? 8 : 0) | (Held(keyboard.iKey) ? 16 : 0);
+            bool serve = match.WaitingServe.Value && match.ServerTeam.Value == Team.Value && match.ServerIndex.Value == Index.Value;
+            if (shotInput.Tick(mask, keyboard.backspaceKey.wasPressedThisFrame, serve, out var local))
+            {
+                var intent = BotMatchGameplayService.FromLocal(local);
+                ShotServerRpc((int)intent.kind, intent.attack, intent.crossCourt);
+            }
+        }
+        static bool Held(UnityEngine.InputSystem.Controls.KeyControl key) => key.isPressed || key.wasPressedThisFrame;
+        static bool LocalRun()
+        {
+            var keyboard = Keyboard.current;
+            return keyboard != null && Application.isFocused &&
+                (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed || keyboard.spaceKey.isPressed);
+        }
+        static Vector2 LocalAxes()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null || !Application.isFocused) return Vector2.zero;
+            return Vector2.ClampMagnitude(new Vector2(
+                (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1 : 0),
+                (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1 : 0)), 1);
         }
         void FixedUpdate()
         {
-            if(!IsSpawned) return;
-            var match=NetworkMatch.Instance;
-            bool canMove=match!=null && !match.Paused.Value && !match.Finished.Value && Connected;
-            if(IsOwner && canMove)
+            if (!IsSpawned || !IsOwner || !Actor) return;
+            if (!CanMove()) { predicted.Clear(); predictedVelocity = Vector3.zero; return; }
+            var move = new Move { sequence = ++sequence, axes = LocalAxes(), run = LocalRun(), dt = Time.fixedDeltaTime };
+            if (!IsServer)
             {
-                var keyboard=Keyboard.current;
-                Vector2 axes=Vector2.zero; bool run=false;
-                if(keyboard!=null && Application.isFocused)
-                {
-                    axes=new Vector2((keyboard.dKey.isPressed||keyboard.rightArrowKey.isPressed?1:0)-(keyboard.aKey.isPressed||keyboard.leftArrowKey.isPressed?1:0),
-                        (keyboard.wKey.isPressed||keyboard.upArrowKey.isPressed?1:0)-(keyboard.sKey.isPressed||keyboard.downArrowKey.isPressed?1:0));
-                    axes=Vector2.ClampMagnitude(axes,1); run=keyboard.leftShiftKey.isPressed||keyboard.rightShiftKey.isPressed||keyboard.spaceKey.isPressed;
-                }
-                var move=new Move { sequence=++sequence,axes=axes,run=run };
-                if(!IsServer) { transform.position=Advance(transform.position,axes,run); predicted.Add(move); if(predicted.Count>150) predicted.RemoveAt(0); }
-                MoveServerRpc(move.sequence,move.axes,move.run);
+                var position = transform.position;
+                Predict(ref position, ref predictedVelocity, move);
+                transform.position = position;
+                predicted.Add(move); if (predicted.Count > 150) predicted.RemoveAt(0);
             }
-            if(IsServer && canMove && received.Count>0)
-            {
-                var move=received.Dequeue();
-                transform.position=Advance(transform.position,move.axes,move.run);
-                Frame.Value=new PlayerFrame { position=transform.position,sequence=move.sequence,movement=move.axes,running=move.run };
-            }
-            Velocity=(transform.position-previous)/Time.fixedDeltaTime; previous=transform.position;
-            if(IsServer && canMove) match?.Rules?.CheckMomentum(Team.Value,Index.Value,transform.position,Velocity);
+            MoveServerRpc(move.sequence, move.axes, move.run);
         }
-        public Vector3 Advance(Vector3 position,Vector2 movement,bool run)
+        void Predict(ref Vector3 position, ref Vector3 velocity, Move move)
         {
-            float facing=PickleballRules.Facing(Team.Value);
-            position+=new Vector3(movement.x*facing,0,movement.y*facing)*(run?4.6f:2.8f)*Time.fixedDeltaTime;
-            position.x=Mathf.Clamp(position.x,-5.5f,5.5f);
-            position.z=Team.Value==0?Mathf.Clamp(position.z,-9.5f,-.28f):Mathf.Clamp(position.z,.28f,9.5f);
-            position.y=0;
-            return position;
+            MatchMovement.Step(ref position, ref velocity, move.axes * -CourtEnd.Value, move.run,
+                Actor.Swinging, CourtEnd.Value, move.dt, Actor.walkSpeed, Actor.runSpeed);
         }
-        [ServerRpc] void MoveServerRpc(uint seq,Vector2 axes,bool run)
+        [ServerRpc] void MoveServerRpc(uint seq, Vector2 axes, bool run)
         {
-            if(float.IsNaN(axes.x)||float.IsNaN(axes.y)||float.IsInfinity(axes.x)||float.IsInfinity(axes.y)||seq<=lastReceived) return;
-            if(Time.realtimeSinceStartupAsDouble-rateWindow>=1) { rateWindow=Time.realtimeSinceStartupAsDouble; receivedThisWindow=0; }
-            if(++receivedThisWindow>65) return;
-            lastReceived=seq; if(received.Count>=6) received.Dequeue();
-            received.Enqueue(new Move { sequence=seq,axes=Vector2.ClampMagnitude(axes,1),run=run });
+            if (float.IsNaN(axes.x) || float.IsNaN(axes.y) || float.IsInfinity(axes.x) || float.IsInfinity(axes.y) || seq <= lastReceived) return;
+            if (Time.realtimeSinceStartupAsDouble - rateWindow >= 1) { rateWindow = Time.realtimeSinceStartupAsDouble; receivedThisWindow = 0; }
+            if (++receivedThisWindow > 65) return;
+            lastReceived = seq;
+            serverAxes = CanMove() ? Vector2.ClampMagnitude(axes, 1) : Vector2.zero;
+            serverRun = CanMove() && run;
         }
-        [ServerRpc] void ShotServerRpc(int kind,bool attack,bool crossCourt)
+        public void Simulate(float dt, bool canMove)
         {
-            if(kind<1||kind>(int)ShotKind.Punch) return;
-            NetworkMatch.Instance?.TrySwing(this,new ShotIntent { kind=(ShotKind)kind,attack=attack,crossCourt=crossCourt });
+            if (!IsServer || !Actor) return;
+            bool moving = canMove && Connected;
+            Actor.Step(moving ? serverAxes * -CourtEnd.Value : Vector2.zero, moving && serverRun, dt, moving);
+            // MatchActor owns its child root; publish its position on the NetworkObject root.
+            var position = Actor.transform.position;
+            transform.position = position; Actor.transform.localPosition = Vector3.zero;
+            Frame.Value = new PlayerFrame { position = position, velocity = Actor.Velocity, sequence = lastReceived,
+                movement = moving ? serverAxes : Vector2.zero, running = moving && serverRun };
         }
-        void Reconcile(PlayerFrame old,PlayerFrame frame)
+        [ServerRpc] void ShotServerRpc(int kind, bool attack, bool crossCourt)
         {
-            if(!IsOwner||IsServer) return;
-            predicted.RemoveAll(p=>p.sequence<=frame.sequence);
-            var reconciled=frame.position;
-            foreach(var p in predicted) reconciled=Advance(reconciled,p.axes,p.run);
-            transform.position=reconciled;
+            if (kind < 1 || kind > (int)ShotKind.Punch) return;
+            NetworkMatch.Instance?.TrySwing(this, new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt });
+        }
+        void Reconcile(PlayerFrame old, PlayerFrame frame)
+        {
+            if (!IsOwner || IsServer || !Actor) return;
+            predicted.RemoveAll(move => move.sequence <= frame.sequence);
+            var position = frame.position; var velocity = frame.velocity;
+            foreach (var move in predicted) Predict(ref position, ref velocity, move);
+            transform.position = position; predictedVelocity = velocity;
+        }
+        void EndChanged(int old, int end)
+        {
+            transform.rotation = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
+            if (Actor) { Actor.end = end; Actor.transform.localRotation = Quaternion.identity; }
+        }
+        void ResetActor(Vector3 position, int end)
+        {
+            transform.position = position;
+            transform.rotation = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
+            if (!Actor) return;
+            Actor.ResetAt(position, end);
+            Actor.transform.localPosition = Vector3.zero;
+            Actor.transform.localRotation = Quaternion.identity;
         }
         public void Teleport(Vector3 position)
         {
-            if(!IsServer) return;
-            received.Clear(); transform.position=position; previous=position;
-            Frame.Value=new PlayerFrame { position=position,sequence=lastReceived };
-            TeleportClientRpc(position,lastReceived);
+            if (!IsServer) return;
+            int end = position.z < 0 ? -1 : 1;
+            CourtEnd.Value = end; ResetInput(); ResetActor(position, end);
+            Frame.Value = new PlayerFrame { position = position, sequence = lastReceived };
+            TeleportClientRpc(position, lastReceived, end);
         }
-        [ClientRpc] void TeleportClientRpc(Vector3 position,uint acknowledged)
-        { predicted.Clear(); sequence=Math.Max(sequence,acknowledged); transform.position=position; previous=position; chord.Reset(); }
-        public void Swing(ShotKind kind,bool backhand,float duration)
+        [ClientRpc] void TeleportClientRpc(Vector3 position, uint acknowledged, int end)
         {
-            var state=ShotAnimationLibrary.State(kind,backhand);
-            var clip=Animator.runtimeAnimatorController.animationClips.FirstOrDefault(c=>c.name==state);
-            float speed=clip!=null?clip.length/duration:1;
-            swingUntil=Time.time+duration; PlayAnimation(state,speed,true);
+            if (IsServer) return;
+            ResetInput(); sequence = Math.Max(sequence, acknowledged);
+            ResetActor(position, end); Actor.RefreshPose();
         }
-        void Locomotion()
+        public void BeginSwing(ShotIntent intent, Vector3 predictedBall)
         {
-            Vector2 move=IsOwner?LocalAxes():Frame.Value.movement;
-            string state=move.sqrMagnitude<.01f?"Idle_Ready":move.y<-.2f?"Backpedal":Mathf.Abs(move.x)>Mathf.Abs(move.y)?(move.x>0?"Shuffle_Right":"Shuffle_Left"):Frame.Value.running?"Run_Forward":"Walk_Forward";
-            PlayAnimation(state,1);
+            if (!IsServer || !Actor || !Actor.Swing(BotMatchGameplayService.ToLocal(intent), predictedBall)) return;
+            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall);
         }
-        Vector2 LocalAxes()
+        [ClientRpc] void SwingClientRpc(int kind, bool attack, bool crossCourt, Vector3 predictedBall)
         {
-            var k=Keyboard.current; if(k==null) return Vector2.zero;
-            return new Vector2((k.dKey.isPressed?1:0)-(k.aKey.isPressed?1:0),(k.wKey.isPressed?1:0)-(k.sKey.isPressed?1:0));
+            if (IsServer || !Actor) return;
+            Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall);
         }
-        void PlayAnimation(string state,float speed,bool restart=false)
+        public void ConsumeContact(bool volley)
+        { if (!IsServer || !Actor) return; Actor.ConsumeContact(volley); ContactClientRpc(volley); }
+        [ClientRpc] void ContactClientRpc(bool volley)
+        { if (!IsServer && Actor) Actor.ConsumeContact(volley); }
+        public void SplitStep()
+        { if (!IsServer || !Actor) return; Actor.SplitStep(); SplitStepClientRpc(); }
+        [ClientRpc] void SplitStepClientRpc()
+        { if (!IsServer && Actor) Actor.SplitStep(); }
+        public void React(bool won, bool matchOver = false)
+        { if (!IsServer || !Actor) return; Actor.Reaction(won, matchOver); ReactClientRpc(won, matchOver); }
+        [ClientRpc] void ReactClientRpc(bool won, bool matchOver)
+        { if (!IsServer && Actor) Actor.Reaction(won, matchOver); }
+        void OnApplicationFocus(bool focused) { if (!focused) shotInput = new LocalShotInput(); }
+        public void ResetInput()
         {
-            if(Animator==null || (!restart && animationState==state)) return;
-            Animator.speed=speed; Animator.CrossFadeInFixedTime(state,.08f,0); animationState=state;
+            shotInput = new LocalShotInput(); serverAxes = Vector2.zero; serverRun = false;
+            predicted.Clear(); predictedVelocity = Vector3.zero;
         }
-        void OnApplicationFocus(bool focused) { if(!focused) chord.Reset(); }
-        public void ResetInput() { chord.Reset(); received.Clear(); predicted.Clear(); }
     }
 }
