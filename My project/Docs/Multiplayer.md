@@ -1,53 +1,70 @@
-# Multiplayer PickleVerse (PC test)
+# Multiplayer PickleVerse — PlayMultiplayer
 
-## Chạy
+## Chạy bản mới
 
-- Mở `Assets/Scenes/MultiplayerTest.unity`, Play, chọn tên/hồ sơ test và Male/Female.
-- Mỗi phiên chạy dùng một hồ sơ khác nhau. Build mặc định lấy PID làm hồ sơ; có thể truyền `-pkvProfile Player1`.
-- Nút `BtnPlay` trong Menu mở phòng 1vs1. Chuyển 2vs2 trong phòng; nhóm hai người khóa chuyển về 1vs1.
-- Bấm Tìm trận: đồng hồ tăng từ 00:00; chỉ gửi tìm từ giây 6. Hủy dùng được khi chờ, tìm và kết nối. Hết 120 giây tìm thực sự thì thử lại bằng một lượt mới.
-- Chia sẻ mã phòng 2vs2 để ghép cùng bạn. Chủ nhóm bắt đầu; cả hai hủy được. Custom chọn đội, tất cả Sẵn sàng rồi chủ phòng bắt đầu.
-- Profile Windows: `Assets/Settings/BuildProfiles/MultiplayerWindows.asset`. Build tới `Builds/Multiplayer/PickleVerse.exe`.
+1. Trong Unity, mở `Assets/Scenes/UI/PlayMultiplayer.unity` rồi bấm Play.
+2. Hoặc chạy `Builds/Multiplayer/PickleVerse.exe`. Khi gửi cho bạn bè, gửi **toàn bộ folder Multiplayer**, gồm exe, `PickleVerse_Data` và các DLL; mọi máy dùng cùng bản build.
+3. Mỗi phiên dùng danh tính đăng nhập riêng. Mặc định lấy PID; có thể chạy `PickleVerse.exe -pkvProfile Player1`, phiên thứ hai dùng `Player2`.
+4. Nhập tên ở `TxtPlayerName`. Bỏ trống tạo 4 chữ cái. Tên là bí danh hiển thị; Authentication ID riêng giữ nguyên để kết nối lại. Không cho tên trùng trong cùng phòng.
 
-## Điều khiển
+## UI mới
+
+- Vào scene mở 1Vs1. BtnPlay là **Tìm trận**; sau khi bấm trở thành **Hủy**.
+- Đồng hồ tăng `00:00`…`00:05`; gửi tìm thực sự khi đạt `00:06`. Hủy được suốt lúc chờ, tìm và kết nối. Giới hạn tìm 120 giây từ lần gửi đầu tiên.
+- Btn2Vs2 tạo phòng nhóm tối đa 2 người. TxtRoomId/BtnCopy hiện mã; bạn nhập mã trong TxtJoinID và bấm BtnJoin. Chủ nhóm tìm, cả hai hủy được. Hai bạn luôn cùng đội.
+- Btn1Vs1 từ chủ nhóm giải tán nhóm, mời khách ra và mở phòng solo. Khách chọn 1Vs1 thì rời nhóm của mình.
+- BtnCustom tạo phòng 4 chỗ, mặc định dùng đội tối đa 2 người. Host ở A1, khách tự phân đội cân bằng. BtnSwap đổi đội mình; host có BtnKick. Custom cho phép **1vs1, 1vs2, 2vs1, 2vs2**, mỗi đội phải có người. **Không dùng Ready**; chỉ host bấm Bắt đầu. Khách thấy Chờ chủ phòng.
+- ImgIcon và BtnInvite để dành phát triển sau.
+- Hết trận bấm Về phòng; nhóm được giữ. Host bấm Game tiếp giữa các game; tự tiếp tục sau 120 giây.
+
+## Gameplay từ BotMatch
+
+Multiplayer dùng prefab nhân vật, clip, grip/IK vợt, thời điểm chạm/thả bóng, chuyển động, camera và sân từ BotMatch. `MatchMovement`, `ShotTrajectory`, `ShotInput`, `MatchActor`, `BallFlight` được dùng chung. BotMatch giữ AI riêng; multiplayer nhận input của người sở hữu và mô phỏng luật/bóng tại host.
 
 | Phím | Hành động |
 |---|---|
-| WASD / mũi tên | Di chuyển theo phía sân của mình |
+| WASD / mũi tên | Di chuyển theo hướng sân của mình |
 | Shift / Space | Chạy |
-| J | Groundstroke, hoặc giao bóng khi tới lượt |
+| J | Drive / giao bóng khi tới lượt |
 | K | Dink |
 | L | Volley |
 | J+K | Drop |
-| J+L | Smash đứng |
-| K+L | Reset volley (thử nghiệm) |
-| U+J / U+K / U+L | Drive / Speed-up / Punch (hai cú sau thử nghiệm) |
-| I + phím đánh | Hướng chéo sân |
+| J+L | Smash |
+| K+L | Reset volley |
+| U + phím đánh | Đánh mạnh như BotMatch |
+| I + phím đánh | Đánh chéo |
+| Backspace | Hủy tổ hợp đang chọn |
 
-Giữ tổ hợp rồi nhả một phím đánh để chốt. Ba phím đánh cùng lúc hoặc U+I hủy cú đánh. U/I riêng lẻ không đánh. Modifier mặc định dùng một lần; checkbox trong phòng đổi sang giữ phím.
+Giữ tổ hợp rồi nhả phím đánh. Dùng cách giữ U/I của BotMatch; tối đa hai phím, tổ hợp sai không đánh. Forehand/backhand theo vị trí bóng. Đánh hụt không tự trả bóng.
 
-## Cấu hình và kiến trúc
+**Thắng trận khi thắng 2/3 game**. Mỗi game 11 điểm, cách biệt 2, chỉ đội giao ghi điểm. Đổi sân giữa các game; game thứ 3 đổi sân một lần khi đội đầu tiên đạt 6 điểm. Luật giao/nhận, hai lần nảy, kitchen/đà volley và người giao thứ hai áp dụng theo số người thực tế; đội chỉ một người không gọi người thứ hai.
 
-- Cấu hình: `Assets/Resources/MultiplayerSettings.asset`. Môi trường `pickleverse-test`, hai hàng chờ `PickleVerse-1v1` / `PickleVerse-2v2` đã được triển khai (xem `MultiplayerCloudDeployment.txt`).
-- QoS đo trước khi gửi ticket, giới hạn 150 ms. Nhóm chọn vùng chung có ping tốt nhất; hàng chờ yêu cầu cùng vùng, không tự nới ngưỡng.
-- `MultiplayerApp`: facade cho UI, phòng nhóm/custom, tìm/hủy, kết nối, trở về phòng và reconnect.
-- `GroupMatchmaker`: ticket nguyên nhóm một/hai người cho hàng chờ 2vs2; xác minh hai bạn cùng đội.
-- `NetworkPlayer`: input chủ sở hữu, dự đoán và sửa vị trí từ host, animation và socket vợt.
-- `NetworkMatch` / `PickleballRules`: bóng vật lý ở host, trạng thái đồng bộ, lượt giao/nhận, hai lần nảy, kitchen/đà volley, lỗi, điểm chỉ đội giao, 11 điểm cách biệt 2.
-- Host rời kết thúc phiên. Khách mất kết nối tạm dừng tối đa 30 giây, cùng danh tính có thể nối lại; quá hạn hoặc chủ động rời bị xử thua.
-- Transport dùng heartbeat 500 ms, nhận diện mất dữ liệu sau 5 giây; khoảng chờ nối lại 30 giây bắt đầu khi host nhận diện mất kết nối.
-- Phòng nhóm và trận tách riêng; sau trận bấm Về phòng để giữ nhóm. Custom xóa Sẵn sàng.
-- Animation dùng controller Male/Female hiện có, Idle_Ready mặc định. Các marker đo từ clip được lưu trong `ShotAnimations.asset` và báo cáo `MultiplayerAnimationCalibration.json`.
+## Kiến trúc để rà soát
 
-## Kiểm tra
+| Lớp | File / trách nhiệm |
+|---|---|
+| View | `UI/PlayMultiplayerPresenter.cs`: binding Canvas và button, render trạng thái |
+| Chính sách UI | `UI/RoomViewModel.cs`: điều kiện host bắt đầu, nhãn BtnPlay |
+| Hợp đồng | `Services/MultiplayerInterfaces.cs`: identity/state/room/matchmaking/backend |
+| Identity | `Services/PlayerIdentityService.cs`: profile, đăng nhập, tên ngẫu nhiên |
+| Room | `Services/RoomService.cs`: mở/đổi phòng, nhập mã, đổi đội, kick, start |
+| Matchmaking | `Services/MatchmakingService.cs`: find/cancel; cancel không bị Busy chặn |
+| SDK adapter | `MultiplayerApp.Room.cs`, `.Matchmaking.cs`: room/ticket; `MultiplayerApp.cs`: network và vòng đời |
+| Gameplay | `BotMatchGameplayService.cs`, `NetworkPlayer.cs`, `NetworkMatch.cs`, `PickleballRules.cs` |
+| Build | `Services/MultiplayerSceneConfiguration.cs`, `Assets/Editor/MultiplayerBuildValidation.cs` |
 
-- EditMode assembly `PickleVerse.Multiplayer.Tests`: 25 ca kiểm thử thực đã qua; báo cáo `MultiplayerRulesTestResults.json`.
-- Đã kiểm tra trong Play Mode: đăng nhập, Play mở 1vs1, chuyển 2vs2/tạo mã, hủy tại 00:02, tìm thực sự tại 00:07 và hủy về phòng.
-- Kết quả nhiều phiên Windows, reconnect và vòng đời trận được ghi trong `MultiplayerWindowsTestResults.md`.
-- Máy thứ hai qua Internet cần chạy cùng build/môi trường; chưa được coi là đã kiểm tra nếu chỉ chạy nhiều phiên trên một máy.
+## Kết nối và lỗi Scene Hash
 
-Các script trong `Tools` phục vụ kiểm tra Editor và không nằm trong Player. `MultiplayerSmokeRunner` chỉ hoạt động khi truyền `-pkvCase`; không tự động chơi trong phiên thông thường.
+Profile `Assets/Settings/BuildProfiles/MultiplayerWindows.asset` phải chứa cả `PlayMultiplayer` và `MultiplayerCourt`, cùng những scene đang được NGO đồng bộ. Editor và mọi Player cần cùng danh sách scene/bản build. Scene Hash lỗi khi client không có scene host gửi trong bảng build của nó. Đã thêm kiểm tra trước kết nối và trước build; protocol phiên bản 2 ngăn bản cũ tham gia.
 
-Ảnh UI và sân đã kiểm tra: `MultiplayerScreenshots/Room.png`, `MultiplayerScreenshots/Court.png`.
+Services dùng môi trường `pickleverse-test`, hai queue `PickleVerse-1v1` / `PickleVerse-2v2`, Relay nên có thể kết nối khác mạng khi Internet/UGS hoạt động. QoS giới hạn 150 ms, không tự nới. Test nhiều phiên trên một máy chưa chứng minh kết nối giữa hai máy vật lý.
 
-`SessionNetworkHandler` dùng giao diện công khai `INetworkHandler` của MPS, giữ phiên dịch vụ khi nối lại và lấy allocation Relay mới. Phần đọc `RelayJoinCode` từ metadata phiên được tách trong adapter, dành cho SDK đang cố định ở 2.3.3; cần kiểm tra adapter khi nâng SDK.
+Host rời kết thúc phiên. Khách mất kết nối: tạm dừng tối đa 30 giây, kết nối lại cùng danh tính; quá hạn đội đó thua. Chủ động rời cũng bị xử thua. Chưa có host migration, xếp hạng hoặc lịch sử lâu dài.
+
+## Kiểm chứng
+
+- EditMode: `Docs/PlayMultiplayerTestResults.json`.
+- Binding UI: `Docs/PlayMultiplayerUiTest.json`.
+- Windows/Relay: `Docs/PlayMultiplayerWindowsTestResults.md`.
+- Công cụ opt-in: `Tools/RunMultiplayerSmoke.ps1`, `Tools/StopMultiplayerSmoke.ps1`. Runner chỉ chạy khi có `-pkvCase`.
+- `Assets/Editor/PlayMultiplayerIntegration.cs` có menu Integrate PlayMultiplayer and BotMatch để tái tạo binding/prefab/sân sau thay đổi BotMatch. Bản scene ban đầu sao lưu trong Temp/MultiplayerUpgrade; đừng dùng file này để thay đổi thiết kế sau khi đã tinh chỉnh mà chưa xem lại tác động.

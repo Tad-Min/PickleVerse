@@ -7,9 +7,11 @@ namespace PickleVerse.Multiplayer
         void LateUpdate()
         {
             if(target==null) return;
-            var desired=target.position-target.forward*6.5f+Vector3.up*5.5f;
-            transform.position=Vector3.Lerp(transform.position,desired,1-Mathf.Exp(-8*Time.deltaTime));
-            transform.LookAt(target.position+target.forward*3+Vector3.up*.6f);
+            var settings=MultiplayerApp.Instance.Settings;
+            var desired=target.position-target.forward*settings.cameraDistance; desired.y=settings.cameraHeight;
+            transform.position=Vector3.Lerp(transform.position,desired,1-Mathf.Exp(-5*Time.unscaledDeltaTime));
+            transform.rotation=Quaternion.Euler(settings.cameraPitch,target.eulerAngles.y,0);
+            GetComponent<Camera>().fieldOfView=settings.cameraFieldOfView;
         }
     }
 }

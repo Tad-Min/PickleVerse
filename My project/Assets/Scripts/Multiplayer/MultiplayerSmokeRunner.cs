@@ -36,7 +36,7 @@ namespace PickleVerse.Multiplayer
                 if(test=="duoControlHost"||test=="duoControlGuest")
                 {
                     await MultiplayerSmokeChecks.DuoControls(app,test=="duoControlHost",file);
-                    string controlResult="PASS "+test+" "+profile+": mode lock, guest cancel, party retained, leave cancels, unlock";
+                    string controlResult="PASS "+test+" "+profile+": guest cancel, party retained, captain Singles disbands party";
                     File.WriteAllText(file+"."+profile+".txt",controlResult); Debug.Log(controlResult); return;
                 }
                 if(test=="customAdminHost"||test=="customAdminGuest") await MultiplayerSmokeChecks.CustomAdministration(app,test=="customAdminHost",file);
@@ -45,8 +45,8 @@ namespace PickleVerse.Multiplayer
                 {
                     await app.CreateCustomAsync(Arg("-pkvMode","1")=="2"?PlayMode.Doubles:PlayMode.Singles);
                     File.WriteAllText(file+".code",app.Room.Code);
-                    await app.ReadyAsync();
-                    while(app.Members().Count<2*(int)app.Mode || app.Members().Any(m=>!m.ready)) await Task.Delay(500);
+                    int count = int.Parse(Arg("-pkvCount", (2*(int)app.Mode).ToString()));
+                    while(app.Members().Count<count || app.Members().Any(m=>m.team<0) || app.Members().Select(m=>m.team).Distinct().Count()!=2) await Task.Delay(500);
                     await app.StartCustomAsync();
                 }
                 else if(test=="customGuest" || test=="duoGuest")
@@ -57,7 +57,6 @@ namespace PickleVerse.Multiplayer
                     {
                         double teamDeadline=Time.realtimeSinceStartupAsDouble+20;
                         while(app.Members().First(m=>m.id==app.PlayerId).team<0 && Time.realtimeSinceStartupAsDouble<teamDeadline) await Task.Delay(200);
-                        await app.ReadyAsync();
                     }
                 }
                 else if(test=="duoHost")
@@ -73,8 +72,8 @@ namespace PickleVerse.Multiplayer
                 {
                     await Task.Delay(500);
                 }
-                while(NetworkPlayer.All.Count<2*(int)app.Mode && Time.realtimeSinceStartupAsDouble<until) await Task.Delay(200);
-                if(app.State!=FlowState.InMatch || NetworkPlayer.All.Count!=2*(int)app.Mode) throw new InvalidOperationException("Không vào được sân: "+app.Notice);
+                while(NetworkPlayer.All.Count<(app.Roster?.Count ?? 2*(int)app.Mode) && Time.realtimeSinceStartupAsDouble<until) await Task.Delay(200);
+                if(app.State!=FlowState.InMatch || NetworkPlayer.All.Count!=app.Roster.Count) throw new InvalidOperationException("Không vào được sân: "+app.Notice);
                 if(!app.Roster.IsValid() || (!app.Custom && app.Roster.members.GroupBy(m=>m.group).Any(g=>g.Select(m=>m.team).Distinct().Count()>1))) throw new InvalidOperationException("Nhóm bị tách đội.");
                 string result=$"PASS {test} {profile}: {NetworkPlayer.All.Count} players, host={app.Network.IsHost}, scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}";
                 if(file.Length>0) File.WriteAllText(file+"."+profile+".txt",result);
@@ -87,10 +86,16 @@ namespace PickleVerse.Multiplayer
                 if(args.Contains("-pkvReconnect")) { await MultiplayerSmokeChecks.Reconnect(app); result+="; reconnect PASS"; File.WriteAllText(file+"."+profile+".txt",result); Debug.Log(result); }
                 if(args.Contains("-pkvLifecycle"))
                 {
-                    double deadline=Time.realtimeSinceStartupAsDouble+150,nextServe=0;
+                    double deadline=Time.realtimeSinceStartupAsDouble+300,nextServe=0,nextReport=0;
                     while(app.State!=FlowState.Results && Time.realtimeSinceStartupAsDouble<deadline)
                     {
                         var match=NetworkMatch.Instance;
+                        if(match!=null && match.IsServer && Time.realtimeSinceStartupAsDouble>=nextReport)
+                        {
+                            nextReport=Time.realtimeSinceStartupAsDouble+5;
+                            Debug.Log($"LIFECYCLE {profile} games={match.GamesA.Value}:{match.GamesB.Value} score={match.ScoreA.Value}:{match.ScoreB.Value} hits={match.Rules.strokeCount} live={match.Rules.live} paused={match.Paused.Value} reason={match.Rules.reason}");
+                        }
+                        if(match!=null && match.IsServer && match.BetweenGames.Value) match.RequestNextGame();
                         if(match!=null && match.IsServer && match.Rules.waitingServe && Time.realtimeSinceStartupAsDouble>=nextServe)
                         {
                             var server=NetworkPlayer.All.First(p=>p.Team.Value==match.Rules.servingTeam && p.Index.Value==match.Rules.serverIndex);
@@ -100,11 +105,13 @@ namespace PickleVerse.Multiplayer
                     }
                     if(app.State!=FlowState.Results) throw new InvalidOperationException("Không kết thúc game bằng giao bóng thật: "+NetworkMatch.Instance?.Status.Value);
                     string score=NetworkMatch.Instance.ScoreA.Value+":"+NetworkMatch.Instance.ScoreB.Value;
+                    string games=NetworkMatch.Instance.GamesA.Value+":"+NetworkMatch.Instance.GamesB.Value;
+                    if(Math.Max(NetworkMatch.Instance.GamesA.Value,NetworkMatch.Instance.GamesB.Value)!=2) throw new InvalidOperationException("Trận chưa đủ hai game thắng: "+games);
                     if(NetworkMatch.Instance.Rules!=null && (!NetworkMatch.Instance.Rules.complete || NetworkMatch.Instance.Rules.score.Max()<11)) throw new InvalidOperationException("Game kết thúc do rời/mất kết nối, chưa phải thắng 11 điểm");
                     if(Math.Max(NetworkMatch.Instance.ScoreA.Value,NetworkMatch.Instance.ScoreB.Value)<11) throw new InvalidOperationException("Kết quả không phải game đủ 11 điểm: "+NetworkMatch.Instance.Status.Value);
                     await Task.Delay(2000); await app.ReturnToRoomAsync("Smoke game đã kết thúc.");
                     if(app.State!=FlowState.WaitingRoom || (app.Custom && app.Members().Any(m=>m.ready))) throw new InvalidOperationException("Không trở về phòng đúng.");
-                    result+="; lifecycle PASS score="+score+" room="+app.Mode+" members="+app.Members().Count;
+                    result+="; lifecycle PASS games="+games+" score="+score+" room="+app.Mode+" members="+app.Members().Count;
                     File.WriteAllText(file+"."+profile+".txt",result); Debug.Log(result);
                 }
             }

@@ -7,7 +7,7 @@ foreach($entry in (Get-Content -LiteralPath $recordPath | ConvertFrom-Json)) {
     if($Profile -and $entry.Profile -ne $Profile) { continue }
     $process=Get-Process -Id $entry.Pid -ErrorAction SilentlyContinue
     if($process -and $process.Path -eq $expectedExecutable -and $entry.Executable -eq $expectedExecutable) {
-        Stop-Process -Id $entry.Pid
+        $process.Kill()
         "Stopped $($entry.Pid) $($entry.Profile)"
     }
 }

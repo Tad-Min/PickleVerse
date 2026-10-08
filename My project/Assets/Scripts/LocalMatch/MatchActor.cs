@@ -97,16 +97,23 @@ namespace PickleVerse.LocalMatch
             Vector3 previousFace=paddleFace?paddleFace.position:Vector3.zero;
             if (canMove)
             {
-                Vector3 desired = new Vector3(movement.x, 0, movement.y) * (run ? runSpeed : walkSpeed) * (Swinging ? .6f : 1f);
-                Velocity = Vector3.MoveTowards(Velocity, desired, 24f * dt);
-                Vector3 before = transform.position;
-                Vector3 p = before + Velocity * dt;
-                p.x = Mathf.Clamp(p.x, -4.65f, 4.65f);
-                p.z = end * Mathf.Clamp(p.z * end, .30f, 9.1f);
-                transform.position = p;
-                Velocity = (p-before)/Mathf.Max(.0001f,dt);
+                var p = transform.position; var velocity = Velocity;
+                MatchMovement.Step(ref p, ref velocity, movement, run, Swinging, end, dt, walkSpeed, runSpeed);
+                transform.position = p; Velocity = velocity;
             }
             else Velocity = Vector3.MoveTowards(Velocity, Vector3.zero, 24f * dt);
+            AdvancePose(dt, run, canMove);
+            if(paddleFace)PaddleVelocity=(paddleFace.position-previousFace)/Mathf.Max(.0001f,dt);
+        }
+        /// <summary>Remote replicas sample the same authored poses without moving their network root.</summary>
+        public void RenderNetworkPose(Vector3 velocity, bool run, float dt)
+        {
+            Vector3 previousFace = paddleFace ? paddleFace.position : Vector3.zero;
+            Velocity = velocity; AdvancePose(dt, run, true);
+            if (paddleFace) PaddleVelocity = (paddleFace.position - previousFace) / Mathf.Max(.0001f, dt);
+        }
+        void AdvancePose(float dt, bool run, bool canMove)
+        {
             if (VolleyMomentum)
             {
                 lastVolleyTime += dt;
@@ -126,7 +133,6 @@ namespace PickleVerse.LocalMatch
                 if (clipName != "PKV_SplitStep" || clipTime + dt >= animationPlayer[clipName].length - .000001f || Velocity.magnitude >= .15f) Play(locomotion);
             }
             Sample(dt);
-            if(paddleFace)PaddleVelocity=(paddleFace.position-previousFace)/Mathf.Max(.0001f,dt);
         }
         bool IsReaction() => clipName == "PKV_Fault_Reaction" || clipName == "PKV_Dance_Win";
         bool Has(string key) => animationPlayer && animationPlayer[key] != null;

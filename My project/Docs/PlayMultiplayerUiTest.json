@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "defaultRoom": "1Vs1",
+  "generatedName": true,
+  "name": "EditorUI",
+  "duoCode": true,
+  "copy": true,
+  "cancelAt": "00:02",
+  "customNoReady": true
+}

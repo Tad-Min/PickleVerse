@@ -5,8 +5,8 @@ namespace PickleVerse.Multiplayer
     {
         void Start()
         {
-            var app=MultiplayerApp.Instance;
-            if(app==null || !app.Network.IsListening) { UnityEngine.SceneManagement.SceneManager.LoadScene("MultiplayerTest"); return; }
+            var app = MultiplayerApp.Instance;
+            if(app==null || !app.Network.IsListening) { UnityEngine.SceneManagement.SceneManager.LoadScene(app?.RoomSceneName ?? "PlayMultiplayer"); return; }
             if(app.Network.IsServer)
             {
                 var go=Instantiate(app.Settings.matchPrefab);

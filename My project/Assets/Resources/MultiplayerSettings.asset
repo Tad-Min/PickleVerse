@@ -22,6 +22,14 @@ MonoBehaviour:
   maleModel: {fileID: 8771091787928289351, guid: be500c6a3c35d2b41b87e515b6f20cc1, type: 3}
   femaleModel: {fileID: 984576011609549836, guid: 44381dbf61431744a9d94707b7a6e67c, type: 3}
   paddlePrefab: {fileID: 3330954190348326903, guid: 541cf7a93c809ec4887d57da96f964ec, type: 3}
+  maleActorPrefab: {fileID: 5316423671882641314, guid: 8c9c2d7a3ea992b49932675e903d8556, type: 3}
+  femaleActorPrefab: {fileID: 3150955174342796431, guid: ab58f4ffaac0f474f9660285ad13bca6, type: 3}
+  ballVisualPrefab: {fileID: 6066316165077980453, guid: 9c678f90529cffa45b45f49882dde567, type: 3}
+  contactAssistRadius: 0.45
+  cameraHeight: 5.3
+  cameraDistance: 4.21
+  cameraPitch: 31
+  cameraFieldOfView: 60
   maleAnimator: {fileID: 9100000, guid: 7ae3b9b7428c55a4fb0403e936c6b94d, type: 2}
   femaleAnimator: {fileID: 9100000, guid: f0a88718ac6d19f45b0bfc5a5076ffad, type: 2}
   animations: {fileID: 11400000, guid: fe35316e6bf1d7843a20a072089419b1, type: 2}

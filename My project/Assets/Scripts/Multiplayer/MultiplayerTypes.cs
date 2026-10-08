@@ -31,6 +31,7 @@ namespace PickleVerse.Multiplayer
     {
         public string matchId, region;
         public PlayMode mode;
+        public bool custom;
         public List<RoomMember> members = new List<RoomMember>();
         public int Count => members.Count;
         public RoomMember Find(string id) => members.Find(p => p.id == id);
@@ -43,7 +44,8 @@ namespace PickleVerse.Multiplayer
                 if (string.IsNullOrEmpty(p.id) || !ids.Add(p.id) || p.team < 0 || p.team > 1) return false;
                 counts[p.team]++;
             }
-            return counts[0] == (int)mode && counts[1] == (int)mode;
+            return custom ? counts[0] >= 1 && counts[1] >= 1 && counts[0] <= (int)mode && counts[1] <= (int)mode
+                : counts[0] == (int)mode && counts[1] == (int)mode;
         }
     }
 

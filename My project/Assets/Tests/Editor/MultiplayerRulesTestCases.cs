@@ -67,8 +67,30 @@ namespace PickleVerse.Tests
         {
             var r=new PickleballRules(PlayMode.Singles); r.score[0]=r.score[1]=10;
             r.Fault(1,"out"); r.SettleRally(); Assert.That(r.complete,Is.False); Assert.That(r.score[0],Is.EqualTo(11));
-            r.NewRally(); r.Fault(1,"out"); r.SettleRally(); Assert.That(r.complete,Is.True); Assert.That(r.winner,Is.EqualTo(0)); Assert.That(r.score[0],Is.EqualTo(12));
+            r.NewRally(); r.Fault(1,"out"); r.SettleRally(); Assert.That(r.gameFinished,Is.True); Assert.That(r.games[0],Is.EqualTo(1)); Assert.That(r.complete,Is.False); Assert.That(r.score[0],Is.EqualTo(12));
             r=new PickleballRules(PlayMode.Singles); r.Fault(0,"out"); r.SettleRally(); Assert.That(r.score[1],Is.Zero); Assert.That(r.servingTeam,Is.EqualTo(1));
+        }
+        [Test] public void BestOfThreeOnlyEndsAfterTwoGameWins()
+        {
+            var r=new PickleballRules(PlayMode.Singles);
+            WinGame(r,0); Assert.That(r.complete,Is.False); Assert.That(r.games[0],Is.EqualTo(1));
+            r.NextGame(); Assert.That(r.score,Is.EqualTo(new[]{0,0})); Assert.That(r.ends[0],Is.EqualTo(1)); Assert.That(r.servingTeam,Is.EqualTo(1));
+            WinGame(r,1); Assert.That(r.complete,Is.False); Assert.That(r.games,Is.EqualTo(new[]{1,1}));
+            r.NextGame(); Assert.That(r.GameNumber,Is.EqualTo(3)); Assert.That(r.ends[0],Is.EqualTo(-1));
+            WinGame(r,0); Assert.That(r.complete,Is.True); Assert.That(r.winner,Is.Zero); Assert.That(r.games,Is.EqualTo(new[]{2,1}));
+        }
+        [Test] public void DecidingGameChangesEndsAtSixOnceWithoutResettingScoresOrServe()
+        {
+            var r=new PickleballRules(PlayMode.Doubles); WinGame(r,0); r.NextGame(); WinGame(r,1); r.NextGame();
+            r.score[0]=5; r.Fault(1,"miss"); r.SettleRally(); Assert.That(r.endChangeDue,Is.True);
+            int server=r.serverIndex; r.SwapEnds(); r.NewRally();
+            Assert.That(r.score[0],Is.EqualTo(6)); Assert.That(r.serverIndex,Is.EqualTo(server)); Assert.That(r.servingTeam,Is.Zero);
+            Assert.That(r.serverWorldX,Is.EqualTo((r.RightServe?1:-1)*r.TeamFacing(0)*PickleballRules.HalfWidth*.5f));
+            r.Fault(1,"miss"); r.SettleRally(); Assert.That(r.endChangeDue,Is.False); Assert.That(r.ends[0],Is.EqualTo(1));
+        }
+        static void WinGame(PickleballRules r,int team)
+        {
+            r.servingTeam=team; r.score[team]=10; r.score[1-team]=0; r.NewRally(); r.Fault(1-team,"miss"); r.SettleRally();
         }
         [Test] public void ServeMustBeDiagonalPastKitchenAndLinesAreIn()
         {

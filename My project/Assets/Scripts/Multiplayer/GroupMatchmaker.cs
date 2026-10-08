@@ -38,7 +38,8 @@ namespace PickleVerse.Multiplayer
                     .OrderBy(region=>members.Max(m=>qos[m.id].First(q=>q.RegionId==region).Latency)).ToList();
                 if(common.Count==0) throw new InvalidOperationException("Nhóm không có vùng kết nối chung dưới giới hạn ping.");
                 string selectedRegion=common[0];
-                var players = members.Select(m => new Player(m.id, new Dictionary<string,object> { ["name"] = m.name, ["gender"] = m.gender, ["group"] = m.group, ["region"]=selectedRegion }, qos[m.id].Where(q=>q.RegionId==selectedRegion).ToList())).ToList();
+                var players = members.Select(m => new Player(m.id, new Dictionary<string,object> { ["name"] = m.name, ["gender"] = m.gender, ["group"] = m.group, ["region"]=selectedRegion,
+                    ["protocol"]=Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString() }, qos[m.id].Where(q=>q.RegionId==selectedRegion).ToList())).ToList();
                 var response = await MatchmakerService.Instance.CreateTicketAsync(players, new CreateTicketOptions(queue));
                 ticket = response.Id;
                 token.ThrowIfCancellationRequested(); // Handles cancellation while CreateTicketAsync was in flight.
@@ -73,6 +74,8 @@ namespace PickleVerse.Multiplayer
                 {
                     var player = players.Find(p => p.Id == id);
                     var data = player?.CustomData?.GetAs<Dictionary<string,string>>() ?? new Dictionary<string,string>();
+                    if (!data.TryGetValue("protocol", out var protocol) || protocol != Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString())
+                        throw new InvalidOperationException("Ghép phải bản game khác. Cần cập nhật cùng bản multiplayer mới trên mọi máy.");
                     result.members.Add(new RoomMember { id = id, team = t, name = data.TryGetValue("name", out var name) ? name : "Player", gender = data.TryGetValue("gender", out var gender) ? gender : "Male", group = data.TryGetValue("group", out var group) ? group : id });
                 }
             if (!result.IsValid()) throw new InvalidOperationException("Kết quả ghép sai số người hoặc đội.");

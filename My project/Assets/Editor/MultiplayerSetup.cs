@@ -47,7 +47,7 @@ namespace PickleVerse.EditorTools
             settings.animations=CalibrateAnimations(settings);
             EditorUtility.SetDirty(settings); AssetDatabase.SaveAssets();
             var original=SceneManager.GetActiveScene();
-            if(!File.Exists("Assets/Scenes/MultiplayerTest.unity")) GenerateTestScene();
+            if(!File.Exists("Assets/Scenes/UI/MultiplayerTest.unity")) GenerateTestScene();
             if(!File.Exists("Assets/Scenes/MultiplayerCourt.unity")) GenerateCourt();
             WireMenu();
             var profile=AssetDatabase.LoadAssetAtPath<BuildProfile>("Assets/Settings/BuildProfiles/MultiplayerWindows.asset");
@@ -59,7 +59,7 @@ namespace PickleVerse.EditorTools
                 AssetDatabase.MoveAsset(createdPath,"Assets/Settings/BuildProfiles/MultiplayerWindows.asset"); profile.name="MultiplayerWindows";
             }
             profile.overrideGlobalScenes=true;
-            profile.scenes=new[] { new EditorBuildSettingsScene("Assets/Scenes/MultiplayerTest.unity",true),new EditorBuildSettingsScene("Assets/Scenes/MultiplayerCourt.unity",true),new EditorBuildSettingsScene("Assets/Scenes/HomeScene/Menu.unity",true) };
+            profile.scenes=new[] { new EditorBuildSettingsScene("Assets/Scenes/UI/PlayMultiplayer.unity",true),new EditorBuildSettingsScene("Assets/Scenes/UI/MultiplayerTest.unity",true),new EditorBuildSettingsScene("Assets/Scenes/MultiplayerCourt.unity",true),new EditorBuildSettingsScene("Assets/Scenes/UI/Menu.unity",true) };
             EditorUtility.SetDirty(profile); PlayerSettings.runInBackground=true;
             AssetDatabase.SaveAssets(); if(original.IsValid()&&original.isLoaded) SceneManager.SetActiveScene(original);
             Debug.Log("PickleVerse multiplayer scenes, prefabs, animation markers and Windows profile generated.");
@@ -203,7 +203,7 @@ namespace PickleVerse.EditorTools
             var box=Panel("Box",toggle.transform,Vector2.zero,new Vector2(.07f,1),new Color(.16f,.25f,.35f)); box.GetComponent<UnityEngine.UI.Image>().raycastTarget=true;
             var check=Text("Check",box.transform,"X",Vector2.zero,Vector2.one,19); ui.holdModifiers.targetGraphic=box.GetComponent<UnityEngine.UI.Image>(); ui.holdModifiers.graphic=check;
             Text("Label",toggle.transform,"Giữ U/I làm modifier",new Vector2(.09f,0),Vector2.one,18);
-            EditorSceneManager.SaveScene(scene,"Assets/Scenes/MultiplayerTest.unity"); EditorSceneManager.CloseScene(scene,true);
+            EditorSceneManager.SaveScene(scene,"Assets/Scenes/UI/MultiplayerTest.unity"); EditorSceneManager.CloseScene(scene,true);
         }
         static void GenerateCourt()
         {
@@ -235,7 +235,7 @@ namespace PickleVerse.EditorTools
         }
         static void WireMenu()
         {
-            string path="Assets/Scenes/HomeScene/Menu.unity"; var existing=SceneManager.GetSceneByPath(path); bool wasLoaded=existing.IsValid()&&existing.isLoaded;
+            string path="Assets/Scenes/UI/Menu.unity"; var existing=SceneManager.GetSceneByPath(path); bool wasLoaded=existing.IsValid()&&existing.isLoaded;
             var scene=wasLoaded?existing:EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);
             var button=scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<UnityEngine.UI.Button>(true)).First(b=>b.name=="BtnPlay");
             var handler=button.GetComponent<MenuPlayMultiplayer>()??button.gameObject.AddComponent<MenuPlayMultiplayer>();

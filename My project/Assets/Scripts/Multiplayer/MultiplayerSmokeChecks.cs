@@ -18,27 +18,22 @@ namespace PickleVerse.Multiplayer
         {
             if(host)
             {
-                await app.SelectModeAsync(PlayMode.Doubles); File.WriteAllText(file+".code",app.Room.Code);
+                await app.RoomService.SelectDoublesAsync(); File.WriteAllText(file+".code",app.Room.Code);
                 await Wait(()=>app.Members().Count==2,"Bạn chưa vào nhóm");
-                if(app.CanChangeMode) throw new Exception("Nhóm đôi chưa khóa chuyển 1vs1");
-                bool rejected=false; try { await app.SelectModeAsync(PlayMode.Singles); } catch(InvalidOperationException) { rejected=true; }
-                if(!rejected) throw new Exception("API cho nhóm đôi đổi 1vs1");
-                await app.FindAsync();
+                await app.MatchmakingService.FindAsync();
                 await Wait(()=>app.State==FlowState.WaitingRoom&&File.Exists(file+".cancelled"),"Bạn hủy nhưng chủ nhóm vẫn tìm");
                 if(app.Members().Count!=2 || app.Mode!=PlayMode.Doubles) throw new Exception("Hủy không giữ nhóm");
-                await app.FindAsync();
-                await Wait(()=>app.Members().Count==1 && app.State==FlowState.WaitingRoom,"Bạn rời nhưng tìm chưa hủy");
-                if(!app.CanChangeMode) throw new Exception("Chưa mở khóa 1vs1 sau khi bạn rời");
-                await app.SelectModeAsync(PlayMode.Singles);
+                await app.RoomService.SelectSinglesAsync();
+                if(app.Mode!=PlayMode.Singles || app.Room!=null || app.Members().Count!=1) throw new Exception("Chuyển 1vs1 chưa giải tán nhóm");
+                await Wait(()=>File.Exists(file+".singlesack"),"Khách chưa nhận giải tán nhóm");
             }
             else
             {
-                await Wait(()=>File.Exists(file+".code"),"Không có mã nhóm"); await app.JoinRoomAsync(File.ReadAllText(file+".code"));
+                await Wait(()=>File.Exists(file+".code"),"Không có mã nhóm"); await app.RoomService.JoinAsync(File.ReadAllText(file+".code"));
                 await Wait(()=>app.State==FlowState.Delay,"Chủ nhóm chưa bắt đầu");
-                if(app.CanChangeMode) throw new Exception("Khách nhóm đôi đổi được 1vs1");
-                await app.CancelSearchAsync(); File.WriteAllText(file+".cancelled","guest cancelled whole party");
-                await Wait(()=>app.State==FlowState.Delay,"Không nhận lượt tìm mới");
-                await app.LeaveRoomAsync();
+                await app.MatchmakingService.CancelAsync(); File.WriteAllText(file+".cancelled","guest cancelled whole party");
+                await Wait(()=>app.Room==null && !app.Searching,"Khách chưa bị mời ra khi chủ nhóm chọn 1vs1");
+                File.WriteAllText(file+".singlesack","party disbanded");
             }
         }
         public static async Task Reconnect(MultiplayerApp app)
@@ -117,31 +112,31 @@ namespace PickleVerse.Multiplayer
         {
             if(host)
             {
-                await app.CreateCustomAsync(PlayMode.Singles); File.WriteAllText(file+".code",app.Room.Code); await app.ReadyAsync();
-                await Wait(()=>app.Members().Count==2&&app.Members().All(m=>m.ready),"Custom chưa đủ người sẵn sàng");
-                string guest=app.Members().First(m=>m.id!=app.PlayerId).id;
-                await app.SetTeamAsync(guest,0);
-                if(app.Members().Any(m=>m.ready)) throw new Exception("Hoán đổi đội chưa xóa Sẵn sàng");
-                await Wait(()=>File.Exists(file+".swapack"),"Khách chưa nhận đội mới/Sẵn sàng mới");
+                await app.RoomService.SelectCustomAsync(PlayMode.Doubles); File.WriteAllText(file+".code",app.Room.Code);
+                await Wait(()=>File.Exists(file+".swapack"),"Khách chưa đổi đội bằng BtnSwap");
+                await Wait(()=>app.Members().Count==2 && app.Members().All(m=>m.team==0),"Host chưa nhận yêu cầu đổi đội");
                 bool rejected=false; try { await app.StartCustomAsync(); } catch(InvalidOperationException) { rejected=true; }
-                if(!rejected) throw new Exception("Bắt đầu được khi chưa sẵn sàng");
-                await app.KickAsync(guest);
+                if(!rejected) throw new Exception("Bắt đầu được khi một đội trống");
+                string guest=app.Members().First(m=>m.id!=app.PlayerId).id;
+                await app.SetTeamAsync(guest,1); await app.RoomService.KickAsync(guest);
                 await Wait(()=>File.Exists(file+".kickack"),"Khách chưa bị mời ra");
-                await app.ReadyAsync();
-                await Wait(()=>app.Members().Count==2&&app.Members().All(m=>m.ready),"Chưa sẵn sàng sau khi vào lại");
-                await app.StartCustomAsync();
+                await Wait(()=>app.Members().Count==2 && app.Members().Any(m=>m.team==1),"Chưa phân đội sau khi vào lại");
+                if(app.Members().Any(m=>m.ready)) throw new Exception("Test này phải bắt đầu không có Ready");
+                await app.RoomService.StartCustomAsync();
             }
             else
             {
                 await Wait(()=>File.Exists(file+".code"),"Chưa có mã custom"); string code=File.ReadAllText(file+".code");
-                await app.JoinRoomAsync(code);
-                await Wait(()=>app.Members().First(m=>m.id==app.PlayerId).team>=0,"Chưa được phân đội"); await app.ReadyAsync();
-                await Wait(()=>app.Members().First(m=>m.id==app.PlayerId).team==0&&!app.Members().First(m=>m.id==app.PlayerId).ready,"Chưa nhận đổi đội");
-                File.WriteAllText(file+".swapack","new team received; readiness reset");
+                await app.RoomService.JoinAsync(code);
+                await Wait(()=>app.Members().First(m=>m.id==app.PlayerId).team==1,"Chưa được phân đội B");
+                await app.RoomService.SwapTeamAsync();
+                await Wait(()=>app.Members().First(m=>m.id==app.PlayerId).team==0,"Chưa nhận đổi đội A");
+                File.WriteAllText(file+".swapack","own team swap received");
                 await Wait(()=>app.Room==null,"Chưa nhận mời ra"); File.WriteAllText(file+".kickack","kick received");
-                await Task.Delay(1200); await app.JoinRoomAsync(code);
-                await Wait(()=>app.Members().First(m=>m.id==app.PlayerId).team>=0,"Chưa được phân đội lại"); await app.ReadyAsync();
+                await Task.Delay(2500); await app.RoomService.JoinAsync(code);
+                await Wait(()=>app.Members().First(m=>m.id==app.PlayerId).team>=0,"Chưa được phân đội lại");
             }
         }
     }
 }
+

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('singles','solos4','duoSolos','duos2','custom1','custom2','editorGuest','duoControls','customAdmin','partyDeparture','customDeparture')][string]$Case='singles',
+    [ValidateSet('singles','solos4','duoSolos','duos2','custom1','custom2','custom12','editorGuest','duoControls','customAdmin','partyDeparture','customDeparture')][string]$Case='singles',
     [ValidatePattern('^[A-Za-z0-9]{1,12}$')][string]$RunId=(Get-Date -Format 'HHmmss'),
     [switch]$Lifecycle,
     [switch]$Reconnect,
@@ -17,6 +17,7 @@ $specs=@(switch($Case) {
     'duos2' { @(@('duoHost','D1','A'),@('duoGuest','D2','A'),@('duoHost','D3','B'),@('duoGuest','D4','B')) }
     'custom1' { @(@('customHost','C1',''),@('customGuest','C2','')) }
     'custom2' { @(@('customHost','C1',''),@('customGuest','C2',''),@('customGuest','C3',''),@('customGuest','C4','')) }
+    'custom12' { @(@('customHost','C1',''),@('customGuest','C2',''),@('customGuest','C3','')) }
     'editorGuest' { ,@('customGuest','E2','') }
     'duoControls' { @(@('duoControlHost','D1',''),@('duoControlGuest','D2','')) }
     'customAdmin' { @(@('customAdminHost','A1',''),@('customAdminGuest','A2','')) }
@@ -27,9 +28,10 @@ $started=@()
 foreach($spec in $specs) {
     $profile="P$RunId$($spec[1])"
     $sharedReceipt="$receipt$($spec[2])"
-    $mode=if($Case -eq 'custom2'){'2'}else{'1'}
+    $mode=if($Case -in @('custom2','custom12')){'2'}else{'1'}
     $arguments="-batchmode -nographics -pkvCase $($spec[0]) -pkvProfile $profile -pkvMode $mode -pkvReceipt $sharedReceipt -logFile $receipt.$profile.log"
     if($Lifecycle) { $arguments+=' -pkvLifecycle' }
+    if($Case -eq 'custom12') { $arguments+=' -pkvCount 3' }
     if($Reconnect) { $arguments+=' -pkvReconnect' }
     if($Behavior) { $arguments+=" -pkvBehavior $Behavior -pkvRole $($spec[1])" }
     if($Behavior -eq 'cancelConnect') { $arguments+=' -pkvSlowCourt' }

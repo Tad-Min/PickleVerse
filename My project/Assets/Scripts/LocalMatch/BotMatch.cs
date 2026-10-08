@@ -196,39 +196,19 @@ namespace PickleVerse.LocalMatch
         }
         public Vector3 ShotTarget(MatchActor actor, ShotIntent shot)
         {
-            int targetEnd = -actor.end;
-            bool soft = shot.kind == ShotKind.Dink || shot.kind == ShotKind.Drop || shot.kind == ShotKind.Reset;
-            float x = Mathf.Clamp(BallPosition.x, -2.25f, 2.25f);
-            if (Mathf.Abs(x) < .25f) x = .3f;
-            if (shot.cross) x = -Mathf.Sign(x) * 1.9f;
-            float depth = soft ? 1.45f : shot.kind == ShotKind.Smash ? 4.1f : 5.05f;
-            if (shot.kind == ShotKind.Serve) { int lane = (Rules.Points[Rules.Server] % 2 == 0 ? 1 : -1) * -actor.end; x = -lane * (shot.cross ? 2.05f : 1.35f); depth = shot.power ? 5.8f : 4.75f; }
+            float serverX = (Rules.Points[Rules.Server] % 2 == 0 ? 1 : -1) * -Actor(Rules.Server).end;
+            var target = ShotTrajectory.Target(actor, shot, BallPosition, serverX);
+            float x = target.x, depth = Mathf.Abs(target.z);
             if (actor.playerId == 1 && shot.kind != ShotKind.Serve)
             {
                 // Fixed aim uncertainty by difficulty, never targets using the future human input.
                 float error = botDifficulty == 0 ? .30f : botDifficulty == 1 ? .16f : .08f;
                 x += Mathf.Sin(TotalHits * 13.37f) * error; depth += Mathf.Cos(TotalHits * 7.11f) * error;
             }
-            return new Vector3(x, Court.BallRadius, targetEnd * depth);
+            return new Vector3(x, Court.BallRadius, -actor.end * depth);
         }
         void Launch(MatchActor actor, ShotIntent shot)
-        {
-            var target = ShotTarget(actor, shot);
-            bool soft = shot.kind == ShotKind.Dink || shot.kind == ShotKind.Drop || shot.kind == ShotKind.Reset;
-            float apex = soft ? Mathf.Max(1.5f, BallPosition.y + .18f) : shot.kind == ShotKind.Smash ? BallPosition.y + .10f : shot.power ? Mathf.Max(1.65f, BallPosition.y + .13f) : Mathf.Max(2.25f, BallPosition.y + .3f);
-            BallVelocity = BallFlight.Launch(BallPosition, target, apex);
-            // A baseline drop needs more arc than a kitchen dink. Solve clearance from
-            // the actual contact point, rather than assigning all soft shots one apex.
-            float margin=shot.power?.045f:soft?.10f:.14f;
-            for(int attempt=0;attempt<28;attempt++)
-            {
-                float crossingTime=-BallPosition.z/BallVelocity.z;
-                float crossingX=BallPosition.x+BallVelocity.x*crossingTime;
-                float crossingY=BallPosition.y+BallVelocity.y*crossingTime-.5f*BallFlight.Gravity*crossingTime*crossingTime;
-                if(crossingTime<=0 || Mathf.Abs(crossingX)>3.35f || crossingY>=Court.NetHeight(crossingX)+Court.BallRadius+margin)break;
-                apex+=.15f;BallVelocity=BallFlight.Launch(BallPosition,target,apex);
-            }
-        }
+        { BallVelocity = ShotTrajectory.Launch(shot, BallPosition, ShotTarget(actor, shot)); }
         public bool PredictContact(int end, bool requireBounce, out Vector3 point, out float delay, float height = .85f)
         {
             Vector3 p = BallPosition, v = BallVelocity; bool bounced = Rules.Bounces > 0;
