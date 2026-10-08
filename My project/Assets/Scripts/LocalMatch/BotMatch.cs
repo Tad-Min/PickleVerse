@@ -44,11 +44,16 @@ namespace PickleVerse.LocalMatch
         public MatchActor Actor(int id) => id == 0 ? human : bot;
 
         void Awake() { InitializeMatch(); }
-        void Start() { if(opening)opening.Play(); }
+        void Start()
+        {
+            if (BotMatchLaunchSettings.ConsumeLaunch() || !GetComponent<MatchEnvironmentLighting>())
+                if (!opening || !opening.Play()) PreparePoint();
+        }
         void OnEnable() { if(Application.isPlaying && Rules==null)InitializeMatch(); }
         void InitializeMatch()
         {
             if(!human || !bot)return;
+            botDifficulty = BotMatchLaunchSettings.Difficulty;
             TotalHits=TotalRallies=LongestRally=0;RallyLog.Clear();Paused=false;
             human.end=-1;bot.end=1;
             human.Initialize(); bot.Initialize();
@@ -303,7 +308,7 @@ namespace PickleVerse.LocalMatch
             Paused = false; Rules = new SinglesRules(initialServer); human.end = -1; bot.end = 1;
             TotalHits = TotalRallies = LongestRally = 0; RallyLog.Clear(); PreparePoint();
         }
-        public void RestartWithIntro() {Restart();if(opening)opening.Play();}
+        public void RestartWithIntro() {Restart();Phase=MatchPhase.Intro;if(!opening || !opening.Play())PreparePoint();}
         public void BeginCinematic()
         {Phase=MatchPhase.Cinematic;Paused=false;accumulator=0;input.Cancel();TouchShotMask=0;TouchMovement=Vector2.zero;}
         public void EndCinematic() {PreparePoint();UpdateVisuals();}

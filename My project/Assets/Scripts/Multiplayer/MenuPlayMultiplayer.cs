@@ -4,6 +4,12 @@ namespace PickleVerse.Multiplayer
 {
     public sealed class MenuPlayMultiplayer : MonoBehaviour
     {
-        public void Play() { MultiplayerApp.OpenRoomOnLoad=true; MultiplayerApp.OpenDefaultRoomOnLoad=true; SceneManager.LoadScene("PlayMultiplayer"); }
+        // Retain the existing Menu button component and serialized listener.
+        public void Play()
+        {
+            MultiplayerApp.OpenRoomOnLoad = true;
+            MultiplayerApp.OpenDefaultRoomOnLoad = true;
+            SceneManager.LoadScene("ModeSelection");
+        }
     }
 }

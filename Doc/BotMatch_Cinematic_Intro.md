@@ -2,7 +2,7 @@
 
 Scene: `My project/Assets/Scenes/BotMatch.unity`.
 
-Khi mở scene và bắt đầu Play, camera bay qua toàn cảnh sân, lần lượt quay người chơi nữ và đối thủ nam bước từ ngoài baseline vào vị trí thi đấu. Camera orbit quanh nhân vật để thấy cả sân và khán đài, sau đó chuyển mượt về góc camera người chơi. Chữ **“Trận đấu bắt đầu”** lướt từ trái vào giữa màn hình rồi ra bên phải và biến mất.
+Từ Home → Play → Đấu với bot, người chơi chọn thiết lập ở ModeSelection rồi nhấn Vào sân. BotMatch tự chạy camera bay qua toàn cảnh sân, lần lượt quay người chơi nữ và đối thủ nam bước từ ngoài baseline vào vị trí thi đấu. Camera orbit quanh nhân vật để thấy cả sân và khán đài, sau đó chuyển mượt về góc camera người chơi. Chữ **“Trận đấu bắt đầu”** lướt từ trái vào giữa màn hình rồi ra bên phải và biến mất. Khi mở riêng BotMatch trong Editor, dùng Vào sân / Enter ở bảng mở đầu cơ bản.
 
 Thời lượng mặc định khoảng **10,95 giây**: toàn cảnh 0,85 s, mỗi nhân vật 4 s, trở về camera gameplay 1 s, chữ bắt đầu 1,1 s. Có thể bỏ qua bằng Enter, Space hoặc nút **Bỏ qua**. Nút Chơi lại cũng chạy đoạn mở đầu; reset phục vụ kiểm thử nội bộ vẫn có thể vào thẳng lượt giao.
 

@@ -1,0 +1,32 @@
+using UnityEngine;
+
+namespace PickleVerse.LocalMatch
+{
+    // Small local preferences shared by the front-end and the local match only.
+    public static class BotMatchLaunchSettings
+    {
+        const string DifficultyKey = "PKV.Bot.Difficulty";
+        const string NightKey = "PKV.Bot.Night";
+        static bool launchRequested;
+        public static int Difficulty => Mathf.Clamp(PlayerPrefs.GetInt(DifficultyKey, 1), 0, 2);
+        public static bool Night => PlayerPrefs.GetInt(NightKey, 0) == 1;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetLaunch() { launchRequested = false; }
+
+        public static void Prepare(int difficulty, bool night)
+        {
+            PlayerPrefs.SetInt(DifficultyKey, Mathf.Clamp(difficulty, 0, 2));
+            PlayerPrefs.SetInt(NightKey, night ? 1 : 0);
+            PlayerPrefs.Save();
+            launchRequested = true;
+        }
+
+        public static bool ConsumeLaunch()
+        {
+            bool requested = launchRequested;
+            launchRequested = false;
+            return requested;
+        }
+    }
+}

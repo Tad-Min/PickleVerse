@@ -76,6 +76,7 @@ namespace PickleVerse.LocalMatch.Editor
             BallPresentationSetup.Configure(match);
             BotMatchIntroSetup.Configure(match);
             if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new InvalidOperationException("Failed saving BotMatch scene.");
+            MatchEnvironmentSetup.Configure();
             if (!EditorBuildSettings.scenes.Any(s => s.path == ScenePath)) EditorBuildSettings.scenes = EditorBuildSettings.scenes.Concat(new[] { new EditorBuildSettingsScene(ScenePath, true) }).ToArray();
             AssetDatabase.SaveAssets(); Selection.activeGameObject = match.gameObject;
             if (SceneView.lastActiveSceneView) SceneView.lastActiveSceneView.Frame(new Bounds(Vector3.zero, new Vector3(18,6,24)), false);
@@ -236,8 +237,6 @@ namespace PickleVerse.LocalMatch.Editor
             Button("Touch",root,"Cảm ứng",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-102),new Vector2(130,36),hud.ToggleTouch);
             Button("Timeout",root,"T / Time-out",new Vector2(0,1),new Vector2(0,1),new Vector2(20,-62),new Vector2(140,36),hud.Timeout);
             hud.difficultyLabel = Text("Difficulty",root,"Bot: Vừa",new Vector2(0,1),new Vector2(0,1),new Vector2(20,-110),new Vector2(160,30),18,TextAlignmentOptions.Left);
-            string[] difficulties = { "Dễ", "Vừa", "Khó" };
-            for (int i = 0; i < 3; i++) { var button = Button("BotLevel"+i,root,difficulties[i],new Vector2(0,1),new Vector2(0,1),new Vector2(20+i*57,-147),new Vector2(52,32),null); UnityEditor.Events.UnityEventTools.AddIntPersistentListener(button.onClick,hud.Difficulty,i); }
             var touch = Rect("TouchControls",root,Vector2.zero,Vector2.zero,Vector2.zero,Vector2.zero); touch.anchorMax = Vector2.one; touch.offsetMax = touch.offsetMin = Vector2.zero; hud.touchControls = touch.gameObject;
             var joystick = Panel("MoveJoystick",touch,new Vector2(0,0),new Vector2(0,0),new Vector2(24,25),new Vector2(156,156),new Color(.03f,.12f,.17f,.7f)); joystick.GetComponent<UnityEngine.UI.Image>().raycastTarget = true;
             var knob = Panel("Knob",joystick,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(52,52),mint);
@@ -255,6 +254,7 @@ namespace PickleVerse.LocalMatch.Editor
             hud.modalBody = Text("Body",modal,"",new Vector2(.5f,.5f),new Vector2(.5f,.5f),new Vector2(0,6),new Vector2(710,235),19);
             hud.continueButton = Button("Continue",modal,"Enter / Tiếp tục",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(-120,20),new Vector2(210,40),hud.Continue);
             hud.restartButton = Button("Restart",modal,"Chơi lại",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(120,20),new Vector2(210,40),hud.Restart);
+            hud.modeButton = Button("ChooseMode",modal,"Chọn chế độ",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(245,20),new Vector2(210,40),hud.ChooseMode);
         }
     }
     static class AnimationData

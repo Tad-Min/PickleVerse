@@ -8,7 +8,7 @@ namespace PickleVerse.LocalMatch
     {
         public TMP_Text scoreboard, status, timing, selection, modalTitle, modalBody, serveClock, difficultyLabel;
         public GameObject modal, help, touchControls, shotPanel;
-        public Button continueButton, restartButton;
+        public Button continueButton, restartButton, modeButton;
         BotMatch match;
         bool helpPaused;
         public void Bind(BotMatch owner)
@@ -37,8 +37,15 @@ namespace PickleVerse.LocalMatch
             modal.SetActive(show);
             if (!show) return;
             bool intro = match.Phase == MatchPhase.Intro;
+            ((RectTransform)modal.transform).sizeDelta=new Vector2(760,370);
+            modalBody.rectTransform.anchoredPosition=new Vector2(0,6);
+            modalBody.rectTransform.sizeDelta=new Vector2(710,235);
+            modalBody.fontSize=19;
             modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI BOT" : match.Phase == MatchPhase.MatchOver ? match.Message : match.Phase == MatchPhase.Timeout ? "TIME-OUT" : "KẾT THÚC GAME";
-            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn, thả để swing. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J trong 10 giây. Return và cú thứ ba phải nảy.\nVolley chỉ ngoài Kitchen; đà bước vào Kitchen cũng là lỗi.\nChỉ bên giao ghi điểm • 11 điểm, cách 2 • Thắng 2/3 game.\n\nEnter / nút bên dưới để bắt đầu. Bot có ba mức cố định." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi time-out trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 time-out trong game này." : match.Phase == MatchPhase.MatchOver ? "Game thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố rally: " + match.TotalRallies + " • Rally dài nhất: " + match.LongestRally + " cú\nChơi lại để luyện timing, combo và vị trí chân." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; bot đồng ý.\nĐổi sân giữa các game và tại 6 điểm trong game quyết định.";
+            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài Kitchen • 11 điểm, cách 2 • Thắng 2/3 game\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi time-out trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 time-out trong game này." : match.Phase == MatchPhase.MatchOver ? "Game thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố rally: " + match.TotalRallies + " • Rally dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; bot đồng ý.\nĐổi sân giữa các game và tại 6 điểm trong game quyết định.";
+            continueButton.GetComponentInChildren<TMP_Text>().text=intro?"Vào sân / Enter":"Enter / Tiếp tục";
+            ((RectTransform)continueButton.transform).anchoredPosition=new Vector2(-245,20);
+            ((RectTransform)restartButton.transform).anchoredPosition=new Vector2(0,20);
             continueButton.gameObject.SetActive(match.Phase != MatchPhase.MatchOver);
             restartButton.gameObject.SetActive(!intro);
         }
@@ -53,6 +60,6 @@ namespace PickleVerse.LocalMatch
             else if(helpPaused && match && match.Paused){match.TogglePause();helpPaused=false;}
         }
         public void ToggleTouch() { touchControls.SetActive(!touchControls.activeSelf); }
-        public void Difficulty(int level) { if (match) match.SetDifficulty(level); }
+        public void ChooseMode() { UnityEngine.SceneManagement.SceneManager.LoadScene("ModeSelection"); }
     }
 }

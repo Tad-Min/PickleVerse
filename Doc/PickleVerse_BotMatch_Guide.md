@@ -7,12 +7,12 @@ Bản này tạo một trận 1v1 có thể chơi trong Unity: nhân vật nữ 
 ## Mở và chơi
 
 1. Mở project `D:\Github\PickleVerse\My project` bằng Unity `6000.6.2f1`.
-2. Mở `Assets/Scenes/BotMatch.unity`.
-3. Bấm **Play**, click vào Game View và bấm **Enter / Tiếp tục**.
-4. Chọn mức bot **Dễ / Vừa / Khó** ở góc trái. Khi mới thử, chọn Dễ.
+2. Mở `Assets/Scenes/HomeScene/Menu.unity`.
+3. Bấm **Play** trong Editor, rồi nút **Play** của Home → **Đấu với bot**.
+4. Chọn **Dễ / Vừa / Khó**, **Ban ngày / Ban đêm** và **Vào sân** ở scene ModeSelection. Khi mới thử, chọn Dễ. Trận tự chạy cinematic; chơi lại giữ thiết lập. Muốn đổi, dùng **Chọn chế độ** trong bảng pause/kết thúc trận.
 5. Bấm **F1** để xem hướng dẫn; **Esc** để tạm dừng; **T** để gọi time-out trước giao bóng.
 
-Scene đã được thêm vào Build Settings. Thứ tự các scene có sẵn được giữ; khi muốn build trực tiếp trận bot, chọn BotMatch làm scene khởi động trong Build Profile.
+Menu, ModeSelection và BotMatch nằm ở đầu Build Settings và profile MultiplayerWindows để dùng luồng chọn chế độ mới. Khi muốn thử trực tiếp trận bot, có thể mở riêng BotMatch trong Editor hoặc chọn scene này làm scene khởi động trong Build Profile.
 
 ## Điều khiển
 
