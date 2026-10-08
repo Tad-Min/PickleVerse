@@ -41,6 +41,8 @@ Giữ tổ hợp rồi nhả phím đánh. Dùng cách giữ U/I của BotMatch;
 
 ## Kiến trúc để rà soát
 
+Đợt dọn script ngày 09/10/2026: [danh sách đã xóa, lý do và kết quả kiểm tra](MultiplayerCleanup.md). Scene MultiplayerTest cũ đã được gỡ; dùng PlayMultiplayer để test phòng.
+
 | Lớp | File / trách nhiệm |
 |---|---|
 | View | `UI/PlayMultiplayerPresenter.cs`: binding Canvas và button, render trạng thái |

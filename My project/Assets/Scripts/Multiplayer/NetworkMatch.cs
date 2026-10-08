@@ -33,7 +33,6 @@ namespace PickleVerse.Multiplayer
         public MatchRoster Roster { get; private set; }
         readonly Dictionary<string,double> reservations=new Dictionary<string,double>();
         readonly Dictionary<string,NetworkPlayer> players=new Dictionary<string,NetworkPlayer>();
-        readonly Dictionary<string,double> swingCooldown=new Dictionary<string,double>();
         readonly HashSet<ulong> courtReady=new HashSet<ulong>();
         double serveDeadline,rallyDeadline;
         Vector3 savedVelocity;
@@ -250,7 +249,6 @@ namespace PickleVerse.Multiplayer
                 else if(Rules.endChangeDue) { Rules.SwapEnds(); EndsSwapped.Value=Rules.ends[0]>0; }
             }
         }
-        public void OnBallCollision(Collision collision) { } // BallFlight owns all swept contacts.
         void Publish()
         {
             ScoreA.Value=Rules.score[0]; ScoreB.Value=Rules.score[1]; ServerTeam.Value=Rules.servingTeam; ServerIndex.Value=Rules.serverIndex; ServerNumber.Value=Rules.serverNumber; WaitingServe.Value=Rules.waitingServe;

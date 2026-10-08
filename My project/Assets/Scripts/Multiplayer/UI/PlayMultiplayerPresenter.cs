@@ -11,7 +11,6 @@ namespace PickleVerse.Multiplayer.UI
     [Serializable] public sealed class RoomPlayerSlot
     {
         public TMP_Text name;
-        public TMP_Text ready;
         public UnityEngine.UI.Button kick;
         [NonSerialized] public string playerId;
     }
@@ -51,7 +50,7 @@ namespace PickleVerse.Multiplayer.UI
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++) if (args[i] == "-pkvProfile") profile = args[i + 1];
             bool openDefault = MultiplayerApp.OpenDefaultRoomOnLoad;
-            MultiplayerApp.OpenRoomOnLoad = MultiplayerApp.OpenDefaultRoomOnLoad = false;
+            MultiplayerApp.OpenDefaultRoomOnLoad = false;
             if (!args.Contains("-pkvCase") && (state.State == FlowState.Menu || openDefault))
                 await rooms.OpenAsync(profile, string.IsNullOrWhiteSpace(playerName.text) ? app.DisplayName : playerName.text);
             playerName.SetTextWithoutNotify(state.DisplayName);
@@ -116,7 +115,6 @@ namespace PickleVerse.Multiplayer.UI
             // when occupied so its white background cannot cover the player's name.
             var invite=slot.name ? slot.name.transform.parent.Find("BtnInvite") : null;
             if(invite) invite.gameObject.SetActive(member==null);
-            if (slot.ready) slot.ready.text = "";
             if (slot.kick) { slot.kick.gameObject.SetActive(state.Custom && state.IsCaptain && member != null && member.id != state.PlayerId); slot.kick.interactable = !state.Busy && state.State == FlowState.WaitingRoom; }
         }
         void OnDestroy()

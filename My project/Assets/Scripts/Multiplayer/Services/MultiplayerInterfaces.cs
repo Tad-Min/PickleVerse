@@ -39,7 +39,6 @@ namespace PickleVerse.Multiplayer.Services
         Task JoinRoomAsync(string code);
         Task UpdateNameAsync(string name);
         Task SetTeamAsync(string playerId, int team);
-        Task ReadyAsync();
         Task KickAsync(string playerId);
         Task StartCustomAsync();
         Task LeaveRoomAsync();

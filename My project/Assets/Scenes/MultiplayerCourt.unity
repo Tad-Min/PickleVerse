@@ -266,7 +266,6 @@ GameObject:
   m_Component:
   - component: {fileID: 49903968}
   - component: {fileID: 49903967}
-  - component: {fileID: 49903966}
   m_Layer: 0
   m_Name: PhysicsNet2
   m_TagString: Untagged
@@ -274,19 +273,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &49903966
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 49903965}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &49903967
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -457,7 +443,6 @@ GameObject:
   m_Component:
   - component: {fileID: 124580764}
   - component: {fileID: 124580763}
-  - component: {fileID: 124580762}
   m_Layer: 0
   m_Name: PhysicsNet13
   m_TagString: Untagged
@@ -465,19 +450,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &124580762
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 124580761}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &124580763
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1112,7 +1084,6 @@ GameObject:
   m_Component:
   - component: {fileID: 340270450}
   - component: {fileID: 340270449}
-  - component: {fileID: 340270448}
   m_Layer: 0
   m_Name: PhysicsNet3
   m_TagString: Untagged
@@ -1120,19 +1091,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &340270448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340270447}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &340270449
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1269,7 +1227,6 @@ GameObject:
   m_Component:
   - component: {fileID: 382573495}
   - component: {fileID: 382573494}
-  - component: {fileID: 382573493}
   m_Layer: 0
   m_Name: PhysicsNet9
   m_TagString: Untagged
@@ -1277,19 +1234,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &382573493
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 382573492}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &382573494
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1510,7 +1454,6 @@ GameObject:
   m_Component:
   - component: {fileID: 459613528}
   - component: {fileID: 459613527}
-  - component: {fileID: 459613526}
   m_Layer: 0
   m_Name: PhysicsNet15
   m_TagString: Untagged
@@ -1518,19 +1461,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &459613526
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 459613525}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &459613527
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1984,7 +1914,6 @@ GameObject:
   m_Component:
   - component: {fileID: 584039908}
   - component: {fileID: 584039907}
-  - component: {fileID: 584039906}
   m_Layer: 0
   m_Name: PhysicsNet4
   m_TagString: Untagged
@@ -1992,19 +1921,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &584039906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584039905}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &584039907
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2621,7 +2537,6 @@ GameObject:
   m_Component:
   - component: {fileID: 750923939}
   - component: {fileID: 750923938}
-  - component: {fileID: 750923937}
   m_Layer: 0
   m_Name: PhysicsNet5
   m_TagString: Untagged
@@ -2629,19 +2544,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &750923937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 750923936}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &750923938
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3086,7 +2988,6 @@ GameObject:
   - component: {fileID: 873154103}
   - component: {fileID: 873154102}
   - component: {fileID: 873154101}
-  - component: {fileID: 873154100}
   m_Layer: 0
   m_Name: PhysicsGround
   m_TagString: Untagged
@@ -3094,19 +2995,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &873154100
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 873154099}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 0
 --- !u!23 &873154101
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3982,7 +3870,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1065553557}
   - component: {fileID: 1065553556}
-  - component: {fileID: 1065553555}
   m_Layer: 0
   m_Name: PhysicsNet1
   m_TagString: Untagged
@@ -3990,19 +3877,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1065553555
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1065553554}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1065553556
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4792,7 +4666,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1243583957}
   - component: {fileID: 1243583956}
-  - component: {fileID: 1243583955}
   m_Layer: 0
   m_Name: PhysicsNet7
   m_TagString: Untagged
@@ -4800,19 +4673,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1243583955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1243583954}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1243583956
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5431,7 +5291,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1445462509}
   - component: {fileID: 1445462508}
-  - component: {fileID: 1445462507}
   m_Layer: 0
   m_Name: PhysicsNet6
   m_TagString: Untagged
@@ -5439,19 +5298,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1445462507
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1445462506}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1445462508
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5635,7 +5481,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1466953894}
   - component: {fileID: 1466953893}
-  - component: {fileID: 1466953892}
   m_Layer: 0
   m_Name: PhysicsNet11
   m_TagString: Untagged
@@ -5643,19 +5488,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1466953892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1466953891}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1466953893
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5839,7 +5671,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1618779193}
   - component: {fileID: 1618779192}
-  - component: {fileID: 1618779191}
   m_Layer: 0
   m_Name: PhysicsNet0
   m_TagString: Untagged
@@ -5847,19 +5678,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1618779191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1618779190}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1618779192
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6124,7 +5942,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1650301909}
   - component: {fileID: 1650301908}
-  - component: {fileID: 1650301907}
   m_Layer: 0
   m_Name: PhysicsNet8
   m_TagString: Untagged
@@ -6132,19 +5949,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1650301907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1650301906}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1650301908
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6281,7 +6085,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1704083148}
   - component: {fileID: 1704083147}
-  - component: {fileID: 1704083146}
   m_Layer: 0
   m_Name: PhysicsNet12
   m_TagString: Untagged
@@ -6289,19 +6092,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1704083146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1704083145}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1704083147
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6880,7 +6670,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1974114087}
   - component: {fileID: 1974114086}
-  - component: {fileID: 1974114085}
   m_Layer: 0
   m_Name: PhysicsNet14
   m_TagString: Untagged
@@ -6888,19 +6677,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1974114085
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1974114084}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1974114086
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6947,7 +6723,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1985826528}
   - component: {fileID: 1985826527}
-  - component: {fileID: 1985826526}
   m_Layer: 0
   m_Name: PhysicsNet10
   m_TagString: Untagged
@@ -6955,19 +6730,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1985826526
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1985826525}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1838cb886da331a4c9d968a5dddf1933, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.CourtSurface
-  kind: 1
 --- !u!65 &1985826527
 BoxCollider:
   m_ObjectHideFlags: 0

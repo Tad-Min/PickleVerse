@@ -35,7 +35,6 @@ namespace PickleVerse.Multiplayer
         public NetworkVariable<bool> Female = new NetworkVariable<bool>();
         public NetworkVariable<PlayerFrame> Frame = new NetworkVariable<PlayerFrame>();
         public MatchActor Actor { get; private set; }
-        public Animator Animator { get; private set; }
         public Transform RightHand => Actor ? Actor.hand : null;
         public Transform LeftHand => Actor ? Actor.leftHand : null;
         public Transform PaddleContact => Actor ? Actor.paddleFace : null;
@@ -97,7 +96,6 @@ namespace PickleVerse.Multiplayer
             foreach (var collider in instance.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
             foreach (var body in instance.GetComponentsInChildren<Rigidbody>(true)) Destroy(body);
             foreach (var animator in instance.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
-            Animator = Actor.visual.GetComponent<Animator>();
             Actor.playerId = Female.Value ? 0 : 1;
             Actor.Initialize();
             ResetActor(transform.position, CourtEnd.Value);
@@ -129,7 +127,7 @@ namespace PickleVerse.Multiplayer
             }
             if (!IsOwner) return;
             var keyboard = Keyboard.current;
-            if (!CanMove() || keyboard == null || !Application.isFocused)
+            if (!CanMove() || keyboard == null || !CanReadKeyboard())
             { shotInput = new LocalShotInput(); return; }
             int mask = (Held(keyboard.jKey) ? 1 : 0) | (Held(keyboard.kKey) ? 2 : 0) |
                 (Held(keyboard.lKey) ? 4 : 0) | (Held(keyboard.uKey) ? 8 : 0) | (Held(keyboard.iKey) ? 16 : 0);
@@ -141,16 +139,18 @@ namespace PickleVerse.Multiplayer
             }
         }
         static bool Held(UnityEngine.InputSystem.Controls.KeyControl key) => key.isPressed || key.wasPressedThisFrame;
+        static bool CanReadKeyboard() => Application.isFocused ||
+            InputSystem.settings.backgroundBehavior == InputSettings.BackgroundBehavior.IgnoreFocus;
         static bool LocalRun()
         {
             var keyboard = Keyboard.current;
-            return keyboard != null && Application.isFocused &&
+            return keyboard != null && CanReadKeyboard() &&
                 (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed || keyboard.spaceKey.isPressed);
         }
         static Vector2 LocalAxes()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null || !Application.isFocused) return Vector2.zero;
+            if (keyboard == null || !CanReadKeyboard()) return Vector2.zero;
             return Vector2.ClampMagnitude(new Vector2(
                 (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1 : 0),
                 (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1 : 0)), 1);

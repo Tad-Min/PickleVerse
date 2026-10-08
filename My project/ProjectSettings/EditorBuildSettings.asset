@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/HomeScene/Menu.unity
+    path: Assets/Scenes/UI/Menu.unity
     guid: 3758045ad48627a4b830666f01058e26
   - enabled: 1
-    path: Assets/Scenes/HomeScene/ModeSelection.unity
+    path: Assets/Scenes/UI/ModeSelection.unity
     guid: 7aa09318597d56d4390b2076b189a264
   - enabled: 1
     path: Assets/Scenes/BotMatch.unity

@@ -1,9 +1,26 @@
 {
   "status": "completed",
   "result": "Succeeded",
-  "buildId": "build_53dd9708b9f0",
-  "buildTimeMs": 52047,
-  "totalSizeBytes": 578392503,
+  "buildId": "build_136ccdb6a494",
+  "buildTimeMs": 43875,
+  "totalSizeBytes": 323682170,
   "totalWarnings": 542,
-  "totalErrors": 0
+  "totalErrors": 0,
+  "warningGroups": [
+    {
+      "category": "MenuMissingScripts",
+      "count": 43,
+      "example": "Script attached to 'HoverVisuals' in scene 'Assets/Scenes/UI/Menu.unity' is missing or no valid script is attached."
+    },
+    {
+      "category": "Other",
+      "count": 1,
+      "example": "Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds."
+    },
+    {
+      "category": "ShaderWarnings",
+      "count": 498,
+      "example": "Shader warning in 'Hidden/Sentis/Pad': integer modulus may be much slower, try using uints if possible. at Packages/com.unity.ai.inference/Runtime/Core/Resources/Sentis/PixelShaders/Pad.shader(55) (on dx11)"
+    }
+  ]
 }

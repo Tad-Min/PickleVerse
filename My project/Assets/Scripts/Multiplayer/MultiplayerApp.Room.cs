@@ -192,15 +192,6 @@ namespace PickleVerse.Multiplayer
             roomData.notice = full ? "Đã hoán đổi đội." : "Đã đổi đội."; await SaveRoomAsync();
             Changed?.Invoke();
         }
-        public async Task ReadyAsync()
-        {
-            if (!Custom || State!=FlowState.WaitingRoom) return;
-            var member=Members().Find(m=>m.id==PlayerId); if(member==null || member.team<0) return;
-            var p=Room.CurrentPlayer; p.SetProperty("ready",new PlayerProperty(member.ready?"0":"1"));
-            p.SetProperty("readyEpoch",new PlayerProperty(roomData.readyEpoch.ToString()));
-            p.SetProperty("readyVersion",new PlayerProperty(roomData.teamVersions[PlayerId].ToString()));
-            await Room.SaveCurrentPlayerDataAsync(); Changed?.Invoke();
-        }
         public async Task KickAsync(string id)
         {
             if (!Custom || !IsCaptain || State!=FlowState.WaitingRoom || id==PlayerId) throw new InvalidOperationException("Không được mời người này ra.");

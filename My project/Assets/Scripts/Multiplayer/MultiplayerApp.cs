@@ -21,7 +21,6 @@ namespace PickleVerse.Multiplayer
     public sealed partial class MultiplayerApp : MonoBehaviour, IMultiplayerBackend
     {
         public static MultiplayerApp Instance { get; private set; }
-        public static bool OpenRoomOnLoad;
         public static bool OpenDefaultRoomOnLoad;
         public string ActiveProfile => profile;
         public MultiplayerSettings Settings { get; private set; }
@@ -44,7 +43,6 @@ namespace PickleVerse.Multiplayer
         public bool IsCaptain => Room == null || Room.IsHost;
         public bool Busy { get; private set; }
         public bool Searching => State == FlowState.Delay || State == FlowState.Searching || State == FlowState.Connecting;
-        public bool CanChangeMode => !Busy && State == FlowState.WaitingRoom && !Custom && (Room == null || Room.PlayerCount == 1);
         public string Elapsed => clock.Display(Time.realtimeSinceStartupAsDouble);
         public event Action Changed;
         public NetworkManager Network { get; private set; }
@@ -324,7 +322,7 @@ namespace PickleVerse.Multiplayer
                 roomData.phase="idle"; roomData.matchId=""; roomData.notice=message; Room.AsHost().IsLocked=false;
                 await Safe(SaveRoomAsync());
             }
-            SetState(FlowState.WaitingRoom,message); OpenRoomOnLoad=true;
+            SetState(FlowState.WaitingRoom,message);
             if(SceneManager.GetActiveScene().name!=RoomSceneName) SceneManager.LoadScene(RoomSceneName);
             }
             finally { returning=false; }
@@ -337,7 +335,7 @@ namespace PickleVerse.Multiplayer
         void ExitCourt()
         {
             if(SceneManager.GetActiveScene().name=="MultiplayerCourt")
-            { OpenRoomOnLoad=true; SceneManager.LoadScene(RoomSceneName); }
+            { SceneManager.LoadScene(RoomSceneName); }
         }
         public void CourtLoaded() { SetState(FlowState.Connecting,"Chờ tất cả máy tải sân…"); }
         public void MatchStarted() { clock.Stop(); SetState(FlowState.InMatch,"Trận đã bắt đầu."); }

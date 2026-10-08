@@ -36,15 +36,6 @@ namespace PickleVerse.Tests
         }
         [Test] public void RequeueKeepsElapsedTime()
         { var c=new SearchClock(); c.Start(100); Assert.That(c.Display(151),Is.EqualTo("00:51")); Assert.That(c.CanSubmit(151),Is.True); }
-        [TestCase(1,2,ShotKind.Drop)] [TestCase(2,1,ShotKind.Drop)] [TestCase(1,4,ShotKind.Smash)] [TestCase(4,1,ShotKind.Smash)] [TestCase(2,4,ShotKind.ResetVolley)]
-        public void ChordOrderDoesNotChangeShot(int first,int second,ShotKind expected)
-        { var c=new ShotChord(); c.Step(first); c.Step(first|second); Assert.That(c.Step(second).kind,Is.EqualTo(expected)); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.None)); }
-        [Test] public void InvalidThreeKeyChordAndTwoModifiersNeverShoot()
-        { var c=new ShotChord(); c.Step(7); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.None)); c.Modifier(true,true,true,true); c.Step(1); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.None)); }
-        [Test] public void ModifierUsedOnceAndFocusResetClearsChord()
-        { var c=new ShotChord(); c.Modifier(true,false,true,false); c.Step(2); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.SpeedUp)); c.Step(2); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.Dink)); c.Step(1); c.Reset(); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.None)); }
-        [TestCase(3)] [TestCase(5)] [TestCase(6)] public void AttackModifierWithCombinedShotIsCancelled(int mask)
-        { var c=new ShotChord(); c.Modifier(true,false,true,false); c.Step(mask); Assert.That(c.Step(0).kind,Is.EqualTo(ShotKind.None)); }
         [Test] public void OpeningDoublesServerIsSecondThenSideOutStartsFirstServer()
         { var r=new PickleballRules(PlayMode.Doubles); Assert.That(r.ScoreCall,Is.EqualTo("0–0–2")); r.Fault(0,"miss"); r.SettleRally(); Assert.That(r.servingTeam,Is.EqualTo(1)); Assert.That(r.serverNumber,Is.EqualTo(1)); r.NewRally(); r.Fault(1,"miss"); r.SettleRally(); Assert.That(r.servingTeam,Is.EqualTo(1)); Assert.That(r.serverNumber,Is.EqualTo(2)); Assert.That(r.serverIndex,Is.EqualTo(1)); }
         [Test] public void DoublesSecondServerStaysInLeftCourtUntilScoring()

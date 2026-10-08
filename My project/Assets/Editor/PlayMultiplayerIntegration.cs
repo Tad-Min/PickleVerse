@@ -157,7 +157,7 @@ namespace PickleVerse.EditorTools
         }
         public static void ConfigureBuildScenes()
         {
-            var required = new[] { MultiplayerSceneConfiguration.RoomPath, MultiplayerSceneConfiguration.CourtPath, "Assets/Scenes/UI/Menu.unity", "Assets/Scenes/UI/MultiplayerTest.unity", "Assets/Scenes/BotMatch.unity" };
+            var required = new[] { MultiplayerSceneConfiguration.RoomPath, MultiplayerSceneConfiguration.CourtPath, "Assets/Scenes/UI/Menu.unity", "Assets/Scenes/BotMatch.unity" };
             var paths = required.Concat(EditorBuildSettings.scenes.Where(s => s.enabled && File.Exists(s.path)).Select(s => s.path)).Distinct().Where(File.Exists).ToArray();
             var scenes = paths.Select(path => new EditorBuildSettingsScene(path, true)).ToArray();
             var profile = AssetDatabase.LoadAssetAtPath<BuildProfile>("Assets/Settings/BuildProfiles/MultiplayerWindows.asset");

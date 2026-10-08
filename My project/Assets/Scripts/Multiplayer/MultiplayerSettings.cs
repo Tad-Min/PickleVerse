@@ -9,12 +9,9 @@ namespace PickleVerse.Multiplayer
         public int maximumLatencyMs = 150;
         public float reconnectSeconds = 30;
         public GameObject playerPrefab, matchPrefab;
-        public GameObject maleModel, femaleModel, paddlePrefab;
         public GameObject maleActorPrefab, femaleActorPrefab, ballVisualPrefab;
         public float contactAssistRadius = .45f;
         public float cameraHeight = 5.3f, cameraDistance = 4.21f, cameraPitch = 31f, cameraFieldOfView = 60f;
-        public RuntimeAnimatorController maleAnimator, femaleAnimator;
-        public ShotAnimationLibrary animations;
         public Material ballMaterial,trailMaterial,teamAMaterial,teamBMaterial;
     }
 }

@@ -7,7 +7,6 @@ namespace PickleVerse.Multiplayer
     public enum PlayMode { Singles = 1, Doubles = 2 }
     public enum FlowState { Menu, WaitingRoom, Delay, Searching, Connecting, InMatch, Reconnecting, Results }
     public enum ShotKind { None, Groundstroke, Dink, Volley, Drop, Smash, ResetVolley, SpeedUp, Punch, Serve }
-    public enum ModifierMode { OneShot, Hold }
 
     [Serializable] public class RoomMember
     {
@@ -67,40 +66,6 @@ namespace PickleVerse.Multiplayer
     {
         public ShotKind kind;
         public bool attack, crossCourt;
-    }
-
-    /// <summary>Collects chord keys until the first base-key release, then waits for all keys up.</summary>
-    public sealed class ShotChord
-    {
-        int held, selected;
-        bool blocked, attack, cross, modifierInvalid;
-        public ModifierMode ModifierMode;
-        public void Reset() { held = selected = 0; blocked = attack = cross = modifierInvalid = false; }
-        public void Modifier(bool uDown, bool iDown, bool uHeld, bool iHeld)
-        {
-            if (ModifierMode == ModifierMode.Hold) { attack = uHeld; cross = iHeld; }
-            else { if (uDown) attack = true; if (iDown) cross = true; }
-            if (attack && cross) modifierInvalid = true;
-        }
-        public ShotIntent Step(int currentMask)
-        {
-            if (blocked) { held = currentMask; if (currentMask == 0) { Reset(); } return default; }
-            selected |= currentMask;
-            if (selected == 7) modifierInvalid = true;
-            bool release = (held & ~currentMask) != 0;
-            held = currentMask;
-            if (!release) return default;
-            var kind = selected == 1 ? ShotKind.Groundstroke : selected == 2 ? ShotKind.Dink : selected == 4 ? ShotKind.Volley : selected == 3 ? ShotKind.Drop : selected == 5 ? ShotKind.Smash : selected == 6 ? ShotKind.ResetVolley : ShotKind.None;
-            if (modifierInvalid) kind = ShotKind.None;
-            if (attack && selected!=1 && selected!=2 && selected!=4) kind=ShotKind.None;
-            if (attack && kind == ShotKind.Dink) kind = ShotKind.SpeedUp;
-            if (attack && kind == ShotKind.Volley) kind = ShotKind.Punch;
-            var result = new ShotIntent { kind = kind, attack = attack, crossCourt = cross };
-            blocked = true;
-            attack = cross = modifierInvalid = false;
-            if (currentMask == 0) Reset();
-            return result;
-        }
     }
 
 }
