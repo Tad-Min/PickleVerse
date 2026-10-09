@@ -37,6 +37,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/MultiplayerCourt.unity
     m_guid: 9f6b98bbb2f4b2644a5571fd6a597bd3
+  - m_enabled: 1
+    m_path: Assets/Scenes/UI/Settings.unity
+    m_guid: e7c64f24456b07649be4287d45df91dc
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

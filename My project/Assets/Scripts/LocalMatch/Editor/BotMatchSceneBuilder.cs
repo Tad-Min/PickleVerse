@@ -75,6 +75,7 @@ namespace PickleVerse.LocalMatch.Editor
             BuildHud(match);
             BallPresentationSetup.Configure(match);
             BotMatchIntroSetup.Configure(match);
+            MatchAnnouncementsSetup.Configure(match);
             if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new InvalidOperationException("Failed saving BotMatch scene.");
             MatchEnvironmentSetup.Configure();
             if (!EditorBuildSettings.scenes.Any(s => s.path == ScenePath)) EditorBuildSettings.scenes = EditorBuildSettings.scenes.Concat(new[] { new EditorBuildSettingsScene(ScenePath, true) }).ToArray();
@@ -232,7 +233,7 @@ namespace PickleVerse.LocalMatch.Editor
             var bottom = Panel("TechniqueBar",root,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,15),new Vector2(600,96),ink);
             hud.selection = Text("Selection",bottom,"",new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-10),new Vector2(580,47),20);
             hud.timing = Text("ContactFeedback",bottom,"",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,8),new Vector2(580,25),17);
-            Button("Pause",root,"Esc / Dừng",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-16),new Vector2(130,36),hud.Pause);
+            Button("Settings",root,"Esc / Cài đặt",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-16),new Vector2(130,36),hud.OpenSettings);
             Button("Help",root,"F1 / Hướng dẫn",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-59),new Vector2(150,36),hud.ToggleHelp);
             Button("Touch",root,"Cảm ứng",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-102),new Vector2(130,36),hud.ToggleTouch);
             Button("Timeout",root,"T / Time-out",new Vector2(0,1),new Vector2(0,1),new Vector2(20,-62),new Vector2(140,36),hud.Timeout);

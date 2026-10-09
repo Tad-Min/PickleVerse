@@ -46,11 +46,11 @@ Camera hiện thấp và gần nhân vật: cao 5,3 m, phía sau 4,21 m, FOV 60�
 
 ## Thể thức và luật trong vòng trận
 
-Trận dùng luật đấu đơn với side-out scoring, thắng hai trong ba game. Mỗi game đến 11 điểm và cách hai; thắng rally khi nhận giao chỉ đổi quyền giao. Ô giao chẵn/lẻ theo điểm bên giao. Hai bên đổi sân giữa các game và ở mốc 6 điểm trong game quyết định.
+Trận dùng luật đấu đơn với side-out scoring, thắng hai trong ba game. Mỗi game đến 11 điểm và cách hai; thắng rally khi nhận giao chỉ đổi quyền giao. Ô giao chẵn/lẻ theo điểm bên giao. Hai bên đổi sân giữa các game và ở mốc 6 điểm trong game quyết định. Sau game đầu, chữ lướt “Game 1 kết thúc” rồi “Đổi bên” thay hộp xác nhận; hệ thống tự sang game tiếp theo, giữ số game thắng 1–0 và đưa điểm game về 0–0. Lỗi và kết quả cả trận cũng dùng chữ lướt giữa màn hình; chỉ khi thắng đủ hai game mới kết thúc trận.
 
 Các điều kiện được xét theo diễn biến bóng và tư thế tại contact: giao chéo, loại trừ Kitchen và vạch Kitchen khi giao, hạn 10 giây, chân giao sau baseline, động tác giao đi lên, đầu vợt dưới cổ tay và contact thấp. Return và cú trả đầu của bên giao phải nảy. Rally xử lý out, bóng không qua lưới, nảy hai lần, chạm người, chạm lưới của nhân vật và contact sai phía lưới. Bóng chạm dây trên lưới có thể tiếp tục qua sân.
 
-Volley trong Kitchen hoặc chạm vạch là lỗi. Theo dõi đà đến hết follow-through và khi nhân vật lấy lại kiểm soát; lỗi đà có thể thay kết quả tạm thời sau bóng chết. Điểm được chốt sau bước này. Dink/Drive sau nảy trong Kitchen được phép. Mỗi bên có hai time-out, tối đa 60 giây; nghỉ giữa game tối đa 120 giây, có thể tiếp tục sớm.
+Volley trong Kitchen hoặc chạm vạch là lỗi. Theo dõi đà đến hết follow-through và khi nhân vật lấy lại kiểm soát; lỗi đà có thể thay kết quả tạm thời sau bóng chết. Điểm được chốt sau bước này. Dink/Drive sau nảy trong Kitchen được phép. Mỗi bên có hai time-out, tối đa 60 giây. Trong bản đấu bot, khoảng chuyển game được rút gọn thành chuỗi thông báo khoảng 4,2 giây, sau đó tự đổi bên và vào game tiếp theo.
 
 Nguồn thiết kế chính là bốn tài liệu nội bộ: [luật](Luat_thi_dau_Pickleball.md), [nghiên cứu điều khiển](PickleVerse_Controls_Combo_Research.md), [phân tích project](PickleVerse_Doc_Analysis.md), [proposal](PickleVerse_Capstone_Proposal.md). Điều kiện volley serve và cách gọi điểm đấu đơn được đối chiếu với [USA Pickleball Official Rulebook 2026](https://usapickleball.org/docs/rules/USAP-Official-Rulebook.pdf). Số phần của bản dịch nội bộ và bản 2026 khác nhau.
 
