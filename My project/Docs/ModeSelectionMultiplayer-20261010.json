@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "scene": "PlayMultiplayer",
+  "state": "WaitingRoom",
+  "mode": "Singles",
+  "custom": false,
+  "roomType": "1Vs1",
+  "singlesPanel": true,
+  "duplicateClickBlocked": true,
+  "testEnvironment": "Unity Editor; Domain Reload tạm tắt để chạy kiểm tra tự động, đã khôi phục cấu hình ban đầu sau kiểm tra.",
+  "buildReport": "ModeSelectionMultiplayerBuild-20261010.json"
+}

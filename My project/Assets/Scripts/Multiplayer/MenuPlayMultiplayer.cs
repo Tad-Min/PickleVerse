@@ -7,7 +7,6 @@ namespace PickleVerse.Multiplayer
         // Retain the existing Menu button component and serialized listener.
         public void Play()
         {
-            MultiplayerApp.OpenDefaultRoomOnLoad = true;
             SceneManager.LoadScene("ModeSelection");
         }
     }

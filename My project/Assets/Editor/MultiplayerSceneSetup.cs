@@ -14,7 +14,8 @@ namespace PickleVerse.EditorTools
         static readonly string[] Required =
         {
             MultiplayerSceneConfiguration.RoomPath,
-            MultiplayerSceneConfiguration.CourtPath
+            MultiplayerSceneConfiguration.CourtPath,
+            "Assets/Scenes/UI/ModeSelection.unity"
         };
 
         static MultiplayerSceneSetup()

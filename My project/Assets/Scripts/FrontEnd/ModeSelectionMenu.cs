@@ -80,6 +80,19 @@ namespace PickleVerse.FrontEnd
             Focus(startButton);
         }
 
+        public void OpenMultiplayer()
+        {
+            if (Loading) return;
+            if (!Application.CanStreamedLevelBeLoaded("PlayMultiplayer"))
+            {
+                subtitle.text = "Chưa tìm thấy phòng PlayMultiplayer trong bản game.";
+                return;
+            }
+            Loading = true;
+            PickleVerse.Multiplayer.MultiplayerApp.OpenDefaultRoomOnLoad = true;
+            StartCoroutine(LoadScene("PlayMultiplayer", "Đang mở phòng multiplayer…"));
+        }
+
         void Reveal(GameObject page)
         {
             if (reveal != null) StopCoroutine(reveal);
@@ -157,16 +170,16 @@ namespace PickleVerse.FrontEnd
             }
             Loading = true;
             BotMatchLaunchSettings.Prepare(SelectedDifficulty, SelectedNight);
-            StartCoroutine(LoadCourt());
+            StartCoroutine(LoadScene("BotMatch", "Đang chuẩn bị sân…"));
         }
 
-        IEnumerator LoadCourt()
+        IEnumerator LoadScene(string sceneName, string message)
         {
             loadingOverlay.SetActive(true);
-            loadingLabel.text = "Đang chuẩn bị sân…";
+            loadingLabel.text = message;
             EventSystem.current?.SetSelectedGameObject(null);
             yield return null;
-            yield return SceneManager.LoadSceneAsync("BotMatch");
+            yield return SceneManager.LoadSceneAsync(sceneName);
         }
     }
 }

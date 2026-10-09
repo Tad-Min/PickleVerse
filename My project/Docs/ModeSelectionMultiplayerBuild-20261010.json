@@ -1,0 +1,10 @@
+{
+  "buildId": "build_68d63a12abaf",
+  "status": "completed",
+  "result": "Succeeded",
+  "totalErrors": 0,
+  "totalWarnings": 1,
+  "buildStartedAt": "2026-10-09T21:33:10.6782211Z",
+  "buildEndedAt": "2026-10-09T21:33:18.8892724Z",
+  "outputPath": "D:/Repository/PickleVerse/My project/Builds/Multiplayer/PickleVerse.exe"
+}

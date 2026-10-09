@@ -2,14 +2,16 @@
 
 ## Chạy bản mới
 
-Windows cập nhật lúc **02:16 ngày 10/10/2026**, build `build_4d33cf5fdfaf`: đồng bộ toàn bộ HUD BotMatch vào MultiplayerCourt, gồm bảng điểm hai dòng, GAME/số game thắng/chế độ, banner FAULT, TechniqueBar, Settings, Help, cảm ứng, time-out và kết quả trận. Giao thức mạng phiên bản **3**; mọi máy phải cập nhật cùng bản mới. Build thành công với **0 lỗi**, 542 cảnh báo. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
+Windows cập nhật lúc **04:33 ngày 10/10/2026**, build `build_68d63a12abaf`: nối Multiplayer trong ModeSelection tới PlayMultiplayer; giữ toàn bộ HUD BotMatch đã đồng bộ vào MultiplayerCourt, gồm bảng điểm hai dòng, GAME/số game thắng/chế độ, banner FAULT, TechniqueBar, Settings, Help, cảm ứng, time-out và kết quả trận. Giao thức mạng phiên bản **3**; mọi máy phải cập nhật cùng bản mới. Build thành công với **0 lỗi**, 1 cảnh báo. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
 
-1. Trong Unity, mở `Assets/Scenes/UI/PlayMultiplayer.unity` rồi bấm Play.
+1. Trong Unity, mở `Assets/Scenes/UI/ModeSelection.unity`, bấm Play rồi chọn **Multiplayer → CHƠI NGAY** để mở PlayMultiplayer ở phòng **1Vs1**. Từ Menu: **Play → ModeSelection → Multiplayer**. Có thể mở trực tiếp `Assets/Scenes/UI/PlayMultiplayer.unity` để test phòng.
 2. Hoặc chạy `Builds/Multiplayer/PickleVerse.exe`. Khi gửi cho bạn bè, gửi **toàn bộ folder Multiplayer**, gồm exe, `PickleVerse_Data` và các DLL; mọi máy dùng cùng bản build.
 3. Mỗi phiên dùng danh tính đăng nhập riêng. Mặc định lấy PID; có thể chạy `PickleVerse.exe -pkvProfile Player1`, phiên thứ hai dùng `Player2`.
 4. Nhập tên ở `TxtPlayerName`. Bỏ trống tạo 4 chữ cái. Tên là bí danh hiển thị; Authentication ID riêng giữ nguyên để kết nối lại. Không cho tên trùng trong cùng phòng.
 
 ## UI mới
+
+Nút Multiplayer trong ModeSelection đã bật và nối tới `ModeSelectionMenu.OpenMultiplayer()`. Dùng overlay tải có sẵn, chặn bấm nhiều lần và mở lại phòng mặc định 1vs1. Scene ModeSelection được thêm vào Build Profile MultiplayerWindows và công cụ cấu hình scene để bản pull mới giữ được luồng này. Kiểm tra runtime cả luồng Menu → ModeSelection → PlayMultiplayer đạt; kết quả tại `Docs/ModeSelectionMultiplayer-20261010.json`.
 
 Giao diện PlayMultiplayer đã được chỉnh theo ảnh tham chiếu ngày 09/10/2026: bảng nhập/chia sẻ mã phòng bên trái, thẻ người chơi bên phải, nền xanh tối và viền mint. Cả 1Vs1, 2Vs2 và Custom dùng cùng phong cách. Canvas co theo độ phân giải, giữ khung nội dung ở giữa; đã kiểm tra 1280×720, 1024×768, 1920×1080 và 2560×1080.
 
