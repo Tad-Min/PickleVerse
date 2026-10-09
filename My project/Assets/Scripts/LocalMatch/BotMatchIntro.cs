@@ -76,7 +76,7 @@ namespace PickleVerse.LocalMatch
             match.BeginCinematic();IsPlaying=true;Elapsed=0;overlay.SetActive(true);overlay.transform.SetAsLastSibling();
             Evaluate(0);return true;
         }
-        void Update() { if(IsPlaying)Advance(Mathf.Min(Time.unscaledDeltaTime,.1f)); }
+        void Update() { if(IsPlaying && (!match || !match.Paused))Advance(Mathf.Min(Time.unscaledDeltaTime,.1f)); }
         public void Advance(float delta)
         {
             if(!IsPlaying)return;

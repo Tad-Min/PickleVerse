@@ -3,10 +3,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
+using PickleVerse.Settings;
 
 namespace PickleVerse.FrontEnd
 {
-    public sealed class HomeLobbyPresentation : MonoBehaviour
+    public sealed class HomeLobbyPresentation : MonoBehaviour, ISettingsHost
     {
         public Transform femaleVisual;
         public AnimationClip dance;
@@ -151,6 +152,17 @@ namespace PickleVerse.FrontEnd
             if (!skyInstance) return;
             if (RenderSettings.skybox == skyInstance) RenderSettings.skybox = daySky;
             Destroy(skyInstance);
+        }
+        public bool IsGameplay => false;
+        public bool IsPaused => false;
+        public bool CanSignOut => true;
+        public void SetPaused(bool paused) { }
+        public void LeaveToMenu() { }
+        public async System.Threading.Tasks.Task SignOutAsync()
+        {
+            await PickleVerse.Multiplayer.PlayerSignOut.FromLobbyAsync();
+            var texts=safeArea.GetComponentsInChildren<TMP_Text>(true);
+            foreach(var text in texts)if(text.name=="TxtName")text.text="Khách";else if(text.name=="TxtLevel")text.text="CHƯA ĐĂNG NHẬP";
         }
     }
 }

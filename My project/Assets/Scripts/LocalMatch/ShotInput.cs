@@ -23,12 +23,14 @@ namespace PickleVerse.LocalMatch
         public string Selection { get; private set; } = "";
         public string SelectionKeys { get; private set; } = "";
         public string CommittedKeys { get; private set; } = "";
-        public void Cancel() { bases = 0; invalid = true; locked = true; Selection = SelectionKeys = ""; }
+        public int SelectionMask { get; private set; }
+        public int CommittedMask { get; private set; }
+        public void Cancel() { bases = 0; invalid = true; locked = true; Selection = SelectionKeys = ""; SelectionMask=0; }
         public bool Tick(int mask, bool cancel, bool serve, out ShotIntent intent)
         {
             intent = default;
             if (cancel) Cancel();
-            if (mask == 0 && (locked || (previous & 7) == 0)) { previous = bases = 0; locked = invalid = false; Selection = SelectionKeys = ""; return false; }
+            if (mask == 0 && (locked || (previous & 7) == 0)) { previous = bases = 0; locked = invalid = false; Selection = SelectionKeys = ""; SelectionMask=0; return false; }
             if (locked) { previous = mask; return false; }
             int currentBases = mask & 7;
             int released = (previous & 7) & ~currentBases;
@@ -40,10 +42,12 @@ namespace PickleVerse.LocalMatch
             bool valid = Resolve(bases, modifiers, serve, out intent);
             Selection = valid && bases != 0 ? intent.ToString() : "";
             SelectionKeys = valid && bases != 0 ? Keys(bases | modifiers) : "";
+            SelectionMask = valid && bases != 0 ? bases | modifiers : 0;
             previous = mask;
             if (released == 0 || bases == 0 || invalid) return false;
             CommittedKeys = SelectionKeys;
-            locked = true; Selection = SelectionKeys = "";
+            CommittedMask = SelectionMask;
+            locked = true; Selection = SelectionKeys = ""; SelectionMask=0;
             if (!valid) { Feedback = serve ? "Giao bóng bằng J, J+U hoặc J+I" : "Tổ hợp không hợp lệ"; return false; }
             Feedback = ""; return true;
         }
