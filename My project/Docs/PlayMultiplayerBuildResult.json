@@ -1,9 +1,9 @@
 {
   "status": "completed",
   "result": "Succeeded",
-  "buildId": "build_136ccdb6a494",
-  "buildTimeMs": 43875,
-  "totalSizeBytes": 323682170,
+  "buildId": "build_471331678ed5",
+  "buildTimeMs": 43451,
+  "totalSizeBytes": 325387530,
   "totalWarnings": 542,
   "totalErrors": 0,
   "warningGroups": [

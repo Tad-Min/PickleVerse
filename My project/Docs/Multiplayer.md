@@ -9,6 +9,12 @@
 
 ## UI mới
 
+Giao diện PlayMultiplayer đã được chỉnh theo ảnh tham chiếu ngày 09/10/2026: bảng nhập/chia sẻ mã phòng bên trái, thẻ người chơi bên phải, nền xanh tối và viền mint. Cả 1Vs1, 2Vs2 và Custom dùng cùng phong cách. Canvas co theo độ phân giải, giữ khung nội dung ở giữa; đã kiểm tra 1280×720, 1024×768, 1920×1080 và 2560×1080.
+
+Artwork UI nằm tại `Assets/FrontEndContent/Multiplayer`. Ảnh nhân vật hiện tại là hình trang trí lấy từ prefab MaleActor; avatar cá nhân chưa triển khai. Ghế trống hiện bóng người và “Chờ người chơi”. BtnInvite vẫn là placeholder chưa triển khai.
+
+Ảnh xem trước: `Docs/MultiplayerScreenshots/PlayMultiplayer-2Vs2-redesign.png` và `PlayMultiplayer-Custom-redesign.png`. Kiểm tra bố cục và nút: `Docs/PlayMultiplayerRedesignValidation.json`, `Docs/PlayMultiplayerRedesignLiveValidation.json`. Bản scene/presenter trước khi chỉnh nằm tại `Temp/PlayMultiplayerRestyle`.
+
 - Vào scene mở 1Vs1. BtnPlay là **Tìm trận**; sau khi bấm trở thành **Hủy**.
 - Đồng hồ tăng `00:00`…`00:05`; gửi tìm thực sự khi đạt `00:06`. Hủy được suốt lúc chờ, tìm và kết nối. Giới hạn tìm 120 giây từ lần gửi đầu tiên.
 - Btn2Vs2 tạo phòng nhóm tối đa 2 người. TxtRoomId/BtnCopy hiện mã; bạn nhập mã trong TxtJoinID và bấm BtnJoin. Chủ nhóm tìm, cả hai hủy được. Hai bạn luôn cùng đội.

@@ -86,9 +86,12 @@ namespace PickleVerse.Multiplayer.UI
             singlesPanel.SetActive(!state.Custom && state.Mode == PlayMode.Singles);
             doublesPanel.SetActive(isDoubles); customPanel.SetActive(state.Custom);
             roomType.text = state.Custom ? "Custom" : isDoubles ? "2Vs2" : "1Vs1";
+            SelectMode(singles, !state.Custom && !isDoubles);
+            SelectMode(doubles, isDoubles);
+            SelectMode(custom, state.Custom);
             bool showCode = isDoubles || state.Custom;
             roomCode.gameObject.SetActive(showCode); copy.gameObject.SetActive(showCode);
-            roomCode.text = "Room ID: " + state.RoomCode; copy.interactable = state.RoomCode.Length > 0;
+            roomCode.text = "MÃ PHÒNG ID:\n" + state.RoomCode; copy.interactable = state.RoomCode.Length > 0;
             singles.interactable = doubles.interactable = custom.interactable = join.interactable = idle;
             joinCode.interactable = playerName.interactable = idle;
             if (!playerName.isFocused) playerName.SetTextWithoutNotify(state.DisplayName);
@@ -110,12 +113,28 @@ namespace PickleVerse.Multiplayer.UI
         {
             if (slot == null) return;
             slot.playerId = member?.id;
-            if (slot.name) { slot.name.richText = false; slot.name.text = member?.name ?? ""; }
+            if (slot.name) { slot.name.richText = false; slot.name.text = member?.name ?? "Chờ người chơi"; }
+            var portrait = slot.name ? slot.name.transform.parent.Find("ImgIcon/LocalPortrait") : null;
+            if (portrait)
+            {
+                bool local = member != null && member.id == state.PlayerId;
+                portrait.gameObject.SetActive(local);
+                var silhouette = portrait.parent.GetComponent<UnityEngine.UI.Image>();
+                if (silhouette) silhouette.color = local ? Color.clear : Color.white;
+            }
             // The future Invite placeholder fills an empty custom seat. Hide it
             // when occupied so its white background cannot cover the player's name.
             var invite=slot.name ? slot.name.transform.parent.Find("BtnInvite") : null;
             if(invite) invite.gameObject.SetActive(member==null);
             if (slot.kick) { slot.kick.gameObject.SetActive(state.Custom && state.IsCaptain && member != null && member.id != state.PlayerId); slot.kick.interactable = !state.Busy && state.State == FlowState.WaitingRoom; }
+        }
+        static void SelectMode(UnityEngine.UI.Button button, bool selected)
+        {
+            if (!button) return;
+            var border = button.transform.Find("SelectedBorder");
+            if (border) border.gameObject.SetActive(selected);
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label) label.color = selected ? new Color32(131, 213, 190, 255) : new Color32(174, 190, 197, 255);
         }
         void OnDestroy()
         {

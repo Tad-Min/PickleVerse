@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "buttons": [
+    {
+      "button": "BtnJoin",
+      "reachable": true,
+      "text": "GIA NHẬP",
+      "textFits": true
+    },
+    {
+      "button": "Btn1Vs1",
+      "reachable": true,
+      "text": "1Vs1",
+      "textFits": true
+    },
+    {
+      "button": "Btn2Vs2",
+      "reachable": true,
+      "text": "2Vs2",
+      "textFits": true
+    },
+    {
+      "button": "BtnCustom",
+      "reachable": true,
+      "text": "Custom",
+      "textFits": true
+    },
+    {
+      "button": "BtnCopy",
+      "reachable": true,
+      "text": "SAO CHÉP",
+      "textFits": true
+    },
+    {
+      "button": "BtnPlay",
+      "reachable": true,
+      "text": "Bắt đầu",
+      "textFits": true
+    },
+    {
+      "button": "BtnSwap",
+      "reachable": true,
+      "text": "ĐỔI ĐỘI",
+      "textFits": true
+    }
+  ],
+  "selectedMode": true,
+  "portraits": true,
+  "errors": []
+}

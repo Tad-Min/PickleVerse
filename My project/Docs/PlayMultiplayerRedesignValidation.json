@@ -1,0 +1,32 @@
+{
+  "resolutions": [
+    {
+      "width": 1280,
+      "height": 720,
+      "canvasScale": 1.0,
+      "contained": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "canvasScale": 0.8,
+      "contained": true
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "canvasScale": 1.5,
+      "contained": true
+    },
+    {
+      "width": 2560,
+      "height": 1080,
+      "canvasScale": 1.5,
+      "contained": true
+    }
+  ],
+  "errors": [],
+  "missingScripts": 0,
+  "eventSystems": 1,
+  "raycaster": true
+}
