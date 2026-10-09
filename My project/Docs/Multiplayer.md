@@ -2,6 +2,8 @@
 
 ## Chạy bản mới
 
+Windows đã cập nhật UI sân lúc **21:42 ngày 09/10/2026**, build `build_187709f858a7`: bảng điểm chỉ hiện tỉ số, đã bỏ TechniqueBar. Hai phiên Windows đã vào sân custom; xem `Docs/MultiplayerUiBuild-20261009.json`. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
+
 1. Trong Unity, mở `Assets/Scenes/UI/PlayMultiplayer.unity` rồi bấm Play.
 2. Hoặc chạy `Builds/Multiplayer/PickleVerse.exe`. Khi gửi cho bạn bè, gửi **toàn bộ folder Multiplayer**, gồm exe, `PickleVerse_Data` và các DLL; mọi máy dùng cùng bản build.
 3. Mỗi phiên dùng danh tính đăng nhập riêng. Mặc định lấy PID; có thể chạy `PickleVerse.exe -pkvProfile Player1`, phiên thứ hai dùng `Player2`.

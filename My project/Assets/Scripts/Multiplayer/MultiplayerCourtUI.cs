@@ -14,7 +14,7 @@ namespace PickleVerse.Multiplayer
         void Update()
         {
             var match=NetworkMatch.Instance; if(match==null) return;
-            score.text=$"ĐỘI A  {match.ScoreA.Value} : {match.ScoreB.Value}  ĐỘI B\n<size=17>GAME THẮNG {match.GamesA.Value}–{match.GamesB.Value} • THẮNG 2/3 GAME</size>";
+            score.text=$"{match.ScoreA.Value} : {match.ScoreB.Value}";
             var app=MultiplayerApp.Instance;
             status.text=app.Searching?app.Notice+"  "+app.Elapsed:app.State==FlowState.Reconnecting?app.Notice:match.Status.Value.ToString();
             leave.GetComponentInChildren<TMP_Text>().text=app.Searching?"Hủy":"Rời trận";

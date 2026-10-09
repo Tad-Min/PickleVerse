@@ -223,12 +223,11 @@ namespace PickleVerse.EditorTools
             SceneManager.MoveGameObjectToScene(canvas, court);
             var c = canvas.GetComponent<Canvas>(); c.renderMode = RenderMode.ScreenSpaceCamera; c.worldCamera = camera; c.planeDistance = .75f;
             var scaler = canvas.GetComponent<UnityEngine.UI.CanvasScaler>(); scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1280,720); scaler.matchWidthOrHeight = .5f;
-            foreach (var child in bot.hud.transform.Cast<Transform>().Where(t => new[] { "Scoreboard", "RefereeNotice", "ServeClock", "TechniqueBar" }.Contains(t.name)))
+            foreach (var child in bot.hud.transform.Cast<Transform>().Where(t => new[] { "Scoreboard", "RefereeNotice", "ServeClock" }.Contains(t.name)))
             { var clone = Object.Instantiate(child.gameObject, canvas.transform); clone.name = child.name; }
             var ui = canvas.AddComponent<MultiplayerCourtUI>();
             ui.score = Find<TMP_Text>(canvas.transform, "Scoreboard/Score"); ui.status = Find<TMP_Text>(canvas.transform, "RefereeNotice/RefereeText"); ui.server = Find<TMP_Text>(canvas.transform, "ServeClock");
-            Find<TMP_Text>(canvas.transform, "TechniqueBar/Selection").text = "J Drive   K Dink   L Volley\n<size=16>J+K Drop   J+L Smash   K+L Reset   •   +U Lực / +I Chéo</size>";
-            Find<TMP_Text>(canvas.transform, "TechniqueBar/ContactFeedback").text = "Giữ tổ hợp rồi thả phím đánh • Backspace hủy • WASD / Shift";
+            ui.score.text = "0 : 0";
             var buttonTemplate = bot.hud.transform.Find("Pause").GetComponent<UnityEngine.UI.Button>();
             ui.leave = Object.Instantiate(buttonTemplate, canvas.transform); ui.leave.name = "Leave"; ClearCalls(ui.leave);
             ui.returnToRoom = Object.Instantiate(buttonTemplate, canvas.transform); ui.returnToRoom.name = "ReturnToRoom"; ClearCalls(ui.returnToRoom);

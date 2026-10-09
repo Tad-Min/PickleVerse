@@ -25,13 +25,13 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/UI/PlayMultiplayer.unity
     m_guid: 7c80ec55a0a36764c92b439613c911dc
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Scenes/UI/Menu.unity
     m_guid: 3758045ad48627a4b830666f01058e26
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Scenes/UI/ModeSelection.unity
     m_guid: 7aa09318597d56d4390b2076b189a264
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Scenes/BotMatch.unity
     m_guid: c5dd464557b1b774fab2d47ff1ff26d3
   - m_enabled: 1
@@ -58,7 +58,7 @@ MonoBehaviour:
         m_ExplicitNullChecks: 0
         m_ExplicitDivideByZeroChecks: 0
         m_ExplicitArrayBoundsChecks: 0
-        m_CompressionType: -1
+        m_CompressionType: 0
         m_InstallInBuildFolder: 0
         m_InsightsSettingsContainer:
           m_BuildProfileEngineDiagnosticsState: 2

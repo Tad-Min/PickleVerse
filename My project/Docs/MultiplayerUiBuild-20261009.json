@@ -1,0 +1,33 @@
+{
+  "reason": "Windows build 17:09 was older than court UI changes at 20:40",
+  "artifact": {
+    "buildId": "build_187709f858a7",
+    "multiplayerDllWrite": "2026-10-09 21:42:32",
+    "courtSceneWrite": "2026-10-09 21:42:32",
+    "oldGameWinsLabel": false,
+    "oldTeamLabel": false,
+    "techniqueBarInCourt": false,
+    "oldScorePlaceholder": false,
+    "newScorePlaceholder": true
+  },
+  "build": {
+    "buildId": "build_187709f858a7",
+    "status": "completed",
+    "result": "Succeeded",
+    "totalErrors": 0,
+    "totalWarnings": 1,
+    "buildTimeMs": 8969,
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/Multiplayer/PickleVerse.exe"
+  },
+  "customWindows": [
+    {
+      "file": "custom1-U1009B1.PU1009B1C1.txt",
+      "result": "PASS customHost PU1009B1C1: 2 players, host=True, scene=MultiplayerCourt"
+    },
+    {
+      "file": "custom1-U1009B1.PU1009B1C2.txt",
+      "result": "PASS customGuest PU1009B1C2: 2 players, host=False, scene=MultiplayerCourt"
+    }
+  ],
+  "graphicsCapture": false
+}
