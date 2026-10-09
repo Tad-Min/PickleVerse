@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using PickleVerse.Rules;
+using PickleVerse.Audio;
 
 namespace PickleVerse.LocalMatch
 {
@@ -39,6 +40,7 @@ namespace PickleVerse.LocalMatch
         float clipTime, swingTime, lastVolleyTime, balanceTime;
         bool contactConsumed;
         float sourceContactPhase;
+        readonly MovementFoley foley=new MovementFoley();
         public bool InKitchen => Court.InKitchen(Feet(true)) || Court.InKitchen(Feet(false));
         public CourtPoint Feet(bool left)
         {
@@ -67,10 +69,12 @@ namespace PickleVerse.LocalMatch
             clipName=clip.name;
             clip.SampleAnimation(visual.gameObject,Mathf.Repeat(time,clip.length));
         }
+        public void EntranceFootsteps(float dt){foley.Step(transform.position,false,dt);}
         public void ResetAt(Vector3 p, int newEnd)
         {
             end = newEnd; transform.position = p; transform.rotation = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
             Velocity = Vector3.zero; Swinging = VolleyMomentum = false; contactConsumed = false; balanceTime = 0;
+            foley.Reset();
             if (paddle) paddle.SetActive(true);
             if (animationPlayer) Play("PKV_Idle_Ready");
         }
@@ -93,6 +97,9 @@ namespace PickleVerse.LocalMatch
         }
         public void ConsumeContact(bool volley)
         {
+            if(contactConsumed)return;
+            SfxPlayer.Play(Intent.kind==ShotKind.Serve?GameSfx.Serve:Intent.power?GameSfx.HitStrong:GameSfx.HitNormal,paddleFace?paddleFace.position:transform.position+Vector3.up);
+            if(Intent.kind==ShotKind.Serve)SfxPlayer.Stop(GameSfx.Countdown);
             contactConsumed = true;
             if (volley) { VolleyMomentum = true; lastVolleyTime = 0; balanceTime = 0; }
         }
@@ -116,6 +123,7 @@ namespace PickleVerse.LocalMatch
             }
             else Velocity = Vector3.MoveTowards(Velocity, Vector3.zero, 24f * dt);
             AdvancePose(dt, run, canMove);
+            foley.Step(transform.position,run,dt,canMove);
             if(paddleFace)PaddleVelocity=(paddleFace.position-previousFace)/Mathf.Max(.0001f,dt);
         }
         /// <summary>Remote replicas sample the same authored poses without moving their network root.</summary>
@@ -123,6 +131,7 @@ namespace PickleVerse.LocalMatch
         {
             Vector3 previousFace = paddleFace ? paddleFace.position : Vector3.zero;
             Velocity = velocity; AdvancePose(dt, run, true);
+            foley.Step(transform.position,run,dt);
             if (paddleFace) PaddleVelocity = (paddleFace.position - previousFace) / Mathf.Max(.0001f, dt);
         }
         void AdvancePose(float dt, bool run, bool canMove)

@@ -70,7 +70,7 @@ public static class SettingsSetup
         Text("Heading",p,"Âm lượng",new Vector2(0,.87f),Vector2.one,27,Color.white,TextAlignmentOptions.Left,true);
         string[] labels={"Âm lượng tổng","Nhạc nền","Hiệu ứng"};
         for(int i=0;i<3;i++)Slider(ui,i,p,labels[i],new Vector2(0,.66f-i*.22f),new Vector2(1,.84f-i*.22f),0,1);
-        Text("Note",p,"Nhạc và hiệu ứng đang được bổ sung. Mức âm lượng của bạn sẽ được lưu.",new Vector2(0,0),new Vector2(1,.13f),17,Muted,TextAlignmentOptions.TopLeft);
+        Text("Note",p,"Hiệu ứng trận đấu đã hoạt động. Nhạc nền sẽ được bổ sung sau.",new Vector2(0,0),new Vector2(1,.13f),17,Muted,TextAlignmentOptions.TopLeft);
     }
     static void Graphics(SettingsScreen ui)
     {

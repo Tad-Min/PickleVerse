@@ -20,7 +20,7 @@ Settings đã được thêm vào danh sách scene build chung và các Build Pr
 |---|---|---|
 | Tổng quan | Tiếp tục / rời trận | Giữ nguyên trận khi tiếp tục; xác nhận trước khi rời về Menu |
 | Tổng quan | Đăng xuất | Gọi luồng đăng xuất Unity Authentication hiện có, trở về trạng thái khách ở đại sảnh |
-| Âm thanh | Tổng / nhạc / hiệu ứng | Lưu cả ba mức âm lượng; tổng áp dụng qua `AudioListener.volume` |
+| Âm thanh | Tổng / nhạc / hiệu ứng | Tổng áp dụng qua `AudioListener.volume`; Hiệu ứng điều chỉnh SFX ngay; Nhạc lưu mức để dùng sau |
 | Đồ họa | Thấp / Cân bằng / Cao | Đổi render scale, MSAA và ngân sách shadow của URP |
 | Đồ họa | Độ nét | Render scale từ 50% đến 125% |
 | Đồ họa | FPS | Giới hạn 30 / 60 / 120; kết quả còn phụ thuộc thiết bị |
@@ -72,7 +72,7 @@ Trang điện thoại sửa bố trí nút của đấu bot. Nút combo cảm �
 
 Theo cơ chế Unity Authentication, `SignOut()` mặc định giữ session token trên thiết bị. Điều này bảo toàn khả năng quay lại danh tính khách chưa liên kết. Không xóa tài khoản, token khách, dữ liệu tiến trình hoặc cài đặt. Phiên đăng nhập lại vẫn theo luồng Authentication hiện có của dự án; đây chưa phải tính năng chọn/chuyển tài khoản của backend tương lai.
 
-Game hiện chưa có hệ thống nhạc/hiệu ứng đầy đủ. Hai thanh Nhạc và Hiệu ứng đã có UI và lưu giá trị; chúng cần được nối vào AudioMixer hoặc hệ thống AudioSource theo nhóm khi triển khai âm thanh. Hiện mới âm lượng tổng có tác dụng trực tiếp.
+SFX trận đấu đã được bổ sung ngày 09/10/2026. Thanh Hiệu ứng điều chỉnh nguồn SFX ngay cả khi xem trước, hoàn tác hoặc lưu; âm lượng Tổng tiếp tục điều khiển AudioListener. Nhạc nền chưa được triển khai, thanh Nhạc vẫn lưu mức để nối sau. Chi tiết tại `Match_SFX_Integration.md`.
 
 ## Nền móng cho các chế độ tiếp theo
 
@@ -83,7 +83,7 @@ Hiện đã nối đầy đủ tại **Menu và BotMatch** theo phạm vi ưu ti
 1. Gắn launcher vào UI của chế độ mới và triển khai host cho ngữ cảnh đó.
 2. Cho bộ điều khiển của chế độ đó đọc `GameControls` và cài đặt touch, thay vì hardcode phím.
 3. Với online, thiết kế host để mở cài đặt chỉ chặn input cục bộ; không dừng đồng hồ hay simulation của các người chơi khác.
-4. Nối nhạc/hiệu ứng vào các mức âm lượng đã lưu.
+4. Nối nhạc nền vào mức âm lượng Nhạc đã lưu; các SFX trận hiện dùng nhóm nguồn riêng trong SfxPlayer.
 
 Không thêm dịch vụ cloud, package mới hoặc thay đổi luật trận đấu trong tính năng này.
 

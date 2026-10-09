@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using PickleVerse.Rules;
 using PickleVerse.Settings;
+using PickleVerse.Audio;
 
 namespace PickleVerse.LocalMatch
 {
@@ -38,6 +39,7 @@ namespace PickleVerse.LocalMatch
         float accumulator, phaseTime;
         int initialServer;
         bool releasedServe, focused = true;
+        readonly ServeCountdownCue countdown=new ServeCountdownCue();
         Vector3 serveOrigin;
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
@@ -139,6 +141,7 @@ namespace PickleVerse.LocalMatch
             if (Phase == MatchPhase.PreServe)
             {
                 ServeElapsed += dt;
+                countdown.Step(ServeElapsed);
                 var server = Actor(Rules.Server);
                 if (server.Swinging && server.Intent.kind == ShotKind.Serve)
                 {
@@ -270,6 +273,7 @@ namespace PickleVerse.LocalMatch
         {
             if (Phase == MatchPhase.Settling) return;
             Phase = MatchPhase.Settling; phaseTime = 0; input.Cancel(); TouchShotMask = 0;
+            countdown.Reset();SfxPlayer.Play(GameSfx.FaultWhistle);
             Message = FaultText(Rules.LastFault) + " • " + (Rules.FaultPlayer == 0 ? "Bạn" : "Bot") + " phạm lỗi";
         }
         void FinishRally()
@@ -287,11 +291,13 @@ namespace PickleVerse.LocalMatch
             Announcements?.Enqueue(fault == Fault.Out ? "OUT" : "FAULT / LỖI", FaultText(fault) + " • " + (loser == 0 ? "Bạn" : "Bot") + " phạm lỗi\n" + outcome, loser == 0 ? AnnouncementTone.Fault : AnnouncementTone.Neutral, 1.2f);
             if (Rules.Winner >= 0)
             {
+                SfxPlayer.Play(GameSfx.GameWhistle);
                 Phase = MatchPhase.MatchOver; Message = Rules.Winner == 0 ? "Bạn thắng trận!" : "Bot thắng trận";
                 Announcements?.Enqueue("GAME, MATCH!", (Rules.Winner == 0 ? "BẠN THẮNG TRẬN" : "BOT THẮNG TRẬN") + " • " + Rules.Games[0] + " - " + Rules.Games[1] + "\nGame " + endedGame + ": " + Rules.Points[0] + " - " + Rules.Points[1], Rules.Winner == 0 ? AnnouncementTone.Success : AnnouncementTone.Fault, 2.1f);
             }
             else if (Rules.GameFinished)
             {
+                SfxPlayer.Play(GameSfx.GameWhistle);
                 Phase = MatchPhase.BetweenGames; Message = "";
                 Announcements?.Enqueue("GAME " + endedGame + " KẾT THÚC", (loser == 1 ? "Bạn thắng game" : "Bot thắng game") + " • " + Rules.Points[0] + " - " + Rules.Points[1] + "\nSố game thắng " + Rules.Games[0] + " - " + Rules.Games[1], loser == 1 ? AnnouncementTone.Success : AnnouncementTone.Neutral, 1.6f);
                 Announcements?.Enqueue("ĐỔI BÊN", "CHANGE ENDS • Chuẩn bị game " + (endedGame + 1), AnnouncementTone.ChangeEnds, 1.4f, () => StageEndChange(true), FinishEndChange);
@@ -311,6 +317,7 @@ namespace PickleVerse.LocalMatch
         void StageEndChange(bool nextGame)
         {
             if (Phase != MatchPhase.BetweenGames && Phase != MatchPhase.BetweenPoints) return;
+            if(!nextGame)SfxPlayer.Play(GameSfx.GameWhistle);
             var transition = Phase;
             SwapEnds();
             if (nextGame) Rules.NextGame();
@@ -330,6 +337,7 @@ namespace PickleVerse.LocalMatch
             Actor(Rules.Server).ResetAt(new Vector3(lane * 1.45f, 0, Actor(Rules.Server).end * 7.25f), Actor(Rules.Server).end);
             Actor(1 - Rules.Server).ResetAt(new Vector3(-lane * 1.45f, 0, Actor(1 - Rules.Server).end * 6.1f), Actor(1 - Rules.Server).end);
             Rules.PrepareServe(Actor(Rules.Server).end); Phase = MatchPhase.PreServe; phaseTime = ServeElapsed = 0;
+            countdown.Reset();
             opponent.Reset(); testPlayer.Reset(); releasedServe = false; input.Cancel();
             Message = (Rules.Server == 0 ? "Bạn giao • giữ rồi thả " + GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Drive)) : "Bot giao • chờ bóng nảy rồi trả") + " • Điểm gọi " + Rules.Points[Rules.Server] + "–" + Rules.Points[1 - Rules.Server];
             ActiveShotKeys=ShotFeedback="";
@@ -356,8 +364,8 @@ namespace PickleVerse.LocalMatch
         public void BeginCinematic()
         {Announcements?.Clear();Phase=MatchPhase.Cinematic;Paused=false;accumulator=0;input.Cancel();TouchShotMask=0;TouchMovement=Vector2.zero;}
         public void EndCinematic() {PreparePoint();UpdateVisuals();}
-        public void TogglePause() { Paused = !Paused; input.Cancel(); TouchShotMask = 0; TouchMovement = Vector2.zero; }
-        public void Timeout() { if (Phase == MatchPhase.PreServe && !human.Swinging && !bot.Swinging && Rules.TakeTimeout(0)) { Phase = MatchPhase.Timeout; phaseTime = 0; Message = "Time-out • tối đa 60 giây • Enter để tiếp tục"; input.Cancel(); } }
+        public void TogglePause() { Paused = !Paused; input.Cancel(); TouchShotMask = 0; TouchMovement = Vector2.zero; if(Paused)SfxPlayer.StopAll(); }
+        public void Timeout() { if (Phase == MatchPhase.PreServe && !human.Swinging && !bot.Swinging && Rules.TakeTimeout(0)) { Phase = MatchPhase.Timeout; phaseTime = 0; countdown.Reset(); Message = "Time-out • tối đa 60 giây • Enter để tiếp tục"; input.Cancel(); } }
         public void SetDifficulty(int level) { botDifficulty = Mathf.Clamp(level, 0, 2); }
         public bool IsGameplay => true;
         public bool IsPaused => Paused;

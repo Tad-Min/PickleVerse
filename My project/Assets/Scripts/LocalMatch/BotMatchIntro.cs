@@ -106,13 +106,14 @@ namespace PickleVerse.LocalMatch
             {
                 Stage="Player entrance";caption.text="BẠN";
                 humanPose.Walk(time,entranceSeconds);botPose.IdleAt(botPose.start);
+                humanPose.actor.EntranceFootsteps(Mathf.Min(Time.unscaledDeltaTime,.1f));
                 EntranceCamera(humanPose.actor,time/entranceSeconds);return;
             }
             time-=entranceSeconds;humanPose.IdleAt(humanPose.end);
             if(time<entranceSeconds)
             {
                 Stage="Opponent entrance";caption.text="ĐỐI THỦ";
-                botPose.Walk(time,entranceSeconds);EntranceCamera(botPose.actor,time/entranceSeconds);return;
+                botPose.Walk(time,entranceSeconds);botPose.actor.EntranceFootsteps(Mathf.Min(Time.unscaledDeltaTime,.1f));EntranceCamera(botPose.actor,time/entranceSeconds);return;
             }
             time-=entranceSeconds;botPose.IdleAt(botPose.end);caption.text="";
             if(time<returnSeconds)

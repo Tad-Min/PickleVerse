@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 039623169932ce6468df9c903874f011, type: 3}
+  m_Name: Match SFX
+  m_EditorClassIdentifier: PickleVerse.Audio::PickleVerse.Audio.SfxLibrary
+  clips:
+  - {fileID: 8300000, guid: f21295c51ddd7824e9885b774ef34477, type: 3}
+  - {fileID: 8300000, guid: 9761ad47f04d7934593c7b82a34f6b7b, type: 3}
+  - {fileID: 8300000, guid: 7141dc584da7d724c812c2c866cd9787, type: 3}
+  - {fileID: 8300000, guid: f462335e42df3c84ea1003977965c5cc, type: 3}
+  - {fileID: 8300000, guid: 714a48627d03ec046a6e32b4892e06d1, type: 3}
+  - {fileID: 8300000, guid: 05e1462fe7073644ba6dbdddb03c7361, type: 3}
+  - {fileID: 8300000, guid: 7f7b0a96a8de7e14cb194e82ed24a21e, type: 3}
+  - {fileID: 8300000, guid: b6a3ac917a377c24a979b1453b04729e, type: 3}

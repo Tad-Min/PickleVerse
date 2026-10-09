@@ -16861,7 +16861,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Nh\u1EA1c v\xE0 hi\u1EC7u \u1EE9ng \u0111ang \u0111\u01B0\u1EE3c b\u1ED5 sung. M\u1EE9c \xE2m l\u01B0\u1EE3ng c\u1EE7a b\u1EA1n s\u1EBD \u0111\u01B0\u1EE3c l\u01B0u."
+  m_text: "Hi\u1EC7u \u1EE9ng tr\u1EADn \u0111\u1EA5u \u0111\xE3 ho\u1EA1t \u0111\u1ED9ng. Nh\u1EA1c n\u1EC1n s\u1EBD \u0111\u01B0\u1EE3c b\u1ED5 sung sau."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6cac2c8be1655774389c0d75780e1edd, type: 2}
   m_sharedMaterial: {fileID: 1820510108309295100, guid: 6cac2c8be1655774389c0d75780e1edd, type: 2}
