@@ -6,6 +6,8 @@ namespace PickleVerse.Settings
 {
     public sealed class SettingsRuntime : MonoBehaviour
     {
+        public static event System.Action<float,float,float> AudioLevelsChanged;
+        public static float EffectsVolume {get;private set;}=1;
         static SettingsRuntime instance;
         RenderPipelineAsset originalPipeline;
         UniversalRenderPipelineAsset runtimePipeline;
@@ -13,7 +15,7 @@ namespace PickleVerse.Settings
         float originalVolume;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { instance=null; GameSettings.Reload(); }
+        static void ResetStatics() { instance=null; AudioLevelsChanged=null; GameSettings.Reload(); EffectsVolume=GameSettings.Current.effects; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Bootstrap()
         {
@@ -33,6 +35,7 @@ namespace PickleVerse.Settings
         public static void Apply(SettingsData data)
         {
             AudioListener.volume=data.master;
+            EffectsVolume=data.effects;AudioLevelsChanged?.Invoke(data.master,data.music,data.effects);
             Application.targetFrameRate=data.fps;
             QualitySettings.vSyncCount=data.vsync&&!Application.isMobilePlatform?1:0;
             if(!instance||!instance.runtimePipeline)return;

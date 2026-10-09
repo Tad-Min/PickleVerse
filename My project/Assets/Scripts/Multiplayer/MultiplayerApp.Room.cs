@@ -88,6 +88,7 @@ namespace PickleVerse.Multiplayer
         public async Task JoinRoomAsync(string code)
         {
             if (Searching) throw new InvalidOperationException("Hủy tìm trận trước.");
+            MultiplayerSceneConfiguration.Validate();
             await LeaveRoomAsync();
             var joined = await MultiplayerService.Instance.JoinSessionByCodeAsync(code.Trim().ToUpperInvariant(), new JoinSessionOptions { Type = "room", PlayerProperties = PlayerProperties() });
             // Validate before subscribing: a Changed event from an incompatible room
@@ -224,6 +225,7 @@ namespace PickleVerse.Multiplayer
         public async Task StartCustomAsync()
         {
             if(!Custom || !IsCaptain || State!=FlowState.WaitingRoom) return;
+            MultiplayerSceneConfiguration.Validate();
             var members=Members();
             if (members.Any(m => m.team < 0) || members.Count(m => m.team == 0) < 1 || members.Count(m => m.team == 1) < 1 ||
                 members.Count(m => m.team == 0) > (int)Mode || members.Count(m => m.team == 1) > (int)Mode)
