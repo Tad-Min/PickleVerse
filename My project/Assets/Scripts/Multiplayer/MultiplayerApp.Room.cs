@@ -97,7 +97,11 @@ namespace PickleVerse.Multiplayer
             if (joined.Players.Any(m => m.Id != PlayerId && string.Equals(Prop(m,"name"), DisplayName, StringComparison.OrdinalIgnoreCase)))
             { await joined.LeaveAsync(); throw new InvalidOperationException("Tên này đã có trong phòng. Hãy đổi tên rồi tham gia lại."); }
             var data=joined.Properties.TryGetValue("room",out var property)?JsonConvert.DeserializeObject<RoomData>(property.Value):null;
-            if (data==null || (data.phase != "idle" && (data.custom || (data.phase=="match" && data.roster?.Find(PlayerId)==null))))
+            // The captain may start as soon as this player joins the SDK session,
+            // before JoinSessionByCodeAsync finishes on this machine. An assigned
+            // participant must still be allowed to attach and connect to that match.
+            bool assignedToMatch = data?.phase == "match" && data.roster?.Find(PlayerId) != null;
+            if (data==null || (data.phase != "idle" && !assignedToMatch && (data.custom || data.phase=="match")))
             { await joined.LeaveAsync(); throw new InvalidOperationException("Phòng đang tìm hoặc đang chơi."); }
             AttachRoom(joined); ReadRoom();
             Mode = roomData.mode;
@@ -132,12 +136,22 @@ namespace PickleVerse.Multiplayer
             if (Custom) { await Safe(LeaveRoomAsync()); SetState(FlowState.WaitingRoom,"Chủ phòng custom đã rời."); }
             else if (IsCaptain && Searching) await Safe(CancelSearchAsync());
         }
-        async void RoomPlayerLeft(string id) { if (IsCaptain && Searching) await Safe(CancelSearchAsync()); Changed?.Invoke(); }
+        async void RoomPlayerLeft(string id)
+        {
+            if (IsCaptain && Searching) await Safe(CancelSearchAsync());
+            if (Custom && IsCaptain && State==FlowState.WaitingRoom && roomData.teams.Remove(id))
+            {
+                roomData.teamVersions.Remove(id); roomData.handledTeamRequests.Remove(id);
+                await Safe(SaveRoomAsync());
+            }
+            Changed?.Invoke();
+        }
         void ReadRoom()
         {
             if (Room == null || !Room.Properties.TryGetValue("room",out var value)) return;
             var data = JsonConvert.DeserializeObject<RoomData>(value.Value);
             if (data == null) return;
+            if (data.revision < roomData.revision || (IsCaptain && data.revision == roomData.revision)) return;
             int previousVersion=roomData.teamVersions.TryGetValue(PlayerId,out var previous)?previous:0;
             roomData = data; Mode = data.mode;
             if(data.custom && data.teamVersions.TryGetValue(PlayerId,out var version) && version!=previousVersion)

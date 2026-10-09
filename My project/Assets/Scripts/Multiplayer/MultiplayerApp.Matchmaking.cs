@@ -64,7 +64,16 @@ namespace PickleVerse.Multiplayer
             finally { cancelling=false; Changed?.Invoke(); }
         }
         void CancelLocal() { operation++; searchCancellation?.Cancel(); searchCancellation?.Dispose(); searchCancellation=null; clock.Stop(); }
-        async Task SaveRoomAsync() { Room.AsHost().SetProperty("room",new SessionProperty(JsonConvert.SerializeObject(roomData),VisibilityPropertyOptions.Member)); await Room.AsHost().SavePropertiesAsync(); nextPoll=Time.realtimeSinceStartupAsDouble+4; }
+        async Task SaveRoomAsync()
+        {
+            // SDK refresh/event snapshots can arrive while a save is in flight.
+            // Version the host's state before publishing so they cannot undo it.
+            roomData.revision++;
+            var currentRoom = Room;
+            currentRoom.AsHost().SetProperty("room", new SessionProperty(JsonConvert.SerializeObject(roomData), VisibilityPropertyOptions.Member));
+            await currentRoom.AsHost().SavePropertiesAsync();
+            nextPoll = Time.realtimeSinceStartupAsDouble + 4;
+        }
 
         async Task PublishQosAsync()
         {

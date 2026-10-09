@@ -1,0 +1,11 @@
+{
+  "status": "completed",
+  "buildId": "build_ba61269f7d80",
+  "result": "Succeeded",
+  "platform": "StandaloneWindows64",
+  "outputPath": "D:/Repository/PickleVerse/My project/Builds/Multiplayer/PickleVerse.exe",
+  "totalSizeBytes": 324334306,
+  "buildTimeMs": 26284,
+  "totalErrors": 0,
+  "totalWarnings": 1
+}

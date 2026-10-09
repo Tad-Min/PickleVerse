@@ -8,6 +8,13 @@ namespace PickleVerse.Multiplayer
     // Only called by the opt-in smoke runner; never enabled in a normal game.
     internal static class MultiplayerSmokeChecks
     {
+        public static void WriteSharedCode(string path,string code)
+        {
+            // Publish only a fully written code. File.Exists on Windows can become
+            // true while WriteAllText still holds an exclusive write handle.
+            string temporary=path+"."+Guid.NewGuid().ToString("N")+".tmp";
+            File.WriteAllText(temporary,code); File.Move(temporary,path);
+        }
         static async Task Wait(Func<bool> condition,string message,int seconds=30)
         {
             double until=Time.realtimeSinceStartupAsDouble+seconds;
@@ -18,7 +25,7 @@ namespace PickleVerse.Multiplayer
         {
             if(host)
             {
-                await app.RoomService.SelectDoublesAsync(); File.WriteAllText(file+".code",app.Room.Code);
+                await app.RoomService.SelectDoublesAsync(); WriteSharedCode(file+".code",app.Room.Code);
                 await Wait(()=>app.Members().Count==2,"Bạn chưa vào nhóm");
                 await app.MatchmakingService.FindAsync();
                 await Wait(()=>app.State==FlowState.WaitingRoom&&File.Exists(file+".cancelled"),"Bạn hủy nhưng chủ nhóm vẫn tìm");
@@ -61,7 +68,7 @@ namespace PickleVerse.Multiplayer
             if(host)
             {
                 if(custom) await app.CreateCustomAsync(PlayMode.Singles); else await app.SelectModeAsync(PlayMode.Doubles);
-                File.WriteAllText(file+".code",app.Room.Code); await Wait(()=>app.Members().Count==2,"Khách chưa vào");
+                WriteSharedCode(file+".code",app.Room.Code); await Wait(()=>app.Members().Count==2,"Khách chưa vào");
                 await Wait(()=>File.Exists(file+".joined"),"Khách chưa hoàn tất vào phòng");
                 if(!custom) await app.FindAsync();
                 await app.LeaveRoomAsync();
@@ -104,7 +111,9 @@ namespace PickleVerse.Multiplayer
             else
             {
                 string elapsed=app.Elapsed;
-                await Wait(()=>app.State==FlowState.Searching,"Người còn chờ chưa tự tìm lại");
+                // Cancellation can precede this host subscribing to the session.
+                // Its 35-second connection deadline is then the recovery path.
+                await Wait(()=>app.State==FlowState.Searching,"Người còn chờ chưa tự tìm lại",50);
                 if(app.Elapsed=="00:00"||string.CompareOrdinal(app.Elapsed,elapsed)<0) throw new Exception("Tự tìm lại đặt lại đồng hồ");
             }
         }
@@ -112,7 +121,7 @@ namespace PickleVerse.Multiplayer
         {
             if(host)
             {
-                await app.RoomService.SelectCustomAsync(PlayMode.Doubles); File.WriteAllText(file+".code",app.Room.Code);
+                await app.RoomService.SelectCustomAsync(PlayMode.Doubles); WriteSharedCode(file+".code",app.Room.Code);
                 await Wait(()=>File.Exists(file+".swapack"),"Khách chưa đổi đội bằng BtnSwap");
                 await Wait(()=>app.Members().Count==2 && app.Members().All(m=>m.team==0),"Host chưa nhận yêu cầu đổi đội");
                 bool rejected=false; try { await app.StartCustomAsync(); } catch(InvalidOperationException) { rejected=true; }

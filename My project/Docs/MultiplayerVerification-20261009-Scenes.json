@@ -1,0 +1,39 @@
+{
+  "scenesAndPrefabs": [
+    {
+      "path": "Assets/Scenes/UI/PlayMultiplayer.unity",
+      "missing": 0
+    },
+    {
+      "path": "Assets/Scenes/MultiplayerCourt.unity",
+      "missing": 0
+    },
+    {
+      "path": "Assets/Prefabs/Multiplayer/BotMatch/BallVisual.prefab",
+      "missing": 0
+    },
+    {
+      "path": "Assets/Prefabs/Multiplayer/BotMatch/FemaleActor.prefab",
+      "missing": 0
+    },
+    {
+      "path": "Assets/Prefabs/Multiplayer/BotMatch/MaleActor.prefab",
+      "missing": 0
+    },
+    {
+      "path": "Assets/Prefabs/Multiplayer/NetworkMatch.prefab",
+      "missing": 0
+    },
+    {
+      "path": "Assets/Prefabs/Multiplayer/NetworkPlayer.prefab",
+      "missing": 0
+    }
+  ],
+  "enabledScenes": [
+    "Assets/Scenes/UI/PlayMultiplayer.unity",
+    "Assets/Scenes/UI/Menu.unity",
+    "Assets/Scenes/UI/ModeSelection.unity",
+    "Assets/Scenes/BotMatch.unity",
+    "Assets/Scenes/MultiplayerCourt.unity"
+  ]
+}

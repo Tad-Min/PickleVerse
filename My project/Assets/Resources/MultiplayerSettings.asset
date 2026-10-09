@@ -28,6 +28,6 @@ MonoBehaviour:
   cameraPitch: 31
   cameraFieldOfView: 60
   ballMaterial: {fileID: 2100000, guid: 3ebd8847d4874934f88709eec886e617, type: 2}
-  trailMaterial: {fileID: 2100000, guid: 0f9387f2cc78dcb429ecc47008684a8e, type: 2}
+  trailMaterial: {fileID: 2100000, guid: db83d16971aa0a845b9e738e88cb49ef, type: 2}
   teamAMaterial: {fileID: 2100000, guid: e397dfe1f3d508c49b0213981b712a92, type: 2}
   teamBMaterial: {fileID: 2100000, guid: f6f8b9bf624015d47b414b94585b69d8, type: 2}

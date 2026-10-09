@@ -102,7 +102,18 @@ namespace PickleVerse.Multiplayer
             if (Searching && clock.TimedOut(now)) { await Safe(CancelSearchAsync()); SetState(FlowState.WaitingRoom,"Hết thời gian tìm trận. Hãy thử lại."); }
             if (State==FlowState.Delay && clock.CanSubmit(now) && IsCaptain && !connecting && !preparingSearch)
             { SetState(FlowState.Searching,"Đang tìm trận…"); _=Safe(SearchAsync(operation)); }
-            if (Room!=null && now>=nextPoll && !polling && !connecting && !Busy)
+            // A missed Lobby event must not leave clients waiting forever for
+            // Relay metadata. Refresh the match while connecting, instead of
+            // spending the client's Lobby request budget on its waiting room.
+            if (State==FlowState.Connecting && Match!=null && now>=nextPoll && !polling)
+            {
+                nextPoll=now+4; polling=true;
+                var currentMatch=Match;
+                try { await currentMatch.RefreshAsync(); }
+                catch(Exception e) { if(Match==currentMatch) Notice="Đang cập nhật kết nối: "+e.Message; }
+                finally { polling=false; Changed?.Invoke(); }
+            }
+            if (Room!=null && State!=FlowState.Connecting && now>=nextPoll && !polling && !connecting && !Busy)
             {
                 nextPoll=now+4; polling=true;
                 try
@@ -111,7 +122,14 @@ namespace PickleVerse.Multiplayer
                     if(Custom && IsCaptain && State==FlowState.WaitingRoom)
                     {
                         foreach(var member in Members().Where(p=>p.team<0).ToArray())
-                        { int team=Members().Count(p=>p.team==0)<=Members().Count(p=>p.team==1)?0:1; await SetTeamAsync(member.id,team); }
+                        {
+                            // A SaveProperties response can temporarily omit another
+                            // just-joined member from the SDK player cache. Count the
+                            // assignments already made by this captain so that the
+                            // next join cannot create a third seat on the same team.
+                            int team=roomData.teams.Values.Count(t=>t==0)<=roomData.teams.Values.Count(t=>t==1)?0:1;
+                            await SetTeamAsync(member.id,team);
+                        }
                         foreach(var player in Room.Players)
                         {
                             string request=Prop(player,"teamRequestId");
@@ -170,6 +188,7 @@ namespace PickleVerse.Multiplayer
             // A late join completion must never move an active game back to Connecting.
             if(State!=FlowState.InMatch && State!=FlowState.Results) SetState(FlowState.Connecting,"Đủ người; đang kết nối vào sân…");
             AttachMatch(Match);
+            nextPoll=Time.realtimeSinceStartupAsDouble+4;
             connectionDeadline=Time.realtimeSinceStartupAsDouble+35;
             if(Network.IsHost) ClientIdentities[Network.LocalClientId]=PlayerId;
             if(Match.IsHost) { Match.AsHost().SetProperty("aborted",new SessionProperty("0")); await Match.AsHost().SavePropertiesAsync(); }

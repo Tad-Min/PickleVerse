@@ -144,6 +144,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2641043063072099777}
   - component: {fileID: 3856408109482868667}
+  - component: {fileID: 8179249024360535301}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -174,15 +175,49 @@ Animation:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 540182399957800352}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 4
   m_Animation: {fileID: 0}
-  m_Animations: []
+  m_Animations:
+  - {fileID: 7400000, guid: d46774a2a5325254190c912bca234ddf, type: 2}
+  - {fileID: 7400000, guid: 35aa80ab7c0a8e340a4b9a37d6a9b5f2, type: 2}
+  - {fileID: 7400000, guid: 511c82cafae867a459b9126acc5097e7, type: 2}
+  - {fileID: 7400000, guid: 2005b6ce804621242a6686b20171425b, type: 2}
+  - {fileID: 7400000, guid: dd596872f73008d4993e52c8bae315bc, type: 2}
+  - {fileID: 7400000, guid: 7321f9c0486fe9640912dee0707cce19, type: 2}
+  - {fileID: 7400000, guid: 27511bede3d8c56498db157c34b9fc33, type: 2}
+  - {fileID: 7400000, guid: d3951bc921b195747ba245228e2fc67a, type: 2}
+  - {fileID: 7400000, guid: e7a372c5d3804b543830710269a6e0fa, type: 2}
+  - {fileID: 7400000, guid: ccd6d865865e2834f89d619fab9a8fc0, type: 2}
+  - {fileID: 7400000, guid: 9a125b3563d9a8c41b9bc4229bf6c31e, type: 2}
+  - {fileID: 7400000, guid: 54713a5da45f19c42ad8f83447a48b56, type: 2}
+  - {fileID: 7400000, guid: 9a0adabb8241ab940901163e6d2f1dae, type: 2}
+  - {fileID: 7400000, guid: b675e26bb7d6f3e43b5d8193efd9a7f0, type: 2}
+  - {fileID: 7400000, guid: a832deb8403188f43896cdfff6337996, type: 2}
+  - {fileID: 7400000, guid: f645089ecdbbed449a880cdd2e480fd2, type: 2}
+  - {fileID: 7400000, guid: 7bc6b69702b37824e886830737e6ade4, type: 2}
+  - {fileID: 7400000, guid: f0147bdc55d739f4abc6975f9fdbc5f9, type: 2}
+  - {fileID: 7400000, guid: 828a48df35e78fc4091c7779bbc04d04, type: 2}
   m_WrapMode: 0
   m_PlayAutomatically: 0
   m_AnimatePhysics: 0
   m_UpdateMode: 0
   m_CullingType: 0
+--- !u!114 &8179249024360535301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540182399957800352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b1a16ac4a1d47e4c80ffd204340264c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PickleVerse.CharacterMotion::PickleVerse.CharacterMotion.CharacterSecondaryMotion
+  profile: {fileID: 11400000, guid: 9b58aac828c809d40a2153657f5877db, type: 2}
+  simulate: 1
+  teleportDistance: 0.8
 --- !u!1 &744457573936975759
 GameObject:
   m_ObjectHideFlags: 0
@@ -214,6 +249,37 @@ Transform:
   m_Children:
   - {fileID: 4720504232216514896}
   m_Father: {fileID: 4277002969924815097}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &807295375282988862
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4455454478722948860}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4455454478722948860
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 807295375282988862}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.015882371, y: 0.18031152, z: 0.16670568}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &807737836299714505
 GameObject:
@@ -373,6 +439,37 @@ Transform:
   - {fileID: 2474606178394714881}
   m_Father: {fileID: 3810461329610435882}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1321889350653413908
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5008790766336853497}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5008790766336853497
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321889350653413908}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.099964835, y: 0.15460655, z: -0.026622597}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1627996140388871778
 GameObject:
   m_ObjectHideFlags: 0
@@ -499,6 +596,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5290916214533711232}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2154872968074953943
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7922129140067061543}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7922129140067061543
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2154872968074953943}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.07106922, y: 0.16451111, z: -0.04497807}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2441256481531115895
 GameObject:
@@ -688,6 +816,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7448813423533336391}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2746390350515246995
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1435214007882909878}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1435214007882909878
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2746390350515246995}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.078405745, y: 0.17318526, z: 0.13937077}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3001886076527259877
 GameObject:
@@ -1295,6 +1454,37 @@ Transform:
   - {fileID: 5563856608671348952}
   m_Father: {fileID: 2186321325473198375}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5295046364181539462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1653601297840313941}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1653601297840313941
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5295046364181539462}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.061463982, y: 0.17946613, z: 0.10669446}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5316423671882641314
 GameObject:
   m_ObjectHideFlags: 0
@@ -1350,6 +1540,8 @@ MonoBehaviour:
   upperArm: {fileID: 1133776553806644403}
   forearm: {fileID: 2655352808668497723}
   hand: {fileID: 9172991317810048909}
+  leftHand: {fileID: 7152376333938698571}
+  heldBallOffset: {x: -0.06, y: 0.055, z: 0}
   clips:
   - name: PKV_Backpedal
     clip: {fileID: 7400000, guid: d46774a2a5325254190c912bca234ddf, type: 2}
@@ -1649,6 +1841,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2565431638486424887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6742290747934248250
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6355255738999082398}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6355255738999082398
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6742290747934248250}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.018735865, y: 0.15596695, z: -0.06781192}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6755380154187894326
 GameObject:
   m_ObjectHideFlags: 0
@@ -1797,7 +2020,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -3506708492136654687, guid: 17795c0383819aa4dbecdebe91e6039b, type: 3}
+  m_Mesh: {fileID: 4300000, guid: e813a63f3587aee479d287d934e164c3, type: 2}
   m_Bones:
   - {fileID: 3851715041733279154}
   - {fileID: 5092738361912694788}
@@ -1858,12 +2081,51 @@ SkinnedMeshRenderer:
   - {fileID: 7448813423533336391}
   - {fileID: 7839547549271379892}
   - {fileID: 1680380213130359511}
+  - {fileID: 4455454478722948860}
+  - {fileID: 1435214007882909878}
+  - {fileID: 1315519197975560315}
+  - {fileID: 5008790766336853497}
+  - {fileID: 6355255738999082398}
+  - {fileID: 7922129140067061543}
+  - {fileID: 3553404130085754304}
+  - {fileID: 1653601297840313941}
   m_BlendShapeWeights: []
   m_RootBone: {fileID: 3851715041733279154}
   m_AABB:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
-  m_DirtyAABB: 1
+    m_Center: {x: 0.003970921, y: -0.091359556, z: 0.03734775}
+    m_Extent: {x: 0.66127795, y: 1.1946453, z: 0.7142345}
+  m_DirtyAABB: 0
+--- !u!1 &7646223902887607304
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3553404130085754304}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3553404130085754304
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7646223902887607304}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.09622227, y: 0.17591573, z: 0.048935276}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7806039571400030774
 GameObject:
   m_ObjectHideFlags: 0
@@ -2022,6 +2284,37 @@ Transform:
   m_Children:
   - {fileID: 485354633520014364}
   m_Father: {fileID: 3851715041733279154}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8344997161222789713
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1315519197975560315}
+  m_Layer: 0
+  m_Name: PKV_Secondary_HairTuft_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1315519197975560315
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8344997161222789713}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.11999809, y: 0.16128601, z: 0.051663578}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4720504232216514896}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8413254179300265232
 GameObject:
@@ -2375,5 +2668,13 @@ Transform:
   m_Children:
   - {fileID: 4491007614554272234}
   - {fileID: 3076240542309298020}
+  - {fileID: 4455454478722948860}
+  - {fileID: 1435214007882909878}
+  - {fileID: 1315519197975560315}
+  - {fileID: 5008790766336853497}
+  - {fileID: 6355255738999082398}
+  - {fileID: 7922129140067061543}
+  - {fileID: 3553404130085754304}
+  - {fileID: 1653601297840313941}
   m_Father: {fileID: 8094812657600326858}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

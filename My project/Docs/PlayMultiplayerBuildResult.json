@@ -1,12 +1,14 @@
 {
   "status": "completed",
+  "buildId": "build_ba61269f7d80",
   "result": "Succeeded",
-  "buildId": "build_471331678ed5",
-  "buildTimeMs": 43451,
-  "totalSizeBytes": 325387530,
-  "totalWarnings": 542,
+  "platform": "StandaloneWindows64",
+  "outputPath": "D:/Repository/PickleVerse/My project/Builds/Multiplayer/PickleVerse.exe",
+  "totalSizeBytes": 324334306,
+  "buildTimeMs": 26284,
   "totalErrors": 0,
-  "warningGroups": [
+  "totalWarnings": 1,
+  "previousFullBuildWarnings": [
     {
       "category": "MenuMissingScripts",
       "count": 43,
