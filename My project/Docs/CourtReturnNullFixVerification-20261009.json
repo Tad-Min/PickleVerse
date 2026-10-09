@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-10-09T23:41:04.5032595+07:00",
+  "missingMatch": true,
+  "returnButtonVisible": true,
+  "returnButtonLabel": "Về phòng",
+  "passedBeforeAwaitingRoom": true,
+  "asynchronousReturnRequested": true,
+  "afterReturn": {
+    "state": "WaitingRoom",
+    "scene": "PlayMultiplayer",
+    "Busy": false,
+    "Notice": "Trận đã kết thúc.",
+    "matchMissing": true,
+    "networkStopped": true,
+    "customRoomRetained": true,
+    "members": 2
+  },
+  "returnPassed": true,
+  "nextGame": {
+    "name": "Host Game tiếp advances a live match",
+    "passed": true,
+    "labelBeforeClick": "Game tiếp",
+    "gameNumberAfterClick": 2
+  },
+  "build": {
+    "buildId": "build_0b24d1be48fa",
+    "status": "completed",
+    "result": "Succeeded",
+    "totalErrors": 0,
+    "totalWarnings": 1,
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/Multiplayer/PickleVerse.exe",
+    "buildStartedAt": "2026-10-09T16:36:10.8564703Z",
+    "buildEndedAt": "2026-10-09T16:36:18.0975868Z"
+  },
+  "ConsoleBeforeCleanup": {
+    "groundTruth": {
+      "sampledUtc": "2026-10-09T16:43:08.215761Z",
+      "ageMs": 14,
+      "compilationFailed": false,
+      "compiling": false,
+      "consoleErrors": 1,
+      "consoleWarnings": 21,
+      "consoleLogs": 15,
+      "seeded": true
+    },
+    "entries": [
+      {
+        "message": "Failed to handle /api/exec request: Main thread operation timed out after 5000ms",
+        "count": 1,
+        "level": "error"
+      },
+      {
+        "message": "The character used for Ellipsis is not available in font asset [Mode Vietnamese Font] or any potential fallbacks. Switching Text Overflow mode to Truncate.",
+        "count": 21,
+        "level": "warn"
+      }
+    ]
+  },
+  "WindowsGuest": "PASS customGuest PNT1009B1E2: 2 players, host=False, scene=MultiplayerCourt",
+  "ConsoleAfterStop": {
+    "sampledUtc": "2026-10-09T16:43:53.6691444Z",
+    "ageMs": 189,
+    "compilationFailed": false,
+    "compiling": false,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "consoleLogs": 0,
+    "seeded": true
+  }
+}

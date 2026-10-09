@@ -1,0 +1,33 @@
+{
+  "entries": [
+    {
+      "seq": 813,
+      "timestampUtc": "2026-10-09T16:07:06.9978591Z",
+      "level": "error",
+      "logType": "Exception",
+      "message": "NullReferenceException: Object reference not set to an instance of an object",
+      "stackTrace": "PickleVerse.Multiplayer.MultiplayerCourtUI+<>c.<Start>b__5_1 () (at Assets/Scripts/Multiplayer/MultiplayerCourtUI.cs:12)\nUnityEngine.Events.InvokableCall.Invoke () (at <0e80f59860fa45278948cc6ebb8e9196>:0)\nUnityEngine.Events.UnityEvent.Invoke () (at <0e80f59860fa45278948cc6ebb8e9196>:0)\nUnityEngine.UI.Button.Press () (at ./Library/PackageCache/com.unity.ugui@0f30cee369f3/Runtime/UGUI/UI/Core/Button.cs:71)\nUnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) (at ./Library/PackageCache/com.unity.ugui@0f30cee369f3/Runtime/UGUI/UI/Core/Button.cs:115)\nUnityEngine.EventSystems.ExecuteEvents.Execute (UnityEngine.EventSystems.IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) (at ./Library/PackageCache/com.unity.ugui@0f30cee369f3/Runtime/UGUI/EventSystem/ExecuteEvents.cs:57)\nUnityEngine.EventSystems.ExecuteEvents.Execute[T] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.ExecuteEvents+EventFunction`1[T1] functor) (at ./Library/PackageCache/com.unity.ugui@0f30cee369f3/Runtime/UGUI/EventSystem/ExecuteEvents.cs:272)\nUnityEngine.EventSystems.EventSystem:Update() (at ./Library/PackageCache/com.unity.ugui@0f30cee369f3/Runtime/UGUI/EventSystem/EventSystem.cs:527)\n",
+      "seeded": false
+    }
+  ],
+  "cursor": 814,
+  "session": "56945365f9db4d91a360d5c4d572b15c",
+  "returned": 1,
+  "dropped": false,
+  "reset": false,
+  "counts": {
+    "error": 1,
+    "warn": 3,
+    "log": 87
+  },
+  "groundTruth": {
+    "sampledUtc": "2026-10-09T16:30:38.2004488Z",
+    "ageMs": 313,
+    "compilationFailed": false,
+    "compiling": false,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "consoleLogs": 0,
+    "seeded": true
+  }
+}

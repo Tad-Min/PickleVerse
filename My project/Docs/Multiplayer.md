@@ -2,7 +2,7 @@
 
 ## Chạy bản mới
 
-Windows đã cập nhật UI sân lúc **21:42 ngày 09/10/2026**, build `build_187709f858a7`: bảng điểm chỉ hiện tỉ số, đã bỏ TechniqueBar. Hai phiên Windows đã vào sân custom; xem `Docs/MultiplayerUiBuild-20261009.json`. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
+Windows cập nhật lúc **23:36 ngày 09/10/2026**, build `build_0b24d1be48fa`: sửa NullReferenceException ở nút Về phòng khi NetworkMatch đã despawn. Bảng điểm vẫn chỉ hiện tỉ số và đã bỏ TechniqueBar. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
 
 1. Trong Unity, mở `Assets/Scenes/UI/PlayMultiplayer.unity` rồi bấm Play.
 2. Hoặc chạy `Builds/Multiplayer/PickleVerse.exe`. Khi gửi cho bạn bè, gửi **toàn bộ folder Multiplayer**, gồm exe, `PickleVerse_Data` và các DLL; mọi máy dùng cùng bản build.
@@ -24,6 +24,8 @@ Artwork UI nằm tại `Assets/FrontEndContent/Multiplayer`. Ảnh nhân vật h
 - BtnCustom tạo phòng 4 chỗ, mặc định dùng đội tối đa 2 người. Host ở A1, khách tự phân đội cân bằng. BtnSwap đổi đội mình; host có BtnKick. Custom cho phép **1vs1, 1vs2, 2vs1, 2vs2**, mỗi đội phải có người. **Không dùng Ready**; chỉ host bấm Bắt đầu. Khách thấy Chờ chủ phòng.
 - ImgIcon và BtnInvite để dành phát triển sau.
 - Hết trận bấm Về phòng; nhóm được giữ. Host bấm Game tiếp giữa các game; tự tiếp tục sau 120 giây.
+
+Đã sửa lỗi nút Về phòng đọc `NetworkMatch.Instance.BetweenGames` sau khi NetworkMatch bị despawn. UI cập nhật nhãn/nút cả khi đối tượng trận không còn tồn tại; chỉ host của trận còn spawned được bấm Game tiếp. Đã kiểm tra nút Game tiếp sang game 2 và bấm Về phòng sau despawn trên Editor host cùng client Windows; kết quả tại `Docs/CourtReturnNullFixVerification-20261009.json`.
 
 ## Gameplay từ BotMatch
 
