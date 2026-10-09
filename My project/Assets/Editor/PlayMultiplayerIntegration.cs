@@ -242,7 +242,8 @@ namespace PickleVerse.EditorTools
             var profile = AssetDatabase.LoadAssetAtPath<BuildProfile>("Assets/Settings/BuildProfiles/MultiplayerWindows.asset");
             if (!profile) throw new InvalidOperationException("Missing MultiplayerWindows profile.");
             profile.overrideGlobalScenes = true; profile.scenes = scenes; EditorUtility.SetDirty(profile);
-            BuildProfile.SetActiveBuildProfile(profile); EditorBuildSettings.scenes = scenes;
+            BuildProfile.SetActiveBuildProfile(profile);
+            MultiplayerSceneSetup.ConfigureScenes();
             PlayerSettings.runInBackground = true;
         }
         static void WireMenu()

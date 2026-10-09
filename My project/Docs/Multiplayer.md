@@ -65,6 +65,12 @@ Giữ tổ hợp rồi nhả phím đánh. Dùng cách giữ U/I của BotMatch;
 
 ## Kết nối và lỗi Scene Hash
 
+Sau khi pull trên máy mới, Unity có thể dùng **Global Scene List** thay vì profile riêng đang được chọn trên máy phát triển. Đã sửa ngày 09/10/2026: danh sách chung có cả `PlayMultiplayer` và `MultiplayerCourt`; `MultiplayerSceneSetup` tự đăng ký sau khi import và kiểm tra profile đang dùng trước Play. Các scene khác giữ nguyên thứ tự và trạng thái bật/tắt. [Unity: Global Scene List](https://docs.unity.com/en-us/engine/6000.6/script-reference/unityeditor/editorbuildsettings/globalscenes).
+
+Nếu gặp “Scene chưa được bật trong Build Profile” khi test Editor: dừng Play → **PickleVerse → Multiplayer → Configure scenes for testing** → mở `Assets/Scenes/UI/PlayMultiplayer.unity` → Play lại. Không cần build Windows chỉ để test bằng Editor. Máy khác cần pull cả bản sửa script Editor và `ProjectSettings/EditorBuildSettings.asset`, các scene cùng file `.meta`. Nếu chưa có menu này, vào **File → Build Profiles → Scene List** và thêm/bật hai scene multiplayer trong danh sách đang dùng.
+
+Find, Join và StartCustom kiểm tra scene trước khi đổi trạng thái hoặc gửi yêu cầu mạng, tránh dừng tìm bất ngờ sau 6 giây. Kết quả thử cấu hình máy mới, scene bị tắt, profile riêng và runtime nằm tại `Docs/MultiplayerSceneSetupVerification-20261009.json`.
+
 Profile `Assets/Settings/BuildProfiles/MultiplayerWindows.asset` phải chứa cả `PlayMultiplayer` và `MultiplayerCourt`, cùng những scene đang được NGO đồng bộ. Editor và mọi Player cần cùng danh sách scene/bản build. Scene Hash lỗi khi client không có scene host gửi trong bảng build của nó. Đã thêm kiểm tra trước kết nối và trước build; protocol phiên bản 2 ngăn bản cũ tham gia.
 
 Services dùng môi trường `pickleverse-test`, hai queue `PickleVerse-1v1` / `PickleVerse-2v2`, Relay nên có thể kết nối khác mạng khi Internet/UGS hoạt động. QoS giới hạn 150 ms, không tự nới. Test nhiều phiên trên một máy chưa chứng minh kết nối giữa hai máy vật lý.

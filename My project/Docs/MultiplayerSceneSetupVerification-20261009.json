@@ -1,0 +1,53 @@
+{
+  "testedAt": "2026-10-09T22:09:09.4476493+07:00",
+  "cases": [
+    {
+      "name": "Domain reload registers shared multiplayer scenes",
+      "passed": true
+    },
+    {
+      "name": "Fresh checkout with default platform adds both scenes",
+      "passed": true
+    },
+    {
+      "name": "Other scene order and enabled flags preserved",
+      "passed": true
+    },
+    {
+      "name": "Disabled court re-enabled in shared scene list",
+      "passed": true
+    },
+    {
+      "name": "Existing scene entry is not duplicated",
+      "passed": true
+    },
+    {
+      "name": "Active overriding profile repaired",
+      "passed": true
+    },
+    {
+      "name": "Before Play repairs missing court without custom profile",
+      "passed": true
+    },
+    {
+      "name": "Invalid configuration rejected before delay, preserving waiting room and timer",
+      "passed": true
+    }
+  ],
+  "searchAfterDelay": {
+    "state": "Searching",
+    "Elapsed": "00:34",
+    "Notice": "Đang tìm trận…",
+    "searchingAfterDelay": true
+  },
+  "editorWindowsCourt": {
+    "state": "InMatch",
+    "scene": "Assets/Scenes/MultiplayerCourt.unity",
+    "players": 2,
+    "host": true,
+    "Notice": "Trận đã bắt đầu."
+  },
+  "sharedSceneListSaved": true,
+  "windowsClient": "PASS customGuest PSC1009A1E2: 2 players, host=False, scene=MultiplayerCourt",
+  "limitation": "Editor and Windows on one PC; second physical PC not controlled in this verification."
+}

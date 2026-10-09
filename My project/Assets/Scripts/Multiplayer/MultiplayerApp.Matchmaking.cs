@@ -23,6 +23,7 @@ namespace PickleVerse.Multiplayer
         public async Task FindAsync()
         {
             if (State!=FlowState.WaitingRoom || Custom || !IsCaptain || Searching) return;
+            MultiplayerSceneConfiguration.Validate();
             CancelLocal(); observedSearch=Guid.NewGuid().ToString("N"); publishedMatch="";
             cancelledSearch=""; measured.Clear(); ignoredMatches.Clear();
             searchCancellation=new CancellationTokenSource(); clock.Start(Time.realtimeSinceStartupAsDouble);
