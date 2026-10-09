@@ -130,6 +130,35 @@ namespace PickleVerse.Tests
             var r=new PickleballRules(PlayMode.Singles); Serve(r); r.Bounce(new Vector3(-PickleballRules.HalfWidth-.02f,0,4));
             Assert.That(r.pendingFault,Is.EqualTo(0));
         }
+        [TestCase(0f)] [TestCase(.0254f)]
+        public void ServeCentreLineMatchesBotMatch(float x)
+        {
+            var r=new PickleballRules(PlayMode.Singles);Assert.IsTrue(Serve(r));
+            r.Bounce(new Vector3(x,0,4));Assert.IsTrue(r.live);Assert.AreEqual(1,r.bounceCount);
+        }
+        [TestCase(.10f)] [TestCase(1.06f)]
+        public void ServeContactHeightMatchesBotMatch(float height)
+        {
+            var r=new PickleballRules(PlayMode.Singles);
+            Assert.IsFalse(r.Serve(0,0,new Vector3(1.5f,0,-7.2f),new Vector3(1.5f,height,-6.9f),new Vector3(0,.5f,0),new Vector3(0,.6f,0),Vector3.up));
+        }
+        [Test] public void DinkAfterBounceCanBePlayedFromBaselineLikeBotMatch()
+        {
+            var r=new PickleballRules(PlayMode.Singles);Serve(r);r.Bounce(new Vector3(-1.5f,0,4));
+            Assert.IsTrue(r.Hit(1,0,new Vector3(-1.5f,0,6.1f),new Vector3(-1.5f,1,6.1f),ShotKind.Dink));
+        }
+        [Test] public void TimeoutsAreLimitedAndResetPerGame()
+        {
+            var r=new PickleballRules(PlayMode.Singles);
+            Assert.IsTrue(r.TakeTimeout(0));Assert.IsTrue(r.TakeTimeout(0));Assert.IsFalse(r.TakeTimeout(0));
+            r.live=true;r.waitingServe=false;Assert.IsFalse(r.TakeTimeout(1));
+            r.gameFinished=true;r.games[0]=1;r.NextGame();Assert.AreEqual(2,r.timeouts[0]);Assert.IsTrue(r.TakeTimeout(0));
+        }
+        [Test] public void AlternatingFirstServerStartsFromRandomlySelectedTeam()
+        {
+            var r=new PickleballRules(PlayMode.Singles,1,1,1);Assert.AreEqual(1,r.servingTeam);
+            r.gameFinished=true;r.games[1]=1;r.NextGame();Assert.AreEqual(0,r.servingTeam);
+        }
         static bool Serve(PickleballRules r)=>r.Serve(0,0,new Vector3(1.5f,0,-7.2f),new Vector3(1.5f,.8f,-6.9f),new Vector3(1.5f,.8f,-6.9f),new Vector3(1.5f,.9f,-7),Vector3.up);
     }
 }

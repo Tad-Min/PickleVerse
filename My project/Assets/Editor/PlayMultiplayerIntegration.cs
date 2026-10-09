@@ -21,6 +21,119 @@ namespace PickleVerse.EditorTools
     public static class PlayMultiplayerIntegration
     {
         const string Folder = "Assets/Prefabs/Multiplayer/BotMatch";
+        [MenuItem("PickleVerse/Multiplayer/Sync all HUD from BotMatch")]
+        public static void SyncHudFromBotMatch()
+        {
+            if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play Mode first.");
+            var active=SceneManager.GetActiveScene();
+            bool sourceLoaded=SceneManager.GetSceneByPath("Assets/Scenes/BotMatch.unity").isLoaded;
+            bool courtLoaded=SceneManager.GetSceneByPath(MultiplayerSceneConfiguration.CourtPath).isLoaded;
+            var source=Open("Assets/Scenes/BotMatch.unity");var court=Open(MultiplayerSceneConfiguration.CourtPath);
+            string backup="Temp/MultiplayerHudSync/"+DateTime.Now.ToString("yyyyMMdd-HHmmss");Directory.CreateDirectory(backup);
+            EditorSceneManager.SaveScene(court,backup+"/MultiplayerCourt.unity",true);
+            try
+            {
+                SyncHud(source,court);EditorSceneManager.MarkSceneDirty(court);EditorSceneManager.SaveScene(court);
+                ConfigureBuildScenes();AssetDatabase.SaveAssets();
+                Debug.Log("All BotMatch HUD synchronized for multiplayer. Backup: "+backup);
+            }
+            finally
+            {
+                if(active.IsValid() && active.isLoaded)SceneManager.SetActiveScene(active);
+                if(!sourceLoaded)EditorSceneManager.CloseScene(source,true);
+                if(!courtLoaded)EditorSceneManager.CloseScene(court,true);
+            }
+        }
+        static void SyncHud(Scene source,Scene court)
+        {
+            var original=source.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<MatchHud>(true)).Single();
+            SceneManager.SetActiveScene(court);
+            var canvas=court.GetRootGameObjects().SingleOrDefault(g=>g.name=="BotMatchHUD");
+            if(!canvas){canvas=new GameObject("BotMatchHUD",typeof(RectTransform));SceneManager.MoveGameObjectToScene(canvas,court);}
+            var ui=canvas.GetComponent<MultiplayerCourtUI>();if(!ui)ui=canvas.AddComponent<MultiplayerCourtUI>();
+            var objects=new Dictionary<Object,Object>();
+            CopyHudNode(original.transform,canvas.transform,objects);canvas.name="BotMatchHUD";
+            objects[original]=ui;
+            var camera=court.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<Camera>(true)).First(c=>c.gameObject.activeInHierarchy);
+            canvas.GetComponent<Canvas>().worldCamera=camera;
+            var sourceAnnouncements=original.announcements;
+            var announcements=canvas.GetComponent<MatchAnnouncements>();if(!announcements)announcements=canvas.AddComponent<MatchAnnouncements>();
+            EditorUtility.CopySerialized(sourceAnnouncements,announcements);objects[sourceAnnouncements]=announcements;
+            foreach(var component in canvas.GetComponentsInChildren<Component>(true))
+            {
+                if(!component || component==ui)continue;
+                var serialized=new SerializedObject(component);var property=serialized.GetIterator();
+                while(property.Next(true))
+                {
+                    if(property.propertyPath=="m_GameObject" || property.propertyPath=="m_Script")continue;
+                    if(property.propertyType!=SerializedPropertyType.ObjectReference || !property.objectReferenceValue)continue;
+                    var reference=property.objectReferenceValue;
+                    if(objects.TryGetValue(reference,out var mapped))property.objectReferenceValue=mapped;
+                    else if(reference is Component c && c.gameObject.scene==source || reference is GameObject g && g.scene==source)property.objectReferenceValue=null;
+                }
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+            canvas.GetComponent<Canvas>().worldCamera=camera;announcements.match=null;
+            ui.score=Find<TMP_Text>(canvas.transform,"Scoreboard/Score");ui.status=Find<TMP_Text>(canvas.transform,"RefereeNotice/RefereeText");ui.server=Find<TMP_Text>(canvas.transform,"ServeClock");
+            ui.selection=Find<TMP_Text>(canvas.transform,"TechniqueBar/Selection");ui.timing=Find<TMP_Text>(canvas.transform,"TechniqueBar/ContactFeedback");ui.modeLabel=Find<TMP_Text>(canvas.transform,"Difficulty");
+            ui.shotPanel=canvas.transform.Find("TechniqueBar").gameObject;ui.help=canvas.transform.Find("ControlsHelp").gameObject;ui.touchControls=canvas.transform.Find("TouchControls").gameObject;
+            ui.modal=canvas.transform.Find("MatchDialog").gameObject;ui.modalTitle=Find<TMP_Text>(canvas.transform,"MatchDialog/Title");ui.modalBody=Find<TMP_Text>(canvas.transform,"MatchDialog/Body");
+            ui.resultActions=canvas.transform.Find("MatchResultActions").gameObject;ui.resultSummary=Find<TMP_Text>(canvas.transform,"MatchResultActions/Summary");
+            ui.intro=canvas.transform.Find("CinematicIntro").gameObject;ui.introCaption=Find<TMP_Text>(canvas.transform,"CinematicIntro/EntranceCaption");ui.announcements=announcements;
+            ui.continueButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/Continue");ui.restartButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/Restart");ui.modeButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/ChooseMode");ui.timeoutButton=Find<UnityEngine.UI.Button>(canvas.transform,"Timeout");
+            foreach(var b in canvas.GetComponentsInChildren<UnityEngine.UI.Button>(true))ClearCalls(b);
+            void Wire(string path,UnityEngine.Events.UnityAction action){UnityEditor.Events.UnityEventTools.AddPersistentListener(Find<UnityEngine.UI.Button>(canvas.transform,path).onClick,action);}
+            Wire("Settings",ui.OpenSettings);Wire("Help",ui.ToggleHelp);Wire("ControlsHelp/CloseHelp",ui.ToggleHelp);Wire("Touch",ui.ToggleTouch);Wire("Timeout",ui.Timeout);
+            Wire("MatchDialog/Continue",ui.Continue);Wire("MatchDialog/Restart",ui.ReturnToRoom);Wire("MatchDialog/ChooseMode",ui.ChooseMode);
+            Wire("MatchResultActions/Replay",ui.ReturnToRoom);Wire("MatchResultActions/ChooseMode",ui.ChooseMode);Wire("CinematicIntro/SkipIntro",ui.SkipIntro);
+            var waitButton=Find<UnityEngine.UI.Button>(canvas.transform,"CinematicIntro/SkipIntro");waitButton.interactable=false;
+            waitButton.GetComponentInChildren<TMP_Text>().text="Chờ vào sân";
+            foreach(var control in canvas.GetComponentsInChildren<TouchControl>(true))control.match=null;
+            ui.score.text="<color=#83E6CD>ĐỘI A</color>  0   :   0  <color=#F9BC7A>ĐỘI B</color>\n<size=17>GAME 1    •    Số game thắng 0–0    •    Multiplayer</size>";
+            ui.modeLabel.text="Multiplayer";
+            Find<TMP_Text>(canvas.transform,"MatchDialog/Restart/Label").text="Về phòng";Find<TMP_Text>(canvas.transform,"MatchResultActions/Replay/Label").text="VỀ PHÒNG";
+            ui.modal.SetActive(false);ui.help.SetActive(false);ui.intro.SetActive(false);ui.shotPanel.SetActive(false);ui.resultActions.SetActive(false);ui.touchControls.SetActive(false);announcements.Clear();
+            var buttonTemplate=canvas.transform.Find("Settings").GetComponent<UnityEngine.UI.Button>();
+            if(!ui.leave){ui.leave=Object.Instantiate(buttonTemplate,canvas.transform);ui.leave.name="Leave";ClearCalls(ui.leave);}
+            if(!ui.returnToRoom){ui.returnToRoom=Object.Instantiate(buttonTemplate,canvas.transform);ui.returnToRoom.name="ReturnToRoom";ClearCalls(ui.returnToRoom);}
+            foreach(var button in new[]{ui.leave,ui.returnToRoom})
+            {
+                var rect=(RectTransform)button.transform;rect.anchorMin=rect.anchorMax=Vector2.one;rect.pivot=Vector2.one;rect.anchoredPosition=new Vector2(-15,-188);
+                button.GetComponentInChildren<TMP_Text>().text=button==ui.leave?"Rời trận":"Về phòng";
+            }
+            ui.leave.gameObject.SetActive(true);ui.returnToRoom.gameObject.SetActive(false);
+            EditorUtility.SetDirty(ui);EditorUtility.SetDirty(announcements);
+        }
+        static void CopyHudNode(Transform source,Transform target,Dictionary<Object,Object> objects)
+        {
+            target.name=source.name;target.gameObject.SetActive(source.gameObject.activeSelf);
+            objects[source]=target;objects[source.gameObject]=target.gameObject;
+            foreach(var component in source.GetComponents<Component>())
+            {
+                if(!component || component is MatchHud || component is MatchAnnouncements)continue;
+                var copy=target.GetComponent(component.GetType());if(!copy)copy=target.gameObject.AddComponent(component.GetType());
+                if(component is RectTransform rect && copy is RectTransform targetRect)
+                {
+                    targetRect.anchorMin=rect.anchorMin;targetRect.anchorMax=rect.anchorMax;targetRect.pivot=rect.pivot;targetRect.sizeDelta=rect.sizeDelta;
+                    targetRect.anchoredPosition3D=rect.anchoredPosition3D;targetRect.localRotation=rect.localRotation;targetRect.localScale=rect.localScale;
+                    objects[component]=copy;continue;
+                }
+                if(component is CanvasRenderer renderer && copy is CanvasRenderer targetRenderer)
+                {targetRenderer.cullTransparentMesh=renderer.cullTransparentMesh;objects[component]=copy;continue;}
+                EditorUtility.CopySerialized(component,copy);objects[component]=copy;
+            }
+            int index=0;
+            foreach(Transform child in source)
+            {
+                // Authored touch button names contain '/' characters. Find treats
+                // those as path separators and would create duplicates on resync.
+                var siblings=target.Cast<Transform>().Where(t=>t.name==child.name).ToArray();
+                var copy=siblings.FirstOrDefault();
+                foreach(var duplicate in siblings.Skip(1))Object.DestroyImmediate(duplicate.gameObject);
+                if(!copy){copy=new GameObject(child.name,typeof(RectTransform)).transform;copy.SetParent(target,false);}
+                CopyHudNode(child,copy,objects);copy.SetSiblingIndex(index++);
+            }
+        }
         [MenuItem("PickleVerse/Multiplayer/Sync court and players from BotMatch")]
         public static void SyncCourtAndPlayers()
         {
@@ -33,7 +146,7 @@ namespace PickleVerse.EditorTools
             string backup = "Temp/MultiplayerCourtSync/" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
             Directory.CreateDirectory(backup);
             EditorSceneManager.SaveScene(court, backup + "/MultiplayerCourt.unity", true);
-            foreach (var path in new[] { Folder + "/FemaleActor.prefab", Folder + "/MaleActor.prefab", Folder + "/BallVisual.prefab", "Assets/Resources/MultiplayerSettings.asset" })
+            foreach (var path in new[] { Folder + "/FemaleActor.prefab", Folder + "/MaleActor.prefab", Folder + "/BallVisual.prefab", Folder + "/IncomingLanding.prefab", Folder + "/ShotAim.prefab", "Assets/Resources/MultiplayerSettings.asset" })
                 if (File.Exists(path)) File.Copy(path, backup + "/" + Path.GetFileName(path));
             try
             {
@@ -42,6 +155,8 @@ namespace PickleVerse.EditorTools
                 settings.femaleActorPrefab = SaveActor(bot.human, "FemaleActor");
                 settings.maleActorPrefab = SaveActor(bot.bot, "MaleActor");
                 settings.ballVisualPrefab = SaveObject(bot.ball.gameObject, "BallVisual");
+                settings.landingMarkerPrefab = bot.landingMarker ? SaveObject(bot.landingMarker.gameObject, "IncomingLanding") : null;
+                settings.aimMarkerPrefab = bot.aimMarker ? SaveObject(bot.aimMarker.gameObject, "ShotAim") : null;
                 settings.contactAssistRadius = bot.contactAssistRadius;
                 var camera = source.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MatchCamera>(true)).Single();
                 settings.cameraHeight = camera.height; settings.cameraDistance = camera.followDistance;
@@ -213,30 +328,16 @@ namespace PickleVerse.EditorTools
             SceneManager.SetActiveScene(court);
             foreach (var root in court.GetRootGameObjects())
             {
-                if (root.GetComponent<Camera>() || root.GetComponent<EventSystem>() || root.GetComponent<CourtBootstrap>()) continue;
-                if (root.name == "BotMatchArena" || root.name == "BotMatchHUD") Object.DestroyImmediate(root);
-                else root.SetActive(false);
+                if (root.GetComponent<Camera>() || root.GetComponent<EventSystem>() || root.GetComponent<CourtBootstrap>() || root.name=="BotMatchArena" || root.name=="BotMatchHUD") continue;
+                root.SetActive(false);
             }
             SyncEnvironment(source, court);
-            var camera = court.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Camera>(true)).First();
-            var canvas = new GameObject("BotMatchHUD", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster));
-            SceneManager.MoveGameObjectToScene(canvas, court);
-            var c = canvas.GetComponent<Canvas>(); c.renderMode = RenderMode.ScreenSpaceCamera; c.worldCamera = camera; c.planeDistance = .75f;
-            var scaler = canvas.GetComponent<UnityEngine.UI.CanvasScaler>(); scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1280,720); scaler.matchWidthOrHeight = .5f;
-            foreach (var child in bot.hud.transform.Cast<Transform>().Where(t => new[] { "Scoreboard", "RefereeNotice", "ServeClock" }.Contains(t.name)))
-            { var clone = Object.Instantiate(child.gameObject, canvas.transform); clone.name = child.name; }
-            var ui = canvas.AddComponent<MultiplayerCourtUI>();
-            ui.score = Find<TMP_Text>(canvas.transform, "Scoreboard/Score"); ui.status = Find<TMP_Text>(canvas.transform, "RefereeNotice/RefereeText"); ui.server = Find<TMP_Text>(canvas.transform, "ServeClock");
-            ui.score.text = "0 : 0";
-            var buttonTemplate = bot.hud.transform.Find("Pause").GetComponent<UnityEngine.UI.Button>();
-            ui.leave = Object.Instantiate(buttonTemplate, canvas.transform); ui.leave.name = "Leave"; ClearCalls(ui.leave);
-            ui.returnToRoom = Object.Instantiate(buttonTemplate, canvas.transform); ui.returnToRoom.name = "ReturnToRoom"; ClearCalls(ui.returnToRoom);
-            ui.returnToRoom.GetComponentInChildren<TMP_Text>().text = "Về phòng"; ui.returnToRoom.gameObject.SetActive(false);
+            SyncHud(source,court);
             EditorSceneManager.SaveScene(court); EditorSceneManager.CloseScene(court, true);
         }
         public static void ConfigureBuildScenes()
         {
-            var required = new[] { MultiplayerSceneConfiguration.RoomPath, MultiplayerSceneConfiguration.CourtPath, "Assets/Scenes/UI/Menu.unity", "Assets/Scenes/BotMatch.unity" };
+            var required = new[] { MultiplayerSceneConfiguration.RoomPath, MultiplayerSceneConfiguration.CourtPath, "Assets/Scenes/UI/Menu.unity", "Assets/Scenes/BotMatch.unity", "Assets/Scenes/UI/Settings.unity" };
             var paths = required.Concat(EditorBuildSettings.scenes.Where(s => s.enabled && File.Exists(s.path)).Select(s => s.path)).Distinct().Where(File.Exists).ToArray();
             var scenes = paths.Select(path => new EditorBuildSettingsScene(path, true)).ToArray();
             var profile = AssetDatabase.LoadAssetAtPath<BuildProfile>("Assets/Settings/BuildProfiles/MultiplayerWindows.asset");

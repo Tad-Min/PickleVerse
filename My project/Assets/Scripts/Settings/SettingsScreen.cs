@@ -149,7 +149,8 @@ namespace PickleVerse.Settings
         }
         public void LeaveMatch()
         {
-            Confirm("Rời trận đấu bot? Trận đang chơi sẽ kết thúc và bạn trở về đại sảnh.",()=>{Discard();SettingsOverlay.Host?.LeaveToMenu();});
+            var message=SettingsOverlay.Host is ISettingsLeaveConfirmation context?context.LeaveConfirmation:"Rời trận đấu bot? Trận đang chơi sẽ kết thúc và bạn trở về đại sảnh.";
+            Confirm(message,()=>{Discard();SettingsOverlay.Host?.LeaveToMenu();});
         }
         public void SignOut()
         {

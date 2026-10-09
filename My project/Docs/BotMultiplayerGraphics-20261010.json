@@ -1,0 +1,186 @@
+{
+  "captured": "2026-10-10T00:34:28.9844291+07:00",
+  "comparisons": [
+    {
+      "label": "Arena",
+      "sourceObjects": 34,
+      "targetObjects": 34,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "label": "Female",
+      "sourceObjects": 86,
+      "targetObjects": 86,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "label": "Male",
+      "sourceObjects": 73,
+      "targetObjects": 73,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "label": "Ball",
+      "sourceObjects": 1,
+      "targetObjects": 1,
+      "differenceCount": 0,
+      "differences": []
+    }
+  ],
+  "sourceRoots": [
+    {
+      "name": "Arena",
+      "components": [
+        "UnityEngine.Transform"
+      ]
+    },
+    {
+      "name": "Match Sun",
+      "components": [
+        "UnityEngine.Transform",
+        "UnityEngine.Light",
+        "UnityEngine.Rendering.Universal.UniversalAdditionalLightData"
+      ]
+    },
+    {
+      "name": "Local Singles Match",
+      "components": [
+        "UnityEngine.Transform",
+        "PickleVerse.LocalMatch.BotMatch",
+        "PickleVerse.LocalMatch.BotMatchIntro",
+        "PickleVerse.LocalMatch.MatchEnvironmentLighting"
+      ]
+    },
+    {
+      "name": "Player / Female",
+      "components": [
+        "UnityEngine.Transform",
+        "PickleVerse.LocalMatch.MatchActor"
+      ]
+    },
+    {
+      "name": "Bot / Male",
+      "components": [
+        "UnityEngine.Transform",
+        "PickleVerse.LocalMatch.MatchActor"
+      ]
+    },
+    {
+      "name": "Match Camera",
+      "components": [
+        "UnityEngine.Transform",
+        "UnityEngine.Camera",
+        "UnityEngine.AudioListener",
+        "PickleVerse.LocalMatch.MatchCamera"
+      ]
+    },
+    {
+      "name": "Match HUD",
+      "components": [
+        "UnityEngine.RectTransform",
+        "UnityEngine.Canvas",
+        "UnityEngine.UI.CanvasScaler",
+        "UnityEngine.UI.GraphicRaycaster",
+        "PickleVerse.LocalMatch.MatchHud",
+        "PickleVerse.LocalMatch.MatchAnnouncements"
+      ]
+    },
+    {
+      "name": "Match EventSystem",
+      "components": [
+        "UnityEngine.Transform",
+        "UnityEngine.EventSystems.EventSystem",
+        "UnityEngine.InputSystem.UI.InputSystemUIInputModule"
+      ]
+    }
+  ],
+  "sourceHud": [
+    {
+      "name": "Scoreboard",
+      "activeSelf": true
+    },
+    {
+      "name": "RefereeNotice",
+      "activeSelf": true
+    },
+    {
+      "name": "ServeClock",
+      "activeSelf": true
+    },
+    {
+      "name": "TechniqueBar",
+      "activeSelf": false
+    },
+    {
+      "name": "Settings",
+      "activeSelf": true
+    },
+    {
+      "name": "Help",
+      "activeSelf": true
+    },
+    {
+      "name": "Touch",
+      "activeSelf": true
+    },
+    {
+      "name": "Timeout",
+      "activeSelf": true
+    },
+    {
+      "name": "Difficulty",
+      "activeSelf": true
+    },
+    {
+      "name": "TouchControls",
+      "activeSelf": false
+    },
+    {
+      "name": "ControlsHelp",
+      "activeSelf": false
+    },
+    {
+      "name": "MatchDialog",
+      "activeSelf": true
+    },
+    {
+      "name": "CinematicIntro",
+      "activeSelf": false
+    },
+    {
+      "name": "RallyAnnouncement",
+      "activeSelf": false
+    },
+    {
+      "name": "MatchResultActions",
+      "activeSelf": false
+    }
+  ],
+  "sourceCamera": [
+    {
+      "json": "{\"MonoBehaviour\":{\"m_Enabled\":true,\"m_EditorHideFlags\":0,\"m_Name\":\"\",\"m_EditorClassIdentifier\":\"PickleVerse.LocalMatch::PickleVerse.LocalMatch.MatchCamera\",\"player\":{\"instanceID\":0},\"height\":5.300000190734863,\"followDistance\":4.210000038146973,\"pitch\":31.0,\"fieldOfView\":60.0}}",
+      "components": [
+        {
+          "type": "Transform",
+          "json": "{\"Transform\":{\"serializedVersion\":\"2\",\"m_LocalRotation\":{\"x\":0.2672383785247803,\"y\":0.0,\"z\":0.0,\"w\":0.9636304378509521},\"m_LocalPosition\":{\"x\":1.5,\"y\":5.300000190734863,\"z\":-11.460000038146973},\"m_LocalScale\":{\"x\":1.0,\"y\":1.0,\"z\":1.0},\"m_ConstrainProportionsScale\":false,\"m_LocalEulerAnglesHint\":{\"x\":0.0,\"y\":0.0,\"z\":0.0}}}"
+        },
+        {
+          "type": "Camera",
+          "json": "{\"Camera\":{\"m_Enabled\":true,\"serializedVersion\":\"2\",\"m_ClearFlags\":1,\"m_BackGroundColor\":{\"r\":0.5799999833106995,\"g\":0.75,\"b\":0.8199999928474426,\"a\":1.0},\"m_projectionMatrixMode\":1,\"m_GateFitMode\":2,\"m_FOVAxisMode\":0,\"m_Iso\":200,\"m_ShutterSpeed\":0.004999999888241291,\"m_Aperture\":16.0,\"m_FocusDistance\":10.0,\"m_FocalLength\":50.0,\"m_BladeCount\":5,\"m_Curvature\":{\"x\":2.0,\"y\":11.0},\"m_BarrelClipping\":0.25,\"m_Anamorphism\":0.0,\"m_SensorSize\":{\"x\":36.0,\"y\":24.0},\"m_LensShift\":{\"x\":0.0,\"y\":0.0},\"m_NormalizedViewPortRect\":{\"serializedVersion\":\"2\",\"x\":0.0,\"y\":0.0,\"width\":1.0,\"height\":1.0},\"near clip plane\":0.10000000149011612,\"far clip plane\":100.0,\"field of view\":60.0,\"orthographic\":false,\"orthographic size\":5.0,\"m_Depth\":0.0,\"m_CullingMask\":{\"serializedVersion\":\"2\",\"m_Bits\":4294967295},\"m_RenderingPath\":-1,\"m_TargetTexture\":{\"instanceID\":0},\"m_TargetDisplay\":0,\"m_TargetEye\":3,\"m_HDR\":true,\"m_AllowMSAA\":true,\"m_AllowDynamicResolution\":false,\"m_ForceIntoRT\":false,\"m_OcclusionCulling\":true,\"m_StereoConvergence\":10.0,\"m_StereoSeparation\":0.02199999988079071}}"
+        },
+        {
+          "type": "AudioListener",
+          "json": "{\"AudioListener\":{\"m_Enabled\":true}}"
+        },
+        {
+          "type": "MatchCamera",
+          "json": "{\"MonoBehaviour\":{\"m_Enabled\":true,\"m_EditorHideFlags\":0,\"m_Name\":\"\",\"m_EditorClassIdentifier\":\"PickleVerse.LocalMatch::PickleVerse.LocalMatch.MatchCamera\",\"player\":{\"instanceID\":0},\"height\":5.300000190734863,\"followDistance\":4.210000038146973,\"pitch\":31.0,\"fieldOfView\":60.0}}"
+        }
+      ]
+    }
+  ],
+  "targetSettings": "{\"MonoBehaviour\":{\"m_Enabled\":true,\"m_EditorHideFlags\":0,\"m_Name\":\"MultiplayerSettings\",\"m_EditorClassIdentifier\":\"PickleVerse.Multiplayer::PickleVerse.Multiplayer.MultiplayerSettings\",\"environment\":\"pickleverse-test\",\"singlesQueue\":\"PickleVerse-1v1\",\"doublesQueue\":\"PickleVerse-2v2\",\"maximumLatencyMs\":150,\"reconnectSeconds\":30.0,\"playerPrefab\":{\"fileID\":6737982789964891341,\"guid\":\"97c0c37e9d566b242a271bb4b63b2600\",\"type\":3},\"matchPrefab\":{\"fileID\":6210019421029378209,\"guid\":\"31efa4cd7424ad04795b6558197fe602\",\"type\":3},\"maleActorPrefab\":{\"fileID\":5316423671882641314,\"guid\":\"8c9c2d7a3ea992b49932675e903d8556\",\"type\":3},\"femaleActorPrefab\":{\"fileID\":3150955174342796431,\"guid\":\"ab58f4ffaac0f474f9660285ad13bca6\",\"type\":3},\"ballVisualPrefab\":{\"fileID\":6066316165077980453,\"guid\":\"9c678f90529cffa45b45f49882dde567\",\"type\":3},\"landingMarkerPrefab\":{\"fileID\":9183525530858168969,\"guid\":\"7bb0ea956dadc074289b1be222b57d2e\",\"type\":3},\"aimMarkerPrefab\":{\"fileID\":2158066933514483095,\"guid\":\"c822247ea0c540b48a8cb86354db0527\",\"type\":3},\"contactAssistRadius\":0.44999998807907104,\"cameraHeight\":5.300000190734863,\"cameraDistance\":4.210000038146973,\"cameraPitch\":31.0,\"cameraFieldOfView\":60.0,\"ballMaterial\":{\"fileID\":2100000,\"guid\":\"3ebd8847d4874934f88709eec886e617\",\"type\":2},\"trailMaterial\":{\"fileID\":2100000,\"guid\":\"db83d16971aa0a845b9e738e88cb49ef\",\"type\":2},\"teamAMaterial\":{\"fileID\":2100000,\"guid\":\"e397dfe1f3d508c49b0213981b712a92\",\"type\":2},\"teamBMaterial\":{\"fileID\":2100000,\"guid\":\"f6f8b9bf624015d47b414b94585b69d8\",\"type\":2}}}"
+}

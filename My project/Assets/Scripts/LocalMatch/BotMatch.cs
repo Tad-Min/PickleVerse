@@ -9,7 +9,7 @@ using PickleVerse.Audio;
 namespace PickleVerse.LocalMatch
 {
     public enum MatchPhase { Intro, PreServe, Rally, Settling, BetweenPoints, BetweenGames, Timeout, MatchOver, Cinematic }
-    public sealed class BotMatch : MonoBehaviour, ISettingsHost
+    public sealed class BotMatch : MonoBehaviour, ISettingsHost, IMatchTouchInput
     {
         public MatchActor human, bot;
         public Transform ball, ballShadow, landingMarker, aimMarker;
@@ -143,17 +143,11 @@ namespace PickleVerse.LocalMatch
                 ServeElapsed += dt;
                 countdown.Step(ServeElapsed);
                 var server = Actor(Rules.Server);
+                var servePosition = BallPosition; var serveVelocity = BallVelocity;
+                ServeBallMotion.Step(server, ref releasedServe, ref serveOrigin, ref servePosition, ref serveVelocity);
+                BallPosition = servePosition; BallVelocity = serveVelocity;
                 if (server.Swinging && server.Intent.kind == ShotKind.Serve)
                 {
-                    if (server.SwingTime >= .5f && !releasedServe)
-                    { releasedServe = true; serveOrigin = server.HeldBallPosition; }
-                    if (releasedServe)
-                    {
-                        float fallingTime=server.SwingTime-.5f;
-                        BallPosition = serveOrigin + Vector3.down * (.5f * BallFlight.Gravity * fallingTime * fallingTime);
-                        BallVelocity = Vector3.down * (BallFlight.Gravity * fallingTime);
-                    }
-                    else { BallPosition=server.HeldBallPosition; BallVelocity=Vector3.zero; }
                     if (server.SwingTime >= .8f && server.ContactActive && Vector3.Distance(BallPosition,server.paddleFace.position)<=contactAssistRadius)
                     {
                         // This is the authored underhand motion: no spin/toss imparted on release.
@@ -163,7 +157,6 @@ namespace PickleVerse.LocalMatch
                         else { server.ConsumeContact(false); Launch(server, server.Intent); Phase = MatchPhase.Rally; phaseTime = 0; Message = "Nhận giao bóng: phải để bóng nảy"; }
                     }
                 }
-                else { BallPosition=server.HeldBallPosition; BallVelocity=Vector3.zero; }
                 if (ServeElapsed > 10f && Phase == MatchPhase.PreServe) { Rules.Fail(Rules.Server, Fault.ServeTimeout); BeginFault(); }
             }
             else if (Phase == MatchPhase.Rally)

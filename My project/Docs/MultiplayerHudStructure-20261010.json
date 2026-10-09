@@ -1,0 +1,28 @@
+{
+  "children": [
+    "Scoreboard",
+    "RefereeNotice",
+    "ServeClock",
+    "TechniqueBar",
+    "Settings",
+    "Help",
+    "Touch",
+    "Timeout",
+    "Difficulty",
+    "TouchControls",
+    "ControlsHelp",
+    "MatchDialog",
+    "CinematicIntro",
+    "RallyAnnouncement",
+    "MatchResultActions",
+    "Leave",
+    "ReturnToRoom"
+  ],
+  "nodeCount": 72,
+  "touchControls": 9,
+  "duplicateNames": [],
+  "missingScripts": 0,
+  "hasAnnouncements": true,
+  "sourceBotReferences": 0,
+  "hasSettingsScene": true
+}

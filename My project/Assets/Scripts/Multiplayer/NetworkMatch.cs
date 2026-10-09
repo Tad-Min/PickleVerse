@@ -15,9 +15,9 @@ namespace PickleVerse.Multiplayer
     [Serializable] public struct BallFrame : INetworkSerializable,IEquatable<BallFrame>
     {
         public Vector3 position,velocity;
-        public bool live;
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T:IReaderWriter { serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity); serializer.SerializeValue(ref live); }
-        public bool Equals(BallFrame o)=>position==o.position&&velocity==o.velocity&&live==o.live;
+        public bool live, released;
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T:IReaderWriter { serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity); serializer.SerializeValue(ref live); serializer.SerializeValue(ref released); }
+        public bool Equals(BallFrame o)=>position==o.position&&velocity==o.velocity&&live==o.live&&released==o.released;
     }
     public sealed class NetworkMatch : NetworkBehaviour
     {
@@ -26,6 +26,9 @@ namespace PickleVerse.Multiplayer
         public NetworkVariable<FixedString512Bytes> Status=new NetworkVariable<FixedString512Bytes>();
         public NetworkVariable<int> ScoreA=new NetworkVariable<int>(),ScoreB=new NetworkVariable<int>(),ServerTeam=new NetworkVariable<int>(),ServerIndex=new NetworkVariable<int>(),ServerNumber=new NetworkVariable<int>();
         public NetworkVariable<int> GamesA=new NetworkVariable<int>(),GamesB=new NetworkVariable<int>();
+        public NetworkVariable<int> LastHitTeam=new NetworkVariable<int>(-1),Bounces=new NetworkVariable<int>(),TimeoutTeam=new NetworkVariable<int>(-1);
+        public NetworkVariable<float> ServeElapsed=new NetworkVariable<float>(),TimeoutRemaining=new NetworkVariable<float>();
+        public NetworkVariable<bool> TimedOut=new NetworkVariable<bool>();
         public NetworkVariable<bool> EndsSwapped=new NetworkVariable<bool>(),BetweenGames=new NetworkVariable<bool>(),BetweenPoints=new NetworkVariable<bool>();
         public NetworkVariable<bool> Paused=new NetworkVariable<bool>(),Finished=new NetworkVariable<bool>(),WaitingServe=new NetworkVariable<bool>(),Started=new NetworkVariable<bool>();
         public NetworkVariable<BallFrame> Ball=new NetworkVariable<BallFrame>();
@@ -43,9 +46,11 @@ namespace PickleVerse.Multiplayer
         readonly IGameplayShotService shots = new BotMatchGameplayService();
         Vector3 ballPosition, ballVelocity, serveOrigin;
         TrailRenderer ballTrail;
+        Transform landingMarker, aimMarker;
         float accumulator;
         bool releasedServe;
         double nextGameDeadline;
+        double timeoutDeadline;
         int countdownSecond=-1;
         public int PlayerEnd(int team) => (team==0 ? -1 : 1) * (EndsSwapped.Value ? -1 : 1);
         public void RequestNextGame() { if(IsServer) NextGame(); }
@@ -62,7 +67,7 @@ namespace PickleVerse.Multiplayer
             Started.OnValueChanged+=StartChanged;
             if(IsServer)
             {
-                Rules=new PickleballRules(Roster.mode, Roster.members.Count(p=>p.team==0), Roster.members.Count(p=>p.team==1));
+                Rules=new PickleballRules(Roster.mode, Roster.members.Count(p=>p.team==0), Roster.members.Count(p=>p.team==1), UnityEngine.Random.Range(0,2));
                 SpawnPlayers(); NetworkManager.OnClientConnectedCallback+=PlayerConnected;
                 Body.isKinematic=true;
             }
@@ -73,6 +78,8 @@ namespace PickleVerse.Multiplayer
             if(Instance==this) Instance=null; Finished.OnValueChanged-=ResultChanged; Started.OnValueChanged-=StartChanged;
             if(NetworkManager!=null) NetworkManager.OnClientConnectedCallback-=PlayerConnected;
             if(Body!=null) Destroy(Body.gameObject);
+            if(landingMarker) Destroy(landingMarker.gameObject);
+            if(aimMarker) Destroy(aimMarker.gameObject);
         }
         public void SetRoster(MatchRoster roster) { initialRoster=roster; }
         void BuildBall()
@@ -92,6 +99,8 @@ namespace PickleVerse.Multiplayer
                 ballTrail.startWidth=.025f; ballTrail.endWidth=.002f; ballTrail.sharedMaterial=settings.trailMaterial;
             }
             ballTrail.emitting=false; ballTrail.Clear();
+            if(settings.landingMarkerPrefab) { landingMarker=Instantiate(settings.landingMarkerPrefab).transform; landingMarker.gameObject.SetActive(false); }
+            if(settings.aimMarkerPrefab) { aimMarker=Instantiate(settings.aimMarkerPrefab).transform; aimMarker.gameObject.SetActive(false); }
         }
         void SpawnPlayers()
         {
@@ -120,7 +129,7 @@ namespace PickleVerse.Multiplayer
             while(NetworkPlayer.All.Count<Roster.Count || NetworkPlayer.All.All(p=>!p.IsOwner)) yield return null;
             var player=NetworkPlayer.All.First(p=>p.IsOwner);
             var camera=Camera.main;
-            if(camera) { var follow=camera.GetComponent<CourtCamera>(); if(!follow) follow=camera.gameObject.AddComponent<CourtCamera>(); follow.target=player.transform; }
+            if(camera) { var follow=camera.GetComponent<CourtCamera>(); if(!follow) follow=camera.gameObject.AddComponent<CourtCamera>(); follow.target=player.transform; follow.SnapToPlayer(); }
             if(Environment.GetCommandLineArgs().Contains("-pkvSlowCourt")) yield return new WaitForSecondsRealtime(3);
             CourtReadyRpc();
             if(Started.Value) StartChanged(false,true);
@@ -135,7 +144,7 @@ namespace PickleVerse.Multiplayer
         void StartChanged(bool old,bool started) { if(started) MultiplayerApp.Instance.MatchStarted(); }
         public void TrySwing(NetworkPlayer player, ShotIntent intent)
         {
-            if (!IsServer || !Started.Value || Paused.Value || Finished.Value || BetweenGames.Value || !player.Connected || player.Actor.Swinging) return;
+            if (!IsServer || !Started.Value || Paused.Value || Finished.Value || BetweenGames.Value || TimedOut.Value || !player.Connected || player.Actor.Swinging) return;
             if (intent.attack && intent.crossCourt) return;
             bool serve = Rules.waitingServe && player.Team.Value == Rules.servingTeam && player.Index.Value == Rules.serverIndex && intent.kind == ShotKind.Groundstroke;
             if (Rules.waitingServe && !serve || !Rules.live && !serve) return;
@@ -143,7 +152,7 @@ namespace PickleVerse.Multiplayer
             var local = BotMatchGameplayService.ToLocal(intent);
             var predicted = ballPosition + ballVelocity * local.ContactDelay + Vector3.down * (.5f * BallFlight.Gravity * local.ContactDelay * local.ContactDelay);
             player.BeginSwing(intent, predicted);
-            if (serve) { releasedServe = false; serveOrigin = player.transform.position + player.transform.right * .3f + player.transform.forward * .5f + Vector3.up * .94f; }
+            if (serve) releasedServe = false;
         }
         void BeginRally()
         {
@@ -151,15 +160,15 @@ namespace PickleVerse.Multiplayer
             countdownSecond=-1;
             foreach (var player in players.Values) { player.Teleport(StartingPosition(player.Team.Value, player.Index.Value)); player.ResetInput(); }
             var server = players.Values.First(p => p.Team.Value == Rules.servingTeam && p.Index.Value == Rules.serverIndex);
-            ballPosition = server.transform.position + Vector3.up * .9f; ballVelocity = Vector3.zero; Body.position = ballPosition;
+            server.Actor.RefreshPose();
+            ballPosition = server.Actor.HeldBallPosition; ballVelocity = Vector3.zero; SetBallPosition(ballPosition);
             if (ballTrail) { ballTrail.emitting=false; ballTrail.Clear(); }
             serveDeadline = Time.realtimeSinceStartupAsDouble + 10; Publish();
         }
         void FixedUpdate()
         {
             if (!IsSpawned || Body == null || !Started.Value) return;
-            if (ballTrail) ballTrail.emitting=(IsServer ? Rules.live : Ball.Value.live) && !Paused.Value && !Finished.Value;
-            if (!IsServer) { Body.position = Vector3.Lerp(Body.position, Ball.Value.position, 1 - Mathf.Exp(-22 * Time.fixedDeltaTime)); return; }
+            if (!IsServer) { SetBallPosition(Vector3.Lerp(Body.transform.position, Ball.Value.position, 1 - Mathf.Exp(-22 * Time.fixedDeltaTime))); return; }
             if (Paused.Value)
             {
                 foreach (var r in reservations.ToArray()) if (Time.realtimeSinceStartupAsDouble > r.Value)
@@ -169,14 +178,15 @@ namespace PickleVerse.Multiplayer
             accumulator += Time.fixedDeltaTime;
             const float tick = 1f / 120f;
             while (accumulator >= tick) { StepSimulation(tick); accumulator -= tick; }
-            Body.position = ballPosition;
-            Ball.Value = new BallFrame { position = ballPosition, velocity = ballVelocity, live = Rules.live };
+            SetBallPosition(ballPosition);
+            Ball.Value = new BallFrame { position = ballPosition, velocity = ballVelocity, live = Rules.live, released = releasedServe };
             Publish();
         }
         void StepSimulation(float dt)
         {
-            foreach (var player in players.Values) player.Simulate(dt, !Finished.Value && !BetweenGames.Value && !rallyCommitted);
+            foreach (var player in players.Values) player.Simulate(dt, !Finished.Value && !BetweenGames.Value && !rallyCommitted && !TimedOut.Value);
             if (Finished.Value) return;
+            if (TimedOut.Value) { if(Time.realtimeSinceStartupAsDouble>=timeoutDeadline) EndTimeout(); return; }
             if (BetweenGames.Value) { if(Time.realtimeSinceStartupAsDouble>=nextGameDeadline) NextGame(); return; }
             if (rallyCommitted) { if(Time.realtimeSinceStartupAsDouble>=rallyDeadline) BeginRally(); return; }
             foreach (var player in players.Values)
@@ -190,24 +200,21 @@ namespace PickleVerse.Multiplayer
                 if(second>=0&&second<10&&second!=countdownSecond){countdownSecond=second;MatchSoundRpc((int)GameSfx.Countdown);}
                 var server = players.Values.First(p => p.Team.Value == Rules.servingTeam && p.Index.Value == Rules.serverIndex);
                 var actor = server.Actor;
+                ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity);
                 if (actor.Swinging && actor.Intent.kind == PickleVerse.LocalMatch.ShotKind.Serve)
                 {
-                    if (actor.SwingTime >= .5f && !releasedServe)
-                    { releasedServe = true; serveOrigin = actor.transform.TransformPoint(actor.ContactOffset(actor.Intent)) + Vector3.up * (.5f * BallFlight.Gravity * .3f * .3f); }
-                    if (releasedServe) ballPosition = serveOrigin + Vector3.down * (.5f * BallFlight.Gravity * Mathf.Pow(actor.SwingTime - .5f, 2));
                     if (actor.SwingTime >= .8f && actor.ContactActive && Vector3.Distance(ballPosition, actor.paddleFace.position) <= MultiplayerApp.Instance.Settings.contactAssistRadius)
                     {
                         var left = actor.Feet(true); var right = actor.Feet(false);
-                        if (!Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1)) Rules.Fault(server.Team.Value, "Lỗi chân giao bóng");
-                        else if (Rules.Serve(server.Team.Value, server.Index.Value, server.transform.position, ballPosition,
-                            new Vector3(0, actor.PaddleHeadTop, 0), actor.hand.position, actor.PaddleVelocity))
+                        if (Rules.Serve(server.Team.Value, server.Index.Value, server.transform.position, ballPosition,
+                            new Vector3(0, actor.PaddleHeadTop, 0), actor.hand.position, actor.PaddleVelocity,
+                            Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1)))
                         {
                             server.ConsumeContact(false);
                             ballVelocity = shots.Launch(actor, actor.Intent, ballPosition, Rules.serverWorldX);
                         }
                     }
                 }
-                else ballPosition = actor.transform.position + actor.transform.right * .25f + Vector3.up * .9f;
                 if (Rules.waitingServe && Time.realtimeSinceStartupAsDouble > serveDeadline) Rules.Fault(Rules.servingTeam, "Quá 10 giây giao bóng");
             }
             else if (Rules.live)
@@ -229,10 +236,12 @@ namespace PickleVerse.Multiplayer
                     if (!Rules.live || player.Team.Value == Rules.lastHitTeam || !shots.CanContact(player.Actor, previous, ballPosition, Rules.bounceCount, MultiplayerApp.Instance.Settings.contactAssistRadius)) continue;
                     var actor = player.Actor; var shot = actor.Intent;
                     bool volley = Rules.bounceCount == 0;
-                    if (Rules.Hit(player.Team.Value, player.Index.Value, actor.InKitchen ? new Vector3(0,0,-actor.end * Court.Kitchen) : actor.transform.position,
-                        ballPosition, BotMatchGameplayService.FromLocal(shot).kind))
+                    bool hit = Rules.Hit(player.Team.Value, player.Index.Value, actor.transform.position,
+                        ballPosition, BotMatchGameplayService.FromLocal(shot).kind, actor.InKitchen);
+                    player.ConsumeContact(volley);
+                    if (hit)
                     {
-                        player.ConsumeContact(volley); ballVelocity = shots.Launch(actor, shot, ballPosition, Rules.serverWorldX);
+                        ballVelocity = shots.Launch(actor, shot, ballPosition, Rules.serverWorldX);
                         foreach (var other in players.Values.Where(p => p.Team.Value != player.Team.Value)) other.SplitStep();
                         shotLabel = shot.ToString(); shotLabelUntil = Time.realtimeSinceStartupAsDouble + 1;
                     }
@@ -255,21 +264,79 @@ namespace PickleVerse.Multiplayer
             { rallyEnding = true; ballVelocity = Vector3.zero;MatchSoundRpc((int)GameSfx.FaultWhistle); }
             if (rallyEnding && !Array.Exists(Rules.volleyMomentum, v => v))
             {
-                int loser = Rules.pendingFault; Rules.SettleRally();
+                int loser = Rules.pendingFault, endedGame = Rules.GameNumber, priorServer = Rules.servingTeam;
+                string fault = Rules.reason;
+                Rules.SettleRally();
                 rallyCommitted=true; BetweenPoints.Value=true; rallyDeadline=Time.realtimeSinceStartupAsDouble+2.1;
+                AnnouncementRpc(fault.Contains("ngoài sân")?"OUT":"FAULT / LỖI",fault+" • Đội "+(loser==0?"A":"B")+" phạm lỗi\n"+(priorServer==1-loser?"Đội "+(priorServer==0?"A":"B")+" ghi điểm":"Đổi giao bóng / Side Out"),(int)AnnouncementTone.Fault,1.2f);
                 foreach (var player in players.Values) player.React(player.Team.Value != loser, Rules.complete);
                 if (Rules.complete) Finish();
-                else if (Rules.gameFinished) { MatchSoundRpc((int)GameSfx.GameWhistle);BetweenGames.Value=true; nextGameDeadline=Time.realtimeSinceStartupAsDouble+120; }
-                else if(Rules.endChangeDue) { MatchSoundRpc((int)GameSfx.GameWhistle);Rules.SwapEnds(); EndsSwapped.Value=Rules.ends[0]>0; }
+                else if (Rules.gameFinished)
+                {
+                    MatchSoundRpc((int)GameSfx.GameWhistle);BetweenGames.Value=true; nextGameDeadline=Time.realtimeSinceStartupAsDouble+4.2;
+                    AnnouncementRpc("GAME "+endedGame+" KẾT THÚC","Số game thắng "+Rules.games[0]+" - "+Rules.games[1],(int)AnnouncementTone.Neutral,1.6f);
+                    AnnouncementRpc("ĐỔI BÊN","CHANGE ENDS • Chuẩn bị game "+(endedGame+1),(int)AnnouncementTone.ChangeEnds,1.4f);
+                }
+                else if(Rules.endChangeDue)
+                {
+                    MatchSoundRpc((int)GameSfx.GameWhistle);Rules.SwapEnds(); EndsSwapped.Value=Rules.ends[0]>0;
+                    rallyDeadline=Time.realtimeSinceStartupAsDouble+2.6;
+                    AnnouncementRpc("ĐỔI BÊN","CHANGE ENDS • Mốc 6 điểm trong game quyết định",(int)AnnouncementTone.ChangeEnds,1.4f);
+                }
             }
         }
         void Publish()
         {
             ScoreA.Value=Rules.score[0]; ScoreB.Value=Rules.score[1]; ServerTeam.Value=Rules.servingTeam; ServerIndex.Value=Rules.serverIndex; ServerNumber.Value=Rules.serverNumber; WaitingServe.Value=Rules.waitingServe;
             GamesA.Value=Rules.games[0]; GamesB.Value=Rules.games[1];
+            LastHitTeam.Value=Rules.lastHitTeam; Bounces.Value=Rules.bounceCount;
+            ServeElapsed.Value=Rules.waitingServe && !TimedOut.Value ? Mathf.Clamp((float)(10-(serveDeadline-Time.realtimeSinceStartupAsDouble)),0,10) : 0;
+            TimeoutRemaining.Value=TimedOut.Value ? Mathf.Max(0,(float)(timeoutDeadline-Time.realtimeSinceStartupAsDouble)) : 0;
             if (!Finished.Value)
-                Status.Value=new FixedString512Bytes(BetweenGames.Value?"Hết game — đổi sân. Chủ trận bấm Game tiếp; tự tiếp tục sau 120 giây.":Rules.live && Time.realtimeSinceStartupAsDouble<shotLabelUntil?shotLabel:Rules.reason);
+                Status.Value=new FixedString512Bytes(TimedOut.Value?"Time-out • đội "+(TimeoutTeam.Value==0?"A":"B")+" • tối đa 60 giây":BetweenGames.Value?"Hết game • đổi sân, tự tiếp tục game kế tiếp.":Rules.live && Time.realtimeSinceStartupAsDouble<shotLabelUntil?shotLabel:Rules.reason);
         }
+        void LateUpdate()
+        {
+            if(!IsSpawned || !Body || !Started.Value)return;
+            var frame=Ball.Value;
+            var server=NetworkPlayer.All.FirstOrDefault(p=>p.Team.Value==ServerTeam.Value && p.Index.Value==ServerIndex.Value);
+            if(!IsServer && WaitingServe.Value && !frame.released && server && server.Actor)SetBallPosition(server.Actor.HeldBallPosition);
+            bool flying=(frame.live || WaitingServe.Value && frame.released) && Body.position.y>Court.BallRadius+.02f && frame.velocity.sqrMagnitude>.04f;
+            if(ballTrail) {ballTrail.emitting=flying && !Paused.Value && !Finished.Value;if(!ballTrail.emitting)ballTrail.Clear();}
+            if(flying && !Paused.Value)Body.transform.Rotate(new Vector3(80,140,40)*Time.deltaTime);
+            var local=NetworkPlayer.All.FirstOrDefault(p=>p.IsOwner);
+            if(landingMarker)
+            {
+                bool visible=frame.live && local && local.Team.Value!=LastHitTeam.Value && !Finished.Value;
+                landingMarker.gameObject.SetActive(visible);
+                if(visible) {var p=frame.position;var v=frame.velocity;for(int i=0;i<300 && p.y>Court.BallRadius;i++)BallFlight.Integrate(ref p,ref v,.01f);landingMarker.position=new Vector3(p.x,.018f,p.z);}
+            }
+            if(aimMarker)
+            {
+                bool visible=local && local.Actor && local.Actor.Swinging && !Finished.Value;
+                aimMarker.gameObject.SetActive(visible);
+                if(visible) {var p=shots.Target(local.Actor,local.Actor.Intent,frame.position,Mathf.Sign(server?server.transform.position.x:1));p.y=.022f;aimMarker.position=p;}
+            }
+        }
+        void SetBallPosition(Vector3 position)
+        {
+            // The ball is simulated with BallFlight, not PhysX. Publish both poses
+            // immediately so a reset/rotation cannot restore a stale Rigidbody pose.
+            Body.position=position;Body.transform.position=position;
+        }
+        public void RequestTimeout(NetworkPlayer player)
+        {
+            if(!IsServer || !Started.Value || Paused.Value || TimedOut.Value || BetweenGames.Value || BetweenPoints.Value || Finished.Value || !player.Connected || players.Values.Any(p=>p.Actor.Swinging) || !Rules.TakeTimeout(player.Team.Value))return;
+            TimedOut.Value=true;TimeoutTeam.Value=player.Team.Value;timeoutDeadline=Time.realtimeSinceStartupAsDouble+60;
+            foreach(var p in players.Values)p.ResetInput();
+            SfxPlayer.Stop(GameSfx.Countdown);
+            AnnouncementRpc("TIME-OUT","Đội "+(player.Team.Value==0?"A":"B")+" • tối đa 60 giây • Enter để tiếp tục",(int)AnnouncementTone.Neutral,1.4f);
+            Publish();
+        }
+        public void ResumeTimeout(NetworkPlayer player)
+        {if(IsServer && TimedOut.Value && !Paused.Value && player.Connected && player.Team.Value==TimeoutTeam.Value)EndTimeout();}
+        void EndTimeout()
+        {TimedOut.Value=false;TimeoutTeam.Value=-1;serveDeadline=Time.realtimeSinceStartupAsDouble+10;countdownSecond=-1;Publish();}
         public void ReserveDisconnected(ulong client)
         {
             if(!IsServer||Finished.Value) return;
@@ -308,9 +375,12 @@ namespace PickleVerse.Multiplayer
             if(!Finished.Value)MatchSoundRpc((int)GameSfx.GameWhistle);
             Body.isKinematic=true; Publish();
             Status.Value=new FixedString512Bytes($"Đội {(Rules.winner==0?"A":"B")} thắng trận {Rules.games[0]} : {Rules.games[1]} game — điểm game cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}"); Finished.Value=true;
+            AnnouncementRpc("GAME, MATCH!",Status.Value.ToString(),(int)AnnouncementTone.Success,2.1f);
         }
         void ResultChanged(bool old,bool complete) { if(complete) MultiplayerApp.Instance.ShowResult(Status.Value.ToString()); }
         [Rpc(SendTo.ClientsAndHost)] void MatchSoundRpc(int sound)
         { SfxPlayer.Play((GameSfx)sound); }
+        [Rpc(SendTo.ClientsAndHost)] void AnnouncementRpc(string title,string detail,int tone,float duration)
+        {var ui=MultiplayerCourtUI.Instance;if(ui)ui.ShowAnnouncement(title,detail,duration,(AnnouncementTone)tone);}
     }
 }

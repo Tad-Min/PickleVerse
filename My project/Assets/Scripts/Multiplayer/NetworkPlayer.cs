@@ -5,6 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using PickleVerse.LocalMatch;
+using PickleVerse.Settings;
 using LocalShotInput = PickleVerse.LocalMatch.ShotInput;
 
 namespace PickleVerse.Multiplayer
@@ -47,6 +48,13 @@ namespace PickleVerse.Multiplayer
         struct Move { public uint sequence; public Vector2 axes; public bool run; public float dt; }
         readonly List<Move> predicted = new List<Move>();
         LocalShotInput shotInput = new LocalShotInput();
+        string inputFeedback="";
+        int activeShotMask;
+        int pendingShotMask;
+        PickleVerse.LocalMatch.ShotIntent pendingShot;
+        public string Selection => shotInput.Selection;
+        public string SelectionKeys => shotInput.SelectionMask==0?"":GameControls.ShotKeys(shotInput.SelectionMask);
+        public string ActiveShotKeys => Actor && Actor.Swinging?GameControls.ShotKeys(activeShotMask):"";
         Vector3 predictedVelocity;
         Vector2 serverAxes;
         bool serverRun;
@@ -101,18 +109,12 @@ namespace PickleVerse.Multiplayer
             ResetActor(transform.position, CourtEnd.Value);
             Actor.RefreshPose();
 
-            var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            marker.name = "TeamMarker"; marker.transform.SetParent(transform, false);
-            marker.transform.localPosition = new Vector3(0, .025f, 0);
-            marker.transform.localScale = new Vector3(.8f, .02f, .8f);
-            Destroy(marker.GetComponent<Collider>());
-            marker.GetComponent<Renderer>().sharedMaterial = Team.Value == 0 ? settings.teamAMaterial : settings.teamBMaterial;
         }
         bool CanMove()
         {
             var match = NetworkMatch.Instance;
             return match && match.Started.Value && !match.Paused.Value && !match.Finished.Value &&
-                !match.BetweenGames.Value && !match.BetweenPoints.Value && Connected;
+                !match.BetweenGames.Value && !match.BetweenPoints.Value && !match.TimedOut.Value && Connected;
         }
         void Update()
         {
@@ -123,37 +125,57 @@ namespace PickleVerse.Multiplayer
                 if (!IsOwner)
                     transform.position = Vector3.Lerp(transform.position, Frame.Value.position, 1 - Mathf.Exp(-18 * Time.deltaTime));
                 if (match && !match.Paused.Value)
-                    Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.Value.running, Time.deltaTime);
+                    Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.Value.running, Time.deltaTime, CanMove());
             }
             if (!IsOwner) return;
             var keyboard = Keyboard.current;
-            if (!CanMove() || keyboard == null || !CanReadKeyboard())
-            { shotInput = new LocalShotInput(); return; }
-            int mask = (Held(keyboard.jKey) ? 1 : 0) | (Held(keyboard.kKey) ? 2 : 0) |
-                (Held(keyboard.lKey) ? 4 : 0) | (Held(keyboard.uKey) ? 8 : 0) | (Held(keyboard.iKey) ? 16 : 0);
-            bool serve = match.WaitingServe.Value && match.ServerTeam.Value == Team.Value && match.ServerIndex.Value == Index.Value;
-            if (shotInput.Tick(mask, keyboard.backspaceKey.wasPressedThisFrame, serve, out var local))
+            if (keyboard != null && CanReadKeyboard() && !InputBlocked())
             {
+                if (GameControls.Pressed(GameAction.Timeout)) TimeoutServerRpc();
+                if (match && match.TimedOut.Value && GameControls.Pressed(GameAction.Continue)) ResumeTimeoutServerRpc();
+            }
+            if (!CanMove() || InputBlocked())
+            { shotInput = new LocalShotInput(); return; }
+            bool readKeys=keyboard!=null && CanReadKeyboard();
+            int mask = (readKeys?GameControls.ShotMask:0) | (MultiplayerCourtUI.Instance?MultiplayerCourtUI.Instance.TouchShotMask:0), tap = readKeys?GameControls.TapMask:0;
+            bool serve = match.WaitingServe.Value && match.ServerTeam.Value == Team.Value && match.ServerIndex.Value == Index.Value;
+            bool cancel = readKeys && GameControls.Pressed(GameAction.CancelShot);
+            if (tap != 0) TickShot(mask | tap, cancel, serve);
+            TickShot(mask, cancel, serve);
+        }
+        void TickShot(int mask, bool cancel, bool serve)
+        {
+            if (shotInput.Tick(mask, cancel, serve, out var local))
+            {
+                pendingShotMask=shotInput.CommittedMask;pendingShot=local;
                 var intent = BotMatchGameplayService.FromLocal(local);
                 ShotServerRpc((int)intent.kind, intent.attack, intent.crossCourt);
             }
+            if(!string.IsNullOrEmpty(shotInput.Feedback) && shotInput.Feedback!=inputFeedback)
+            {
+                inputFeedback=shotInput.Feedback;
+                var ui=FindAnyObjectByType<MultiplayerCourtUI>();
+                if(ui)ui.ShowAnnouncement("TỔ HỢP KHÔNG HỢP LỆ",inputFeedback,1.25f,AnnouncementTone.Fault);
+            }
         }
-        static bool Held(UnityEngine.InputSystem.Controls.KeyControl key) => key.isPressed || key.wasPressedThisFrame;
         static bool CanReadKeyboard() => Application.isFocused ||
             InputSystem.settings.backgroundBehavior == InputSettings.BackgroundBehavior.IgnoreFocus;
+        static bool InputBlocked() => SettingsOverlay.IsOpen || SettingsOverlay.Loading || MultiplayerCourtUI.Instance && MultiplayerCourtUI.Instance.InputBlocked;
         static bool LocalRun()
         {
             var keyboard = Keyboard.current;
-            return keyboard != null && CanReadKeyboard() &&
-                (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed || keyboard.spaceKey.isPressed);
+            return !InputBlocked() && (MultiplayerCourtUI.Instance && MultiplayerCourtUI.Instance.TouchRun || keyboard != null && CanReadKeyboard() &&
+                (GameControls.Held(GameAction.Run) || keyboard.spaceKey.isPressed && !Array.Exists(GameSettings.Current.keys, k=>k==(int)Key.Space)));
         }
         static Vector2 LocalAxes()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null || !CanReadKeyboard()) return Vector2.zero;
-            return Vector2.ClampMagnitude(new Vector2(
-                (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1 : 0),
-                (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1 : 0)), 1);
+            if (InputBlocked()) return Vector2.zero;
+            Vector2 touch=MultiplayerCourtUI.Instance?MultiplayerCourtUI.Instance.TouchMovement:Vector2.zero;
+            if (keyboard == null || !CanReadKeyboard()) return touch;
+            return Vector2.ClampMagnitude(touch+new Vector2(
+                (GameControls.Held(GameAction.Right) ? 1 : 0) - (GameControls.Held(GameAction.Left) ? 1 : 0),
+                (GameControls.Held(GameAction.Forward) ? 1 : 0) - (GameControls.Held(GameAction.Backward) ? 1 : 0)), 1);
         }
         void FixedUpdate()
         {
@@ -199,6 +221,10 @@ namespace PickleVerse.Multiplayer
             if (kind < 1 || kind > (int)ShotKind.Punch) return;
             NetworkMatch.Instance?.TrySwing(this, new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt });
         }
+        [ServerRpc] void TimeoutServerRpc() { NetworkMatch.Instance?.RequestTimeout(this); }
+        [ServerRpc] void ResumeTimeoutServerRpc() { NetworkMatch.Instance?.ResumeTimeout(this); }
+        public void RequestTimeout() { if(IsOwner && IsSpawned)TimeoutServerRpc(); }
+        public void ResumeTimeout() { if(IsOwner && IsSpawned)ResumeTimeoutServerRpc(); }
         void Reconcile(PlayerFrame old, PlayerFrame frame)
         {
             if (!IsOwner || IsServer || !Actor) return;
@@ -226,6 +252,7 @@ namespace PickleVerse.Multiplayer
             if (!IsServer) return;
             int end = position.z < 0 ? -1 : 1;
             CourtEnd.Value = end; ResetInput(); ResetActor(position, end);
+            Actor.RefreshPose();
             Frame.Value = new PlayerFrame { position = position, sequence = lastReceived };
             TeleportClientRpc(position, lastReceived, end);
         }
@@ -238,12 +265,20 @@ namespace PickleVerse.Multiplayer
         public void BeginSwing(ShotIntent intent, Vector3 predictedBall)
         {
             if (!IsServer || !Actor || !Actor.Swing(BotMatchGameplayService.ToLocal(intent), predictedBall)) return;
+            SetActiveShotKeys();
             SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall);
         }
         [ClientRpc] void SwingClientRpc(int kind, bool attack, bool crossCourt, Vector3 predictedBall)
         {
             if (IsServer || !Actor) return;
-            Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall);
+            if(Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall))SetActiveShotKeys();
+        }
+        void SetActiveShotKeys()
+        {
+            var shot=Actor.Intent;
+            if(IsOwner && pendingShotMask!=0 && pendingShot.kind==shot.kind && pendingShot.power==shot.power && pendingShot.cross==shot.cross)activeShotMask=pendingShotMask;
+            else activeShotMask=(shot.kind==PickleVerse.LocalMatch.ShotKind.Drop?3:shot.kind==PickleVerse.LocalMatch.ShotKind.Smash?5:shot.kind==PickleVerse.LocalMatch.ShotKind.Reset?6:shot.kind==PickleVerse.LocalMatch.ShotKind.Dink?2:shot.kind==PickleVerse.LocalMatch.ShotKind.Volley?4:1)|(shot.power?8:0)|(shot.cross?16:0);
+            pendingShotMask=0;
         }
         public void ConsumeContact(bool volley)
         { if (!IsServer || !Actor) return; Actor.ConsumeContact(volley); ContactClientRpc(volley); }
@@ -261,6 +296,9 @@ namespace PickleVerse.Multiplayer
         public void ResetInput()
         {
             shotInput = new LocalShotInput(); serverAxes = Vector2.zero; serverRun = false;
+            activeShotMask=pendingShotMask=0;
+            if(IsOwner && MultiplayerCourtUI.Instance)MultiplayerCourtUI.Instance.ClearTouch();
+            inputFeedback="";
             predicted.Clear(); predictedVelocity = Vector3.zero;
         }
     }

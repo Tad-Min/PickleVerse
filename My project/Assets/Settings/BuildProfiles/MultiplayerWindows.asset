@@ -25,18 +25,18 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/UI/PlayMultiplayer.unity
     m_guid: 7c80ec55a0a36764c92b439613c911dc
-  - m_enabled: 0
-    m_path: Assets/Scenes/UI/Menu.unity
-    m_guid: 3758045ad48627a4b830666f01058e26
-  - m_enabled: 0
-    m_path: Assets/Scenes/UI/ModeSelection.unity
-    m_guid: 7aa09318597d56d4390b2076b189a264
-  - m_enabled: 0
-    m_path: Assets/Scenes/BotMatch.unity
-    m_guid: c5dd464557b1b774fab2d47ff1ff26d3
   - m_enabled: 1
     m_path: Assets/Scenes/MultiplayerCourt.unity
     m_guid: 9f6b98bbb2f4b2644a5571fd6a597bd3
+  - m_enabled: 1
+    m_path: Assets/Scenes/UI/Menu.unity
+    m_guid: 3758045ad48627a4b830666f01058e26
+  - m_enabled: 1
+    m_path: Assets/Scenes/BotMatch.unity
+    m_guid: c5dd464557b1b774fab2d47ff1ff26d3
+  - m_enabled: 1
+    m_path: Assets/Scenes/UI/Settings.unity
+    m_guid: e7c64f24456b07649be4287d45df91dc
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

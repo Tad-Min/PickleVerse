@@ -1,0 +1,286 @@
+{
+  "status": "completed",
+  "duration": 0.28,
+  "summary": {
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.AutomaticDoublesStillRequiresFourPlayers",
+      "Status": "Passed",
+      "Duration": 0.0140811,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.BlankNameGetsFourUppercaseLetters",
+      "Status": "Passed",
+      "Duration": 0.0056456,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(0,2)",
+      "Status": "Passed",
+      "Duration": 0.0018968,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(2,0)",
+      "Status": "Passed",
+      "Duration": 0.0004149,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(3,1)",
+      "Status": "Passed",
+      "Duration": 0.0001704,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(1,1)",
+      "Status": "Passed",
+      "Duration": 0.0004387,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(1,2)",
+      "Status": "Passed",
+      "Duration": 9.93E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(2,1)",
+      "Status": "Passed",
+      "Duration": 7.98E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(2,2)",
+      "Status": "Passed",
+      "Duration": 7.65E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.GuestCannotStartCustom",
+      "Status": "Passed",
+      "Duration": 0.0043225,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.NameDoesNotChangeAuthenticationProfile",
+      "Status": "Passed",
+      "Duration": 0.0015109,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.SoloSideChangesServiceCourtAfterScoring",
+      "Status": "Passed",
+      "Duration": 0.0022001,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(1,2)",
+      "Status": "Passed",
+      "Duration": 0.0043008,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(2,1)",
+      "Status": "Passed",
+      "Duration": 0.0002252,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(1,1)",
+      "Status": "Passed",
+      "Duration": 0.0001777,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ActualGroundContactOutsideSidelineIsOut",
+      "Status": "Passed",
+      "Duration": 0.0013994,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.AlternatingFirstServerStartsFromRandomlySelectedTeam",
+      "Status": "Passed",
+      "Duration": 0.000366,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.BallMustCrossNetEntirelyBeforeContact",
+      "Status": "Passed",
+      "Duration": 0.0008037,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.BestOfThreeOnlyEndsAfterTwoGameWins",
+      "Status": "Passed",
+      "Duration": 0.0025559,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DecidingGameChangesEndsAtSixOnceWithoutResettingScoresOrServe",
+      "Status": "Passed",
+      "Duration": 0.0011202,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DinkAfterBounceCanBePlayedFromBaselineLikeBotMatch",
+      "Status": "Passed",
+      "Duration": 0.0003578,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DoublesSecondServerStaysInLeftCourtUntilScoring",
+      "Status": "Passed",
+      "Duration": 0.0008045,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DoublesSideOutFirstServerStartsRightEvenWithOddScore",
+      "Status": "Passed",
+      "Duration": 0.0002601,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.IllegalTechniqueDoesNotTurnIntoAutomaticLegalShot",
+      "Status": "Passed",
+      "Duration": 0.000313,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.KitchenMomentumOverridesDeadBallAndScoresOnce",
+      "Status": "Passed",
+      "Duration": 0.0024815,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.OnlyServingSideScoresAndTenAllRequiresTwelveTen",
+      "Status": "Passed",
+      "Duration": 0.0006299,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.OpeningDoublesServerIsSecondThenSideOutStartsFirstServer",
+      "Status": "Passed",
+      "Duration": 0.000394,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.RequeueKeepsElapsedTime",
+      "Status": "Passed",
+      "Duration": 0.0006879,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SearchBeginsAtSixAndExpiresAfter120SearchingSeconds",
+      "Status": "Passed",
+      "Duration": 0.0003756,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SecondBounceAndBodyContactEndRallyOnce",
+      "Status": "Passed",
+      "Duration": 0.0002639,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SecondBounceOutsideStillLosesForReceiver",
+      "Status": "Passed",
+      "Duration": 0.000521,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeAndReturnBothMustBounceBeforeVolley",
+      "Status": "Passed",
+      "Duration": 0.0006073,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeCentreLineMatchesBotMatch(0.0f)",
+      "Status": "Passed",
+      "Duration": 0.0004857,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeCentreLineMatchesBotMatch(0.0254f)",
+      "Status": "Passed",
+      "Duration": 0.0001292,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeContactHeightMatchesBotMatch(0.1f)",
+      "Status": "Passed",
+      "Duration": 0.0004434,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeContactHeightMatchesBotMatch(1.06f)",
+      "Status": "Passed",
+      "Duration": 0.0001027,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeMustBeDiagonalPastKitchenAndLinesAreIn",
+      "Status": "Passed",
+      "Duration": 0.0004055,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.TimeoutsAreLimitedAndResetPerGame",
+      "Status": "Passed",
+      "Duration": 0.0004632,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.WrongReceiverStillFaultsAfterServeBounce",
+      "Status": "Passed",
+      "Duration": 0.0003861,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

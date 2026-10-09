@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using PickleVerse.Rules;
 
 namespace PickleVerse.Multiplayer
 {
@@ -21,13 +22,14 @@ namespace PickleVerse.Multiplayer
         // courtRight[t] identifies the teammate occupying the right service court before a serve.
         public int[] courtRight = new int[2];
         public int[] teamSizes = new int[2];
+        public int[] timeouts = { 2, 2 };
         public bool[] volleyMomentum = new bool[4];
         public string reason = "Sẵn sàng giao bóng";
         public float serverWorldX;
         public int pendingFault = -1;
 
-        public PickleballRules(PlayMode mode, int teamA = 0, int teamB = 0)
-        { this.mode = mode; teamSizes[0] = teamA > 0 ? teamA : (int)mode; teamSizes[1] = teamB > 0 ? teamB : (int)mode; NewRally(); }
+        public PickleballRules(PlayMode mode, int teamA = 0, int teamB = 0, int firstServer = 0)
+        { this.mode = mode; servingTeam = gameFirstServer = firstServer == 1 ? 1 : 0; teamSizes[0] = teamA > 0 ? teamA : (int)mode; teamSizes[1] = teamB > 0 ? teamB : (int)mode; NewRally(); }
         public static int Side(float z) => z < 0 ? 0 : 1;
         public static float Facing(int team) => team == 0 ? 1 : -1;
         public float TeamFacing(int team) => -ends[team];
@@ -53,19 +55,20 @@ namespace PickleVerse.Multiplayer
             serverWorldX = (RightServe ? 1 : -1) * TeamFacing(servingTeam) * HalfWidth * .5f;
             reason = "Giao bóng: " + ScoreCall;
         }
-        public bool Serve(int team, int index, Vector3 feet, Vector3 contact, Vector3 paddleHead, Vector3 wrist, Vector3 paddleVelocity)
+        public bool Serve(int team, int index, Vector3 feet, Vector3 contact, Vector3 paddleHead, Vector3 wrist, Vector3 paddleVelocity, bool? legalFeet = null)
         {
             if (!waitingServe || complete || team != servingTeam || index != serverIndex) return false;
             bool right = feet.x * TeamFacing(team) > 0;
-            if (TeamAt(feet.z) != team || Mathf.Abs(feet.z) < HalfLength + .13f || Mathf.Abs(feet.x) > HalfWidth - .13f || Mathf.Abs(feet.x) < .13f || right != RightServe)
+            bool approximateFeet = TeamAt(feet.z) == team && Mathf.Abs(feet.z) >= HalfLength + .13f && Mathf.Abs(feet.x) <= HalfWidth - .13f && Mathf.Abs(feet.x) >= .13f && right == RightServe;
+            if (!(legalFeet ?? approximateFeet))
             { Fault(team, "Lỗi chân giao bóng"); return false; }
-            if (contact.y > feet.y + 1.05f || paddleHead.y > wrist.y + .06f || paddleVelocity.y <= 0)
+            if (contact.y > 1.05f || contact.y < .15f || paddleHead.y > wrist.y + .015f || paddleVelocity.y <= 0)
             { Fault(team, "Giao bóng phải đánh từ thấp lên, dưới eo"); return false; }
             waitingServe = false; live = serveFlight = awaitingServeReturn = true;
             lastHitTeam = team; lastHitPlayer = team * 2 + index; strokeCount = 1; bounceCount = 0;
             reason = "Bóng đang chơi"; return true;
         }
-        public bool Hit(int team, int index, Vector3 feet, Vector3 ball, ShotKind kind)
+        public bool Hit(int team, int index, Vector3 feet, Vector3 ball, ShotKind kind, bool? feetInKitchen = null)
         {
             if (!live || complete) return false;
             bool volley = bounceCount == 0;
@@ -74,11 +77,10 @@ namespace PickleVerse.Multiplayer
             if (ball.z * TeamFacing(team) > -BallRadius && !returningAcrossNet) { Fault(team, "Chạm bóng trước khi qua lưới hoàn toàn"); return false; }
             if (awaitingServeReturn && index != receiverIndex) { Fault(team, "Sai người nhận giao bóng"); return false; }
             if (volley && !openingBounce[team]) { Fault(team, "Phải để bóng nảy lần đầu mỗi bên sân"); return false; }
-            if (volley && InKitchen(feet)) { Fault(team, "Volley trong kitchen hoặc chạm vạch"); return false; }
+            if (volley && (feetInKitchen ?? InKitchen(feet))) { Fault(team, "Volley trong kitchen hoặc chạm vạch"); return false; }
             // A requested technique never silently changes into a different legal shot.
             if ((kind == ShotKind.Volley || kind == ShotKind.Punch || kind == ShotKind.ResetVolley) && !volley) return false;
             if ((kind == ShotKind.Groundstroke || kind == ShotKind.Dink || kind == ShotKind.Drop || kind == ShotKind.SpeedUp) && volley) return false;
-            if ((kind == ShotKind.Dink || kind == ShotKind.SpeedUp) && Mathf.Abs(feet.z) > Kitchen + 1.5f) return false;
             volleyMomentum[team * 2 + index] = volley;
             lastHitTeam = team; lastHitPlayer = team * 2 + index;
             bounceCount = 0; strokeCount++; serveFlight = awaitingServeReturn = false;
@@ -90,13 +92,13 @@ namespace PickleVerse.Multiplayer
             // After a legal first bounce, any second bounce loses the rally for the receiver,
             // including a bounce outside the court. The physics contact point decides line calls.
             if(bounceCount>=1) { Fault(1-lastHitTeam,"Bóng nảy hai lần"); return; }
-            bool outside = Mathf.Abs(contact.x) > HalfWidth + .001f || Mathf.Abs(contact.z) > HalfLength + .001f;
+            bool outside = !Court.InBounds(new CourtPoint(contact.x,contact.y,contact.z));
             if (outside) { Fault(lastHitTeam, "Bóng ngoài sân"); return; }
             int side = TeamAt(contact.z);
             if (side == lastHitTeam) { Fault(lastHitTeam, "Bóng không qua sân đối phương"); return; }
             if (serveFlight)
             {
-                if (Mathf.Abs(contact.z) <= Kitchen + .001f || contact.x * serverWorldX >= 0)
+                if (Mathf.Abs(contact.z) <= Kitchen || contact.x * Mathf.Sign(serverWorldX) > Court.LineWidth / 2f)
                 { Fault(servingTeam, "Giao bóng sai ô hoặc chạm kitchen"); return; }
                 serveFlight = false;
             }
@@ -159,10 +161,15 @@ namespace PickleVerse.Multiplayer
         {
             if (!gameFinished || complete) return;
             SwapEnds(); gameFirstServer = 1 - gameFirstServer; servingTeam = gameFirstServer;
-            score[0] = score[1] = 0; courtRight[0] = courtRight[1] = 0; serverIndex = receiverIndex = 0;
+            score[0] = score[1] = 0; timeouts[0] = timeouts[1] = 2; courtRight[0] = courtRight[1] = 0; serverIndex = receiverIndex = 0;
             serverNumber = 2; gameFinished = false; NewRally();
         }
         bool HasMomentum() => Array.Exists(volleyMomentum, m => m);
+        public bool TakeTimeout(int team)
+        {
+            if(team<0 || team>1 || !waitingServe || live || complete || gameFinished || timeouts[team]<=0)return false;
+            timeouts[team]--; return true;
+        }
         public void Forfeit(int team, string message) { if (!complete) { complete = true; live = waitingServe = false; winner = 1-team; reason = message; } }
     }
 }

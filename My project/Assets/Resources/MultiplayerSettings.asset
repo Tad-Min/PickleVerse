@@ -22,6 +22,8 @@ MonoBehaviour:
   maleActorPrefab: {fileID: 5316423671882641314, guid: 8c9c2d7a3ea992b49932675e903d8556, type: 3}
   femaleActorPrefab: {fileID: 3150955174342796431, guid: ab58f4ffaac0f474f9660285ad13bca6, type: 3}
   ballVisualPrefab: {fileID: 6066316165077980453, guid: 9c678f90529cffa45b45f49882dde567, type: 3}
+  landingMarkerPrefab: {fileID: 9183525530858168969, guid: 7bb0ea956dadc074289b1be222b57d2e, type: 3}
+  aimMarkerPrefab: {fileID: 2158066933514483095, guid: c822247ea0c540b48a8cb86354db0527, type: 3}
   contactAssistRadius: 0.45
   cameraHeight: 5.3
   cameraDistance: 4.21

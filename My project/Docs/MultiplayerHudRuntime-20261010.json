@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "failure": null,
+  "observations": [
+    {
+      "test": "Scoreboard",
+      "text": "<color=#83E6CD>NHQY</color>  0   :   0  <color=#F9BC7A>PHud12E2</color>\n<size=17>GAME 1    •    Số game thắng 0–0    •    Custom 1v1</size>"
+    },
+    {
+      "test": "Held serve key",
+      "text": "<b>J</b>\n<size=14>Serve</size>"
+    },
+    {
+      "test": "Ignored combo preserves current animation keys",
+      "passed": true
+    },
+    {
+      "test": "Combo selection",
+      "text": "<b>J + K</b>\n<size=14>Drop</size>"
+    },
+    {
+      "test": "Committed combo",
+      "text": "<b>J + K</b>\n<size=14>Drop</size>"
+    },
+    {
+      "test": "Help",
+      "passed": true
+    },
+    {
+      "test": "Touch shot",
+      "passed": true
+    },
+    {
+      "test": "Settings open/close",
+      "passed": true
+    },
+    {
+      "test": "Timeout/Continue buttons",
+      "passed": true
+    },
+    {
+      "test": "Host fault banner",
+      "title": "FAULT / LỖI",
+      "detail": "Bóng nảy hai lần • Đội B phạm lỗi\nĐội A ghi điểm",
+      "color": "RGBA(1.000, 0.550, 0.400, 1.000)"
+    },
+    {
+      "test": "Next game scoreboard",
+      "text": "<color=#83E6CD>NHQY</color>  0   :   0  <color=#F9BC7A>PHud12E2</color>\n<size=17>GAME 2    •    Số game thắng 1–0    •    Custom 1v1</size>"
+    },
+    {
+      "test": "Match result",
+      "summary": "SỐ GAME THẮNG  2 - 1",
+      "score": "<color=#83E6CD>NHQY</color>  11   :   0  <color=#F9BC7A>PHud12E2</color>\n<size=17>GAME 3    •    Số game thắng 2–1    •    Custom 1v1</size>"
+    },
+    {
+      "test": "Result return to room",
+      "state": "WaitingRoom"
+    }
+  ]
+}

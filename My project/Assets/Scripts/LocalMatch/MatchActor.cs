@@ -127,11 +127,11 @@ namespace PickleVerse.LocalMatch
             if(paddleFace)PaddleVelocity=(paddleFace.position-previousFace)/Mathf.Max(.0001f,dt);
         }
         /// <summary>Remote replicas sample the same authored poses without moving their network root.</summary>
-        public void RenderNetworkPose(Vector3 velocity, bool run, float dt)
+        public void RenderNetworkPose(Vector3 velocity, bool run, float dt, bool canMove = true)
         {
             Vector3 previousFace = paddleFace ? paddleFace.position : Vector3.zero;
-            Velocity = velocity; AdvancePose(dt, run, true);
-            foley.Step(transform.position,run,dt);
+            Velocity = velocity; AdvancePose(dt, run, canMove);
+            foley.Step(transform.position,run,dt,canMove);
             if (paddleFace) PaddleVelocity = (paddleFace.position - previousFace) / Mathf.Max(.0001f, dt);
         }
         void AdvancePose(float dt, bool run, bool canMove)

@@ -2,7 +2,7 @@
 
 ## Chạy bản mới
 
-Windows cập nhật lúc **23:36 ngày 09/10/2026**, build `build_0b24d1be48fa`: sửa NullReferenceException ở nút Về phòng khi NetworkMatch đã despawn. Bảng điểm vẫn chỉ hiện tỉ số và đã bỏ TechniqueBar. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
+Windows cập nhật lúc **02:16 ngày 10/10/2026**, build `build_4d33cf5fdfaf`: đồng bộ toàn bộ HUD BotMatch vào MultiplayerCourt, gồm bảng điểm hai dòng, GAME/số game thắng/chế độ, banner FAULT, TechniqueBar, Settings, Help, cảm ứng, time-out và kết quả trận. Giao thức mạng phiên bản **3**; mọi máy phải cập nhật cùng bản mới. Build thành công với **0 lỗi**, 542 cảnh báo. Sau mỗi lần sửa scene/script phải build lại bản Windows; đóng phiên game cũ rồi mở lại. Thay cả thư mục build khi chuyển bản mới sang máy khác.
 
 1. Trong Unity, mở `Assets/Scenes/UI/PlayMultiplayer.unity` rồi bấm Play.
 2. Hoặc chạy `Builds/Multiplayer/PickleVerse.exe`. Khi gửi cho bạn bè, gửi **toàn bộ folder Multiplayer**, gồm exe, `PickleVerse_Data` và các DLL; mọi máy dùng cùng bản build.
@@ -23,17 +23,19 @@ Artwork UI nằm tại `Assets/FrontEndContent/Multiplayer`. Ảnh nhân vật h
 - Btn1Vs1 từ chủ nhóm giải tán nhóm, mời khách ra và mở phòng solo. Khách chọn 1Vs1 thì rời nhóm của mình.
 - BtnCustom tạo phòng 4 chỗ, mặc định dùng đội tối đa 2 người. Host ở A1, khách tự phân đội cân bằng. BtnSwap đổi đội mình; host có BtnKick. Custom cho phép **1vs1, 1vs2, 2vs1, 2vs2**, mỗi đội phải có người. **Không dùng Ready**; chỉ host bấm Bắt đầu. Khách thấy Chờ chủ phòng.
 - ImgIcon và BtnInvite để dành phát triển sau.
-- Hết trận bấm Về phòng; nhóm được giữ. Host bấm Game tiếp giữa các game; tự tiếp tục sau 120 giây.
+- Hết trận bấm Về phòng; nhóm được giữ. Giữa các game tự đổi sân và tiếp tục sau 4,2 giây, cùng nhịp thông báo của BotMatch; host vẫn có thể bấm Game tiếp.
 
 Đã sửa lỗi nút Về phòng đọc `NetworkMatch.Instance.BetweenGames` sau khi NetworkMatch bị despawn. UI cập nhật nhãn/nút cả khi đối tượng trận không còn tồn tại; chỉ host của trận còn spawned được bấm Game tiếp. Đã kiểm tra nút Game tiếp sang game 2 và bấm Về phòng sau despawn trên Editor host cùng client Windows; kết quả tại `Docs/CourtReturnNullFixVerification-20261009.json`.
 
 ## Gameplay từ BotMatch
 
+HUD trên sân đã đồng bộ theo yêu cầu mới ngày 10/10/2026: giữ bố cục/style BotMatch, dùng tên người chơi hoặc đội thay BẠN/BOT và khôi phục TechniqueBar hiển thị phím/combo. Settings/Help chỉ chặn input của người mở; trận online tiếp tục. Xem [báo cáo HUD và giới hạn kiểm thử](MultiplayerHudSync-20261010.md), [ảnh banner lỗi thực tế](MultiplayerHud-Fault-20261010.png). Khi sửa HUD BotMatch, dừng Play rồi dùng **PickleVerse → Multiplayer → Sync all HUD from BotMatch** để cập nhật scene MultiplayerCourt.
+
 Multiplayer dùng prefab nhân vật, clip, grip/IK vợt, thời điểm chạm/thả bóng, chuyển động, camera và sân từ BotMatch. `MatchMovement`, `ShotTrajectory`, `ShotInput`, `MatchActor`, `BallFlight` được dùng chung. BotMatch giữ AI riêng; multiplayer nhận input của người sở hữu và mô phỏng luật/bóng tại host.
 
 | Phím | Hành động |
 |---|---|
-| WASD / mũi tên | Di chuyển theo hướng sân của mình |
+| WASD (có thể đổi phím trong cài đặt) | Di chuyển theo hướng sân của mình |
 | Shift / Space | Chạy |
 | J | Drive / giao bóng khi tới lượt |
 | K | Dink |
@@ -73,7 +75,7 @@ Nếu gặp “Scene chưa được bật trong Build Profile” khi test Editor
 
 Find, Join và StartCustom kiểm tra scene trước khi đổi trạng thái hoặc gửi yêu cầu mạng, tránh dừng tìm bất ngờ sau 6 giây. Kết quả thử cấu hình máy mới, scene bị tắt, profile riêng và runtime nằm tại `Docs/MultiplayerSceneSetupVerification-20261009.json`.
 
-Profile `Assets/Settings/BuildProfiles/MultiplayerWindows.asset` phải chứa cả `PlayMultiplayer` và `MultiplayerCourt`, cùng những scene đang được NGO đồng bộ. Editor và mọi Player cần cùng danh sách scene/bản build. Scene Hash lỗi khi client không có scene host gửi trong bảng build của nó. Đã thêm kiểm tra trước kết nối và trước build; protocol phiên bản 2 ngăn bản cũ tham gia.
+Profile `Assets/Settings/BuildProfiles/MultiplayerWindows.asset` phải chứa cả `PlayMultiplayer` và `MultiplayerCourt`, cùng những scene đang được NGO đồng bộ. Editor và mọi Player cần cùng danh sách scene/bản build. Scene Hash lỗi khi client không có scene host gửi trong bảng build của nó. Đã thêm kiểm tra trước kết nối và trước build; protocol phiên bản 3 ngăn bản cũ tham gia.
 
 Services dùng môi trường `pickleverse-test`, hai queue `PickleVerse-1v1` / `PickleVerse-2v2`, Relay nên có thể kết nối khác mạng khi Internet/UGS hoạt động. QoS giới hạn 150 ms, không tự nới. Test nhiều phiên trên một máy chưa chứng minh kết nối giữa hai máy vật lý.
 

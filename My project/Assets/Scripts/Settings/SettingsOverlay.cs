@@ -7,6 +7,10 @@ using UnityEngine.SceneManagement;
 
 namespace PickleVerse.Settings
 {
+    public interface ISettingsLeaveConfirmation
+    {
+        string LeaveConfirmation { get; }
+    }
     public interface ISettingsHost
     {
         bool IsGameplay { get; }

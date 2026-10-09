@@ -1,0 +1,17 @@
+{
+  "run": "BSync10",
+  "transport": "Unity Services Sessions/Relay",
+  "physicalHosts": 1,
+  "customLifecycle": [
+    "PASS customHost PBSync10C1: 2 players, host=True, scene=MultiplayerCourt; lifecycle PASS games=1:2 score=0:11 room=Singles members=2",
+    "PASS customGuest PBSync10C2: 2 players, host=False, scene=MultiplayerCourt; lifecycle PASS games=1:2 score=0:11 room=Singles members=2"
+  ],
+  "doubles": [
+    "PASS doubles PBSync10S1: 4 players, host=False, scene=MultiplayerCourt",
+    "PASS doubles PBSync10S2: 4 players, host=False, scene=MultiplayerCourt",
+    "PASS doubles PBSync10S3: 4 players, host=False, scene=MultiplayerCourt",
+    "PASS doubles PBSync10S4: 4 players, host=True, scene=MultiplayerCourt"
+  ],
+  "finalBuildGuest": "PASS customGuest PBHost10E2: 2 players, host=False, scene=MultiplayerCourt",
+  "gameplayReport": "BotMultiplayerRuntime-20261010.json"
+}

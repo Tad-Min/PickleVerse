@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "failure": null,
+  "observations": [
+    {
+      "test": "Owner input D + Shift",
+      "moved": 1.2916615,
+      "remoteMoved": 0.0,
+      "clip": "PKV_Shuffle_Right"
+    },
+    {
+      "test": "Timeout",
+      "Value": 59.5351448,
+      "team": 0,
+      "remaining": 1
+    },
+    {
+      "test": "Rebound serve key H",
+      "gender": "Female",
+      "clip": "PKV_Serve_FH_Underhand",
+      "stroke": 1,
+      "live": true,
+      "reason": "Bóng đang chơi"
+    },
+    {
+      "test": "Male serve",
+      "gender": "Male",
+      "clip": "PKV_Serve_FH_Underhand",
+      "stroke": 1,
+      "live": true,
+      "reason": "Bóng đang chơi"
+    },
+    {
+      "test": "Visible ball follows left hand",
+      "heldSamples": 116,
+      "maxHeldError": 0.01618886,
+      "heldOutliers": []
+    },
+    {
+      "test": "Automatic next game",
+      "game": 2,
+      "between": false,
+      "previousEnd": -1,
+      "currentEnd": 1,
+      "score": "0:0"
+    },
+    {
+      "test": "Existing HUD",
+      "score": "0 : 0",
+      "children": [
+        "Scoreboard",
+        "RefereeNotice",
+        "ServeClock",
+        "Leave",
+        "ReturnToRoom"
+      ],
+      "camera": "(-1.40, 5.30, 10.31)"
+    }
+  ]
+}
