@@ -14,9 +14,14 @@ namespace PickleVerse.LocalMatch
         public Renderer[] lampFaces;
         public Material lampsOff, lampsOn;
         public bool selectedNight;
+        public bool useLocalLaunchSettings = true;
         public bool IsNight { get; private set; }
 
-        void Awake() { selectedNight = BotMatchLaunchSettings.Night; Apply(selectedNight); }
+        void Awake()
+        {
+            if (useLocalLaunchSettings) selectedNight = BotMatchLaunchSettings.Night;
+            Apply(selectedNight);
+        }
 
         public void SelectForMatch(bool night) { selectedNight = night; Apply(night); }
 

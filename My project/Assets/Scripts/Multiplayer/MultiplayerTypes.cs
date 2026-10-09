@@ -21,6 +21,7 @@ namespace PickleVerse.Multiplayer
         public string searchId = "", phase = "idle", matchId = "", notice = "";
         public long startedUtcTicks;
         public int generation;
+        public int revision;
         public int readyEpoch;
         [SerializeField] public Dictionary<string,int> teams=new Dictionary<string,int>(),teamVersions=new Dictionary<string,int>();
         [SerializeField] public Dictionary<string,string> handledTeamRequests=new Dictionary<string,string>();

@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-09",
+  "source": "Assets/Scenes/BotMatch.unity",
+  "target": "Assets/Scenes/MultiplayerCourt.unity",
+  "backup": "Temp/MultiplayerCourtSync/20261009-170631",
+  "comparison": [
+    {
+      "label": "Arena",
+      "before": 29,
+      "after": 0,
+      "sourceObjects": 34,
+      "targetObjects": 34
+    },
+    {
+      "label": "FemaleActor",
+      "before": 48,
+      "after": 0,
+      "sourceObjects": 86,
+      "targetObjects": 86
+    },
+    {
+      "label": "MaleActor",
+      "before": 20,
+      "after": 0,
+      "sourceObjects": 73,
+      "targetObjects": 73
+    },
+    {
+      "label": "BallVisual",
+      "before": 1,
+      "after": 0,
+      "sourceObjects": 1,
+      "targetObjects": 1
+    }
+  ],
+  "validation": {
+    "missingScripts": 0,
+    "day": true,
+    "night": true,
+    "actors": [
+      {
+        "name": "FemaleActor",
+        "objects": 86,
+        "clips": 20,
+        "leftHand": true,
+        "secondary": true,
+        "bones": 79
+      },
+      {
+        "name": "MaleActor",
+        "objects": 73,
+        "clips": 19,
+        "leftHand": true,
+        "secondary": true,
+        "bones": 67
+      }
+    ],
+    "trailRenderers": 1,
+    "cameraSkybox": "Skybox",
+    "networkBootstrap": 1,
+    "localBotControllers": 0
+  },
+  "runtime": {
+    "success": true,
+    "buildId": "build_2eecb0c0e553",
+    "scene": "MultiplayerCourt",
+    "host": true,
+    "actorInfo": [
+      {
+        "Gender": "Female",
+        "IsOwner": true,
+        "motion": true,
+        "bones": 79,
+        "clip": "PKV_Idle_Ready"
+      },
+      {
+        "Gender": "Male",
+        "IsOwner": false,
+        "motion": true,
+        "bones": 67,
+        "clip": "PKV_Idle_Ready"
+      }
+    ],
+    "secondaryAngles": {
+      "LastPonyAngle": 21.99999,
+      "LastSkirtAngle": 32.0,
+      "LastHairAngle": 0.0
+    },
+    "sky": "BlueSunset",
+    "floodlights": 4,
+    "movementDx": 1.34666348,
+    "isolated": true,
+    "animated": true,
+    "live": true,
+    "emitting": true,
+    "trailCount": 1,
+    "trailVertices": 10
+  },
+  "windowsClient": "PASS customGuest PC1009A1E2: 2 players, host=False, scene=MultiplayerCourt",
+  "build": {
+    "buildId": "build_2eecb0c0e553",
+    "status": "completed",
+    "result": "Succeeded",
+    "totalErrors": 0,
+    "totalWarnings": 542,
+    "buildTimeMs": 48171,
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/Multiplayer/PickleVerse.exe"
+  },
+  "warningGroups": [
+    {
+      "Name": "Menu Missing Script",
+      "Count": 43
+    },
+    {
+      "Name": "Pipeline config",
+      "Count": 1
+    },
+    {
+      "Name": "Shader",
+      "Count": 498
+    }
+  ],
+  "testProcessesClosed": true,
+  "editorRestored": "MultiplayerCourt",
+  "consoleStatus": {
+    "entries": [],
+    "cursor": 3213,
+    "session": "f09d5a228ca5428c810789d2d2c63e65",
+    "returned": 0,
+    "dropped": false,
+    "reset": false,
+    "counts": {
+      "error": 10,
+      "warn": 1792,
+      "log": 198
+    },
+    "groundTruth": {
+      "sampledUtc": "2026-10-09T10:18:34.1132828Z",
+      "ageMs": 222,
+      "compilationFailed": false,
+      "compiling": false,
+      "consoleErrors": 0,
+      "consoleWarnings": 22,
+      "consoleLogs": 15,
+      "seeded": true
+    }
+  }
+}

@@ -41,6 +41,7 @@ namespace PickleVerse.Multiplayer
         string shotLabel=""; double shotLabelUntil;
         readonly IGameplayShotService shots = new BotMatchGameplayService();
         Vector3 ballPosition, ballVelocity, serveOrigin;
+        TrailRenderer ballTrail;
         float accumulator;
         bool releasedServe;
         double nextGameDeadline;
@@ -82,7 +83,13 @@ namespace PickleVerse.Multiplayer
             Body=ball.GetComponent<Rigidbody>();
             if (!Body) Body=ball.AddComponent<Rigidbody>();
             Body.mass=.026f; Body.isKinematic=true; Body.useGravity=false;
-            var trail=ball.AddComponent<TrailRenderer>(); trail.time=.22f; trail.startWidth=.025f; trail.endWidth=.002f; trail.sharedMaterial=settings.trailMaterial;
+            ballTrail=ball.GetComponent<TrailRenderer>();
+            if (!ballTrail)
+            {
+                ballTrail=ball.AddComponent<TrailRenderer>(); ballTrail.time=.22f;
+                ballTrail.startWidth=.025f; ballTrail.endWidth=.002f; ballTrail.sharedMaterial=settings.trailMaterial;
+            }
+            ballTrail.emitting=false; ballTrail.Clear();
         }
         void SpawnPlayers()
         {
@@ -142,11 +149,13 @@ namespace PickleVerse.Multiplayer
             foreach (var player in players.Values) { player.Teleport(StartingPosition(player.Team.Value, player.Index.Value)); player.ResetInput(); }
             var server = players.Values.First(p => p.Team.Value == Rules.servingTeam && p.Index.Value == Rules.serverIndex);
             ballPosition = server.transform.position + Vector3.up * .9f; ballVelocity = Vector3.zero; Body.position = ballPosition;
+            if (ballTrail) { ballTrail.emitting=false; ballTrail.Clear(); }
             serveDeadline = Time.realtimeSinceStartupAsDouble + 10; Publish();
         }
         void FixedUpdate()
         {
             if (!IsSpawned || Body == null || !Started.Value) return;
+            if (ballTrail) ballTrail.emitting=(IsServer ? Rules.live : Ball.Value.live) && !Paused.Value && !Finished.Value;
             if (!IsServer) { Body.position = Vector3.Lerp(Body.position, Ball.Value.position, 1 - Mathf.Exp(-22 * Time.fixedDeltaTime)); return; }
             if (Paused.Value)
             {

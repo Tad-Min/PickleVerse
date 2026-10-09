@@ -21,6 +21,94 @@ namespace PickleVerse.EditorTools
     public static class PlayMultiplayerIntegration
     {
         const string Folder = "Assets/Prefabs/Multiplayer/BotMatch";
+        [MenuItem("PickleVerse/Multiplayer/Sync court and players from BotMatch")]
+        public static void SyncCourtAndPlayers()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play Mode first.");
+            var active = SceneManager.GetActiveScene();
+            bool sourceWasLoaded = SceneManager.GetSceneByPath("Assets/Scenes/BotMatch.unity").isLoaded;
+            bool courtWasLoaded = SceneManager.GetSceneByPath(MultiplayerSceneConfiguration.CourtPath).isLoaded;
+            var source = Open("Assets/Scenes/BotMatch.unity");
+            var court = Open(MultiplayerSceneConfiguration.CourtPath);
+            string backup = "Temp/MultiplayerCourtSync/" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            Directory.CreateDirectory(backup);
+            EditorSceneManager.SaveScene(court, backup + "/MultiplayerCourt.unity", true);
+            foreach (var path in new[] { Folder + "/FemaleActor.prefab", Folder + "/MaleActor.prefab", Folder + "/BallVisual.prefab", "Assets/Resources/MultiplayerSettings.asset" })
+                if (File.Exists(path)) File.Copy(path, backup + "/" + Path.GetFileName(path));
+            try
+            {
+                var bot = source.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<BotMatch>(true)).Single();
+                var settings = AssetDatabase.LoadAssetAtPath<MultiplayerSettings>("Assets/Resources/MultiplayerSettings.asset");
+                settings.femaleActorPrefab = SaveActor(bot.human, "FemaleActor");
+                settings.maleActorPrefab = SaveActor(bot.bot, "MaleActor");
+                settings.ballVisualPrefab = SaveObject(bot.ball.gameObject, "BallVisual");
+                settings.contactAssistRadius = bot.contactAssistRadius;
+                var camera = source.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MatchCamera>(true)).Single();
+                settings.cameraHeight = camera.height; settings.cameraDistance = camera.followDistance;
+                settings.cameraPitch = camera.pitch; settings.cameraFieldOfView = camera.fieldOfView;
+                if (bot.ballTrail) settings.trailMaterial = bot.ballTrail.sharedMaterial;
+                EditorUtility.SetDirty(settings); AssetDatabase.SaveAssetIfDirty(settings);
+                SyncEnvironment(source, court);
+                EditorSceneManager.MarkSceneDirty(court); EditorSceneManager.SaveScene(court);
+                Debug.Log("MultiplayerCourt environment, actors and ball synchronized from BotMatch. Backup: " + backup);
+            }
+            finally
+            {
+                if (active.IsValid() && active.isLoaded) SceneManager.SetActiveScene(active);
+                if (!sourceWasLoaded) EditorSceneManager.CloseScene(source, true);
+                if (!courtWasLoaded) EditorSceneManager.CloseScene(court, true);
+            }
+        }
+
+        static void SyncEnvironment(Scene source, Scene court)
+        {
+            SceneManager.SetActiveScene(source);
+            var renderProperties = typeof(RenderSettings).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .Where(p => p.CanRead && p.CanWrite && p.Name != "sun" && p.Name != "customReflection" &&
+                    !p.IsDefined(typeof(ObsoleteAttribute), true) && p.GetIndexParameters().Length == 0)
+                .Select(p => (property: p, value: p.GetValue(null))).ToArray();
+            var sourceCamera = source.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MatchCamera>(true)).Single().GetComponent<Camera>();
+            var lighting = source.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MatchEnvironmentLighting>(true)).SingleOrDefault();
+            SceneManager.SetActiveScene(court);
+            var previous = court.GetRootGameObjects().SingleOrDefault(g => g.name == "BotMatchArena");
+            if (previous) Object.DestroyImmediate(previous);
+            var arena = new GameObject("BotMatchArena"); SceneManager.MoveGameObjectToScene(arena, court);
+            var objects = new Dictionary<Object, Object>();
+            foreach (var root in source.GetRootGameObjects().Where(g => g.name == "Arena" || g.GetComponent<Light>()))
+            {
+                var clone = Object.Instantiate(root, arena.transform); clone.name = root.name;
+                var originals = root.GetComponentsInChildren<Transform>(true);
+                var copies = clone.GetComponentsInChildren<Transform>(true);
+                for (int i = 0; i < originals.Length; i++)
+                {
+                    objects[originals[i].gameObject] = copies[i].gameObject;
+                    var components = originals[i].GetComponents<Component>();
+                    var copied = copies[i].GetComponents<Component>();
+                    for (int j = 0; j < components.Length; j++) if (components[j]) objects[components[j]] = copied[j];
+                }
+            }
+            // Ball flight and faults are simulated by NetworkMatch, independently of PhysX.
+            foreach (var collider in arena.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+            foreach (var property in renderProperties) property.property.SetValue(null, property.value);
+            var camera = court.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Camera>(true)).First(c => c.gameObject.activeInHierarchy);
+            EditorUtility.CopySerialized(sourceCamera, camera);
+            camera.transform.SetPositionAndRotation(sourceCamera.transform.position, sourceCamera.transform.rotation);
+            objects[sourceCamera] = camera;
+            if (lighting)
+            {
+                var target = arena.AddComponent<MatchEnvironmentLighting>();
+                EditorUtility.CopySerialized(lighting, target);
+                target.matchCamera = camera;
+                target.sun = lighting.sun && objects.TryGetValue(lighting.sun, out var sun) ? (Light)sun : null;
+                target.floodlights = lighting.floodlights?.Select(l => l && objects.TryGetValue(l, out var copy) ? (Light)copy : null).ToArray();
+                target.lampFaces = lighting.lampFaces?.Select(r => r && objects.TryGetValue(r, out var copy) ? (Renderer)copy : null).ToArray();
+                // Every peer uses the scene's authored mode; BotMatch preferences are local.
+                target.useLocalLaunchSettings = false;
+                target.Apply(target.selectedNight);
+            }
+            else RenderSettings.sun = arena.GetComponentsInChildren<Light>(true).FirstOrDefault(l => l.type == LightType.Directional);
+        }
+
         [MenuItem("PickleVerse/Multiplayer/Integrate PlayMultiplayer and BotMatch")]
         public static void Integrate()
         {
@@ -123,21 +211,14 @@ namespace PickleVerse.EditorTools
             var court = Open(MultiplayerSceneConfiguration.CourtPath);
             if (!File.Exists("Temp/MultiplayerUpgrade/MultiplayerCourt-before.unity")) EditorSceneManager.SaveScene(court, "Temp/MultiplayerUpgrade/MultiplayerCourt-before.unity", true);
             SceneManager.SetActiveScene(court);
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(.63f,.75f,.85f); RenderSettings.ambientEquatorColor = new Color(.48f,.58f,.58f); RenderSettings.ambientGroundColor = new Color(.23f,.29f,.26f);
-            RenderSettings.fog = true; RenderSettings.fogColor = new Color(.64f,.78f,.82f); RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogStartDistance = 30; RenderSettings.fogEndDistance = 100;
             foreach (var root in court.GetRootGameObjects())
             {
                 if (root.GetComponent<Camera>() || root.GetComponent<EventSystem>() || root.GetComponent<CourtBootstrap>()) continue;
                 if (root.name == "BotMatchArena" || root.name == "BotMatchHUD") Object.DestroyImmediate(root);
                 else root.SetActive(false);
             }
-            var arena = new GameObject("BotMatchArena"); SceneManager.MoveGameObjectToScene(arena, court);
-            foreach (var root in source.GetRootGameObjects().Where(g => g.name == "Arena" || g.GetComponent<Light>()))
-                Object.Instantiate(root, arena.transform);
-            var sun = arena.GetComponentInChildren<Light>(); if (sun) RenderSettings.sun = sun;
+            SyncEnvironment(source, court);
             var camera = court.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Camera>(true)).First();
-            camera.fieldOfView = 60; camera.backgroundColor = new Color(.58f,.75f,.82f); camera.clearFlags = CameraClearFlags.SolidColor;
             var canvas = new GameObject("BotMatchHUD", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster));
             SceneManager.MoveGameObjectToScene(canvas, court);
             var c = canvas.GetComponent<Canvas>(); c.renderMode = RenderMode.ScreenSpaceCamera; c.worldCamera = camera; c.planeDistance = .75f;
@@ -152,7 +233,6 @@ namespace PickleVerse.EditorTools
             ui.leave = Object.Instantiate(buttonTemplate, canvas.transform); ui.leave.name = "Leave"; ClearCalls(ui.leave);
             ui.returnToRoom = Object.Instantiate(buttonTemplate, canvas.transform); ui.returnToRoom.name = "ReturnToRoom"; ClearCalls(ui.returnToRoom);
             ui.returnToRoom.GetComponentInChildren<TMP_Text>().text = "Về phòng"; ui.returnToRoom.gameObject.SetActive(false);
-            foreach(var collider in arena.GetComponentsInChildren<Collider>(true)) collider.enabled=false;
             EditorSceneManager.SaveScene(court); EditorSceneManager.CloseScene(court, true);
         }
         public static void ConfigureBuildScenes()

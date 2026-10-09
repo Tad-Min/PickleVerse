@@ -1,5 +1,13 @@
 # PlayMultiplayer: Windows / Relay verification
 
+## Kiểm tra mới nhất — 09/10/2026
+
+[Báo cáo multiplayer mới nhất](MultiplayerVerification-20261009.md): 14/14 kịch bản Windows đạt, 61/61 EditMode đạt; đã sửa cập nhật phòng cũ, race khi nhập mã/bắt đầu custom, phân đội 3–1 khi khách vào đồng thời và phục hồi dữ liệu Relay bị bỏ lỡ. Bản giao `build_ba61269f7d80`, 0 build errors. Có thêm ca khách hủy trước khi host nhận sự kiện, input host/client và kiểm tra prediction trở về vị trí host.
+
+Các kết quả bên dưới là lịch sử của các bản trước. Test dùng nhiều phiên trên cùng PC qua UGS/Relay thật; chưa kiểm tra hai PC khác mạng hoặc một trận đối kháng đầy đủ do người chơi thực hiện.
+
+## Lịch sử kiểm tra
+
 Build: `build_02b17799ff2e`, Windows x64, 0 build errors. Date: 2026-10-08 (Asia/Saigon).
 
 Các ca dưới đây dùng nhiều Player Windows riêng biệt trên **cùng PC**, thông qua Unity Authentication, Sessions, Matchmaker và Relay thật. Không dùng giả lập matchmaker. Chưa kiểm tra giữa hai PC khác mạng.

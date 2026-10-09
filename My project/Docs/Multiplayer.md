@@ -71,6 +71,7 @@ Host rời kết thúc phiên. Khách mất kết nối: tạm dừng tối đa 
 
 ## Kiểm chứng
 
+- Kiểm tra mới nhất 09/10/2026: [báo cáo đầy đủ, lỗi đã sửa và giới hạn kiểm thử](MultiplayerVerification-20261009.md). 14/14 kịch bản Windows, 61/61 EditMode; có kiểm tra input host/client, timeout và khách hủy trước khi host nhận sự kiện.
 - EditMode: `Docs/PlayMultiplayerTestResults.json`.
 - Binding UI: `Docs/PlayMultiplayerUiTest.json`.
 - Windows/Relay: `Docs/PlayMultiplayerWindowsTestResults.md`.

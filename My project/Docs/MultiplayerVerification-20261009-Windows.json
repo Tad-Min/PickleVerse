@@ -1,0 +1,181 @@
+[
+  {
+    "case": "custom2",
+    "run": "V1009E6",
+    "passed": true,
+    "seconds": 28,
+    "receipts": [
+      "PASS customHost PV1009E6C1: 4 players, host=True, scene=MultiplayerCourt",
+      "PASS customGuest PV1009E6C2: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS customGuest PV1009E6C3: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS customGuest PV1009E6C4: 4 players, host=False, scene=MultiplayerCourt"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "singles",
+    "run": "V1009A4",
+    "passed": true,
+    "seconds": 178,
+    "receipts": [
+      "PASS singles PV1009A4S1: 2 players, host=False, scene=MultiplayerCourt; reconnect PASS; lifecycle PASS games=2:1 score=11:0 room=Singles members=1",
+      "PASS singles PV1009A4S2: 2 players, host=True, scene=MultiplayerCourt; reconnect PASS; lifecycle PASS games=2:1 score=11:0 room=Singles members=1"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "solos4",
+    "run": "V1009B4",
+    "passed": true,
+    "seconds": 28,
+    "receipts": [
+      "PASS doubles PV1009B4S1: 4 players, host=True, scene=MultiplayerCourt",
+      "PASS doubles PV1009B4S2: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS doubles PV1009B4S3: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS doubles PV1009B4S4: 4 players, host=False, scene=MultiplayerCourt"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "duoSolos",
+    "run": "V1009C5",
+    "passed": true,
+    "seconds": 28,
+    "receipts": [
+      "PASS duoHost PV1009C5D1: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS duoGuest PV1009C5D2: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS doubles PV1009C5S1: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS doubles PV1009C5S2: 4 players, host=True, scene=MultiplayerCourt"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "duos2",
+    "run": "V1009D4",
+    "passed": true,
+    "seconds": 27,
+    "receipts": [
+      "PASS duoHost PV1009D4D1: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS duoGuest PV1009D4D2: 4 players, host=False, scene=MultiplayerCourt",
+      "PASS duoHost PV1009D4D3: 4 players, host=True, scene=MultiplayerCourt",
+      "PASS duoGuest PV1009D4D4: 4 players, host=False, scene=MultiplayerCourt"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "custom12",
+    "run": "V1009F4",
+    "passed": true,
+    "seconds": 175,
+    "receipts": [
+      "PASS customHost PV1009F4C1: 3 players, host=True, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=3",
+      "PASS customGuest PV1009F4C2: 3 players, host=False, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=3",
+      "PASS customGuest PV1009F4C3: 3 players, host=False, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=3"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "customAdmin",
+    "run": "V1009G4",
+    "passed": true,
+    "seconds": 36,
+    "receipts": [
+      "PASS customAdminHost PV1009G4A1: 2 players, host=True, scene=MultiplayerCourt",
+      "PASS customAdminGuest PV1009G4A2: 2 players, host=False, scene=MultiplayerCourt"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "duoControls",
+    "run": "V1009H4",
+    "passed": true,
+    "seconds": 9,
+    "receipts": [
+      "PASS duoControlHost PV1009H4D1: guest cancel, party retained, captain Singles disbands party",
+      "PASS duoControlGuest PV1009H4D2: guest cancel, party retained, captain Singles disbands party"
+    ],
+    "unexpectedErrors": [],
+    "buildId": "build_4f2eaea4aeb1"
+  },
+  {
+    "case": "partyDeparture",
+    "run": "V1009I5",
+    "buildId": "build_d98ddefb641f",
+    "passed": true,
+    "seconds": 12,
+    "receipts": [
+      "PASS departurePartyHost PV1009I5H1: host transfer / custom closure",
+      "PASS departurePartyGuest PV1009I5G2: host transfer / custom closure"
+    ],
+    "unexpectedErrors": []
+  },
+  {
+    "case": "customDeparture",
+    "run": "V1009J5",
+    "buildId": "build_d98ddefb641f",
+    "passed": true,
+    "seconds": 9,
+    "receipts": [
+      "PASS departureCustomHost PV1009J5H1: host transfer / custom closure",
+      "PASS departureCustomGuest PV1009J5G2: host transfer / custom closure"
+    ],
+    "unexpectedErrors": []
+  },
+  {
+    "case": "singles",
+    "run": "V1009K6",
+    "buildId": "build_ba61269f7d80",
+    "passed": true,
+    "seconds": 42,
+    "receipts": [
+      "PASS singles PV1009K6S1: 2 players, host=True, scene=MultiplayerCourt",
+      "PASS singles PV1009K6S2: 2 players, host=False, scene=MultiplayerCourt"
+    ],
+    "unexpectedErrors": []
+  },
+  {
+    "case": "singles",
+    "run": "V1009L5",
+    "buildId": "build_ba61269f7d80",
+    "passed": true,
+    "seconds": 24,
+    "receipts": [
+      "PASS singles PV1009L5S1: 2 players, host=True, scene=MultiplayerCourt; hostLeaves PASS",
+      "PASS singles PV1009L5S2: 2 players, host=False, scene=MultiplayerCourt; hostLeaves PASS"
+    ],
+    "unexpectedErrors": []
+  },
+  {
+    "case": "singles",
+    "run": "V1009M5",
+    "buildId": "build_ba61269f7d80",
+    "passed": true,
+    "seconds": 24,
+    "receipts": [
+      "PASS singles PV1009M5S1: 2 players, host=False, scene=MultiplayerCourt; clientLeaves PASS",
+      "PASS singles PV1009M5S2: 2 players, host=True, scene=MultiplayerCourt; clientLeaves PASS"
+    ],
+    "unexpectedErrors": []
+  },
+  {
+    "case": "duoSolos",
+    "run": "V1009C7",
+    "buildId": "build_ba61269f7d80",
+    "passed": true,
+    "seconds": 175,
+    "receipts": [
+      "PASS duoHost PV1009C7D1: 4 players, host=False, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=2",
+      "PASS duoGuest PV1009C7D2: 4 players, host=False, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=2",
+      "PASS doubles PV1009C7S1: 4 players, host=True, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=1",
+      "PASS doubles PV1009C7S2: 4 players, host=False, scene=MultiplayerCourt; lifecycle PASS games=2:1 score=11:0 room=Doubles members=1"
+    ],
+    "unexpectedErrors": []
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "editorHost": false,
+  "gender": "Female",
+  "dx": -1.44719911,
+  "authoritativeDx": -0.499999523,
+  "settledPositionError": 0.0,
+  "ownerOnlyInput": true,
+  "animated": true,
+  "contact": true,
+  "replicatedBallVelocity": 11.3366737,
+  "players": 2
+}

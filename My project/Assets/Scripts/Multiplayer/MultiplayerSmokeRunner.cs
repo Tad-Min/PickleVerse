@@ -44,10 +44,23 @@ namespace PickleVerse.Multiplayer
                 if(test=="customHost")
                 {
                     await app.CreateCustomAsync(Arg("-pkvMode","1")=="2"?PlayMode.Doubles:PlayMode.Singles);
-                    File.WriteAllText(file+".code",app.Room.Code);
+                    MultiplayerSmokeChecks.WriteSharedCode(file+".code",app.Room.Code);
                     int count = int.Parse(Arg("-pkvCount", (2*(int)app.Mode).ToString()));
-                    while(app.Members().Count<count || app.Members().Any(m=>m.team<0) || app.Members().Select(m=>m.team).Distinct().Count()!=2) await Task.Delay(500);
-                    await app.StartCustomAsync();
+                    double nextRoomDiagnostic=0;
+                    while(app.Members().Count<count || !UI.RoomViewModel.CanStartCustom(app))
+                    {
+                        if(Time.realtimeSinceStartupAsDouble>=nextRoomDiagnostic)
+                        {
+                            nextRoomDiagnostic=Time.realtimeSinceStartupAsDouble+8;
+                            Debug.Log("CUSTOM_WAIT " + profile + " captain=" + app.IsCaptain + " busy=" + app.Busy +
+                                " teams=" + string.Join(",",app.Members().Select(m=>m.team)) + " room=" +
+                                (app.Room.Properties.TryGetValue("room",out var data)?data.Value:"missing"));
+                        }
+                        await Task.Delay(100);
+                    }
+                    Debug.Log("CUSTOM_ROSTER " + profile + " mode=" + app.Mode + " teams=" +
+                        string.Join(",", app.Members().Select(m => m.team)));
+                    await app.RoomService.StartCustomAsync();
                 }
                 else if(test=="customGuest" || test=="duoGuest")
                 {
@@ -61,7 +74,7 @@ namespace PickleVerse.Multiplayer
                 }
                 else if(test=="duoHost")
                 {
-                    await app.SelectModeAsync(PlayMode.Doubles); File.WriteAllText(file+".code",app.Room.Code);
+                    await app.SelectModeAsync(PlayMode.Doubles); MultiplayerSmokeChecks.WriteSharedCode(file+".code",app.Room.Code);
                     while(app.Members().Count!=2) await Task.Delay(500);
                     await app.FindAsync();
                 }

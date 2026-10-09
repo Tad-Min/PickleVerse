@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "run": "V1009K7",
+  "buildId": "build_ba61269f7d80",
+  "cancelledPeerWasClient": true,
+  "waitingPeerWasHost": true,
+  "requeue": "SMOKE PV1009K7S2 Searching 00:50 Một người chưa kết nối được; đang ghép lại.",
+  "receipts": [
+    "PASS singles PV1009K7S1: 2 players, host=True, scene=MultiplayerCourt",
+    "PASS singles PV1009K7S2: 2 players, host=False, scene=MultiplayerCourt"
+  ]
+}
