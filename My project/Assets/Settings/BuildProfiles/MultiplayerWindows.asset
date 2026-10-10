@@ -46,6 +46,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/Collection.unity
     m_guid: 0d1d9f86385d8c143bf6e509c0265007
+  - m_enabled: 1
+    m_path: Assets/Scenes/Tutorial.unity
+    m_guid: fcfaa1577365d2f4e9491c56bbe2544e
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

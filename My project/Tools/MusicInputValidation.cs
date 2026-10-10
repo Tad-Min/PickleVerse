@@ -1,0 +1,35 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+using PickleVerse.Audio;
+using PickleVerse.Shop;
+using PickleVerse.Settings;
+
+public static class MusicInputValidation
+{
+    public static async Task<object> Run()
+    {
+        if(!Application.isPlaying)throw new Exception("Play first.");var results=new List<object>();
+        try
+        {
+            foreach(string scene in new[]{"Shop","ModeSelection"})
+            {
+                SceneManager.LoadScene(scene);await Task.Delay(200);var ui=UnityEngine.Object.FindAnyObjectByType<MusicUI>();ui.Open();
+                InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState(Key.Escape));await Task.Delay(50);
+                InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState());await Task.Delay(25);
+                bool passed=SceneManager.GetActiveScene().name==scene&&!ui.IsOpen&&!FrontEndModalInput.IsOpen;results.Add(new{scene,escapeClosesMusicOnly=passed});if(!passed)throw new Exception("Escape changed page: "+scene);
+            }
+            SceneManager.LoadScene("BotMatch");await Task.Delay(200);
+            int count=SfxPlayer.PlayCounts[(int)GameSfx.HitNormal];SfxPlayer.Play(GameSfx.HitNormal,Vector3.zero);await Task.Delay(10);
+            bool sfx=SfxPlayer.PlayCounts[(int)GameSfx.HitNormal]==count+1&&MusicPlayer.Instance.GetComponentsInChildren<AudioSource>().Length==2&&!MusicPlayer.Instance.Playing;
+            results.Add(new{sfxWorksWithMusicStopped=sfx});if(!sfx)throw new Exception("SFX regression");
+            var report=new{passed=true,checks=results};File.WriteAllText("../UnityWork/Music/input-validation.json",Newtonsoft.Json.JsonConvert.SerializeObject(report,Newtonsoft.Json.Formatting.Indented));return report;
+        }
+        finally{InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState());SceneManager.LoadScene("Menu");}
+    }
+}

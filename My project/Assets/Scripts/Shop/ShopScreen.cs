@@ -30,7 +30,7 @@ namespace PickleVerse.Shop
         void Update()
         {
             var a=Screen.safeArea;if(Screen.width>0&&Screen.height>0){safeArea.anchorMin=new Vector2(a.xMin/Screen.width,a.yMin/Screen.height);safeArea.anchorMax=new Vector2(a.xMax/Screen.width,a.yMax/Screen.height);safeArea.offsetMin=safeArea.offsetMax=Vector2.zero;}
-            if(Keyboard.current?.escapeKey.wasPressedThisFrame==true){if(confirmation.activeSelf)CancelPurchase();else Back();}
+            if(!PickleVerse.Settings.FrontEndModalInput.IsOpen&&Keyboard.current?.escapeKey.wasPressedThisFrame==true){if(confirmation.activeSelf)CancelPurchase();else Back();}
         }
         public void Select(int item)
         {

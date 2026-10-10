@@ -40,7 +40,7 @@ namespace PickleVerse.FrontEnd
         void Update()
         {
             ApplySafeArea();
-            if (!Loading && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
+            if (!PickleVerse.Settings.FrontEndModalInput.IsOpen && !Loading && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
         }
 
         void ApplySafeArea()

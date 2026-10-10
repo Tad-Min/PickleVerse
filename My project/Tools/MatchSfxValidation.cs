@@ -24,7 +24,7 @@ public static class MatchSfxValidation
         var saved=GameSettings.Current.Copy();
         try
         {
-            Check("One listener and bounded shared sources",UnityEngine.Object.FindObjectsByType<AudioListener>().Length==1&&UnityEngine.Object.FindObjectsByType<AudioSource>().Length==16);
+            Check("One listener and bounded shared SFX sources",UnityEngine.Object.FindObjectsByType<AudioListener>().Count(l=>l.enabled)==1&&UnityEngine.Object.FindAnyObjectByType<SfxPlayer>().GetComponentsInChildren<AudioSource>().Length==16);
             var library=Resources.Load<SfxLibrary>("Audio/Match SFX");
             Check("All eight effects ready before first hit",SfxPlayer.Ready&&library.clips.Length==8&&library.clips.All(c=>c&&c.loadState==AudioDataLoadState.Loaded&&c.channels==1&&c.loadType==AudioClipLoadType.DecompressOnLoad));
             AudioSettings.GetDSPBufferSize(out var size,out var buffers);Check("DSP buffer is 256 samples",size==256);
