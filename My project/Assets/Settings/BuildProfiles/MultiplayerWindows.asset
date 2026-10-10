@@ -40,6 +40,12 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/UI/ModeSelection.unity
     m_guid: 7aa09318597d56d4390b2076b189a264
+  - m_enabled: 1
+    m_path: Assets/Scenes/Shop.unity
+    m_guid: 44a06f41e24b5ee41b5c508ee471b733
+  - m_enabled: 1
+    m_path: Assets/Scenes/Collection.unity
+    m_guid: 0d1d9f86385d8c143bf6e509c0265007
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

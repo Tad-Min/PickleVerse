@@ -34,6 +34,7 @@ namespace PickleVerse.Multiplayer
         // Replicate the physical end independently of the match object's spawn order.
         public NetworkVariable<int> CourtEnd = new NetworkVariable<int>(-1);
         public NetworkVariable<bool> Female = new NetworkVariable<bool>();
+        public NetworkVariable<FixedString64Bytes> PaddleSkin = new NetworkVariable<FixedString64Bytes>(new FixedString64Bytes(PickleVerse.Shop.ShopCatalog.DefaultPaddleId));
         public NetworkVariable<PlayerFrame> Frame = new NetworkVariable<PlayerFrame>();
         public MatchActor Actor { get; private set; }
         public Transform RightHand => Actor ? Actor.hand : null;
@@ -81,14 +82,30 @@ namespace PickleVerse.Multiplayer
             BuildVisual();
             Frame.OnValueChanged += Reconcile;
             CourtEnd.OnValueChanged += EndChanged;
+            PaddleSkin.OnValueChanged += SkinChanged;
+            ApplyPaddleSkin();if(IsOwner)PublishPaddleSkin();
         }
         public override void OnNetworkDespawn()
         {
             All.Remove(this); Frame.OnValueChanged -= Reconcile;
             CourtEnd.OnValueChanged -= EndChanged;
+            PaddleSkin.OnValueChanged -= SkinChanged;
         }
         public override void OnGainedOwnership()
-        { sequence = Frame.Value.sequence; ResetInput(); }
+        { sequence = Frame.Value.sequence; ResetInput();if(IsSpawned)PublishPaddleSkin(); }
+
+        async void PublishPaddleSkin()
+        {
+            try{var state=await PickleVerse.Shop.PlayerEconomy.Service.ReadAsync();if(this&&IsSpawned&&IsOwner)SelectPaddleServerRpc(new FixedString64Bytes(state.equippedPaddle));}
+            catch(Exception e){Debug.LogWarning("Paddle selection unavailable: "+e.Message);}
+        }
+        [ServerRpc] void SelectPaddleServerRpc(FixedString64Bytes skinId)
+        {
+            // Prototype inventory is local. A server economy can validate ownership here later.
+            if(PickleVerse.Shop.PlayerEconomy.Catalog.Find(skinId.ToString())!=null)PaddleSkin.Value=skinId;
+        }
+        void SkinChanged(FixedString64Bytes previous,FixedString64Bytes current){ApplyPaddleSkin();}
+        void ApplyPaddleSkin(){if(Actor&&Actor.paddle)PickleVerse.Shop.PaddleAppearance.Attach(Actor.paddle).Apply(PaddleSkin.Value.ToString());}
 
         void BuildVisual()
         {

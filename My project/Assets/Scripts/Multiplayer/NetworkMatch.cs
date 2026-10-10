@@ -31,6 +31,9 @@ namespace PickleVerse.Multiplayer
         public NetworkVariable<bool> TimedOut=new NetworkVariable<bool>();
         public NetworkVariable<bool> EndsSwapped=new NetworkVariable<bool>(),BetweenGames=new NetworkVariable<bool>(),BetweenPoints=new NetworkVariable<bool>();
         public NetworkVariable<bool> Paused=new NetworkVariable<bool>(),Finished=new NetworkVariable<bool>(),WaitingServe=new NetworkVariable<bool>(),Started=new NetworkVariable<bool>();
+        public NetworkVariable<FixedString64Bytes> RewardMatchId=new NetworkVariable<FixedString64Bytes>();
+        public NetworkVariable<int> RewardWinningTeam=new NetworkVariable<int>(-1);
+        public NetworkVariable<bool> RewardEligible=new NetworkVariable<bool>();
         public NetworkVariable<BallFrame> Ball=new NetworkVariable<BallFrame>();
         public PickleballRules Rules { get; private set; }
         public Rigidbody Body { get; private set; }
@@ -60,6 +63,7 @@ namespace PickleVerse.Multiplayer
         public override void OnNetworkSpawn()
         {
             Instance=this;
+            if(IsServer)RewardMatchId.Value=new FixedString64Bytes(System.Guid.NewGuid().ToString("N"));
             if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject(initialRoster??MultiplayerApp.Instance.Roster));
             Roster=JsonConvert.DeserializeObject<MatchRoster>(RosterJson.Value.ToString());
             BuildBall(); MultiplayerApp.Instance.CourtLoaded();
@@ -372,12 +376,19 @@ namespace PickleVerse.Multiplayer
         }
         void Finish()
         {
+            RewardWinningTeam.Value=Rules.winner;RewardEligible.Value=Started.Value&&Rules.games.Any(g=>g>=2);
             if(!Finished.Value)MatchSoundRpc((int)GameSfx.GameWhistle);
             Body.isKinematic=true; Publish();
             Status.Value=new FixedString512Bytes($"Đội {(Rules.winner==0?"A":"B")} thắng trận {Rules.games[0]} : {Rules.games[1]} game — điểm game cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}"); Finished.Value=true;
             AnnouncementRpc("GAME, MATCH!",Status.Value.ToString(),(int)AnnouncementTone.Success,2.1f);
         }
-        void ResultChanged(bool old,bool complete) { if(complete) MultiplayerApp.Instance.ShowResult(Status.Value.ToString()); }
+        void ResultChanged(bool old,bool complete)
+        {
+            if(!complete)return;
+            MultiplayerApp.Instance.ShowResult(Status.Value.ToString());
+            var member=Roster?.Find(MultiplayerApp.Instance.PlayerId);
+            if(RewardEligible.Value&&member!=null)PickleVerse.Shop.PlayerEconomy.Reward("online:"+RewardMatchId.Value.ToString(),true,member.team==RewardWinningTeam.Value);
+        }
         [Rpc(SendTo.ClientsAndHost)] void MatchSoundRpc(int sound)
         { SfxPlayer.Play((GameSfx)sound); }
         [Rpc(SendTo.ClientsAndHost)] void AnnouncementRpc(string title,string detail,int tone,float duration)
