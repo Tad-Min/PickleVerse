@@ -2,7 +2,6 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
@@ -108,8 +107,8 @@ namespace PickleVerse.Shop
         void FocusProduct(){if(browser)browser.FocusDetail();else if(EventSystem.current)EventSystem.current.SetSelectedGameObject(cardBorders[Selected].gameObject);}
         public void OpenProduct(int index){if(busy||confirmation.activeSelf||index<0||index>=Items.Length)return;Select(index);if(browser)browser.OpenDetails();}
         public void CancelPurchase(){if(!busy){confirmation.SetActive(false);FocusProduct();}}
-        public void Back(){if(confirmation.activeSelf){CancelPurchase();return;}if(busy)return;if(browser&&browser.Inspecting){browser.CloseDetails();return;}SceneManager.LoadScene("Menu");}
-        public void GoLobby(){if(!busy)SceneManager.LoadScene("Menu");}
+        public void Back(){if(confirmation.activeSelf){CancelPurchase();return;}if(busy)return;if(browser&&browser.Inspecting){browser.CloseDetails();return;}LobbyNavigation.ReturnToLobby();}
+        public void GoLobby(){if(!busy)LobbyNavigation.ReturnToLobby();}
         public void SelectGemstone(){OpenProduct(0);}public void SelectThot(){OpenProduct(1);}
         void OnDestroy(){if(economy!=null)economy.Changed-=Refresh;}
     }

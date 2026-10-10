@@ -25,10 +25,15 @@ public static class LobbyReturnBenchmark
     static async Task<object> Capture(LobbyFrameSample probe,string from)
     {
         var home=UnityEngine.Object.FindAnyObjectByType<HomeLobbyPresentation>();home.animateAtmosphere=false;home.ApplyAtmosphere(0);
-        await Task.Delay(800);probe.frames.Clear();probe.record=true;await Task.Delay(1800);probe.record=false;
-        var day=Summary(probe.frames);home.ApplyAtmosphere(1);await Task.Delay(800);probe.frames.Clear();probe.record=true;await Task.Delay(1800);probe.record=false;
+        await Task.Delay(400);probe.frames.Clear();probe.record=true;await Task.Delay(1000);probe.record=false;
+        var day=Summary(probe.frames);home.ApplyAtmosphere(1);await Task.Delay(400);probe.frames.Clear();probe.record=true;await Task.Delay(1000);probe.record=false;
         var night=Summary(probe.frames);var main=ProfilerRecorder.StartNew(ProfilerCategory.Internal,"Main Thread",1);await Task.Delay(50);long cpu=main.LastValue;main.Dispose();
-        return new{from,day,night,mainMs=cpu/1000000.0,cameras=UnityEngine.Object.FindObjectsByType<Camera>().Count(c=>c.enabled),listeners=UnityEngine.Object.FindObjectsByType<AudioListener>().Count(a=>a.enabled),materials=Resources.FindObjectsOfTypeAll<Material>().Count(m=>m.name=="Home Day Night Sky (Instance)"),triangles=UnityEditor.UnityStats.triangles,drawCalls=UnityEditor.UnityStats.drawCalls};
+        return new{from,day,night,mainMs=cpu/1000000.0,cameras=UnityEngine.Object.FindObjectsByType<Camera>().Count(c=>c.enabled),listeners=UnityEngine.Object.FindObjectsByType<AudioListener>().Count(a=>a.enabled),materials=Resources.FindObjectsOfTypeAll<Material>().Count(m=>m.name=="Home Sky Blend"),triangles=UnityEditor.UnityStats.triangles,drawCalls=UnityEditor.UnityStats.drawCalls};
+    }
+    static async Task WaitScene(string name)
+    {
+        float deadline=Time.realtimeSinceStartup+10;
+        while(SceneManager.GetActiveScene().name!=name){if(Time.realtimeSinceStartup>deadline)throw new Exception("Scene transition timed out: "+name);await Task.Delay(10);}
     }
     public static async Task<object> Run(string phase="before")
     {
@@ -42,13 +47,14 @@ public static class LobbyReturnBenchmark
             foreach(string name in new[]{"Shop","Collection"})
             {
                 var launcher=UnityEngine.Object.FindObjectsByType<ShopLauncher>().First(l=>l.name==(name=="Shop"?"BtnStore":"BtnCollection"));
-                if(name=="Shop")launcher.OpenShop();else launcher.OpenCollection();await Task.Delay(400);
+                if(name=="Shop")launcher.OpenShop();else launcher.OpenCollection();await WaitScene(name);await Task.Delay(400);
                 var ui=UnityEngine.Object.FindAnyObjectByType<ShopScreen>();ui.OpenProduct(name=="Shop"?0:1);await Task.Delay(200);
                 probe.frames.Clear();probe.record=true;var sw=System.Diagnostics.Stopwatch.StartNew();ui.GoLobby();sw.Stop();
-                await Task.Delay(450);probe.record=false;transitions.Add(new{from=name,callMs=sw.Elapsed.TotalMilliseconds,initialFrames=Summary(probe.frames)});
+                await WaitScene("Menu");await Task.Delay(450);probe.record=false;transitions.Add(new{from=name,callMs=sw.Elapsed.TotalMilliseconds,initialFrames=Summary(probe.frames)});
                 results.Add(await Capture(probe,name+" → Menu"));
             }
-            var report=new{phase,results,transitions,realWalletUntouched=wallet==PlayerPrefs.GetString(LocalEconomyStorage.Key,""),settings=PickleVerse.Settings.GameSettings.Current.Copy(),scope="Live Unity Editor, Game view resolution and user graphics preserved; frame time includes Editor overhead"};
+            var graphics=PickleVerse.Settings.GameSettings.Current;
+            var report=new{phase,results,transitions,realWalletUntouched=wallet==PlayerPrefs.GetString(LocalEconomyStorage.Key,""),settings=new{graphics.graphics,graphics.renderScale,graphics.msaa,graphics.fps,graphics.vsync},scope="Live Unity Editor, Game view resolution and user graphics preserved; frame time includes Editor overhead"};
             Directory.CreateDirectory("../UnityWork/LobbyPerformance");File.WriteAllText("../UnityWork/LobbyPerformance/"+phase+".json",Newtonsoft.Json.JsonConvert.SerializeObject(report,Newtonsoft.Json.Formatting.Indented));return report;
         }
         finally{UnityEngine.Object.Destroy(probe.gameObject);SceneManager.LoadScene(initialScene);}

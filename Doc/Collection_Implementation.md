@@ -9,6 +9,8 @@
 5. **Sử dụng** chỉ bật với skin đã sở hữu; skin đang chọn hiện **Đang sử dụng**. Skin chưa sở hữu hiện nhãn và chỉ dẫn đến cửa hàng, không được trang bị.
 6. Khi về đại sảnh hoặc vào trận, vợt hiển thị theo lựa chọn đã lưu. Nhân vật nữ tại Menu vẫn nhảy với tay không.
 
+Cập nhật hiệu năng: luồng Menu → Shop/Collection giữ Menu ở trạng thái nghỉ và khôi phục khi quay về, tránh tải lại toàn bộ sân/nhân vật/UI. Chi tiết số đo và kiểm chứng ở [Lobby_Return_Performance.md](Lobby_Return_Performance.md).
+
 Vợt mặc định lấy từ `Assets/Models/Paddle/Paddle.glb`, luôn sở hữu, không bán thêm trong Shop. Hai skin premium vẫn giữ nguyên giá và luồng mua. Mua skin không tự thay vợt đang chọn.
 
 ## Dữ liệu và cách tích hợp
