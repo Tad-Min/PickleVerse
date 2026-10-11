@@ -83,8 +83,8 @@ public static class MatchAnnouncementsValidation
 
         Reset(m);m.Rules.Games[0]=1;m.Rules.Points[0]=10;humanEnd=m.human.end;Lose(m,1);n.Advance(1.21f);Hud(m);
         Check("Match victory uses central banner",m.Rules.Winner==0&&m.Phase==MatchPhase.MatchOver&&n.ActiveTitle=="GAME, MATCH!"&&!m.hud.modal.activeSelf);
-        n.Advance(2.2f);Hud(m);
-        Check("Final victory shows compact actions only",m.hud.resultActions.activeSelf&&!m.hud.modal.activeSelf&&m.human.end==humanEnd&&m.Rules.Games[0]==2);
+        n.Advance(2.2f);if(m.victory){m.victory.Advance(0);m.victory.Advance(m.victory.cameraSeconds);}Hud(m);
+        Check("Final victory shows the winner presentation and actions",m.hud.resultActions.activeSelf&&!m.hud.modal.activeSelf&&m.human.end==humanEnd&&m.Rules.Games[0]==2&&(!m.victory||m.victory.Ready));
 
         Reset(m,1);m.Rules.Games[0]=m.Rules.Games[1]=1;m.Rules.Points[1]=10;Lose(m,0);n.Advance(1.21f);
         Check("Bot match victory has correct winner text",m.Rules.Winner==1&&n.detail.text.Contains("BOT THẮNG TRẬN")&&n.detail.text.Contains("1 - 2"));

@@ -1,0 +1,17 @@
+{
+  "buildId": "build_aede1df926f5",
+  "result": "Succeeded",
+  "platform": "StandaloneWindows64",
+  "outputPath": "D:/Repository/PickleVerse/My project/Builds/ProgressionWindows/PickleVerse.exe",
+  "buildStartedAt": "2026-10-11T16:36:04.0298706Z",
+  "buildEndedAt": "2026-10-11T16:36:43.5613011Z",
+  "totalSizeBytes": 540167281,
+  "totalErrors": 0,
+  "totalWarnings": 1,
+  "errors": [],
+  "warnings": [
+    {
+      "message": "Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds."
+    }
+  ]
+}

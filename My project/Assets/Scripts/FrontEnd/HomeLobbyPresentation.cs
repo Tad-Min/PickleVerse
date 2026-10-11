@@ -11,6 +11,16 @@ namespace PickleVerse.FrontEnd
     {
         public Transform femaleVisual;
         public AnimationClip dance;
+        public Transform maleVisual;
+        public AnimationClip femaleBoom, maleDance, femaleIdle, maleIdle;
+        public UnityEngine.UI.Button femaleButton, maleButton;
+        public UnityEngine.UI.Image femaleSelection, maleSelection;
+        public TMP_Text danceLabel;
+        public Camera lobbyCamera;
+        public Transform courtProps;
+        public const string CharacterPreferenceKey = "PickleVerse.Lobby.Character.v1";
+        public bool IsMaleSelected { get; private set; }
+        public AnimationClip CurrentDance { get; private set; }
         public Material daySky, nightSky, blendedSky;
         public Light sun, portraitLight;
         public Light[] floodlights;
@@ -25,11 +35,10 @@ namespace PickleVerse.FrontEnd
         public float DanceTime { get; private set; }
         public float CycleElapsed { get; private set; }
         Material skyInstance;
-        Transform[] bones;
-        Vector3[] lastPositions, lastScales;
-        Quaternion[] lastRotations;
-        Vector3 restPosition, restScale;
-        Quaternion restRotation;
+        LobbyRig femaleRig, maleRig;
+        Vector3 femaleCameraPosition, femaleLightPosition;
+        Quaternion femaleCameraRotation, femaleLightRotation, propsRotation;
+        float viewAngle, viewVelocity;
         Rect lastSafeArea;
         Vector2 lastResolution;
         float lastReflectionWeight = -1;
@@ -41,18 +50,14 @@ namespace PickleVerse.FrontEnd
                 skyInstance = new Material(blendedSky);
                 RenderSettings.skybox = skyInstance;
             }
-            if (femaleVisual && dance)
-            {
-                foreach (var animator in femaleVisual.GetComponentsInChildren<Animator>()) animator.enabled = false;
-                foreach (var animation in femaleVisual.GetComponentsInChildren<Animation>()) animation.enabled = false;
-                restPosition = femaleVisual.localPosition;
-                restRotation = femaleVisual.localRotation;
-                restScale = femaleVisual.localScale;
-                CharacterSecondaryMotion.Attach(femaleVisual.gameObject, true);
-                bones = femaleVisual.GetComponentsInChildren<Transform>(true);
-                lastPositions = new Vector3[bones.Length]; lastScales = new Vector3[bones.Length]; lastRotations = new Quaternion[bones.Length];
-                SampleDance(0);
-            }
+            if (femaleVisual) femaleRig = new LobbyRig(femaleVisual, true);
+            if (maleVisual) maleRig = new LobbyRig(maleVisual, false);
+            if (lobbyCamera) { femaleCameraPosition = lobbyCamera.transform.position; femaleCameraRotation = lobbyCamera.transform.rotation; }
+            if (portraitLight) { femaleLightPosition = portraitLight.transform.position; femaleLightRotation = portraitLight.transform.rotation; }
+            if (courtProps) propsRotation = courtProps.rotation;
+            SetCharacter(maleRig != null && PlayerPrefs.GetInt(CharacterPreferenceKey, 0) == 1, false);
+            viewAngle = IsMaleSelected ? 180 : 0;
+            ApplyView(viewAngle);
             EvaluateCycle(0);
             ApplySafeArea();
         }
@@ -66,34 +71,127 @@ namespace PickleVerse.FrontEnd
         {
             DanceTime += Time.unscaledDeltaTime;
             SampleDance(DanceTime);
+            float targetAngle = IsMaleSelected ? 180 : 0;
+            if (Mathf.Abs(Mathf.DeltaAngle(viewAngle, targetAngle)) > .001f)
+            {
+                viewAngle = Mathf.SmoothDampAngle(viewAngle, targetAngle, ref viewVelocity, .26f, Mathf.Infinity, Time.unscaledDeltaTime);
+                if (Mathf.Abs(Mathf.DeltaAngle(viewAngle, targetAngle)) < .01f) { viewAngle = targetAngle; viewVelocity = 0; }
+                ApplyView(viewAngle);
+            }
             if (animateAtmosphere) { CycleElapsed += Time.unscaledDeltaTime; EvaluateCycle(CycleElapsed); }
             ApplySafeArea();
         }
 
         public void SampleDance(float seconds)
         {
-            if (!dance || !femaleVisual || bones == null) return;
-            float time = Mathf.Repeat(seconds, Mathf.Max(.01f, dance.length));
-            dance.SampleAnimation(femaleVisual.gameObject, time);
-            // Blend back into the opening pose at the end of this authored celebration.
-            const float seam = .35f;
-            if (time > dance.length - seam)
+            LobbyRig rig = IsMaleSelected ? maleRig : femaleRig;
+            AnimationClip clip = IsMaleSelected ? maleDance : dance;
+            if (rig == null || !clip) return;
+            AnimationClip next = clip;
+            float time;
+            if (!IsMaleSelected && femaleBoom)
             {
-                for (int i = 0; i < bones.Length; i++)
-                {
-                    lastPositions[i] = bones[i].localPosition; lastRotations[i] = bones[i].localRotation; lastScales[i] = bones[i].localScale;
-                }
-                dance.SampleAnimation(femaleVisual.gameObject, 0);
-                float weight = Mathf.SmoothStep(0, 1, (time - dance.length + seam) / seam);
-                for (int i = 0; i < bones.Length; i++)
-                {
-                    bones[i].localPosition = Vector3.Lerp(lastPositions[i], bones[i].localPosition, weight);
-                    bones[i].localRotation = Quaternion.Slerp(lastRotations[i], bones[i].localRotation, weight);
-                    bones[i].localScale = Vector3.Lerp(lastScales[i], bones[i].localScale, weight);
-                }
+                time = Mathf.Repeat(seconds, Mathf.Max(.01f, dance.length + femaleBoom.length));
+                if (time >= dance.length) { time -= dance.length; clip = femaleBoom; next = dance; }
+                else next = femaleBoom;
             }
-            femaleVisual.SetLocalPositionAndRotation(restPosition, restRotation);
-            femaleVisual.localScale = restScale;
+            else time = Mathf.Repeat(seconds, Mathf.Max(.01f, clip.length));
+            rig.Sample(clip, time, next);
+            if (CurrentDance == clip) return;
+            CurrentDance = clip;
+            if (danceLabel) danceLabel.text = IsMaleSelected ? "ALL NIGHT" : clip == femaleBoom ? "BOOM" : "DANCE WIN";
+        }
+
+        public void SelectFemale() { SetCharacter(false, true); }
+        public void SelectMale() { if (maleRig != null) SetCharacter(true, true); }
+
+        void SetCharacter(bool male, bool save)
+        {
+            if (save && IsMaleSelected == male) return;
+            IsMaleSelected = male;
+            DanceTime = 0;
+            CurrentDance = null;
+            femaleRig?.SetActive(!male, femaleIdle);
+            maleRig?.SetActive(male, maleIdle);
+            SampleDance(0);
+            if (femaleSelection) femaleSelection.gameObject.SetActive(!male);
+            if (maleSelection) maleSelection.gameObject.SetActive(male);
+            SetButtonState(femaleButton, !male);
+            SetButtonState(maleButton, male);
+            // Both actors stay on their own half; the floor props follow the selected view.
+            if (courtProps) courtProps.rotation = Quaternion.Euler(0, male ? 180 : 0, 0) * propsRotation;
+            if (save) { PlayerPrefs.SetInt(CharacterPreferenceKey, male ? 1 : 0); PlayerPrefs.Save(); }
+        }
+
+        static void SetButtonState(UnityEngine.UI.Button button, bool selected)
+        {
+            if (!button) return;
+            var text = button.GetComponentInChildren<TMP_Text>();
+            if (text) text.color = selected ? new Color(.91f, .80f, .63f) : new Color(.65f, .70f, .80f);
+            var motion = button.GetComponent<UiButtonMotion>();
+            if (motion) motion.keepFocus = selected;
+        }
+
+        void ApplyView(float angle)
+        {
+            Quaternion orbit = Quaternion.Euler(0, angle, 0);
+            if (lobbyCamera) lobbyCamera.transform.SetPositionAndRotation(orbit * femaleCameraPosition, orbit * femaleCameraRotation);
+            if (portraitLight) portraitLight.transform.SetPositionAndRotation(orbit * femaleLightPosition, orbit * femaleLightRotation);
+        }
+
+        // One sampled rig per frame. The other holds a static idle pose, with no animation
+        // evaluation or secondary simulation while the lobby is suspended on another page.
+        sealed class LobbyRig
+        {
+            readonly Transform visual;
+            readonly Transform[] bones;
+            readonly Vector3[] lastPositions, lastScales;
+            readonly Quaternion[] lastRotations;
+            readonly Vector3 restPosition, restScale;
+            readonly Quaternion restRotation;
+            readonly CharacterSecondaryMotion secondary;
+
+            public LobbyRig(Transform root, bool female)
+            {
+                visual = root;
+                foreach (var animator in root.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
+                foreach (var animation in root.GetComponentsInChildren<Animation>(true)) animation.enabled = false;
+                restPosition = root.localPosition; restRotation = root.localRotation; restScale = root.localScale;
+                secondary = CharacterSecondaryMotion.Attach(root.gameObject, female);
+                foreach (var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>(true)) skin.updateWhenOffscreen = false;
+                bones = root.GetComponentsInChildren<Transform>(true);
+                lastPositions = new Vector3[bones.Length]; lastScales = new Vector3[bones.Length]; lastRotations = new Quaternion[bones.Length];
+            }
+
+            public void SetActive(bool active, AnimationClip idle)
+            {
+                if (!active && idle) Sample(idle, 0, null);
+                secondary.ResetMotion();
+                secondary.enabled = active;
+            }
+
+            public void Sample(AnimationClip clip, float time, AnimationClip next)
+            {
+                clip.SampleAnimation(visual.gameObject, time);
+                float seam = Mathf.Min(.35f, clip.length * .2f);
+                if (next && time > clip.length - seam)
+                {
+                    for (int i = 0; i < bones.Length; i++)
+                    {
+                        lastPositions[i] = bones[i].localPosition; lastRotations[i] = bones[i].localRotation; lastScales[i] = bones[i].localScale;
+                    }
+                    next.SampleAnimation(visual.gameObject, 0);
+                    float weight = Mathf.SmoothStep(0, 1, (time - clip.length + seam) / seam);
+                    for (int i = 0; i < bones.Length; i++)
+                    {
+                        bones[i].localPosition = Vector3.Lerp(lastPositions[i], bones[i].localPosition, weight);
+                        bones[i].localRotation = Quaternion.Slerp(lastRotations[i], bones[i].localRotation, weight);
+                        bones[i].localScale = Vector3.Lerp(lastScales[i], bones[i].localScale, weight);
+                    }
+                }
+                visual.SetLocalPositionAndRotation(restPosition, restRotation);
+                visual.localScale = restScale;
+            }
         }
 
         public void EvaluateCycle(float seconds)

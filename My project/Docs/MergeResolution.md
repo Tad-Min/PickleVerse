@@ -1,5 +1,7 @@
 # Merge và tiền tệ — 11/10/2026
 
+Đợt merge tiếp theo (Menu/chọn nhân vật/màn ăn mừng): [báo cáo mới](MergeResolution-20261011.md).
+
 - Repository đang merge: `D:/Repository/PickleVerse`. Cả 8 conflict đã được giải quyết và stage; chưa commit hoặc push.
 - Giữ Profile, Achievements, Missions, Career, bot rank sau 6 phút, màn hình tổng kết và Shop/Collection/skin vợt.
 - TOKENPAD dùng chung số dư Coin với Shop. ELITE TOKEN thay Gem, không nhận từ gameplay, nhiệm vụ hoặc thành tựu. Player mới có cả hai số dư bằng 0.

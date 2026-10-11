@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "count": 23,
+  "checks": [
+    {
+      "name": "NameTag receives pointer input at NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag opens saved player profile via NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag receives pointer input at TxtName",
+      "passed": true
+    },
+    {
+      "name": "NameTag opens saved player profile via TxtName",
+      "passed": true
+    },
+    {
+      "name": "NameTag receives pointer input at NameTag",
+      "passed": true
+    },
+    {
+      "name": "Achievements receives pointer input at Achievements",
+      "passed": true
+    },
+    {
+      "name": "Achievements remain available",
+      "passed": true
+    },
+    {
+      "name": "Character selector is blocked by profile modal",
+      "passed": true
+    },
+    {
+      "name": "Close receives pointer input at Close",
+      "passed": true
+    },
+    {
+      "name": "Closing profile restores character selector",
+      "passed": true
+    },
+    {
+      "name": "BtnMissions receives pointer input at BtnMissions",
+      "passed": true
+    },
+    {
+      "name": "Daily missions remain available",
+      "passed": true
+    },
+    {
+      "name": "Weekly receives pointer input at Weekly",
+      "passed": true
+    },
+    {
+      "name": "Weekly missions remain available",
+      "passed": true
+    },
+    {
+      "name": "BtnCareer receives pointer input at BtnCareer",
+      "passed": true
+    },
+    {
+      "name": "Career opens the history window",
+      "passed": true
+    },
+    {
+      "name": "Menu shows shared TOKENPAD and paid ELITE balances",
+      "passed": true
+    },
+    {
+      "name": "BtnStore receives pointer input at BtnStore",
+      "passed": true
+    },
+    {
+      "name": "Shop still opens after the scene merge",
+      "passed": true
+    },
+    {
+      "name": "Returning from Shop preserves profile bindings",
+      "passed": true
+    },
+    {
+      "name": "NameTag receives pointer input at NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag works after returning from Shop",
+      "passed": true
+    },
+    {
+      "name": "Validation preserves identity and both balances",
+      "passed": true
+    }
+  ]
+}

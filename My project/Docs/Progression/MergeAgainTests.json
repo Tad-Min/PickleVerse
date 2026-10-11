@@ -1,0 +1,533 @@
+{
+  "date": "2026-10-11",
+  "repository": "D:/Repository/PickleVerse",
+  "head": "db01756",
+  "incoming": "b23fadc92326f280ab3d1885369a5d00d02435a0",
+  "conflictsResolved": [
+    "Assets/Scenes/UI/Menu.unity",
+    "Assets/Scripts/LocalMatch/BotMatch.cs"
+  ],
+  "tests": [
+    {
+      "assembly": "PickleVerse.Progression.Tests",
+      "Total": 44,
+      "Passed": 44,
+      "Failed": 0,
+      "Skipped": 0,
+      "Inconclusive": 0
+    },
+    {
+      "assembly": "PickleVerse.LocalMatch.Tests",
+      "Total": 44,
+      "Passed": 44,
+      "Failed": 0,
+      "Skipped": 0,
+      "Inconclusive": 0
+    },
+    {
+      "assembly": "PickleVerse.Multiplayer.Tests",
+      "Total": 60,
+      "Passed": 60,
+      "Failed": 0,
+      "Skipped": 0,
+      "Inconclusive": 0
+    },
+    {
+      "assembly": "PickleVerse.Shop.Tests",
+      "Total": 32,
+      "Passed": 32,
+      "Failed": 0,
+      "Skipped": 0,
+      "Inconclusive": 0
+    }
+  ],
+  "integration": {
+    "homeCharacterSelection": {
+      "passed": true,
+      "count": 32,
+      "checks": [
+        {
+          "name": "Both character rigs are on opposite court halves",
+          "passed": true
+        },
+        {
+          "name": "Female has Win and Boom; male has AllNight",
+          "passed": true
+        },
+        {
+          "name": "No held paddle or ball on either character",
+          "passed": true
+        },
+        {
+          "name": "No automatic Animator or Animation evaluations",
+          "passed": true
+        },
+        {
+          "name": "Select Female receives pointer input",
+          "passed": true
+        },
+        {
+          "name": "Female selection is marked",
+          "passed": true
+        },
+        {
+          "name": "Only female changes pose during her Win dance",
+          "passed": true
+        },
+        {
+          "name": "Female Boom plays after Win and animates the rig",
+          "passed": true
+        },
+        {
+          "name": "Female playlist returns to Win",
+          "passed": true
+        },
+        {
+          "name": "Select Male receives pointer input",
+          "passed": true
+        },
+        {
+          "name": "Male selection is marked and uses AllNight",
+          "passed": true
+        },
+        {
+          "name": "Only male changes pose when selected",
+          "passed": true
+        },
+        {
+          "name": "Secondary physics runs only on the selected character",
+          "passed": true
+        },
+        {
+          "name": "Camera moves to the male side without creating a camera",
+          "passed": true
+        },
+        {
+          "name": "Selected male is visible beside the left UI",
+          "passed": true
+        },
+        {
+          "name": "Floor paddle and ball remain near the selected actor",
+          "passed": true
+        },
+        {
+          "name": "Both dance loops and hair/skirt stay finite",
+          "passed": true
+        },
+        {
+          "name": "Dance sampling preserves both stage positions",
+          "passed": true
+        },
+        {
+          "name": "Leaving suspends both rigs 0",
+          "passed": true
+        },
+        {
+          "name": "Return reuses both models and preserves male selection 0",
+          "passed": true
+        },
+        {
+          "name": "Return preserves lighting and one camera/listener/input 0",
+          "passed": true
+        },
+        {
+          "name": "Leaving suspends both rigs 1",
+          "passed": true
+        },
+        {
+          "name": "Return reuses both models and preserves male selection 1",
+          "passed": true
+        },
+        {
+          "name": "Return preserves lighting and one camera/listener/input 1",
+          "passed": true
+        },
+        {
+          "name": "Leaving suspends both rigs 2",
+          "passed": true
+        },
+        {
+          "name": "Return reuses both models and preserves male selection 2",
+          "passed": true
+        },
+        {
+          "name": "Return preserves lighting and one camera/listener/input 2",
+          "passed": true
+        },
+        {
+          "name": "Saved male selection survives a fresh Menu load",
+          "passed": true
+        },
+        {
+          "name": "Select Female receives pointer input",
+          "passed": true
+        },
+        {
+          "name": "Returning to female restores the original viewpoint",
+          "passed": true
+        },
+        {
+          "name": "Wallet and graphics settings remain unchanged",
+          "passed": true
+        },
+        {
+          "name": "Selector labels fit and have Vietnamese glyphs",
+          "passed": true
+        }
+      ]
+    },
+    "botVictory": {
+      "passed": true,
+      "count": 82,
+      "checks": [
+        {
+          "name": "One game win does not start the winner view",
+          "passed": true
+        },
+        {
+          "name": "Result always presents the local player 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Result waits with the gameplay scene intact 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Camera and player remain still during the match banner 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Camera waits through the banner exit animation 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Empty announcement queue starts the camera transition 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Victory view begins after announcements 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Vietnamese win or loss title 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Player uses the appropriate result animation 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Player result animation moves 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Female repeats Dance Win 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Camera remains on the player's side 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Opponent stays in its original place 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Local player is centered and visible 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Pause holds celebration 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Win retains its golden light sweep 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Result stays on its stage with finite bones 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Only one camera and listener 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Restart restores gameplay presentation 0/-1",
+          "passed": true
+        },
+        {
+          "name": "Result always presents the local player 0/1",
+          "passed": true
+        },
+        {
+          "name": "Result waits with the gameplay scene intact 0/1",
+          "passed": true
+        },
+        {
+          "name": "Camera and player remain still during the match banner 0/1",
+          "passed": true
+        },
+        {
+          "name": "Camera waits through the banner exit animation 0/1",
+          "passed": true
+        },
+        {
+          "name": "Empty announcement queue starts the camera transition 0/1",
+          "passed": true
+        },
+        {
+          "name": "Victory view begins after announcements 0/1",
+          "passed": true
+        },
+        {
+          "name": "Vietnamese win or loss title 0/1",
+          "passed": true
+        },
+        {
+          "name": "Player uses the appropriate result animation 0/1",
+          "passed": true
+        },
+        {
+          "name": "Player result animation moves 0/1",
+          "passed": true
+        },
+        {
+          "name": "Female repeats Dance Win 0/1",
+          "passed": true
+        },
+        {
+          "name": "Camera remains on the player's side 0/1",
+          "passed": true
+        },
+        {
+          "name": "Opponent stays in its original place 0/1",
+          "passed": true
+        },
+        {
+          "name": "Local player is centered and visible 0/1",
+          "passed": true
+        },
+        {
+          "name": "Pause holds celebration 0/1",
+          "passed": true
+        },
+        {
+          "name": "Win retains its golden light sweep 0/1",
+          "passed": true
+        },
+        {
+          "name": "Result stays on its stage with finite bones 0/1",
+          "passed": true
+        },
+        {
+          "name": "Only one camera and listener 0/1",
+          "passed": true
+        },
+        {
+          "name": "Restart restores gameplay presentation 0/1",
+          "passed": true
+        },
+        {
+          "name": "Result always presents the local player 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Result waits with the gameplay scene intact 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Camera and player remain still during the match banner 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Camera waits through the banner exit animation 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Empty announcement queue starts the camera transition 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Victory view begins after announcements 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Vietnamese win or loss title 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Player uses the appropriate result animation 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Player result animation moves 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Loss holds its final reaction without celebrating 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Camera remains on the player's side 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Opponent stays in its original place 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Local player is centered and visible 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Pause holds celebration 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Loss is gray and dark without a light sweep 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Result stays on its stage with finite bones 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Only one camera and listener 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Restart restores gameplay presentation 1/-1",
+          "passed": true
+        },
+        {
+          "name": "Result always presents the local player 1/1",
+          "passed": true
+        },
+        {
+          "name": "Result waits with the gameplay scene intact 1/1",
+          "passed": true
+        },
+        {
+          "name": "Camera and player remain still during the match banner 1/1",
+          "passed": true
+        },
+        {
+          "name": "Camera waits through the banner exit animation 1/1",
+          "passed": true
+        },
+        {
+          "name": "Empty announcement queue starts the camera transition 1/1",
+          "passed": true
+        },
+        {
+          "name": "Victory view begins after announcements 1/1",
+          "passed": true
+        },
+        {
+          "name": "Vietnamese win or loss title 1/1",
+          "passed": true
+        },
+        {
+          "name": "Player uses the appropriate result animation 1/1",
+          "passed": true
+        },
+        {
+          "name": "Player result animation moves 1/1",
+          "passed": true
+        },
+        {
+          "name": "Loss holds its final reaction without celebrating 1/1",
+          "passed": true
+        },
+        {
+          "name": "Camera remains on the player's side 1/1",
+          "passed": true
+        },
+        {
+          "name": "Opponent stays in its original place 1/1",
+          "passed": true
+        },
+        {
+          "name": "Local player is centered and visible 1/1",
+          "passed": true
+        },
+        {
+          "name": "Pause holds celebration 1/1",
+          "passed": true
+        },
+        {
+          "name": "Loss is gray and dark without a light sweep 1/1",
+          "passed": true
+        },
+        {
+          "name": "Result stays on its stage with finite bones 1/1",
+          "passed": true
+        },
+        {
+          "name": "Only one camera and listener 1/1",
+          "passed": true
+        },
+        {
+          "name": "Restart restores gameplay presentation 1/1",
+          "passed": true
+        },
+        {
+          "name": "Restart during announcements restores gameplay safely",
+          "passed": true
+        },
+        {
+          "name": "Player result UI contains only two actions",
+          "passed": true
+        },
+        {
+          "name": "All result text fits",
+          "passed": true
+        },
+        {
+          "name": "Replay receives UI clicks",
+          "passed": true
+        },
+        {
+          "name": "Replay starts the original entrance camera",
+          "passed": true
+        },
+        {
+          "name": "Skipping replay intro restores normal follow camera",
+          "passed": true
+        },
+        {
+          "name": "ChooseMode receives UI clicks",
+          "passed": true
+        },
+        {
+          "name": "Choose mode opens mode selection",
+          "passed": true
+        },
+        {
+          "name": "Checks preserve real wallet and graphics",
+          "passed": true
+        }
+      ]
+    },
+    "menuReport": "Docs/Progression/MergedMenuValidation.json",
+    "menuPassed": 23
+  },
+  "totals": {
+    "logicPassed": 180,
+    "integrationPassed": 137,
+    "passed": 317,
+    "failed": 0
+  },
+  "smartMerge": {
+    "attributes": "inline Unity YAML/JSON rules in project .gitattributes",
+    "driverConfiguredIn": "D:/Repository/PickleVerse/.git/config",
+    "cleanMergeExit": 0,
+    "trueConflictExit": 2
+  },
+  "realPlayerRestored": {
+    "id": "P952472f3751b4ed1ae19c1a",
+    "identityWalletEloXpHistoryUnchanged": true
+  },
+  "backup": "Docs/MergeRecovery/20261011-2325"
+}
