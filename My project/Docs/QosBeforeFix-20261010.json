@@ -1,0 +1,186 @@
+{
+  "utc": "2026-10-10T03:36:13.3173258Z",
+  "queue": "PickleVerse-1v1",
+  "limit": 150,
+  "allServers": 11,
+  "selectedServers": 11,
+  "fallback": false,
+  "measurements": [
+    {
+      "regions": [
+        "europe-central2"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 392,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "asia-southeast1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 79,
+      "loss": 0.0,
+      "accepted": true
+    },
+    {
+      "regions": [
+        "australia-southeast1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 205,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "us-central1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 237,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "us-east1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 388,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "us-west1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 188,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "europe-north1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 386,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "asia-south1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 185,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "southamerica-east1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 398,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "asia-northeast1"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 184,
+      "loss": 0.0,
+      "accepted": false
+    },
+    {
+      "regions": [
+        "europe-west4"
+      ],
+      "queues": [
+        "PickleVerse-2v2",
+        "PickleVerse-1v1"
+      ],
+      "pools": [
+        "9159f84c-0ece-4006-9c6f-04e492787d16",
+        "4ee5e3b9-ed7a-423a-baf0-cf9daeb80d3b"
+      ],
+      "latency": 381,
+      "loss": 0.0,
+      "accepted": false
+    }
+  ]
+}

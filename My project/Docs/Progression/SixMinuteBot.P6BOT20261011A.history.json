@@ -1,0 +1,138 @@
+{
+    "version": 1,
+    "id": "P6BOT20261011A",
+    "playerName": "P6BOT20261011A",
+    "avatarId": "initial",
+    "createdUtcTicks": 639273223567945369,
+    "totalXp": 10,
+    "coins": 0,
+    "gems": 0,
+    "wins": 1,
+    "losses": 0,
+    "elo": 1060,
+    "level": 2,
+    "levelXp": 0,
+    "rankWinStreak": 1,
+    "rankLossStreak": 0,
+    "activeSeconds": 473.8685157,
+    "lifetime": {
+        "matches": 1,
+        "wins": 1,
+        "points": 22,
+        "returns": 8,
+        "serves": 23,
+        "botMatches": 1,
+        "humanMatches": 0,
+        "humanWins": 0,
+        "rankedWins": 1,
+        "doublesWins": 0,
+        "higherRatedWins": 1,
+        "streak": 1,
+        "bestStreak": 1
+    },
+    "daily": {
+        "key": "20261011",
+        "counters": {
+            "matches": 1,
+            "wins": 1,
+            "points": 22,
+            "returns": 8,
+            "serves": 23,
+            "botMatches": 1,
+            "humanMatches": 0,
+            "humanWins": 0,
+            "rankedWins": 1,
+            "doublesWins": 0,
+            "higherRatedWins": 1,
+            "streak": 1,
+            "bestStreak": 1
+        },
+        "claimed": [],
+        "bonusClaimed": false
+    },
+    "weekly": {
+        "key": "20261005",
+        "counters": {
+            "matches": 1,
+            "wins": 1,
+            "points": 22,
+            "returns": 8,
+            "serves": 23,
+            "botMatches": 1,
+            "humanMatches": 0,
+            "humanWins": 0,
+            "rankedWins": 1,
+            "doublesWins": 0,
+            "higherRatedWins": 1,
+            "streak": 1,
+            "bestStreak": 1
+        },
+        "claimed": [],
+        "bonusClaimed": false
+    },
+    "previousDays": [],
+    "previousWeeks": [],
+    "achievementClaims": [],
+    "processedMatches": [
+        "cc99e8ae3ffd46c193d52b549bbc4871"
+    ],
+    "history": [
+        {
+            "id": "cc99e8ae3ffd46c193d52b549bbc4871",
+            "playerId": "P6BOT20261011A",
+            "reason": "Bóng ngoài sân",
+            "startedUtcTicks": 639273227359471077,
+            "endedUtcTicks": 639273228423682713,
+            "kind": 2,
+            "outcome": 0,
+            "localForfeit": false,
+            "ownElo": 1000,
+            "opponentElo": 1120,
+            "eloDelta": 60,
+            "gamesWon": 2,
+            "gamesLost": 0,
+            "points": 22,
+            "validReturns": 8,
+            "validServes": 23,
+            "opponents": [
+                {
+                    "id": "BOT7a6830b89ab44844886c2",
+                    "name": "AFXN",
+                    "elo": 1120
+                }
+            ],
+            "scores": [
+                {
+                    "own": 11,
+                    "opponent": 0,
+                    "completed": true
+                },
+                {
+                    "own": 11,
+                    "opponent": 0,
+                    "completed": true
+                }
+            ]
+        }
+    ],
+    "pendingMatch": {
+        "id": "",
+        "playerId": "",
+        "reason": "",
+        "startedUtcTicks": 0,
+        "endedUtcTicks": 0,
+        "kind": 0,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [],
+        "scores": []
+    }
+}

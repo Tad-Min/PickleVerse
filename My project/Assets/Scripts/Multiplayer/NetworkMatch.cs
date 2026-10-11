@@ -19,7 +19,7 @@ namespace PickleVerse.Multiplayer
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T:IReaderWriter { serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity); serializer.SerializeValue(ref live); serializer.SerializeValue(ref released); }
         public bool Equals(BallFrame o)=>position==o.position&&velocity==o.velocity&&live==o.live&&released==o.released;
     }
-    public sealed class NetworkMatch : NetworkBehaviour
+    public sealed partial class NetworkMatch : NetworkBehaviour
     {
         public static NetworkMatch Instance { get; private set; }
         public NetworkVariable<FixedString4096Bytes> RosterJson=new NetworkVariable<FixedString4096Bytes>();
@@ -65,6 +65,7 @@ namespace PickleVerse.Multiplayer
             BuildBall(); MultiplayerApp.Instance.CourtLoaded();
             Finished.OnValueChanged+=ResultChanged;
             Started.OnValueChanged+=StartChanged;
+            BindProgression();
             if(IsServer)
             {
                 Rules=new PickleballRules(Roster.mode, Roster.members.Count(p=>p.team==0), Roster.members.Count(p=>p.team==1), UnityEngine.Random.Range(0,2));
@@ -75,6 +76,8 @@ namespace PickleVerse.Multiplayer
         }
         public override void OnNetworkDespawn()
         {
+            SnapshotPendingProgression();
+            UnbindProgression();
             if(Instance==this) Instance=null; Finished.OnValueChanged-=ResultChanged; Started.OnValueChanged-=StartChanged;
             if(NetworkManager!=null) NetworkManager.OnClientConnectedCallback-=PlayerConnected;
             if(Body!=null) Destroy(Body.gameObject);
@@ -107,11 +110,12 @@ namespace PickleVerse.Multiplayer
             var app=MultiplayerApp.Instance;
             foreach(var m in Roster.members)
             {
-                var client=app.ClientIdentities.First(p=>p.Value==m.id).Key;
                 int index=Roster.members.Where(p=>p.team==m.team).ToList().FindIndex(p=>p.id==m.id);
                 var go=Instantiate(app.Settings.playerPrefab);
                 var player=go.GetComponent<NetworkPlayer>(); player.Initialize(m,index,StartingPosition(m.team,index));
-                var networkObject=go.GetComponent<NetworkObject>(); networkObject.DontDestroyWithOwner=true; networkObject.SpawnAsPlayerObject(client,true);
+                var networkObject=go.GetComponent<NetworkObject>(); networkObject.DontDestroyWithOwner=true;
+                if(m.bot) { networkObject.Spawn(true); bots[m.id]=new MultiplayerBot(m.id.GetHashCode()); }
+                else networkObject.SpawnAsPlayerObject(app.ClientIdentities.First(p=>p.Value==m.id).Key,true);
                 players[m.id]=player;
             }
             StartCoroutine(ClientCamera());
@@ -126,8 +130,8 @@ namespace PickleVerse.Multiplayer
         }
         IEnumerator ClientCamera()
         {
-            while(NetworkPlayer.All.Count<Roster.Count || NetworkPlayer.All.All(p=>!p.IsOwner)) yield return null;
-            var player=NetworkPlayer.All.First(p=>p.IsOwner);
+            while(NetworkPlayer.All.Count<Roster.Count || NetworkPlayer.All.All(p=>!p.IsLocalHuman)) yield return null;
+            var player=NetworkPlayer.All.First(p=>p.IsLocalHuman);
             var camera=Camera.main;
             if(camera) { var follow=camera.GetComponent<CourtCamera>(); if(!follow) follow=camera.gameObject.AddComponent<CourtCamera>(); follow.target=player.transform; follow.SnapToPlayer(); }
             if(Environment.GetCommandLineArgs().Contains("-pkvSlowCourt")) yield return new WaitForSecondsRealtime(3);
@@ -139,9 +143,9 @@ namespace PickleVerse.Multiplayer
         {
             if(Started.Value || !MultiplayerApp.Instance.ClientIdentities.ContainsKey(rpc.Receive.SenderClientId)) return;
             courtReady.Add(rpc.Receive.SenderClientId);
-            if(courtReady.Count==Roster.Count) { BeginRally(); Started.Value=true; }
+            if(courtReady.Count==Roster.HumanCount) { BeginRally(); Started.Value=true; }
         }
-        void StartChanged(bool old,bool started) { if(started) MultiplayerApp.Instance.MatchStarted(); }
+        void StartChanged(bool old,bool started) { if(started) { BeginLocalProgression(); MultiplayerApp.Instance.MatchStarted(); } }
         public void TrySwing(NetworkPlayer player, ShotIntent intent)
         {
             if (!IsServer || !Started.Value || Paused.Value || Finished.Value || BetweenGames.Value || TimedOut.Value || !player.Connected || player.Actor.Swinging) return;
@@ -157,6 +161,8 @@ namespace PickleVerse.Multiplayer
         void BeginRally()
         {
             Rules.NewRally(); rallyEnding = rallyCommitted = false; BetweenPoints.Value=false; releasedServe = false;
+            progressStrokes.NewRally();
+            foreach(var brain in bots.Values) brain.Reset();
             countdownSecond=-1;
             foreach (var player in players.Values) { player.Teleport(StartingPosition(player.Team.Value, player.Index.Value)); player.ResetInput(); }
             var server = players.Values.First(p => p.Team.Value == Rules.servingTeam && p.Index.Value == Rules.serverIndex);
@@ -172,7 +178,7 @@ namespace PickleVerse.Multiplayer
             if (Paused.Value)
             {
                 foreach (var r in reservations.ToArray()) if (Time.realtimeSinceStartupAsDouble > r.Value)
-                { Rules.Forfeit(Roster.Find(r.Key).team, "Mất kết nối quá 30 giây"); reservations.Clear(); Finish(); break; }
+                { forfeitedPlayers.Add(r.Key); Rules.Forfeit(Roster.Find(r.Key).team, "Mất kết nối quá 30 giây"); reservations.Clear(); Finish(); break; }
                 return;
             }
             accumulator += Time.fixedDeltaTime;
@@ -184,7 +190,12 @@ namespace PickleVerse.Multiplayer
         }
         void StepSimulation(float dt)
         {
-            foreach (var player in players.Values) player.Simulate(dt, !Finished.Value && !BetweenGames.Value && !rallyCommitted && !TimedOut.Value);
+            foreach (var player in players.Values)
+            {
+                if(bots.TryGetValue(player.Identity.Value.ToString(),out var brain))
+                { brain.Step(this,player,dt,out var move,out var run); player.SetAutomatedInput(move,run); }
+                player.Simulate(dt, !Finished.Value && !BetweenGames.Value && !rallyCommitted && !TimedOut.Value);
+            }
             if (Finished.Value) return;
             if (TimedOut.Value) { if(Time.realtimeSinceStartupAsDouble>=timeoutDeadline) EndTimeout(); return; }
             if (BetweenGames.Value) { if(Time.realtimeSinceStartupAsDouble>=nextGameDeadline) NextGame(); return; }
@@ -211,7 +222,8 @@ namespace PickleVerse.Multiplayer
                             Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1)))
                         {
                             server.ConsumeContact(false);
-                            ballVelocity = shots.Launch(actor, actor.Intent, ballPosition, Rules.serverWorldX);
+                            progressStrokes.Launch(server.Team.Value*2+server.Index.Value,true,Rules.strokeCount);
+                            ballVelocity = LaunchBall(server,actor.Intent);
                         }
                     }
                 }
@@ -241,7 +253,9 @@ namespace PickleVerse.Multiplayer
                     player.ConsumeContact(volley);
                     if (hit)
                     {
-                        ballVelocity = shots.Launch(actor, shot, ballPosition, Rules.serverWorldX);
+                        progressStrokes.AcceptFlight();
+                        progressStrokes.Launch(player.Team.Value*2+player.Index.Value,false,Rules.strokeCount);
+                        ballVelocity = LaunchBall(player,shot);
                         foreach (var other in players.Values.Where(p => p.Team.Value != player.Team.Value)) other.SplitStep();
                         shotLabel = shot.ToString(); shotLabelUntil = Time.realtimeSinceStartupAsDouble + 1;
                     }
@@ -249,7 +263,7 @@ namespace PickleVerse.Multiplayer
                 if (Rules.live && ballPosition.y <= Court.BallRadius)
                 {
                     var bounce = ballPosition; bounce.y = Court.BallRadius; Rules.Bounce(bounce);
-                    if (Rules.live) BallFlight.Rebound(ref ballPosition, ref ballVelocity);
+                    if (Rules.live) { progressStrokes.AcceptFlight(); BallFlight.Rebound(ref ballPosition, ref ballVelocity); }
                 }
                 if (Rules.live)
                 {
@@ -266,7 +280,10 @@ namespace PickleVerse.Multiplayer
             {
                 int loser = Rules.pendingFault, endedGame = Rules.GameNumber, priorServer = Rules.servingTeam;
                 string fault = Rules.reason;
+                int beforeA=Rules.score[0], beforeB=Rules.score[1];
                 Rules.SettleRally();
+                teamPoints[0]+=Math.Max(0,Rules.score[0]-beforeA); teamPoints[1]+=Math.Max(0,Rules.score[1]-beforeB);
+                if(Rules.gameFinished) CaptureProgressionGame();
                 rallyCommitted=true; BetweenPoints.Value=true; rallyDeadline=Time.realtimeSinceStartupAsDouble+2.1;
                 AnnouncementRpc(fault.Contains("ngoài sân")?"OUT":"FAULT / LỖI",fault+" • Đội "+(loser==0?"A":"B")+" phạm lỗi\n"+(priorServer==1-loser?"Đội "+(priorServer==0?"A":"B")+" ghi điểm":"Đổi giao bóng / Side Out"),(int)AnnouncementTone.Fault,1.2f);
                 foreach (var player in players.Values) player.React(player.Team.Value != loser, Rules.complete);
@@ -304,7 +321,7 @@ namespace PickleVerse.Multiplayer
             bool flying=(frame.live || WaitingServe.Value && frame.released) && Body.position.y>Court.BallRadius+.02f && frame.velocity.sqrMagnitude>.04f;
             if(ballTrail) {ballTrail.emitting=flying && !Paused.Value && !Finished.Value;if(!ballTrail.emitting)ballTrail.Clear();}
             if(flying && !Paused.Value)Body.transform.Rotate(new Vector3(80,140,40)*Time.deltaTime);
-            var local=NetworkPlayer.All.FirstOrDefault(p=>p.IsOwner);
+            var local=NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman);
             if(landingMarker)
             {
                 bool visible=frame.live && local && local.Team.Value!=LastHitTeam.Value && !Finished.Value;
@@ -357,23 +374,24 @@ namespace PickleVerse.Multiplayer
             player.NetworkObject.ChangeOwnership(client); player.Connected=true; player.ResetInput();
             if(reservations.Count==0) { Paused.Value=false; Body.isKinematic=true; if(Rules.live) ballVelocity=savedVelocity; serveDeadline=Time.realtimeSinceStartupAsDouble+10;countdownSecond=-1; Publish(); }
         }
-        public void RequestLeave() { LeaveRpc(); }
+        public void RequestLeave() { RecordLocalExit(true,"Chủ động rời trận"); LeaveRpc(); }
         public void PlayerLeftSession(string id)
         {
             var player=Roster?.Find(id);
             if(IsServer && !Finished.Value && player!=null)
-            { Rules.Forfeit(player.team,"Đội có người chủ động rời trận bị xử thua"); Finish(); }
+            { forfeitedPlayers.Add(id); Rules.Forfeit(player.team,"Đội có người chủ động rời trận bị xử thua"); Finish(); }
         }
         [Rpc(SendTo.Server,InvokePermission=RpcInvokePermission.Everyone)] void LeaveRpc(RpcParams rpc=default)
         {
             if(Finished.Value) return;
             if(MultiplayerApp.Instance.ClientIdentities.TryGetValue(rpc.Receive.SenderClientId,out var id))
-            { Rules.Forfeit(Roster.Find(id).team,"Đội có người chủ động rời trận bị xử thua"); Finish(); }
+            { forfeitedPlayers.Add(id); Rules.Forfeit(Roster.Find(id).team,"Đội có người chủ động rời trận bị xử thua"); Finish(); }
         }
         void Finish()
         {
             if(!Finished.Value)MatchSoundRpc((int)GameSfx.GameWhistle);
             Body.isKinematic=true; Publish();
+            PublishProgressionResults();
             Status.Value=new FixedString512Bytes($"Đội {(Rules.winner==0?"A":"B")} thắng trận {Rules.games[0]} : {Rules.games[1]} game — điểm game cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}"); Finished.Value=true;
             AnnouncementRpc("GAME, MATCH!",Status.Value.ToString(),(int)AnnouncementTone.Success,2.1f);
         }

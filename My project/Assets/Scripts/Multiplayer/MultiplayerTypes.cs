@@ -12,7 +12,9 @@ namespace PickleVerse.Multiplayer
     {
         public string id, name, gender, group;
         public int team;
+        public int elo = 100;
         public bool ready;
+        public bool bot;
     }
     [Serializable] public class RoomData
     {
@@ -34,11 +36,14 @@ namespace PickleVerse.Multiplayer
         public bool custom;
         public List<RoomMember> members = new List<RoomMember>();
         public int Count => members.Count;
+        public int HumanCount => members.FindAll(p=>!p.bot).Count;
+        public bool RankedBot => !custom && mode==PlayMode.Singles && members.Exists(p=>p.bot);
         public RoomMember Find(string id) => members.Find(p => p.id == id);
         public bool IsValid()
         {
             var ids = new HashSet<string>();
             int[] counts = new int[2];
+            if (members.Exists(p=>p.bot) && (custom || mode!=PlayMode.Singles || HumanCount!=1)) return false;
             foreach (var p in members)
             {
                 if (string.IsNullOrEmpty(p.id) || !ids.Add(p.id) || p.team < 0 || p.team > 1) return false;

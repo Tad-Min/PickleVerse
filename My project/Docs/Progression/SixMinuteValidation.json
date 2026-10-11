@@ -1,0 +1,77 @@
+{
+  "Utc": "2026-10-11T13:43:42.2448066Z",
+  "Protocol": 5,
+  "BotDeadlineSeconds": 360,
+  "Tests": [
+    {
+      "Assembly": "PickleVerse.Progression.Tests",
+      "Failed": 0,
+      "Passed": 44
+    },
+    {
+      "Assembly": "PickleVerse.LocalMatch.Tests",
+      "Failed": 0,
+      "Passed": 29
+    },
+    {
+      "Assembly": "PickleVerse.Multiplayer.Tests",
+      "Failed": 0,
+      "Passed": 53
+    }
+  ],
+  "TotalTests": 126,
+  "UI": {
+    "Status": "Passed 25 multiplayer UI checks",
+    "Failed": 0,
+    "Passed": 25
+  },
+  "WindowsReceipts": [
+    {
+      "File": "SixMinuteBot.P6BOT20261011A.txt",
+      "Passed": true,
+      "Result": "PASS fallback P6BOT20261011A: elapsed=471.565 state=Results scene=MultiplayerCourt"
+    },
+    {
+      "File": "SixMinuteCancel.P6CAN20261011A.txt",
+      "Passed": true,
+      "Result": "PASS cancelFallback P6CAN20261011A: elapsed=361.018 state=WaitingRoom scene=PlayMultiplayer"
+    },
+    {
+      "File": "SixMinuteHuman.P6HUM20261011A.txt",
+      "Passed": true,
+      "Result": "PASS singles P6HUM20261011A: 2 players, host=True, scene=MultiplayerCourt; summary=-20 ELO rank=Vàng; lifecycle PASS games=1:2 score=0:11 room=Singles members=1"
+    },
+    {
+      "File": "SixMinuteHuman.P6HUM20261011B.txt",
+      "Passed": true,
+      "Result": "PASS singles P6HUM20261011B: 2 players, host=False, scene=MultiplayerCourt; summary=+20 ELO rank=Bạch Kim; lifecycle PASS games=1:2 score=0:11 room=Singles members=1"
+    }
+  ],
+  "BotMatch": {
+    "Opponent": "AFXN",
+    "ValidServes": 23,
+    "Scene": "MultiplayerCourt",
+    "GamesWon": 2,
+    "Scores": [
+      {
+        "own": 11,
+        "opponent": 0,
+        "completed": true
+      },
+      {
+        "own": 11,
+        "opponent": 0,
+        "completed": true
+      }
+    ],
+    "Delta": 60,
+    "Kind": "RankedBot",
+    "TotalXp": 10,
+    "ValidReturns": 8,
+    "GamesLost": 0,
+    "Before": 1000,
+    "After": 1060
+  },
+  "CloudReceipt": "Docs/MultiplayerCloudDeployment.txt",
+  "BuildReceipt": "Docs/Progression/Build.json"
+}

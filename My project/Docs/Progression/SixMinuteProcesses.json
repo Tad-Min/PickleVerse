@@ -1,0 +1,26 @@
+[
+  {
+    "Profile": "P6BOT20261011A",
+    "Pid": 6680,
+    "Case": "fallback",
+    "Executable": "D:\\Repository\\PickleVerse\\My project\\Builds\\ProgressionWindows\\PickleVerse.exe"
+  },
+  {
+    "Profile": "P6CAN20261011A",
+    "Pid": 25780,
+    "Case": "cancelFallback",
+    "Executable": "D:\\Repository\\PickleVerse\\My project\\Builds\\ProgressionWindows\\PickleVerse.exe"
+  },
+  {
+    "Profile": "P6HUM20261011A",
+    "Pid": 24800,
+    "Case": "singles",
+    "Executable": "D:\\Repository\\PickleVerse\\My project\\Builds\\ProgressionWindows\\PickleVerse.exe"
+  },
+  {
+    "Profile": "P6HUM20261011B",
+    "Pid": 27996,
+    "Case": "singles",
+    "Executable": "D:\\Repository\\PickleVerse\\My project\\Builds\\ProgressionWindows\\PickleVerse.exe"
+  }
+]

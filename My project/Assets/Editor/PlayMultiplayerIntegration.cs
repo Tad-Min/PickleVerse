@@ -102,6 +102,8 @@ namespace PickleVerse.EditorTools
                 button.GetComponentInChildren<TMP_Text>().text=button==ui.leave?"Rời trận":"Về phòng";
             }
             ui.leave.gameObject.SetActive(true);ui.returnToRoom.gameObject.SetActive(false);
+            ui.resultScreen=canvas.GetComponent<MultiplayerResultScreen>(); if(!ui.resultScreen) ui.resultScreen=canvas.AddComponent<MultiplayerResultScreen>();
+            ui.resultScreen.Configure(ui); EditorUtility.SetDirty(ui.resultScreen);
             EditorUtility.SetDirty(ui);EditorUtility.SetDirty(announcements);
         }
         static void CopyHudNode(Transform source,Transform target,Dictionary<Object,Object> objects)

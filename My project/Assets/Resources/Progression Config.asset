@@ -1,0 +1,268 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62ed6a30ab9944640b4c7dc34c72166e, type: 3}
+  m_Name: Progression Config
+  m_EditorClassIdentifier: PickleVerse.Progression::PickleVerse.Progression.ProgressionConfig
+  winXp: 10
+  lossXp: 5
+  dailyBonus:
+    coins: 200
+    gems: 2
+    xp: 20
+  weeklyBonus:
+    coins: 1000
+    gems: 5
+    xp: 50
+  definitions:
+  - id: A.Win5
+    title: "Th\u1EAFng 5 tr\u1EADn"
+    scope: 0
+    metric: 1
+    target: 5
+    reward:
+      coins: 100
+      gems: 1
+      xp: 10
+  - id: A.Win25
+    title: "Th\u1EAFng 25 tr\u1EADn"
+    scope: 0
+    metric: 1
+    target: 25
+    reward:
+      coins: 300
+      gems: 3
+      xp: 25
+  - id: A.Win100
+    title: "Th\u1EAFng 100 tr\u1EADn"
+    scope: 0
+    metric: 1
+    target: 100
+    reward:
+      coins: 1000
+      gems: 10
+      xp: 50
+  - id: A.Play10
+    title: "Ho\xE0n t\u1EA5t 10 tr\u1EADn"
+    scope: 0
+    metric: 0
+    target: 10
+    reward:
+      coins: 100
+      gems: 1
+      xp: 10
+  - id: A.Play50
+    title: "Ho\xE0n t\u1EA5t 50 tr\u1EADn"
+    scope: 0
+    metric: 0
+    target: 50
+    reward:
+      coins: 400
+      gems: 4
+      xp: 25
+  - id: A.Play200
+    title: "Ho\xE0n t\u1EA5t 200 tr\u1EADn"
+    scope: 0
+    metric: 0
+    target: 200
+    reward:
+      coins: 1500
+      gems: 15
+      xp: 75
+  - id: A.Point100
+    title: "Ghi 100 \u0111i\u1EC3m cho \u0111\u1ED9i"
+    scope: 0
+    metric: 2
+    target: 100
+    reward:
+      coins: 200
+      gems: 2
+      xp: 15
+  - id: A.Point500
+    title: "Ghi 500 \u0111i\u1EC3m cho \u0111\u1ED9i"
+    scope: 0
+    metric: 2
+    target: 500
+    reward:
+      coins: 600
+      gems: 6
+      xp: 35
+  - id: A.Streak5
+    title: "\u0110\u1EA1t chu\u1ED7i th\u1EAFng 5 tr\u1EADn"
+    scope: 0
+    metric: 10
+    target: 5
+    reward:
+      coins: 500
+      gems: 5
+      xp: 30
+  - id: A.Higher5
+    title: "Th\u1EAFng 5 \u0111\u1ED1i th\u1EE7 rank Elo cao h\u01A1n"
+    scope: 0
+    metric: 11
+    target: 5
+    reward:
+      coins: 300
+      gems: 3
+      xp: 25
+  - id: D.Play1
+    title: "Ho\xE0n t\u1EA5t 1 tr\u1EADn"
+    scope: 1
+    metric: 0
+    target: 1
+    reward:
+      coins: 50
+      gems: 0
+      xp: 5
+  - id: D.Win1
+    title: "Th\u1EAFng 1 tr\u1EADn"
+    scope: 1
+    metric: 1
+    target: 1
+    reward:
+      coins: 75
+      gems: 0
+      xp: 5
+  - id: D.Point20
+    title: "Ghi 20 \u0111i\u1EC3m cho \u0111\u1ED9i"
+    scope: 1
+    metric: 2
+    target: 20
+    reward:
+      coins: 75
+      gems: 0
+      xp: 5
+  - id: D.Return30
+    title: "Tr\u1EA3 b\xF3ng h\u1EE3p l\u1EC7 30 l\u1EA7n"
+    scope: 1
+    metric: 3
+    target: 30
+    reward:
+      coins: 75
+      gems: 0
+      xp: 5
+  - id: D.Serve10
+    title: "Giao b\xF3ng h\u1EE3p l\u1EC7 10 l\u1EA7n"
+    scope: 1
+    metric: 4
+    target: 10
+    reward:
+      coins: 75
+      gems: 0
+      xp: 5
+  - id: D.Bot1
+    title: "Ho\xE0n t\u1EA5t 1 tr\u1EADn v\u1EDBi bot"
+    scope: 1
+    metric: 5
+    target: 1
+    reward:
+      coins: 75
+      gems: 0
+      xp: 5
+  - id: D.HumanWin1
+    title: "Th\u1EAFng 1 tr\u1EADn t\xECm \u0111\u1ED1i th\u1EE7 ng\u01B0\u1EDDi th\u1EADt"
+    scope: 1
+    metric: 7
+    target: 1
+    reward:
+      coins: 125
+      gems: 1
+      xp: 10
+  - id: W.Play10
+    title: "Ho\xE0n t\u1EA5t 10 tr\u1EADn"
+    scope: 2
+    metric: 0
+    target: 10
+    reward:
+      coins: 300
+      gems: 1
+      xp: 20
+  - id: W.Win5
+    title: "Th\u1EAFng 5 tr\u1EADn"
+    scope: 2
+    metric: 1
+    target: 5
+    reward:
+      coins: 250
+      gems: 1
+      xp: 15
+  - id: W.Point100
+    title: "Ghi 100 \u0111i\u1EC3m cho \u0111\u1ED9i"
+    scope: 2
+    metric: 2
+    target: 100
+    reward:
+      coins: 250
+      gems: 1
+      xp: 15
+  - id: W.Return200
+    title: "Tr\u1EA3 b\xF3ng h\u1EE3p l\u1EC7 200 l\u1EA7n"
+    scope: 2
+    metric: 3
+    target: 200
+    reward:
+      coins: 250
+      gems: 1
+      xp: 15
+  - id: W.Serve50
+    title: "Giao b\xF3ng h\u1EE3p l\u1EC7 50 l\u1EA7n"
+    scope: 2
+    metric: 4
+    target: 50
+    reward:
+      coins: 250
+      gems: 1
+      xp: 15
+  - id: W.Bot5
+    title: "Ho\xE0n t\u1EA5t 5 tr\u1EADn v\u1EDBi bot"
+    scope: 2
+    metric: 5
+    target: 5
+    reward:
+      coins: 250
+      gems: 1
+      xp: 15
+  - id: W.Human5
+    title: "Ho\xE0n t\u1EA5t 5 tr\u1EADn t\xECm \u0111\u1ED1i th\u1EE7 ng\u01B0\u1EDDi th\u1EADt"
+    scope: 2
+    metric: 6
+    target: 5
+    reward:
+      coins: 350
+      gems: 2
+      xp: 20
+  - id: W.RankWin3
+    title: "Th\u1EAFng 3 tr\u1EADn rank 1v1"
+    scope: 2
+    metric: 8
+    target: 3
+    reward:
+      coins: 350
+      gems: 2
+      xp: 20
+  - id: W.DoubleWin2
+    title: "Th\u1EAFng 2 tr\u1EADn t\xECm tr\u1EADn 2v2"
+    scope: 2
+    metric: 9
+    target: 2
+    reward:
+      coins: 400
+      gems: 2
+      xp: 20
+  - id: W.Streak3
+    title: "\u0110\u1EA1t chu\u1ED7i th\u1EAFng 3 tr\u1EADn trong tu\u1EA7n"
+    scope: 2
+    metric: 10
+    target: 3
+    reward:
+      coins: 350
+      gems: 2
+      xp: 20

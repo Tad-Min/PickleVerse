@@ -1,0 +1,54 @@
+{
+  "utc": "2026-10-11T15:07:05.638Z",
+  "tests": {
+    "Progression": 44,
+    "LocalMatch": 29,
+    "Multiplayer": 60,
+    "total": 133,
+    "failed": 0
+  },
+  "uiChecks": {
+    "passed": 113,
+    "failed": 0
+  },
+  "missingScriptComponents": {
+    "before": 43,
+    "after": 0
+  },
+  "fontStylesValidated": 12,
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "compilationFailed": false,
+    "checkedUtc": "2026-10-11T15:09:05.4298313Z"
+  },
+  "teardown": {
+    "menuAndMultiplayerVerified": true,
+    "remainingProgressionObjects": 0,
+    "editModeGetterCreatesObject": false
+  },
+  "liveMatchmaking": {
+    "rounds": 3,
+    "passed": true,
+    "profileRestored": true
+  } ,
+  "build": {
+    "status": "completed",
+    "buildId": "build_10d4360712a4",
+    "result": "Succeeded",
+    "platform": "StandaloneWindows64",
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/ProgressionWindows/PickleVerse.exe",
+    "totalSizeBytes": 384388460,
+    "buildTimeMs": 65471,
+    "buildStartedAt": "2026-10-11T15:01:27.1673978Z",
+    "buildEndedAt": "2026-10-11T15:02:32.6385851Z",
+    "totalWarnings": 1,
+    "totalErrors": 0,
+    "errors": [],
+    "warnings": [
+      {
+        "message": "Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds."
+      }
+    ]
+  }
+}

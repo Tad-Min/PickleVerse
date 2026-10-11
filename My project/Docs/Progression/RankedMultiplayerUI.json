@@ -1,0 +1,105 @@
+{
+  "Status": "Passed 25 multiplayer UI checks",
+  "checks": [
+    {
+      "name": "Play started",
+      "passed": true
+    },
+    {
+      "name": "Deadline launches multiplayer court",
+      "passed": true
+    },
+    {
+      "name": "Bot uses MultiplayerCourt",
+      "passed": true
+    },
+    {
+      "name": "One human and one named bot",
+      "passed": true
+    },
+    {
+      "name": "Local control is human despite server ownership",
+      "passed": true
+    },
+    {
+      "name": "Camera follows human",
+      "passed": true
+    },
+    {
+      "name": "Bot Elo and rank progression context",
+      "passed": true
+    },
+    {
+      "name": "Summary opens automatically after saved result",
+      "passed": true
+    },
+    {
+      "name": "Summary shows actual Elo gain and promoted rank",
+      "passed": true
+    },
+    {
+      "name": "Summary opponent uses bot name",
+      "passed": true
+    },
+    {
+      "name": "Summary blocks gameplay",
+      "passed": true
+    },
+    {
+      "name": "Summary labels fit 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Summary safe bounds 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Summary blocks background pointer 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Summary labels fit 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Summary safe bounds 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Summary blocks background pointer 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Summary labels fit 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Summary safe bounds 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Summary blocks background pointer 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Summary labels fit 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Summary safe bounds 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Summary blocks background pointer 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Summary pointer click returns to waiting room",
+      "passed": true
+    },
+    {
+      "name": "Result is still applied once",
+      "passed": true
+    }
+  ]
+}

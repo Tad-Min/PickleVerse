@@ -1,0 +1,22 @@
+{
+  "status": "Passed",
+  "utc": "2026-10-11T15:07:08.1258973Z",
+  "rounds": [
+    {
+      "seconds": 35,
+      "state": "WaitingRoom",
+      "connected": false
+    },
+    {
+      "seconds": 8,
+      "state": "WaitingRoom",
+      "connected": false
+    },
+    {
+      "seconds": 8,
+      "state": "WaitingRoom",
+      "connected": false
+    }
+  ],
+  "restored": true
+}

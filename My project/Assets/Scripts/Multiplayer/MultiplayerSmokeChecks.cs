@@ -88,7 +88,30 @@ namespace PickleVerse.Multiplayer
         public static async Task GameDeparture(MultiplayerApp app,string behavior)
         {
             bool host=app.Network.IsHost;
-            if(behavior=="hostLeaves")
+            if(behavior=="expiredReconnect")
+            {
+                if(host)
+                {
+                    await Task.Delay(1500);
+                    var peer=app.ClientIdentities.First(p=>p.Key!=app.Network.LocalClientId);
+                    // Only this explicitly requested smoke run refuses reconnect; normal approval is unchanged.
+                    var approval=app.Network.ConnectionApprovalCallback;
+                    app.Network.ConnectionApprovalCallback=(request,response)=> { response.Approved=false; response.Reason="Smoke reconnect expiry"; response.Pending=false; };
+                    try
+                    {
+                        app.Network.DisconnectClient(peer.Key);
+                        await Wait(()=>app.State==FlowState.Results,"Reconnect hết hạn chưa xử thua",45);
+                        if(!NetworkMatch.Instance.Status.Value.ToString().Contains("30 giây")) throw new Exception("Sai lý do hết hạn reconnect");
+                        await app.ReturnToRoomAsync("Đã kiểm tra hết hạn reconnect.");
+                    }
+                    finally { app.Network.ConnectionApprovalCallback=approval; }
+                }
+                else await Wait(()=>app.State==FlowState.WaitingRoom,"Khách chưa hết hạn reconnect",50);
+                var player=PickleVerse.Progression.ProgressionRuntime.Instance.Player;
+                var result=player.history.FirstOrDefault();
+                if(result==null || result.outcome==PickleVerse.Progression.MatchOutcome.Interrupted || result.localForfeit==host || player.totalXp!=(host?10:0) || player.elo!=(host?520:480)) throw new Exception("Hết hạn reconnect chưa ghi đúng thua/Elo/XP");
+            }
+            else if(behavior=="hostLeaves")
             {
                 if(host) { await Task.Delay(2000); await app.ReturnToRoomAsync("Host test đã rời."); }
                 else await Wait(()=>app.State==FlowState.WaitingRoom,"Host rời nhưng khách chưa về phòng",40);

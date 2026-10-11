@@ -10,16 +10,25 @@ namespace PickleVerse.Multiplayer.Services
     public sealed class PlayerIdentityService : IPlayerIdentityService
     {
         public string Profile { get; private set; }
-        public string DisplayName { get; set; } = "";
+        string displayName = "";
+        public string DisplayName
+        {
+            get => displayName;
+            set { displayName = string.IsNullOrWhiteSpace(value)?"":ResolveName(value); if (PickleVerse.Progression.ProgressionRuntime.Exists && displayName.Length>0) PickleVerse.Progression.ProgressionRuntime.Instance.SetName(displayName); }
+        }
         public string PlayerId => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn ? AuthenticationService.Instance.PlayerId : "";
 
         public async Task InitializeAsync(string profile, string environment)
         {
             profile = new string((profile ?? "").Where(char.IsLetterOrDigit).Take(24).ToArray());
             if (profile.Length == 0) throw new InvalidOperationException("Thiếu hồ sơ người chơi.");
-            if (Profile != null && Profile != profile) throw new InvalidOperationException("Khởi động lại game để đổi hồ sơ.");
             if (UnityServices.State != ServicesInitializationState.Initialized)
                 await UnityServices.InitializeAsync(new InitializationOptions().SetProfile(profile).SetEnvironmentName(environment));
+            if (AuthenticationService.Instance.Profile != profile)
+            {
+                if (AuthenticationService.Instance.IsSignedIn) AuthenticationService.Instance.SignOut();
+                AuthenticationService.Instance.SwitchProfile(profile);
+            }
             Profile = profile;
             if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }

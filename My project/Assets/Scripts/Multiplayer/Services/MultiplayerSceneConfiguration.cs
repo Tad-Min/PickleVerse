@@ -5,7 +5,7 @@ namespace PickleVerse.Multiplayer.Services
 {
     public static class MultiplayerSceneConfiguration
     {
-        public const ushort ProtocolVersion = 3;
+        public const ushort ProtocolVersion = 5;
         public const string RoomPath = "Assets/Scenes/UI/PlayMultiplayer.unity";
         public const string CourtPath = "Assets/Scenes/MultiplayerCourt.unity";
         public static void Validate()

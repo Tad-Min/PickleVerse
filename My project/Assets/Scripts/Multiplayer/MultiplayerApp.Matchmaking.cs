@@ -27,6 +27,7 @@ namespace PickleVerse.Multiplayer
             CancelLocal(); observedSearch=Guid.NewGuid().ToString("N"); publishedMatch="";
             cancelledSearch=""; measured.Clear(); ignoredMatches.Clear();
             searchCancellation=new CancellationTokenSource(); clock.Start(Time.realtimeSinceStartupAsDouble);
+            if (Mode==PlayMode.Singles) rankedSearch.Start(Time.realtimeSinceStartupAsDouble);
             SetState(FlowState.Delay,"Đang chờ trước khi tìm trận.");
             int requestGeneration=operation;
             if(Mode==PlayMode.Doubles && Room==null)
@@ -64,7 +65,7 @@ namespace PickleVerse.Multiplayer
             }
             finally { cancelling=false; Changed?.Invoke(); }
         }
-        void CancelLocal() { operation++; searchCancellation?.Cancel(); searchCancellation?.Dispose(); searchCancellation=null; clock.Stop(); }
+        void CancelLocal() { operation++; rankedSearch.Cancel(); searchCancellation?.Cancel(); searchCancellation?.Dispose(); searchCancellation=null; clock.Stop(); }
         async Task SaveRoomAsync()
         {
             // SDK refresh/event snapshots can arrive while a save is in flight.
@@ -76,11 +77,23 @@ namespace PickleVerse.Multiplayer
             nextPoll = Time.realtimeSinceStartupAsDouble + 4;
         }
 
-        async Task PublishQosAsync()
+        Task publishingQos;
+        int publishingQosGeneration = -1;
+        Task PublishQosAsync()
         {
-            var result=await groupMatcher.MeasureAsync(Settings.doublesQueue,Settings.maximumLatencyMs);
+            if (publishingQosGeneration == operation && publishingQos != null && !publishingQos.IsCompleted) return publishingQos;
+            publishingQosGeneration = operation;
+            publishingQos = PublishQosForSearchAsync(operation, searchCancellation?.Token ?? CancellationToken.None);
+            return publishingQos;
+        }
+        async Task PublishQosForSearchAsync(int generation, CancellationToken token)
+        {
+            var currentRoom = Room;
+            var result=await groupMatcher.MeasureAsync(Settings.doublesQueue,Settings.maximumLatencyMs,token);
+            token.ThrowIfCancellationRequested();
+            if (generation != operation || currentRoom != Room || !Searching) return;
             measured[PlayerId]=result;
-            if(Room!=null) { Room.CurrentPlayer.SetProperty("qos",new PlayerProperty(JsonConvert.SerializeObject(result))); await Room.SaveCurrentPlayerDataAsync(); }
+            if(currentRoom!=null) { currentRoom.CurrentPlayer.SetProperty("qos",new PlayerProperty(JsonConvert.SerializeObject(result))); await currentRoom.SaveCurrentPlayerDataAsync(); }
         }
         async Task SearchAsync(int generation)
         {
@@ -91,15 +104,7 @@ namespace PickleVerse.Multiplayer
                 if(Room!=null && IsCaptain) { roomData.phase="searching"; await SaveRoomAsync(); }
                 if(Mode==PlayMode.Singles)
                 {
-                    var qos=await groupMatcher.MeasureAsync(Settings.singlesQueue,Settings.maximumLatencyMs); token.ThrowIfCancellationRequested();
-                    var properties=PlayerProperties(); properties["region"]=new PlayerProperty(qos[0].RegionId);
-                    SetConnectionIdentity();
-                    var session=await MultiplayerService.Instance.MatchmakeSessionAsync(new MatchmakerOptions { QueueName=Settings.singlesQueue,PlayerProperties=properties },MatchOptions(2,qos[0].RegionId),token);
-                    if(generation!=operation || token.IsCancellationRequested) { await session.LeaveAsync(); return; }
-                    Match=session;
-                    var result=session.GetMatchmakingResults();
-                    Roster=GroupMatchmaker.Roster(result.MatchId,result.MatchProperties.Region,result.MatchProperties.Teams,result.MatchProperties.Players,Mode);
-                    await ConnectedMatchAsync(generation);
+                    await SearchRankedSinglesAsync(generation,token);
                 }
                 else
                 {
@@ -126,7 +131,8 @@ namespace PickleVerse.Multiplayer
             catch(Exception e)
             {
                 if(generation!=operation || token.IsCancellationRequested) return;
-                Debug.LogWarning("Matchmaking attempt failed: "+e);
+                if (e is ConnectionQualityException) Debug.LogWarning("Matchmaking QoS rejected: "+e.Message);
+                else Debug.LogWarning("Matchmaking attempt failed: "+e);
                 await CancelSearchAsync(); SetState(FlowState.WaitingRoom,"Không tìm được trận: "+e.Message);
             }
         }

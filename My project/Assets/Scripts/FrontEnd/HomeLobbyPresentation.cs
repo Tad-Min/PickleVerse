@@ -161,8 +161,7 @@ namespace PickleVerse.FrontEnd
         public async System.Threading.Tasks.Task SignOutAsync()
         {
             await PickleVerse.Multiplayer.PlayerSignOut.FromLobbyAsync();
-            var texts=safeArea.GetComponentsInChildren<TMP_Text>(true);
-            foreach(var text in texts)if(text.name=="TxtName")text.text="Khách";else if(text.name=="TxtLevel")text.text="CHƯA ĐĂNG NHẬP";
+            FindAnyObjectByType<PlayerProgressionMenu>()?.Refresh();
         }
     }
 }

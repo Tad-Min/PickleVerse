@@ -1,0 +1,703 @@
+{
+  "checkedUtc": "2026-10-11T12:13:59.8247139Z",
+  "status": "Passed",
+  "profiles": [
+    {
+      "id": "PRG20261011A",
+      "elo": 100,
+      "level": 1,
+      "xp": 5,
+      "wins": 0,
+      "losses": 1,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "aec740c3-ef71-4a05-9531-daa9a564e61e",
+        "playerId": "PRG20261011A",
+        "reason": "Bóng chạm người",
+        "startedUtcTicks": 639273154658450418,
+        "endedUtcTicks": 639273156176266755,
+        "kind": 1,
+        "outcome": 1,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 1,
+        "gamesLost": 2,
+        "points": 11,
+        "validReturns": 0,
+        "validServes": 11,
+        "opponents": [
+          {
+            "id": "3UVu7jpAxpsDc62IjlkRerRQSr8Z",
+            "name": "PRG20261011B",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRG20261011B",
+      "elo": 120,
+      "level": 2,
+      "xp": 10,
+      "wins": 1,
+      "losses": 0,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "aec740c3-ef71-4a05-9531-daa9a564e61e",
+        "playerId": "PRG20261011B",
+        "reason": "Bóng chạm người",
+        "startedUtcTicks": 639273154658450418,
+        "endedUtcTicks": 639273156176282073,
+        "kind": 1,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 20,
+        "gamesWon": 2,
+        "gamesLost": 1,
+        "points": 22,
+        "validReturns": 0,
+        "validServes": 22,
+        "opponents": [
+          {
+            "id": "rA73sJLQKpGY5IP4DlftEq4NeodI",
+            "name": "PRG20261011A",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRG20261011BOT",
+      "elo": 1060,
+      "level": 2,
+      "xp": 10,
+      "wins": 1,
+      "losses": 0,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "eaf5e93a365c41f19f59043f011c2c91",
+        "playerId": "PRG20261011BOT",
+        "reason": "",
+        "startedUtcTicks": 639273157481835108,
+        "endedUtcTicks": 639273158205332244,
+        "kind": 2,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 1000,
+        "opponentElo": 1120,
+        "eloDelta": 60,
+        "gamesWon": 2,
+        "gamesLost": 0,
+        "points": 22,
+        "validReturns": 4,
+        "validServes": 23,
+        "opponents": [
+          {
+            "id": "BOT",
+            "name": "Bot rank",
+            "elo": 1120
+          }
+        ],
+        "scores": [
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRG20261011D1",
+      "elo": 100,
+      "level": 2,
+      "xp": 10,
+      "wins": 1,
+      "losses": 0,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "33a07866-0699-4f11-adbb-56bb519f1d70",
+        "playerId": "PRG20261011D1",
+        "reason": "Bóng chạm người",
+        "startedUtcTicks": 639273161349064585,
+        "endedUtcTicks": 639273162865774069,
+        "kind": 3,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 2,
+        "gamesLost": 1,
+        "points": 22,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "68BaGhoiWzP3D6QAuxnDiuGDLLq4",
+            "name": "PRG20261011D2",
+            "elo": 100
+          },
+          {
+            "id": "ids7N053YRAVNbXTfFDU1Z8lUeSQ",
+            "name": "PRG20261011D3",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRG20261011D2",
+      "elo": 100,
+      "level": 1,
+      "xp": 5,
+      "wins": 0,
+      "losses": 1,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "33a07866-0699-4f11-adbb-56bb519f1d70",
+        "playerId": "PRG20261011D2",
+        "reason": "Bóng chạm người",
+        "startedUtcTicks": 639273161349064585,
+        "endedUtcTicks": 639273162865774069,
+        "kind": 3,
+        "outcome": 1,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 1,
+        "gamesLost": 2,
+        "points": 11,
+        "validReturns": 0,
+        "validServes": 11,
+        "opponents": [
+          {
+            "id": "qwstVeSmIayy6L04OJjvYXN3R0tL",
+            "name": "PRG20261011D4",
+            "elo": 100
+          },
+          {
+            "id": "JUJ8FAVsHOOaLIy1ARPC6de69smz",
+            "name": "PRG20261011D1",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRG20261011D3",
+      "elo": 100,
+      "level": 1,
+      "xp": 5,
+      "wins": 0,
+      "losses": 1,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "33a07866-0699-4f11-adbb-56bb519f1d70",
+        "playerId": "PRG20261011D3",
+        "reason": "Bóng chạm người",
+        "startedUtcTicks": 639273161349064585,
+        "endedUtcTicks": 639273162865774069,
+        "kind": 3,
+        "outcome": 1,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 1,
+        "gamesLost": 2,
+        "points": 11,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "qwstVeSmIayy6L04OJjvYXN3R0tL",
+            "name": "PRG20261011D4",
+            "elo": 100
+          },
+          {
+            "id": "JUJ8FAVsHOOaLIy1ARPC6de69smz",
+            "name": "PRG20261011D1",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRG20261011D4",
+      "elo": 100,
+      "level": 2,
+      "xp": 10,
+      "wins": 1,
+      "losses": 0,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "33a07866-0699-4f11-adbb-56bb519f1d70",
+        "playerId": "PRG20261011D4",
+        "reason": "Bóng chạm người",
+        "startedUtcTicks": 639273161349064585,
+        "endedUtcTicks": 639273162865774069,
+        "kind": 3,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 2,
+        "gamesLost": 1,
+        "points": 22,
+        "validReturns": 0,
+        "validServes": 22,
+        "opponents": [
+          {
+            "id": "68BaGhoiWzP3D6QAuxnDiuGDLLq4",
+            "name": "PRG20261011D2",
+            "elo": 100
+          },
+          {
+            "id": "ids7N053YRAVNbXTfFDU1Z8lUeSQ",
+            "name": "PRG20261011D3",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          },
+          {
+            "own": 0,
+            "opponent": 11,
+            "completed": true
+          },
+          {
+            "own": 11,
+            "opponent": 0,
+            "completed": true
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGFORFEIT1",
+      "elo": 480,
+      "level": 1,
+      "xp": 0,
+      "wins": 0,
+      "losses": 1,
+      "eligibleMatches": 0,
+      "historyCount": 1,
+      "latest": {
+        "id": "e39c929f-8a63-43df-bc1f-05f5fd806dc8",
+        "playerId": "PRGFORFEIT1",
+        "reason": "Chủ động rời trận",
+        "startedUtcTicks": 639273164098515743,
+        "endedUtcTicks": 639273164131091993,
+        "kind": 1,
+        "outcome": 1,
+        "localForfeit": true,
+        "ownElo": 500,
+        "opponentElo": 500,
+        "eloDelta": -20,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "UuitNy84h4f26xjIVKwkQt0oJqYq",
+            "name": "PRGFORFEIT2",
+            "elo": 500
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGFORFEIT2",
+      "elo": 520,
+      "level": 2,
+      "xp": 10,
+      "wins": 1,
+      "losses": 0,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "e39c929f-8a63-43df-bc1f-05f5fd806dc8",
+        "playerId": "PRGFORFEIT2",
+        "reason": "Đội có người chủ động rời trận bị xử thua",
+        "startedUtcTicks": 639273164098515743,
+        "endedUtcTicks": 639273164132015401,
+        "kind": 1,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 500,
+        "opponentElo": 500,
+        "eloDelta": 20,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "kKizMQx5H3grUVQ0Gysi5U5S6Yuj",
+            "name": "PRGFORFEIT1",
+            "elo": 500
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGCRASH1",
+      "elo": 1000,
+      "level": 1,
+      "xp": 0,
+      "wins": 0,
+      "losses": 0,
+      "eligibleMatches": 0,
+      "historyCount": 2,
+      "latest": {
+        "id": "1bfb1d2e-7506-4b25-a2c4-efd01f828027",
+        "playerId": "PRGCRASH1",
+        "reason": "Không kết nối lại được hoặc host đã rời.",
+        "startedUtcTicks": 639273166998762772,
+        "endedUtcTicks": 639273167980811956,
+        "kind": 1,
+        "outcome": 2,
+        "localForfeit": false,
+        "ownElo": 1000,
+        "opponentElo": 1000,
+        "eloDelta": 0,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "CzAFvLj3ibU95cqS5HYMyoRqi9Sc",
+            "name": "PRGCRASH2",
+            "elo": 1000
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGCUSTOM1",
+      "elo": 100,
+      "level": 1,
+      "xp": 0,
+      "wins": 0,
+      "losses": 0,
+      "eligibleMatches": 0,
+      "historyCount": 1,
+      "latest": {
+        "id": "custom_516c4c6fdcbb4b6fbd9ed5988c252d57",
+        "playerId": "PRGCUSTOM1",
+        "reason": "Đội có người chủ động rời trận bị xử thua",
+        "startedUtcTicks": 639273167866085812,
+        "endedUtcTicks": 639273167898836818,
+        "kind": 4,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "Cmx1XCp76gbHCBwwSQtmPPF6Y2tN",
+            "name": "PRGCUSTOM2",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGCUSTOM2",
+      "elo": 100,
+      "level": 1,
+      "xp": 0,
+      "wins": 0,
+      "losses": 0,
+      "eligibleMatches": 0,
+      "historyCount": 1,
+      "latest": {
+        "id": "custom_516c4c6fdcbb4b6fbd9ed5988c252d57",
+        "playerId": "PRGCUSTOM2",
+        "reason": "Chủ động rời trận",
+        "startedUtcTicks": 639273167866085812,
+        "endedUtcTicks": 639273167897916655,
+        "kind": 4,
+        "outcome": 1,
+        "localForfeit": true,
+        "ownElo": 100,
+        "opponentElo": 100,
+        "eloDelta": 0,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "aTFWrLIuXepBLtPSSRuwg0iLRkB8",
+            "name": "PRGCUSTOM1",
+            "elo": 100
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGEXP1",
+      "elo": 520,
+      "level": 2,
+      "xp": 10,
+      "wins": 1,
+      "losses": 0,
+      "eligibleMatches": 1,
+      "historyCount": 1,
+      "latest": {
+        "id": "3e2fde90-ffe3-494e-bf16-0f19b4bfd4f7",
+        "playerId": "PRGEXP1",
+        "reason": "Mất kết nối quá 30 giây",
+        "startedUtcTicks": 639273175458741819,
+        "endedUtcTicks": 639273175781108467,
+        "kind": 1,
+        "outcome": 0,
+        "localForfeit": false,
+        "ownElo": 500,
+        "opponentElo": 500,
+        "eloDelta": 20,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "JMjTPIVzsF0j6CU3sYuOJfXgGl2B",
+            "name": "PRGEXP2",
+            "elo": 500
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    },
+    {
+      "id": "PRGEXP2",
+      "elo": 480,
+      "level": 1,
+      "xp": 0,
+      "wins": 0,
+      "losses": 1,
+      "eligibleMatches": 0,
+      "historyCount": 1,
+      "latest": {
+        "id": "3e2fde90-ffe3-494e-bf16-0f19b4bfd4f7",
+        "playerId": "PRGEXP2",
+        "reason": "Mất kết nối quá 30 giây",
+        "startedUtcTicks": 639273175458741819,
+        "endedUtcTicks": 639273175781098296,
+        "kind": 1,
+        "outcome": 1,
+        "localForfeit": true,
+        "ownElo": 500,
+        "opponentElo": 500,
+        "eloDelta": -20,
+        "gamesWon": 0,
+        "gamesLost": 0,
+        "points": 0,
+        "validReturns": 0,
+        "validServes": 0,
+        "opponents": [
+          {
+            "id": "JyejEJyqBfH3nG9cx42pdGDDVVR9",
+            "name": "PRGEXP1",
+            "elo": 500
+          }
+        ],
+        "scores": [
+          {
+            "own": 0,
+            "opponent": 0,
+            "completed": false
+          }
+        ]
+      },
+      "pendingId": ""
+    }
+  ],
+  "notes": [
+    "1v1 full match and XP/Elo verified",
+    "2v2 opponents, per-game scores and unchanged Elo verified",
+    "Bot fallback and near-deadline cancel receipts passed",
+    "Voluntary leave awards no XP/progress to leaver",
+    "Reconnect preserves identity/control/score",
+    "Sudden host loss preserves incomplete game score without Elo/XP",
+    "Custom rooms only record history",
+    "Expired reconnect with live host: leaver Elo 500 to 480, XP 0; host Elo 500 to 520, XP 10; both confirmed results."
+  ]
+}

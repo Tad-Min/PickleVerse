@@ -18,6 +18,7 @@ namespace PickleVerse.Multiplayer
         public MatchAnnouncements announcements;
         public UnityEngine.UI.Button continueButton,restartButton,modeButton,timeoutButton;
         public UnityEngine.UI.Button leave,returnToRoom;
+        public MultiplayerResultScreen resultScreen;
         TMP_Text leaveLabel,returnLabel;
         struct Notice { public string text;public float duration; }
         readonly System.Collections.Generic.Queue<Notice> notices=new System.Collections.Generic.Queue<Notice>();
@@ -27,14 +28,14 @@ namespace PickleVerse.Multiplayer
         public int TouchShotMask { get; set; }
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
-        public bool InputBlocked => localInputPaused || help && help.activeSelf;
+        public bool InputBlocked => localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
         public bool IsGameplay => true;
         public bool IsPaused => localInputPaused;
         public bool CanSignOut => false;
         public string LeaveConfirmation => "Rời trận multiplayer và về đại sảnh? Nếu trận chưa kết thúc, đội của bạn sẽ bị xử thua; host rời sẽ kết thúc phiên.";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset() { Instance=null; }
-        void Awake() { Instance=this; }
+        void Awake() { Instance=this; resultScreen=GetComponent<MultiplayerResultScreen>(); if(!resultScreen) resultScreen=gameObject.AddComponent<MultiplayerResultScreen>(); resultScreen.Configure(this); }
         public void ShowAnnouncement(string title,string detail,float duration,AnnouncementTone tone=AnnouncementTone.Neutral)
         {
             if(announcements)announcements.Enqueue(title,detail,tone,duration);
@@ -89,7 +90,7 @@ namespace PickleVerse.Multiplayer
         void Update()
         {
             bool readKeys=Keyboard.current!=null && (Application.isFocused || InputSystem.settings.backgroundBehavior==InputSettings.BackgroundBehavior.IgnoreFocus);
-            if(readKeys && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading)
+            if(readKeys && (!resultScreen || !resultScreen.IsVisible) && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading)
             {
                 if(GameControls.Pressed(GameAction.Settings))OpenSettings();
                 else if(GameControls.Pressed(GameAction.Help))ToggleHelp();
@@ -114,7 +115,7 @@ namespace PickleVerse.Multiplayer
             if(server) server.text=!hasMatch?"":match.TimedOut.Value?$"TIME-OUT  {match.TimeoutRemaining.Value:0}s":match.WaitingServe.Value?$"GIAO BÓNG  {Mathf.Max(0,10-match.ServeElapsed.Value):0.0}s\n<size=16>Đội {(match.ServerTeam.Value==0?"A":"B")} • Người {match.ServerIndex.Value+1} • Lượt {match.ServerNumber.Value}</size>":match.Ball.Value.live?match.Bounces.Value==0?"BÓNG CHƯA NẢY":"BÓNG ĐÃ NẢY":"";
             if(returnLabel) returnLabel.text=nextGame?"Game tiếp":"Về phòng";
             bool results=hasMatch && match.Finished.Value && (!announcements || !announcements.Busy) && !SettingsOverlay.IsOpen;
-            if(resultActions)resultActions.SetActive(results);
+            if(resultActions)resultActions.SetActive(results && !resultScreen);
             if(resultSummary && results)resultSummary.text=$"SỐ GAME THẮNG  {match.GamesA.Value} - {match.GamesB.Value}";
             if(returnToRoom)
             {
@@ -122,7 +123,7 @@ namespace PickleVerse.Multiplayer
                 returnToRoom.interactable=!app || !app.Busy;
             }
             if(leave) leave.gameObject.SetActive(!ended && !nextGame);
-            var owner=NetworkPlayer.All.FirstOrDefault(p=>p.IsOwner);
+            var owner=NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman);
             bool choosing=owner && !string.IsNullOrEmpty(owner.SelectionKeys),swinging=owner && owner.Actor && owner.Actor.Swinging && !string.IsNullOrEmpty(owner.ActiveShotKeys);
             if(selection)selection.text=choosing?$"<b>{owner.SelectionKeys}</b>\n<size=14>{owner.Selection}</size>":swinging?$"<b>{owner.ActiveShotKeys}</b>\n<size=14>{owner.Actor.Intent}</size>":"";
             if(shotPanel)shotPanel.SetActive(!InputBlocked && !SettingsOverlay.IsOpen && hasMatch && !match.Paused.Value && !match.Finished.Value && (choosing || swinging));
@@ -165,8 +166,8 @@ namespace PickleVerse.Multiplayer
         public void ToggleHelp()
         {if(!help)return;ClearTouch();help.SetActive(!help.activeSelf);if(help.activeSelf)help.transform.SetAsLastSibling();}
         public void ToggleTouch(){if(touchControls)touchControls.SetActive(!touchControls.activeSelf);ClearTouch();}
-        public void Timeout(){NetworkPlayer.All.FirstOrDefault(p=>p.IsOwner)?.RequestTimeout();}
-        public void Continue(){NetworkPlayer.All.FirstOrDefault(p=>p.IsOwner)?.ResumeTimeout();}
+        public void Timeout(){NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman)?.RequestTimeout();}
+        public void Continue(){NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman)?.ResumeTimeout();}
         public void ReturnToRoom(){ReturnClicked();}
         public void SkipIntro(){if(intro)intro.SetActive(false);}
         public void ChooseMode()

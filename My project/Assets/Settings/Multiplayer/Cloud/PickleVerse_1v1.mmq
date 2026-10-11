@@ -6,7 +6,7 @@
   "defaultPool": {
     "name": "LowPing",
     "enabled": true,
-    "timeoutSeconds": 120,
+    "timeoutSeconds": 360,
     "matchHosting": {
       "type": "MatchId"
     },
@@ -35,6 +35,27 @@
             "source": "Players.CustomData.region",
             "enableRule": true,
             "relaxations": []
+          },
+          {
+            "name": "SameProtocol",
+            "type": "Equality",
+            "source": "Players.CustomData.protocol",
+            "reference": "5",
+            "enableRule": true
+          },
+          {
+            "name": "EloWindow",
+            "type": "Difference",
+            "source": "Players.CustomData.elo",
+            "reference": 120,
+            "enableRule": true
+          },
+          {
+            "name": "MutualPreference",
+            "type": "Intersection",
+            "source": "Players.CustomData.pairingKeys",
+            "overlap": 1,
+            "enableRule": true
           }
         ]
       }

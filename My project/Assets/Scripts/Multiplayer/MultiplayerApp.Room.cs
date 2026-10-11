@@ -68,7 +68,8 @@ namespace PickleVerse.Multiplayer
             ["name"] = new PlayerProperty(DisplayName), ["gender"] = new PlayerProperty(Gender),
             ["team"] = new PlayerProperty("-1"), ["ready"] = new PlayerProperty("0"),
             ["cancel"] = new PlayerProperty(""), ["qos"] = new PlayerProperty(""), ["group"] = new PlayerProperty(Room?.Id ?? PlayerId),
-            ["protocol"] = new PlayerProperty(MultiplayerSceneConfiguration.ProtocolVersion.ToString())
+            ["protocol"] = new PlayerProperty(MultiplayerSceneConfiguration.ProtocolVersion.ToString()),
+            ["elo"] = new PlayerProperty(LocalElo.ToString())
         };
         public async Task CreateCustomAsync(PlayMode mode)
         {
@@ -177,9 +178,9 @@ namespace PickleVerse.Multiplayer
         }
         public List<RoomMember> Members()
         {
-            if (Room == null) return new List<RoomMember> { new RoomMember { id=PlayerId,name=DisplayName,gender=Gender,team=0,group=PlayerId } };
+            if (Room == null) return new List<RoomMember> { new RoomMember { id=PlayerId,name=DisplayName,gender=Gender,team=0,group=PlayerId,elo=LocalElo } };
             return Room.Players.Select(p => new RoomMember { id=p.Id,name=Prop(p,"name","Player"),gender=Prop(p,"gender","Male"),
-                team=roomData.custom?(roomData.teams.TryGetValue(p.Id,out var t)?t:-1):0,
+                team=roomData.custom?(roomData.teams.TryGetValue(p.Id,out var t)?t:-1):0, elo=int.TryParse(Prop(p,"elo"),out var rating)?rating:100,
                 ready=Prop(p,"ready","0")=="1" && Prop(p,"readyEpoch")==roomData.readyEpoch.ToString() && roomData.teamVersions.TryGetValue(p.Id,out var version) && Prop(p,"readyVersion")==version.ToString(),group=Room.Id }).ToList();
         }
         public static string Prop(IReadOnlyPlayer p,string key,string fallback="") => p.Properties.TryGetValue(key,out var value) ? value.Value : fallback;

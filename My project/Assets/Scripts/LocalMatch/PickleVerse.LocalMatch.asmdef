@@ -1,5 +1,5 @@
 {
   "name": "PickleVerse.LocalMatch",
   "rootNamespace": "PickleVerse.LocalMatch",
-  "references": ["PickleVerse.Rules", "Unity.InputSystem", "Unity.TextMeshPro", "Unity.ugui", "PickleVerse.CharacterMotion", "PickleVerse.Settings", "PickleVerse.Audio"]
+  "references": ["PickleVerse.Rules", "Unity.InputSystem", "Unity.TextMeshPro", "Unity.ugui", "PickleVerse.CharacterMotion", "PickleVerse.Settings", "PickleVerse.Audio", "PickleVerse.Progression"]
 }

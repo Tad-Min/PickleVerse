@@ -41,6 +41,7 @@ namespace PickleVerse.Multiplayer
         public MatchRoster Roster { get; private set; }
         public bool Custom => roomData.custom;
         public bool IsCaptain => Room == null || Room.IsHost;
+        public bool CanChangeLocalProfile => Room==null && Match==null && !Searching && State!=FlowState.InMatch && State!=FlowState.Reconnecting;
         public bool Busy { get; private set; }
         public bool Searching => State == FlowState.Delay || State == FlowState.Searching || State == FlowState.Connecting;
         public string Elapsed => clock.Display(Time.realtimeSinceStartupAsDouble);
@@ -49,6 +50,8 @@ namespace PickleVerse.Multiplayer
         public readonly Dictionary<ulong,string> ClientIdentities = new Dictionary<ulong,string>();
         readonly GroupMatchmaker groupMatcher = new GroupMatchmaker();
         readonly SearchClock clock = new SearchClock();
+        readonly PickleVerse.Progression.RankedSearchGate rankedSearch = new PickleVerse.Progression.RankedSearchGate();
+        int LocalElo => PickleVerse.Progression.ProgressionRuntime.Exists ? PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo : 100;
         RoomData roomData = new RoomData();
         CancellationTokenSource searchCancellation;
         int operation;
@@ -99,7 +102,9 @@ namespace PickleVerse.Multiplayer
         {
             if (Settings==null || quitting) return;
             double now=Time.realtimeSinceStartupAsDouble;
-            if (Searching && clock.TimedOut(now)) { await Safe(CancelSearchAsync()); SetState(FlowState.WaitingRoom,"Hết thời gian tìm trận. Hãy thử lại."); }
+            if (Mode==PlayMode.Singles && !Custom && (State==FlowState.Delay || State==FlowState.Searching) && rankedSearch.ClaimBot(now))
+                await Safe(StartRankedBotAsync());
+            else if (Mode==PlayMode.Doubles && Searching && clock.TimedOut(now)) { await Safe(CancelSearchAsync()); SetState(FlowState.WaitingRoom,"Hết thời gian tìm trận. Hãy thử lại."); }
             if (State==FlowState.Delay && clock.CanSubmit(now) && IsCaptain && !connecting && !preparingSearch)
             { SetState(FlowState.Searching,"Đang tìm trận…"); _=Safe(SearchAsync(operation)); }
             // A missed Lobby event must not leave clients waiting forever for
@@ -142,12 +147,17 @@ namespace PickleVerse.Multiplayer
                     if (IsCaptain && Searching && Room.Players.Any(p=>Prop(p,"cancel")==observedSearch)) await CancelSearchAsync();
                     if (Searching && !Custom && Mode==PlayMode.Doubles && !measured.ContainsKey(PlayerId)) await PublishQosAsync();
                 }
+                catch(ConnectionQualityException e)
+                {
+                    if (Searching) { await CancelSearchAsync(); SetState(FlowState.WaitingRoom,e.Message); }
+                }
+                catch(OperationCanceledException) { }
                 catch(Exception e) { if (Room!=null) Notice="Đang cập nhật phòng: "+e.Message; }
                 finally { polling=false; Changed?.Invoke(); }
             }
             if (State==FlowState.Connecting && Match!=null && Network.IsHost)
             {
-                if (!courtLoading && Roster.members.All(m=>ClientIdentities.Values.Contains(m.id)) && Network.ConnectedClients.Count==Roster.Count)
+                if (!courtLoading && Roster.members.Where(m=>!m.bot).All(m=>ClientIdentities.Values.Contains(m.id)) && Network.ConnectedClients.Count==Roster.HumanCount)
                 {
                     if (Match.Players.Any(p=>Prop(p,"cancelled")=="1")) { await RetryMatchAsync("Có người hủy; đang ghép lại."); return; }
                     courtLoading=true; SetNotice("Đang tải sân cho tất cả người chơi…");
@@ -273,12 +283,12 @@ namespace PickleVerse.Multiplayer
                         await attempt;
                         if(generation!=operation) return;
                         while(Time.realtimeSinceStartupAsDouble<until && generation==operation &&
-                            (!Network.IsConnectedClient || NetworkMatch.Instance==null || NetworkPlayer.All.All(p=>!p.IsOwner)))
+                            (!Network.IsConnectedClient || NetworkMatch.Instance==null || NetworkPlayer.All.All(p=>!p.IsLocalHuman)))
                         {
                             if(!Network.IsListening&&!Network.ShutdownInProgress) break;
                             await Task.Delay(50);
                         }
-                        if(generation==operation && Network.IsConnectedClient && NetworkMatch.Instance!=null && NetworkPlayer.All.Any(p=>p.IsOwner))
+                        if(generation==operation && Network.IsConnectedClient && NetworkMatch.Instance!=null && NetworkPlayer.All.Any(p=>p.IsLocalHuman))
                         { SetState(FlowState.InMatch,"Đã kết nối lại."); return; }
                         await Task.Delay(500);
                     }
@@ -298,6 +308,7 @@ namespace PickleVerse.Multiplayer
             {
             if(Custom) { await ReturnToRoomAsync(reason); return; }
             int generation=++operation;
+            if(Mode==PlayMode.Singles) { rankedSearch.RetryHuman(); clock.Start(Time.realtimeSinceStartupAsDouble,rankedSearch.Elapsed(Time.realtimeSinceStartupAsDouble)); }
             if(Roster!=null) ignoredMatches.Add(Roster.matchId);
             searchCancellation?.Cancel(); searchCancellation?.Dispose(); searchCancellation=new CancellationTokenSource();
             intentionalShutdown=true;
@@ -335,6 +346,7 @@ namespace PickleVerse.Multiplayer
             if(returning) return; returning=true;
             try
             {
+            await ResolvePendingProgressionAsync(message);
             CancelLocal(); await LeaveMatchAsync();
             if(Room!=null && IsCaptain)
             {

@@ -1,0 +1,90 @@
+{
+  "status": "completed",
+  "duration": 1.39,
+  "summary": {
+    "total": 11,
+    "passed": 9,
+    "failed": 2,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.Accepts150MsBoundaryAndKeepsLowestPingFirst",
+      "Status": "Passed",
+      "Duration": 0.127494,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.CancellationStopsRetryDelay",
+      "Status": "Failed",
+      "Duration": 0.0119914,
+      "Message": "  Expected: <System.OperationCanceledException>\r\n  But was:  <System.Threading.Tasks.TaskCanceledException: A task was canceled.\r\n  at NUnit.Framework.Internal.ExceptionHelper.Rethrow (System.Exception exception) [0x0000d] in <8b63e8ac0a4746599ed207982825ae6c>:0 \r\n  at NUnit.Framework.Internal.AsyncInvocationRegion+AsyncTaskInvocationRegion.WaitForPendingOperationsToComplete (System.Object invocationResult) [0x00038] in <8b63e8ac0a4746599ed207982825ae6c>:0 \r\n  at NUnit.Framework.Assert.ThrowsAsync (NUnit.Framework.Constraints.IResolveConstraint expression, NUnit.Framework.AsyncTestDelegate code, System.String message, System.Object[] args) [0x00013] in <8b63e8ac0a4746599ed207982825ae6c>:0 >\r\n",
+      "StackTrace": "at PickleVerse.Tests.MultiplayerQosTests.CancellationStopsRetryDelay () [0x0003b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Tests\\Editor\\MultiplayerQosTests.cs:92\r\n"
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.CancellationWhileWaitingForSdkDoesNotStartAnotherProbe",
+      "Status": "Passed",
+      "Duration": 0.1934999,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.CancelledSearchDoesNotStartProbe",
+      "Status": "Failed",
+      "Duration": 0.0024218,
+      "Message": "  Expected: <System.OperationCanceledException>\r\n  But was:  <System.Threading.Tasks.TaskCanceledException: A task was canceled.\r\n  at NUnit.Framework.Internal.ExceptionHelper.Rethrow (System.Exception exception) [0x0000d] in <8b63e8ac0a4746599ed207982825ae6c>:0 \r\n  at NUnit.Framework.Internal.AsyncInvocationRegion+AsyncTaskInvocationRegion.WaitForPendingOperationsToComplete (System.Object invocationResult) [0x00038] in <8b63e8ac0a4746599ed207982825ae6c>:0 \r\n  at NUnit.Framework.Assert.ThrowsAsync (NUnit.Framework.Constraints.IResolveConstraint expression, NUnit.Framework.AsyncTestDelegate code, System.String message, System.Object[] args) [0x00013] in <8b63e8ac0a4746599ed207982825ae6c>:0 >\r\n",
+      "StackTrace": "at PickleVerse.Tests.MultiplayerQosTests.CancelledSearchDoesNotStartProbe () [0x0003b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Tests\\Editor\\MultiplayerQosTests.cs:73\r\n"
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.ConcurrentAdaptersDoNotOverlapSdkProbes",
+      "Status": "Passed",
+      "Duration": 0.2072969,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.FiltersInvalidDuplicatesBeforeAggregatingRegion",
+      "Status": "Passed",
+      "Duration": 0.212131,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.IgnoresSuccessfulProbeThatCompletesAfterCancellation",
+      "Status": "Passed",
+      "Duration": 0.1062445,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.RejectsHighPingAfterBoundedRetries",
+      "Status": "Passed",
+      "Duration": 0.006319,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.ReportsMissingRepliesWithoutDisplayingInvalidLatency",
+      "Status": "Passed",
+      "Duration": 0.0038109,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.ReportsPacketLossSeparatelyFromPing",
+      "Status": "Passed",
+      "Duration": 0.0018063,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerQosTests.RetriesTransientFailureWithoutRaisingLatencyLimit",
+      "Status": "Passed",
+      "Duration": 0.1890994,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

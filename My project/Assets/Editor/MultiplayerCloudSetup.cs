@@ -19,6 +19,11 @@ namespace PickleVerse.EditorTools
         [MenuItem("PickleVerse/Multiplayer/Deploy Test Configuration")]
         public static async void Deploy() { await DeployAsync(); }
         public static async Task DeployAsync()
+        { await DeploySelectedAsync(false); }
+        [MenuItem("PickleVerse/Multiplayer/Deploy Ranked 1v1 Test Configuration")]
+        public static async void DeployRanked() { await DeployRankedAsync(); }
+        public static Task DeployRankedAsync() => DeploySelectedAsync(true);
+        static async Task DeploySelectedAsync(bool rankedOnly)
         {
             try
             {
@@ -29,8 +34,8 @@ namespace PickleVerse.EditorTools
                 await api.RefreshAsync(); api.SetActiveEnvironment("pickleverse-test");
                 var provider=Deployments.Instance.DeploymentProviders.First(p=>p.Service=="Matchmaker");
                 // Only these three owned config assets are deployed, never unrelated queues.
-                var items=provider.DeploymentItems.Where(i=>i.Path.StartsWith(Folder+"/",StringComparison.Ordinal)).ToArray();
-                if(items.Length!=3) throw new InvalidOperationException("Cần 3 cấu hình test được import trước khi deploy.");
+                var items=provider.DeploymentItems.Where(i=>i.Path.StartsWith(Folder+"/",StringComparison.Ordinal) && (!rankedOnly || i.Path.EndsWith("PickleVerse_1v1.mmq",StringComparison.Ordinal))).ToArray();
+                if(items.Length!=(rankedOnly?1:3)) throw new InvalidOperationException("Cấu hình test chưa được import đầy đủ.");
                 await provider.DeployCommand.ExecuteAsync(items);
                 Status=string.Join("\n",items.Select(i=>i.Name+": "+i.Status.Message+" "+i.Status.MessageDetail));
                 File.WriteAllText("Docs/MultiplayerCloudDeployment.txt",DateTime.UtcNow.ToString("O")+"\nEnvironment: pickleverse-test\n"+Status);
@@ -38,7 +43,7 @@ namespace PickleVerse.EditorTools
             }
             catch(Exception e) { Status="Triển khai test thất bại: "+e.GetBaseException().Message; Debug.LogWarning(Status); }
         }
-        static void WriteConfigs()
+        public static void WriteConfigs()
         {
             Directory.CreateDirectory(Folder);
             foreach(int size in new[]{1,2})
@@ -49,7 +54,7 @@ namespace PickleVerse.EditorTools
                     ["name"]="PickleVerse-"+size+"v"+size,["enabled"]=true,["maxPlayersPerTicket"]=size,
                     ["defaultPool"]=new JObject
                     {
-                        ["name"]="LowPing",["enabled"]=true,["timeoutSeconds"]=120,
+                        ["name"]="LowPing",["enabled"]=true,["timeoutSeconds"]=size==1?(int)PickleVerse.Progression.RankedSearchGate.DeadlineSeconds:120,
                         ["matchHosting"]=new JObject { ["type"]="MatchId" },
                         ["matchLogic"]=new JObject
                         {
@@ -62,6 +67,13 @@ namespace PickleVerse.EditorTools
                         }
                     },["filteredPools"]=new JArray()
                 };
+                if(size==1)
+                {
+                    var rules=(JArray)json["defaultPool"]["matchLogic"]["matchDefinition"]["matchRules"];
+                    rules.Add(new JObject { ["name"]="SameProtocol",["type"]="Equality",["source"]="Players.CustomData.protocol",["reference"]=PickleVerse.Multiplayer.Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString(),["enableRule"]=true });
+                    rules.Add(new JObject { ["name"]="EloWindow",["type"]="Difference",["source"]="Players.CustomData.elo",["reference"]=120,["enableRule"]=true });
+                    rules.Add(new JObject { ["name"]="MutualPreference",["type"]="Intersection",["source"]="Players.CustomData.pairingKeys",["overlap"]=1,["enableRule"]=true });
+                }
                 File.WriteAllText(Folder+"/PickleVerse_"+size+"v"+size+".mmq",json.ToString(Formatting.Indented));
             }
             File.WriteAllText(Folder+"/PickleVerseTest.mme",new JObject { ["$schema"]="https://ugs-config-schemas.unity3d.com/v1/matchmaker/matchmaker-environment-config.schema.json",["enabled"]=true,["defaultQueueName"]="PickleVerse-1v1" }.ToString());

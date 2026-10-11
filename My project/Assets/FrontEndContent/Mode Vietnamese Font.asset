@@ -7837,13 +7837,13 @@ MonoBehaviour:
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}
   - regularTypeface: {fileID: 0}
-    italicTypeface: {fileID: 0}
+    italicTypeface: {fileID: 11400000, guid: 3be2535b0361a654eb1ce5866f67589d, type: 2}
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}
-  - regularTypeface: {fileID: 0}
-    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 11400000, guid: f0b761371ec749542b1a65b3df4eabd1, type: 2}
+    italicTypeface: {fileID: 11400000, guid: 7b271eef65ba99847b5cceb583462683, type: 2}
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}
   - regularTypeface: {fileID: 0}

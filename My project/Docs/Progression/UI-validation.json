@@ -1,0 +1,457 @@
+{
+  "Status": "Passed 113 UI checks",
+  "checks": [
+    {
+      "name": "Play in Menu",
+      "passed": true
+    },
+    {
+      "name": "Developer ID button creates player",
+      "passed": true
+    },
+    {
+      "name": "Name editor persists shared name",
+      "passed": true
+    },
+    {
+      "name": "Match rewards update Menu immediately",
+      "passed": true
+    },
+    {
+      "name": "NameTag before rewards pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag before rewards mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "Achievement is claimable",
+      "passed": true
+    },
+    {
+      "name": "Achievement claim refreshes wallet",
+      "passed": true
+    },
+    {
+      "name": "Achievement cannot be claimed twice",
+      "passed": true
+    },
+    {
+      "name": "Career shows five records",
+      "passed": true
+    },
+    {
+      "name": "Career reveals individual games",
+      "passed": true
+    },
+    {
+      "name": "Daily lists seven missions",
+      "passed": true
+    },
+    {
+      "name": "Weekly lists ten missions",
+      "passed": true
+    },
+    {
+      "name": "Daily claim grants once",
+      "passed": true
+    },
+    {
+      "name": "Modal blocks Menu input",
+      "passed": true
+    },
+    {
+      "name": "Modal blocks Menu keyboard navigation",
+      "passed": true
+    },
+    {
+      "name": "Escape closes modal",
+      "passed": true
+    },
+    {
+      "name": "Closing restores Menu navigation",
+      "passed": true
+    },
+    {
+      "name": "Actual resolution 1280x720",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 1280x720 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 1280x720 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 1280x720 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 1280x720 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 1280x720 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 1280x720 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "Profile 1280x720 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Profile 1280x720 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1280x720 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1280x720 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1280x720 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Daily 1280x720 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Daily 1280x720 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Daily 1280x720 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1280x720 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1280x720 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1280x720 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Career 1280x720 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Career 1280x720 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Career 1280x720 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Player editor 1280x720 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Player editor 1280x720 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Actual resolution 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 1920x1080 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 1920x1080 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 1920x1080 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 1920x1080 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 1920x1080 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 1920x1080 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "Profile 1920x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Profile 1920x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1920x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1920x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1920x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Daily 1920x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Daily 1920x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Daily 1920x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1920x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1920x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1920x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Career 1920x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Career 1920x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Career 1920x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Player editor 1920x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Player editor 1920x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Actual resolution 1024x768",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 1024x768 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 1024x768 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 1024x768 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 1024x768 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 1024x768 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 1024x768 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "Profile 1024x768 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Profile 1024x768 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1024x768 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1024x768 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 1024x768 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Daily 1024x768 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Daily 1024x768 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Daily 1024x768 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1024x768 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1024x768 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Weekly 1024x768 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Career 1024x768 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Career 1024x768 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Career 1024x768 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Player editor 1024x768 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Player editor 1024x768 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Actual resolution 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 2560x1080 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag background 2560x1080 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 2560x1080 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag avatar 2560x1080 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 2560x1080 pointer reaches NameTag",
+      "passed": true
+    },
+    {
+      "name": "NameTag name 2560x1080 mouse click opens Profile",
+      "passed": true
+    },
+    {
+      "name": "Profile 2560x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Profile 2560x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 2560x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Achievements 2560x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Achievements 2560x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Daily 2560x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Daily 2560x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Daily 2560x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Weekly 2560x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Weekly 2560x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Weekly 2560x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Career 2560x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Career 2560x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Career 2560x1080 final row reachable by scrolling",
+      "passed": true
+    },
+    {
+      "name": "Player editor 2560x1080 labels fit with glyphs",
+      "passed": true
+    },
+    {
+      "name": "Player editor 2560x1080 safe bounds",
+      "passed": true
+    },
+    {
+      "name": "Active time ignores timeScale",
+      "passed": true
+    },
+    {
+      "name": "Unfocused time is excluded",
+      "passed": true
+    },
+    {
+      "name": "Background time is excluded",
+      "passed": true
+    }
+  ]
+}

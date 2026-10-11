@@ -46,13 +46,14 @@ namespace PickleVerse.Multiplayer.UI
             Bind(swap, () => Run(rooms.SwapTeamAsync));
             Bind(play, () => Run(PlayAsync));
             foreach (var slot in customSlots) Bind(slot.kick, () => { if (!string.IsNullOrEmpty(slot.playerId)) Run(() => rooms.KickAsync(slot.playerId)); });
-            string profile = app.ActiveProfile ?? "P" + System.Diagnostics.Process.GetCurrentProcess().Id;
+            var localPlayer = PickleVerse.Progression.ProgressionRuntime.Instance.Player;
+            string profile = localPlayer.id;
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++) if (args[i] == "-pkvProfile") profile = args[i + 1];
             bool openDefault = MultiplayerApp.OpenDefaultRoomOnLoad;
             MultiplayerApp.OpenDefaultRoomOnLoad = false;
             if (!args.Contains("-pkvCase") && (state.State == FlowState.Menu || openDefault))
-                await rooms.OpenAsync(profile, string.IsNullOrWhiteSpace(playerName.text) ? app.DisplayName : playerName.text);
+                await rooms.OpenAsync(profile, localPlayer.playerName);
             playerName.SetTextWithoutNotify(state.DisplayName);
             Refresh();
         }

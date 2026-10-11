@@ -34,6 +34,7 @@ namespace PickleVerse.Multiplayer
         // Replicate the physical end independently of the match object's spawn order.
         public NetworkVariable<int> CourtEnd = new NetworkVariable<int>(-1);
         public NetworkVariable<bool> Female = new NetworkVariable<bool>();
+        public NetworkVariable<bool> Automated = new NetworkVariable<bool>();
         public NetworkVariable<PlayerFrame> Frame = new NetworkVariable<PlayerFrame>();
         public MatchActor Actor { get; private set; }
         public Transform RightHand => Actor ? Actor.hand : null;
@@ -44,6 +45,7 @@ namespace PickleVerse.Multiplayer
         public Vector3 WristPosition => RightHand ? RightHand.position : ContactPosition;
         public string Gender => Female.Value ? "Female" : "Male";
         public bool Connected = true;
+        public bool IsLocalHuman => IsOwner && !Automated.Value;
 
         struct Move { public uint sequence; public Vector2 axes; public bool run; public float dt; }
         readonly List<Move> predicted = new List<Move>();
@@ -74,6 +76,7 @@ namespace PickleVerse.Multiplayer
                 Identity.Value = new FixedString64Bytes(initialMember.id);
                 Team.Value = initialMember.team; Index.Value = initialIndex;
                 Female.Value = initialMember.gender == "Female";
+                Automated.Value = initialMember.bot;
                 CourtEnd.Value = transform.position.z < 0 ? -1 : 1;
                 Frame.Value = new PlayerFrame { position = transform.position };
             }
@@ -127,7 +130,7 @@ namespace PickleVerse.Multiplayer
                 if (match && !match.Paused.Value)
                     Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.Value.running, Time.deltaTime, CanMove());
             }
-            if (!IsOwner) return;
+            if (!IsLocalHuman) return;
             var keyboard = Keyboard.current;
             if (keyboard != null && CanReadKeyboard() && !InputBlocked())
             {
@@ -179,7 +182,7 @@ namespace PickleVerse.Multiplayer
         }
         void FixedUpdate()
         {
-            if (!IsSpawned || !IsOwner || !Actor) return;
+            if (!IsSpawned || !IsLocalHuman || !Actor) return;
             if (!CanMove()) { predicted.Clear(); predictedVelocity = Vector3.zero; return; }
             var move = new Move { sequence = ++sequence, axes = LocalAxes(), run = LocalRun(), dt = Time.fixedDeltaTime };
             if (!IsServer)
@@ -215,6 +218,11 @@ namespace PickleVerse.Multiplayer
             transform.position = position; Actor.transform.localPosition = Vector3.zero;
             Frame.Value = new PlayerFrame { position = position, velocity = Actor.Velocity, sequence = lastReceived,
                 movement = moving ? serverAxes : Vector2.zero, running = moving && serverRun };
+        }
+        public void SetAutomatedInput(Vector2 worldMovement,bool run)
+        {
+            if(!IsServer) return;
+            serverAxes=Vector2.ClampMagnitude(worldMovement,1)*-CourtEnd.Value; serverRun=run;
         }
         [ServerRpc] void ShotServerRpc(int kind, bool attack, bool crossCourt)
         {
@@ -276,7 +284,7 @@ namespace PickleVerse.Multiplayer
         void SetActiveShotKeys()
         {
             var shot=Actor.Intent;
-            if(IsOwner && pendingShotMask!=0 && pendingShot.kind==shot.kind && pendingShot.power==shot.power && pendingShot.cross==shot.cross)activeShotMask=pendingShotMask;
+            if(IsLocalHuman && pendingShotMask!=0 && pendingShot.kind==shot.kind && pendingShot.power==shot.power && pendingShot.cross==shot.cross)activeShotMask=pendingShotMask;
             else activeShotMask=(shot.kind==PickleVerse.LocalMatch.ShotKind.Drop?3:shot.kind==PickleVerse.LocalMatch.ShotKind.Smash?5:shot.kind==PickleVerse.LocalMatch.ShotKind.Reset?6:shot.kind==PickleVerse.LocalMatch.ShotKind.Dink?2:shot.kind==PickleVerse.LocalMatch.ShotKind.Volley?4:1)|(shot.power?8:0)|(shot.cross?16:0);
             pendingShotMask=0;
         }
@@ -297,7 +305,7 @@ namespace PickleVerse.Multiplayer
         {
             shotInput = new LocalShotInput(); serverAxes = Vector2.zero; serverRun = false;
             activeShotMask=pendingShotMask=0;
-            if(IsOwner && MultiplayerCourtUI.Instance)MultiplayerCourtUI.Instance.ClearTouch();
+            if(IsLocalHuman && MultiplayerCourtUI.Instance)MultiplayerCourtUI.Instance.ClearTouch();
             inputFeedback="";
             predicted.Clear(); predictedVelocity = Vector3.zero;
         }
