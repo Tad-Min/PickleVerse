@@ -20,8 +20,10 @@ public static class TutorialInteractionValidation
         try
         {
             SceneManager.LoadScene("Menu");await Task.Delay(200);UnityEngine.Object.FindAnyObjectByType<MenuPlayMultiplayer>().Play();await Task.Delay(200);
+            Check("Play goes directly to mode selection even for new players",SceneManager.GetActiveScene().name=="ModeSelection");
+            UnityEngine.Object.FindAnyObjectByType<TutorialLauncher>().GetComponent<UnityEngine.UI.Button>().onClick.Invoke();await Task.Delay(200);
             var t=UnityEngine.Object.FindAnyObjectByType<TutorialDirector>();t.enabled=false;
-            Check("First Play opens tutorial",SceneManager.GetActiveScene().name=="Tutorial"&&t);
+            Check("Tutorial opens only after explicit mode choice",SceneManager.GetActiveScene().name=="Tutorial"&&t);
             Check("Court explanation has text and no shot cue",t.hud.body.text.Contains("13,41")&&!t.hud.keyPanel.activeSelf&&!t.depthLabel.activeSelf);
             Check("Only one active camera/listener/input",UnityEngine.Object.FindObjectsByType<Camera>().Count(c=>c.enabled)==1&&UnityEngine.Object.FindObjectsByType<AudioListener>().Count(l=>l.enabled)==1&&UnityEngine.Object.FindObjectsByType<EventSystem>().Count(e=>e.enabled)==1);
             t.SetPaused(true);float time=t.Elapsed;t.Advance(1);Check("Settings pause stops tutorial timeline",t.Elapsed==time);t.SetPaused(false);

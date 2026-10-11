@@ -51,7 +51,7 @@ public static class MusicValidation
                 peaks.Add(new{title=player.Track.title,peak});Check(player.Track.title+" outputs audible audio samples",peak>.00001f);
                 Check(player.Track.title+" selects correct disc/title",ui.disc.sprite==player.Track.disc&&ui.title.text==player.Track.title);
             }
-            player.Select(2);await Playing(player);ui.Close();float offset=ui.MarqueeOffset;await Task.Delay(2300);Check("Menu title scrolls for long track name",Mathf.Abs(ui.MarqueeOffset-offset)>2);
+            player.Select(2);await Playing(player);ui.Close();float offset=ui.MarqueeOffset;float overflow=ui.miniTitle.GetPreferredValues(ui.miniTitle.text).x-ui.miniViewport.rect.width;await Task.Delay(2300);Check("Mini caption scrolls only if the title overflows",overflow>8?Mathf.Abs(ui.MarqueeOffset-offset)>2:Mathf.Abs(ui.MarqueeOffset)<.1f);
             ui.Open();ui.playButton.onClick.Invoke();float paused=player.Position;angle=ui.discTransform.localRotation;await Task.Delay(200);
             Check("Pause freezes audio and record",player.UserPaused&&!player.Playing&&Mathf.Abs(player.Position-paused)<.1f&&Quaternion.Angle(angle,ui.discTransform.localRotation)<.01f);
             ui.playButton.onClick.Invoke();await Playing(player);Check("Resume continues playback",player.Playing&&player.Position>=paused);
@@ -64,11 +64,11 @@ public static class MusicValidation
             SettingsRuntime.Apply(audition);int index=player.CurrentIndex;float position=player.Position;
             var launcher=UnityEngine.Object.FindObjectsByType<ShopLauncher>().First(l=>l.name=="BtnStore");launcher.OpenShop();await Ready("Shop");
             Check("Shop continues same music without restart",MusicPlayer.Instance==player&&player.CurrentIndex==index&&player.Position>=position&&player.Playing);
-            Check("Shop mini icon does not expose long caption",!ui.miniTextRoot.activeSelf&&ui.canvas.enabled);
-            UnityEngine.Object.FindAnyObjectByType<ShopScreen>().OpenProduct(0);ui.Open();Check("Music panel works over full-screen skin preview",ui.IsOpen&&ui.canvas.worldCamera==Camera.main);ui.Close();UnityEngine.Object.FindAnyObjectByType<ShopScreen>().GoLobby();await Ready("Menu");
+            Check("Shop has no music widget or UI raycasts",!ui.mini.gameObject.activeSelf&&!ui.canvas.enabled&&!ui.canvas.GetComponent<UnityEngine.UI.GraphicRaycaster>().enabled);
+            UnityEngine.Object.FindAnyObjectByType<ShopScreen>().OpenProduct(0);ui.Open();Check("Hidden music cannot acquire focus over skin preview",!ui.IsOpen&&!FrontEndModalInput.IsOpen);UnityEngine.Object.FindAnyObjectByType<ShopScreen>().GoLobby();await Ready("Menu");
             Check("Returning from Shop keeps playback",player.CurrentIndex==index&&player.Playing&&ui.miniTextRoot.activeSelf);
-            launcher=UnityEngine.Object.FindObjectsByType<ShopLauncher>().First(l=>l.name=="BtnCollection");launcher.OpenCollection();await Ready("Collection");Check("Collection music plays",player.Playing);UnityEngine.Object.FindAnyObjectByType<ShopScreen>().GoLobby();await Ready("Menu");
-            await Load("ModeSelection");Check("Mode selection music plays",player.Allowed&&player.Playing);await Load("PlayMultiplayer");Check("Multiplayer room music plays without opening a room",player.Allowed&&player.Playing);
+            launcher=UnityEngine.Object.FindObjectsByType<ShopLauncher>().First(l=>l.name=="BtnCollection");launcher.OpenCollection();await Ready("Collection");Check("Collection music plays without widget",player.Playing&&!ui.canvas.enabled&&!ui.mini.gameObject.activeSelf);UnityEngine.Object.FindAnyObjectByType<ShopScreen>().GoLobby();await Ready("Menu");
+            await Load("ModeSelection");Check("Mode selection music plays without widget",player.Allowed&&player.Playing&&!ui.canvas.enabled&&!ui.mini.gameObject.activeSelf);await Load("PlayMultiplayer");Check("Multiplayer room music plays without opening a room",player.Allowed&&player.Playing);
             await Load("BotMatch");Check("Bot match has no background music or music UI",!player.Allowed&&!player.Playing&&!ui.canvas.enabled&&player.GetComponentsInChildren<AudioSource>().All(s=>!s.isPlaying&&s.clip==null));
             await Load("MultiplayerCourt");Check("Online court has no background music",!player.Allowed&&player.GetComponentsInChildren<AudioSource>().All(s=>!s.isPlaying));
             await Load("Menu");await Playing(player);Check("Returning to Menu resumes saved track",player.Allowed&&player.Playing);

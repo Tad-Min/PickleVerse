@@ -1,8 +1,8 @@
-# Nhạc nền và trình phát nhạc — 10/10/2026
+# Nhạc nền và trình phát nhạc — cập nhật 11/10/2026
 
 ## Cách sử dụng
 
-Nhạc tự phát khi vào các màn giao diện. Tại Menu, bấm khung đĩa nhỏ ở góc dưới bên trái, ngay trên thanh điều hướng, để mở trình phát. Tên bài, nghệ sĩ và thể loại chạy chữ khi dài hơn khung. Ở các màn khác có biểu tượng đĩa nhỏ để mở cùng trình phát.
+Nhạc tự phát khi vào các màn giao diện. Tại Menu, bấm khung đĩa nhỏ ở góc dưới bên trái, ngay trên thanh điều hướng, để mở trình phát. Tên bài và nghệ sĩ chạy chữ khi dài hơn khung. Widget và trình phát chỉ hiện ở Menu; shop, bộ sưu tập, chọn chế độ và phòng chờ vẫn có nhạc nền nhưng không hiện đĩa nhỏ.
 
 Trong trình phát có danh sách 4 bài, đĩa xoay, tên/nghệ sĩ, thể loại, thời gian đã phát và tổng thời lượng. Có nút **Trước**, **Phát/Tạm dừng**, **Sau**, chọn trực tiếp một bài và kéo thanh tiến độ. Hết bài tự phát bài tiếp theo, hết danh sách quay về bài đầu. Đĩa dừng xoay khi tạm dừng.
 
@@ -11,9 +11,9 @@ Nút **Âm lượng / Cài đặt** mở màn cài đặt hiện có. Thanh **Nh
 | Scene | Nhạc nền | UI nhạc |
 |---|---|---|
 | Menu | Có | Đĩa nhỏ + tên bài chạy chữ |
-| ModeSelection | Có | Biểu tượng đĩa |
-| PlayMultiplayer — phòng chờ | Có | Biểu tượng đĩa |
-| Shop / Collection | Có | Biểu tượng đĩa, kể cả khi xem skin tràn viền |
+| ModeSelection | Có | Ẩn |
+| PlayMultiplayer — phòng chờ | Có | Ẩn |
+| Shop / Collection | Có | Ẩn, kể cả khi xem skin tràn viền |
 | BotMatch / MultiplayerCourt | Không | Ẩn |
 | Training / SampleScene và scene khác | Không | Ẩn |
 
@@ -50,9 +50,9 @@ Tham khảo [hướng dẫn đổi/tắt Lobby Music của Fortnite](https://www
 ## Kiểm chứng
 
 - **34/34 kiểm tra runtime**: 4 bài có sample âm thanh đầu ra; artwork/title đúng; đĩa xoay; marquee; pause/resume; seek; vòng playlist; âm lượng; Cài đặt; không restart qua Menu/Shop/Collection/ModeSelection/phòng online; không nhạc ở BotMatch và sân online; chỉ một listener; ví/cài đặt thật không đổi.
-- **3/3 kiểm tra bổ sung**: Esc chỉ đóng nhạc tại Shop/ModeSelection; SFX vẫn hoạt động trong BotMatch khi nhạc đã dừng.
-- **106/106 EditMode tests** đạt, gồm chính sách scene, vòng playlist, quyền input của popup và import stereo/streaming.
-- Đo lại luồng quay về Menu với nhạc chạy: khung hình lớn nhất trong cửa sổ chuyển cảnh **14,10 ms từ Shop** và **12,81 ms từ Collection**, không có mẫu >25 ms tại cửa sổ đó. Đo trong Editor, giữ cấu hình đồ họa của người chơi; mẫu đổi cưỡng bức trời ngày/đêm vẫn có chi phí riêng của Menu.
+- **5/5 kiểm tra bổ sung**: Esc chỉ đóng nhạc tại Menu; widget ẩn không nhận input ở Shop/Collection/ModeSelection; SFX vẫn hoạt động trong BotMatch khi nhạc đã dừng.
+- **128/128 EditMode tests** đạt, gồm chính sách âm thanh/UI scene riêng biệt, vòng playlist, quyền input của popup và import stereo/streaming.
+- Đo ở phiên triển khai nhạc trước đợt đổi UI này: khung hình lớn nhất trong cửa sổ quay về Menu **14,10 ms từ Shop** và **12,81 ms từ Collection**, không có mẫu >25 ms tại cửa sổ đó. Đây là số liệu lịch sử trong Editor, không phải benchmark mới của UI ngày 11/10.
 - Không xác nhận bản build điện thoại hoặc phòng online với hai client qua Internet. Kiểm chứng âm thanh là nguồn AudioSource đang chạy trên PC trong Unity Editor.
 
 Báo cáo: `UnityWork/Music/import-before.json`, `import-after.json`, `validation.json`, `input-validation.json`, `editmode-tests.json`, `Images/`. Hiệu năng: `UnityWork/LobbyPerformance/with-music.json`. Helper: `My project/Tools/MusicSetup.cs`, `MusicValidation.cs`, `MusicInputValidation.cs`.

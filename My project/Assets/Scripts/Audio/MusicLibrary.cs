@@ -8,6 +8,8 @@ namespace PickleVerse.Audio
         public string id,title,artist,genre;
         public AudioClip clip;
         public Sprite disc;
+        // Normalized visible artwork bounds; calibrated from alpha, without changing the PNG.
+        public Rect discBounds=new Rect(0,0,1,1);
         public Color accent=Color.cyan;
     }
     public sealed class MusicLibrary : ScriptableObject
@@ -20,6 +22,7 @@ namespace PickleVerse.Audio
     public static class MusicScenePolicy
     {
         public static bool Allows(string scene)=>scene=="Menu"||scene=="ModeSelection"||scene=="PlayMultiplayer"||scene=="Shop"||scene=="Collection";
+        public static bool ShowsWidget(string scene)=>scene=="Menu";
         public static int Wrap(int index,int count)=>count<=0?-1:(index%count+count)%count;
     }
 }

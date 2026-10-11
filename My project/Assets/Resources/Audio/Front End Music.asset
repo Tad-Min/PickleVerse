@@ -19,6 +19,12 @@ MonoBehaviour:
     genre: Electronic
     clip: {fileID: 8300000, guid: 477fd35d97f83e1439e6c5b5ceb7bdf9, type: 3}
     disc: {fileID: 21300000, guid: b598fb028d420f1479a96beb7096e99a, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.03125
+      y: 0.056640625
+      width: 0.9355469
+      height: 0.93359375
     accent: {r: 0.3, g: 0.68, b: 1, a: 1}
   - id: music.stars
     title: Stars in the Sky
@@ -26,6 +32,12 @@ MonoBehaviour:
     genre: Electronic Pop
     clip: {fileID: 8300000, guid: 63eca0d5f34141c4e9f65ed5f3895357, type: 3}
     disc: {fileID: 21300000, guid: 8001cbedc9924f046b34209139cd4638, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.025390625
+      y: 0.033663366
+      width: 0.9472656
+      height: 0.9564356
     accent: {r: 0.86, g: 0.48, b: 1, a: 1}
   - id: music.slow
     title: Taking It Slow
@@ -33,6 +45,12 @@ MonoBehaviour:
     genre: Future Bass
     clip: {fileID: 8300000, guid: f450e05358ae93448b7bc3d2e2d635a0, type: 3}
     disc: {fileID: 21300000, guid: 3c56fb1c9b2a39f48b99b965dffe5ebe, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.021484375
+      y: 0.03515625
+      width: 0.95703125
+      height: 0.9589844
     accent: {r: 0.33, g: 0.87, b: 0.84, a: 1}
   - id: music.keep
     title: Keep You
@@ -40,6 +58,12 @@ MonoBehaviour:
     genre: Phonk
     clip: {fileID: 8300000, guid: 040eb8f0ddc6728479fd138bbb56f205, type: 3}
     disc: {fileID: 21300000, guid: 438768d0ebd1b8a4fb79e69b8994df98, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.025390625
+      y: 0.046875
+      width: 0.9472656
+      height: 0.9375
     accent: {r: 1, g: 0.38, b: 0.44, a: 1}
   uiPrefab: {fileID: 8610401936002494606, guid: ba7f62a669e00a642828d9d06e345062, type: 3}
   gain: 0.45

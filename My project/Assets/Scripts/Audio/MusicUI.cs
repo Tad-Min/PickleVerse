@@ -17,14 +17,16 @@ namespace PickleVerse.Audio
         public RectTransform safeArea,mini,miniViewport,miniCaption,discTransform,playlistContent;
         public GameObject panel,miniTextRoot;
         public Image miniDisc,disc,accent;
-        public TMP_Text miniTitle,miniState,title,artist,genre,status,elapsed,duration,playLabel,libraryCount;
+        public TMP_Text miniTitle,miniState,title,artist,genre,status,elapsed,duration,playLabel,libraryCount,trackIndex;
         public Button miniButton,closeButton,previousButton,playButton,nextButton,settingsButton;
         public Slider progress;
         public MusicTrackRow rowPrefab;
+        public UiLineIcon playSymbol;
         public bool IsOpen=>panel.activeSelf;
         public float MarqueeOffset=>miniCaption.anchoredPosition.x;
         readonly List<MusicTrackRow> rows=new List<MusicTrackRow>();
         MusicPlayer player;
+        GraphicRaycaster raycaster;
         GameObject previousSelection;
         string scene;
         string displayedTrack;
@@ -32,9 +34,11 @@ namespace PickleVerse.Audio
         int previousSeconds=-1;
         Rect lastSafeArea;
         Vector2 lastResolution;
+        Vector2 lastRecordSize;
         void Awake()
         {
             panel.SetActive(false);
+            raycaster=canvas.GetComponent<GraphicRaycaster>();
             miniButton.onClick.AddListener(Open);closeButton.onClick.AddListener(Close);
             previousButton.onClick.AddListener(()=>player.Previous());nextButton.onClick.AddListener(()=>player.Next());playButton.onClick.AddListener(()=>player.TogglePause());
             settingsButton.onClick.AddListener(()=>{Close();SettingsOverlay.Open();});
@@ -53,17 +57,19 @@ namespace PickleVerse.Audio
         public void ApplyScene(string name)
         {
             if(scene!=name)Close();scene=name;
-            miniTextRoot.SetActive(name=="Menu");
-            mini.anchorMin=mini.anchorMax=name=="Menu"?new Vector2(.045f,.21f):new Vector2(.975f,.28f);
-            mini.pivot=name=="Menu"?new Vector2(0,.5f):new Vector2(1,.5f);
-            mini.sizeDelta=new Vector2(name=="Menu"?286:48,48);mini.anchoredPosition=Vector2.zero;
+            miniTextRoot.SetActive(MusicScenePolicy.ShowsWidget(name));
+            mini.gameObject.SetActive(MusicScenePolicy.ShowsWidget(name));
+            mini.anchorMin=mini.anchorMax=new Vector2(.045f,.225f);
+            mini.pivot=new Vector2(0,.5f);
+            mini.sizeDelta=new Vector2(310,58);mini.anchoredPosition=Vector2.zero;
             Visibility();BindCamera();
         }
         public void Open()
         {
-            if(player==null||!player.Allowed||SettingsOverlay.IsOpen||SettingsOverlay.Loading||!FrontEndModalInput.TryAcquire(this))return;
+            if(player==null||!player.Allowed||!MusicScenePolicy.ShowsWidget(scene)||SettingsOverlay.IsOpen||SettingsOverlay.Loading||!FrontEndModalInput.TryAcquire(this))return;
             previousSelection=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
             panel.SetActive(true);Refresh();Canvas.ForceUpdateCanvases();
+            FitRecord();
             foreach(var text in panel.GetComponentsInChildren<TMP_Text>())text.ForceMeshUpdate();
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(playButton.gameObject);
         }
@@ -80,16 +86,35 @@ namespace PickleVerse.Audio
             {
                 displayedTrack=track.id;
                 miniDisc.sprite=disc.sprite=track.disc;discTransform.localRotation=Quaternion.identity;miniDisc.rectTransform.localRotation=Quaternion.identity;
-                miniTitle.text=track.title+"  •  "+track.artist+"  •  "+track.genre;marqueeTime=0;miniCaption.anchoredPosition=Vector2.zero;
+                lastRecordSize=Vector2.zero;
+                miniTitle.text=track.title+"  •  "+track.artist;marqueeTime=0;miniCaption.anchoredPosition=Vector2.zero;
                 textWidth=miniTitle.GetPreferredValues(miniTitle.text).x;miniCaption.sizeDelta=new Vector2(Mathf.Max(miniViewport.rect.width,textWidth),miniCaption.sizeDelta.y);
             }
             title.text=track.title;artist.text=track.artist;genre.text=track.genre.ToUpperInvariant();accent.color=track.accent;
+            if(trackIndex)trackIndex.text=(player.CurrentIndex+1).ToString("00")+"  /  LOBBY RADIO";
             playLabel.text=player.UserPaused?"PHÁT":"TẠM DỪNG";
+            if(playSymbol)playSymbol.SetGlyph(player.UserPaused?ArenaGlyph.Play:ArenaGlyph.Pause);
             miniState.text=player.Loading?"ĐANG TẢI":player.UserPaused?"ĐÃ TẠM DỪNG":"ĐANG PHÁT";
             status.text=!string.IsNullOrEmpty(player.Error)?player.Error:player.Loading?"Đang chuẩn bị bài nhạc…":player.UserPaused?"Nhấn Phát để tiếp tục.":"Tự động phát tiếp • Nhạc dừng khi vào trận đấu";
             duration.text=TimeText(player.Duration);
             for(int i=0;i<rows.Count;i++)rows[i].Select(i==player.CurrentIndex,!player.UserPaused&&!player.Loading);
             previousSeconds=-1;
+        }
+        public void FitRecord()
+        {
+            if(player?.Track?.disc==null||discTransform.parent is not RectTransform holder)return;
+            Vector2 holderSize=holder.rect.size;
+            if(holderSize==lastRecordSize||holderSize.x<=0||holderSize.y<=0)return;
+            lastRecordSize=holderSize;
+            Rect bounds=player.Track.discBounds,source=player.Track.disc.rect;
+            float visibleDiameter=Mathf.Max(bounds.width*source.width,bounds.height*source.height);
+            if(visibleDiameter<=0)return;
+            Vector2 span=source.size*(.92f/visibleDiameter);
+            // The pivot is the artwork's center, so rotation never moves the disc inside its frame.
+            discTransform.pivot=bounds.center;
+            discTransform.anchorMin=new Vector2(.5f,.5f)-Vector2.Scale(span,bounds.center);
+            discTransform.anchorMax=discTransform.anchorMin+span;
+            discTransform.offsetMin=discTransform.offsetMax=Vector2.zero;
         }
         void Update()
         {
@@ -110,14 +135,16 @@ namespace PickleVerse.Audio
                 }
             }
             if(!IsOpen)return;
+            FitRecord();
             progressTick+=Time.unscaledDeltaTime;if(progressTick<.1f)return;progressTick=0;
             int seconds=(int)player.Position;if(seconds!=previousSeconds){previousSeconds=seconds;elapsed.text=TimeText(player.Position);}
             progress.SetValueWithoutNotify(player.Duration>0?player.Position/player.Duration:0);
         }
         void Visibility()
         {
-            bool visible=player!=null&&player.Allowed&&!SettingsOverlay.IsOpen&&!SettingsOverlay.Loading;
+            bool visible=player!=null&&player.Allowed&&MusicScenePolicy.ShowsWidget(scene)&&!SettingsOverlay.IsOpen&&!SettingsOverlay.Loading;
             if(!visible&&IsOpen)Close();if(canvas.enabled!=visible)canvas.enabled=visible;
+            if(raycaster&&raycaster.enabled!=visible)raycaster.enabled=visible;
         }
         void BindCamera()
         {

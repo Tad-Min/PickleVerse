@@ -3,12 +3,12 @@
 ## Cách mở
 
 - Scene: `My project/Assets/Scenes/Tutorial.unity`.
-- Người chơi mới bấm **Play** ở đại sảnh sẽ vào tutorial trước màn chọn chế độ.
-- Hoàn thành hoặc xác nhận **Để sau** sẽ chuyển sang màn chọn chế độ. Những lần bấm Play tiếp theo đi thẳng vào màn chọn chế độ.
-- Nút **HƯỚNG DẪN CƠ BẢN** ở màn chọn chế độ cho phép học lại bất cứ lúc nào.
+- Bấm **Chơi ngay / Play** ở đại sảnh luôn đi thẳng vào màn chọn chế độ, kể cả khi người chơi chưa học tutorial.
+- Mục **TUTORIAL / HƯỚNG DẪN CƠ BẢN** ở màn chọn chế độ mở hướng dẫn khi người chơi chủ động chọn. Mục này ẩn khi đang cấu hình trận bot.
+- Hoàn thành hoặc xác nhận **Để sau** sẽ chuyển sang màn chọn chế độ; có thể học lại bất cứ lúc nào.
 - Đóng tutorial qua cài đặt không đánh dấu đã học xong. Chỉ hoàn thành đủ 9 cú đánh mới ghi nhận hoàn thành.
 
-Tiến độ hiện lưu bằng PlayerPrefs trên thiết bị, qua `ITutorialProgressStore`. Khi có tài khoản/backend, có thể thay kho lưu bằng hồ sơ người chơi mà không đổi nội dung bài học. Hai cờ local là `PKV.Tutorial.Basic.Completed.v1` và `PKV.Tutorial.Basic.Skipped.v1`; đây chưa phải tiến độ đồng bộ theo tài khoản.
+Tiến độ hiện lưu bằng PlayerPrefs trên thiết bị, qua `ITutorialProgressStore`. Khi có tài khoản/backend, có thể thay kho lưu bằng hồ sơ người chơi mà không đổi nội dung bài học. Hai cờ local là `PKV.Tutorial.Basic.Completed.v1` và `PKV.Tutorial.Basic.Skipped.v1`; đây chưa phải tiến độ đồng bộ theo tài khoản. Luồng tự mở tutorial khi khởi động app/cài lần đầu chưa được triển khai; nút Play không dùng cờ tiến độ để định tuyến nữa.
 
 ## Nội dung và trải nghiệm
 
@@ -63,7 +63,7 @@ Nội dung luật đối chiếu [hướng dẫn chính thức của USA Pickleb
 ## Kiểm chứng
 
 - Runtime: 32 kiểm tra về camera, các demo luật, di chuyển, đủ 9 tổ hợp và tiếp xúc vợt thực tế; tiến độ thật không bị thay đổi bởi kiểm thử.
-- Tương tác: 15 kiểm tra về luồng Play lần đầu, lời nhắc binding, input sai, cảm ứng, tạm dừng, xác nhận để sau, học lại và chuyển scene.
+- Tương tác: 16 kiểm tra về Play đi thẳng chọn chế độ, mở tutorial chủ động, lời nhắc binding, input sai, cảm ứng, tạm dừng, xác nhận để sau, học lại và chuyển scene.
 - UI/cài đặt: 8 kiểm tra về đăng ký build, tham chiếu nhãn, mở/đóng cài đặt thật, đóng băng timeline và bố cục bàn phím/cảm ứng.
 - Unit test: **121/121 test toàn project đã qua**, gồm 15 test tutorial về tiến độ, 9 tổ hợp qua bộ giải mã input thật, quỹ đạo feed, điều kiện Volley sau hai lần nảy và luật Kitchen.
 - Kiểm tra hình ảnh trên tỷ lệ 16:9 và 4:3; ảnh và báo cáo để trong `UnityWork/Tutorial`, ngoài thư mục Assets để không tăng dung lượng game.

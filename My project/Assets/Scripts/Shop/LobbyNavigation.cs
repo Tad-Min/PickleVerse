@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace PickleVerse.Shop
 {
-    /// <summary>Keep one suspended lobby for Shop/Collection. Gameplay's Single loads release it.</summary>
+    /// <summary>Keep one suspended lobby for front-end pages. Gameplay's Single loads release it.</summary>
     public sealed class LobbyNavigation : MonoBehaviour
     {
         static LobbyNavigation instance;
@@ -46,6 +46,7 @@ namespace PickleVerse.Shop
         }
         public static void OpenShop(){Ensure().Open("Shop");}
         public static void OpenCollection(){Ensure().Open("Collection");}
+        public static void OpenModes(){Ensure().Open("ModeSelection");}
         public static void ReturnToLobby(){var navigation=Ensure();if(!navigation.Busy)navigation.StartCoroutine(navigation.Return());}
         void Open(string destination)
         {

@@ -7,7 +7,7 @@ namespace PickleVerse.Multiplayer
         // Retain the existing Menu button component and serialized listener.
         public void Play()
         {
-            SceneManager.LoadScene(PickleVerse.LocalMatch.TutorialProgress.NeedsIntroduction?"Tutorial":"ModeSelection");
+            PickleVerse.Shop.LobbyNavigation.OpenModes();
         }
     }
 }
