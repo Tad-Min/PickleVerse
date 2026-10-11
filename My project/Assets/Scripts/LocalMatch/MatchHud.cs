@@ -32,7 +32,7 @@ namespace PickleVerse.LocalMatch
             status.text = match.Message;
             bool refereeBanner = match.Phase == MatchPhase.Settling || match.Phase == MatchPhase.BetweenPoints || match.Phase == MatchPhase.BetweenGames || match.Phase == MatchPhase.MatchOver;
             status.transform.parent.gameObject.SetActive(!refereeBanner);
-            bool results = match.Phase == MatchPhase.MatchOver && !match.Paused && (!announcements || !announcements.Busy);
+            bool results = match.Phase == MatchPhase.MatchOver && !match.Paused && (!announcements || !announcements.Busy) && (!match.victory || match.victory.Ready);
             if (resultActions)
             {
                 bool newlyVisible = results && !resultActions.activeSelf;
@@ -40,7 +40,7 @@ namespace PickleVerse.LocalMatch
                 if (newlyVisible && UnityEngine.EventSystems.EventSystem.current)
                     UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(resultActions.GetComponentInChildren<UnityEngine.UI.Button>().gameObject);
             }
-            if (results && resultSummary) resultSummary.text = "SỐ GAME THẮNG  " + rules.Games[0] + " - " + rules.Games[1];
+            if (results && resultSummary) resultSummary.text = match.victory ? "BẠN  ·  " + rules.Games[0] + " – " + rules.Games[1] : "SỐ GAME THẮNG  " + rules.Games[0] + " - " + rules.Games[1];
             bool choosing=!string.IsNullOrEmpty(match.SelectionKeys);
             bool swinging=match.human.Swinging && !string.IsNullOrEmpty(match.ActiveShotKeys);
             selection.text=choosing?"<b>"+match.SelectionKeys+"</b>\n<size=14>"+match.Selection+"</size>":swinging?"<b>"+match.ActiveShotKeys+"</b>\n<size=14>"+match.human.Intent+"</size>":"";

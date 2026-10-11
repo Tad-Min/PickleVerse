@@ -16,6 +16,7 @@ namespace PickleVerse.LocalMatch
         public TrailRenderer ballTrail;
         public MatchHud hud;
         public BotMatchIntro opening;
+        public BotMatchVictory victory;
         [Range(0, 2)] public int botDifficulty = 1;
         [Range(.12f,.6f)] public float contactAssistRadius = .45f;
         public bool autoPlayer;
@@ -76,6 +77,7 @@ namespace PickleVerse.LocalMatch
                 if(focused && keyboard!=null && (GameControls.Pressed(GameAction.Continue) || keyboard.spaceKey.wasPressedThisFrame))opening.Skip();
                 return;
             }
+            if (Phase == MatchPhase.MatchOver) return;
             if (keyboard != null && focused)
             {
                 if (GameControls.Pressed(GameAction.Continue)) Continue();
@@ -290,6 +292,7 @@ namespace PickleVerse.LocalMatch
                 Phase = MatchPhase.MatchOver; Message = Rules.Winner == 0 ? "Bạn thắng trận!" : "Bot thắng trận";
                 if(!autoPlayer)PickleVerse.Shop.PlayerEconomy.Reward("bot:"+rewardMatchId,false,Rules.Winner==0);
                 Announcements?.Enqueue("GAME, MATCH!", (Rules.Winner == 0 ? "BẠN THẮNG TRẬN" : "BOT THẮNG TRẬN") + " • " + Rules.Games[0] + " - " + Rules.Games[1] + "\nGame " + endedGame + ": " + Rules.Points[0] + " - " + Rules.Points[1], Rules.Winner == 0 ? AnnouncementTone.Success : AnnouncementTone.Fault, 2.1f);
+                if (victory) victory.Begin();
             }
             else if (Rules.GameFinished)
             {
@@ -351,6 +354,7 @@ namespace PickleVerse.LocalMatch
         }
         public void Restart()
         {
+            if (victory) victory.Cancel();
             rewardMatchId=System.Guid.NewGuid().ToString("N");
             Announcements?.Clear();
             if(opening && opening.IsPlaying)opening.Cancel();

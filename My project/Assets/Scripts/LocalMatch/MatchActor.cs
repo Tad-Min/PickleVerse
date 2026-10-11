@@ -69,6 +69,13 @@ namespace PickleVerse.LocalMatch
             clipName=clip.name;
             clip.SampleAnimation(visual.gameObject,Mathf.Repeat(time,clip.length));
         }
+        public void SampleCelebration(AnimationClip clip, float time)
+        {
+            if (!clip || !visual) return;
+            Swinging = VolleyMomentum = false;
+            clipName = clip.name;
+            clip.SampleAnimation(visual.gameObject, Mathf.Clamp(time, 0, clip.length));
+        }
         public void EntranceFootsteps(float dt){foley.Step(transform.position,false,dt);}
         public void ResetAt(Vector3 p, int newEnd)
         {
