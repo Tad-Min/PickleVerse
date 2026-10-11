@@ -1,5 +1,5 @@
 {
   "name": "PickleVerse.FrontEnd",
   "rootNamespace": "PickleVerse.FrontEnd",
-  "references": ["PickleVerse.LocalMatch", "PickleVerse.CharacterMotion", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem", "PickleVerse.Settings", "PickleVerse.Multiplayer", "PickleVerse.Progression", "PickleVerse.Shop"]
+  "references": ["PickleVerse.LocalMatch", "PickleVerse.CharacterMotion", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem", "PickleVerse.Settings", "PickleVerse.Multiplayer", "PickleVerse.Progression", "PickleVerse.Shop", "PickleVerse.Social"]
 }

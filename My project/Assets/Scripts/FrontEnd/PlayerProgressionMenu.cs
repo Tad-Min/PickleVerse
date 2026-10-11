@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using PickleVerse.Progression;
 using PickleVerse.Multiplayer;
@@ -21,7 +22,7 @@ namespace PickleVerse.FrontEnd
         public TMP_Text title, subtitle, identityName, identityId, identityRank, levelText, xpText, summaryText, countdown, feedback;
         public Image xpFill, summaryFill;
         public Button statsTab, achievementTab, dailyTab, weeklyTab, bonusButton;
-        public TMP_InputField editId, editName;
+        public TMP_InputField editId, editName, editElo, editTokenpad, editEliteToken;
         public RectTransform editForm;
         public ScrollRect scroll;
         enum View { Statistics, Achievements, Daily, Weekly, Career, Edit }
@@ -36,6 +37,7 @@ namespace PickleVerse.FrontEnd
         void Awake()
         {
             if(!modal) BuildShell();
+            else ConfigureEditForm();
             var menuRoot=transform.Find("HomeSafeArea");
             if(menuRoot)
             {
@@ -74,6 +76,7 @@ namespace PickleVerse.FrontEnd
         public void OpenEditor() { if(ProgressionRuntime.DeveloperControls) Open(View.Edit); }
         void Open(View next)
         {
+            GetComponent<OfflineSocialMenu>()?.Close();
             if(!modal.gameObject.activeSelf)
             {
                 priorSelection=EventSystem.current?.currentSelectedGameObject;
@@ -146,7 +149,14 @@ namespace PickleVerse.FrontEnd
                 if(p.history.Count==0) AddMessage("Chưa có trận đấu", "Hoàn tất một trận để lưu đối thủ và tỷ số tại đây.");
                 foreach(var result in p.history) AddHistory(result);
             }
-            else { editId.SetTextWithoutNotify(p.id); editName.SetTextWithoutNotify(p.playerName); feedback.text="ID đã có: tải tiến trình. ID mới: tạo player mới."; }
+            else
+            {
+                editId.SetTextWithoutNotify(p.id); editName.SetTextWithoutNotify(p.playerName);
+                editElo.SetTextWithoutNotify(p.elo.ToString(CultureInfo.InvariantCulture));
+                editTokenpad.SetTextWithoutNotify(p.coins.ToString(CultureInfo.InvariantCulture));
+                editEliteToken.SetTextWithoutNotify(p.gems.ToString(CultureInfo.InvariantCulture));
+                feedback.text="Lưu player đang dùng. Chuyển ID để tải hoặc tạo player khác.";
+            }
             Canvas.ForceUpdateCanvases(); LayoutRebuilder.ForceRebuildLayoutImmediate(content); scroll.verticalNormalizedPosition=1;
             UpdateCountdown();
         }
@@ -209,6 +219,7 @@ namespace PickleVerse.FrontEnd
         {
             try
             {
+                if(!ProgressionRuntime.DeveloperControls) throw new InvalidOperationException("Chỉ chỉnh player trong Editor hoặc Development Build.");
                 var app=MultiplayerApp.Instance;
                 if(app && !app.CanChangeLocalProfile) throw new InvalidOperationException("Kết thúc phiên mạng và trở về Menu trước khi đổi player.");
                 if(switchId)
@@ -216,7 +227,15 @@ namespace PickleVerse.FrontEnd
                     // Switching an existing ID preserves that player's stored name.
                     ProgressionRuntime.Instance.SwitchPlayer(editId.text.Trim(),null);
                 }
-                else ProgressionRuntime.Instance.SetName(editName.text);
+                else
+                {
+                    if(!int.TryParse(editElo.text,NumberStyles.None,CultureInfo.InvariantCulture,out int elo) || elo<EloPolicy.Minimum)
+                        throw new ArgumentException("Elo phải là số nguyên từ 100 đến 2147483647.");
+                    if(!long.TryParse(editTokenpad.text,NumberStyles.None,CultureInfo.InvariantCulture,out long tokenpad) ||
+                       !long.TryParse(editEliteToken.text,NumberStyles.None,CultureInfo.InvariantCulture,out long elite))
+                        throw new ArgumentException("Số dư tiền phải là số nguyên từ 0 đến 9223372036854775807, không dùng dấu phân cách.");
+                    ProgressionRuntime.Instance.EditLocalPlayer(editName.text,elo,tokenpad,elite);
+                }
                 Refresh(); feedback.text="Đã lưu player.";
             }
             catch(Exception e) { feedback.text=e.Message; }
@@ -276,6 +295,43 @@ namespace PickleVerse.FrontEnd
             editId=Input("IDInput",editForm,new Vector2(.04f,.26f),new Vector2(.70f,.39f),24);
             MakeButton("Switch",editForm,"CHUYỂN ID",()=>SaveEditor(true),new Vector2(.73f,.26f),new Vector2(.96f,.39f),Lime,Ink,15);
             feedback=Text("Feedback",editForm,"",16,White,new Vector2(.04f,.04f),new Vector2(.96f,.22f),Vector2.zero,Vector2.zero);
+            ConfigureEditForm();
+        }
+        // Updates an existing scene shell too, without rebuilding other profile UI.
+        public void ConfigureEditForm()
+        {
+            PlaceEdit("Help",.04f,.89f,.96f,.99f);
+            editForm.Find("Help").GetComponent<TMP_Text>().text="PLAYER CỤC BỘ  <size=14>·  CHỈNH DỮ LIỆU TEST</size>";
+            editForm.Find("Help").GetComponent<TMP_Text>().fontSize=21;
+            PlaceEdit("NameLabel",.04f,.81f,.96f,.88f);
+            PlaceEdit("NameInput",.04f,.70f,.96f,.81f);
+            PlaceEdit("IDLabel",.04f,.60f,.70f,.68f);
+            editForm.Find("IDLabel").GetComponent<TMP_Text>().text="ID (1–24 chữ cái tiếng Anh / chữ số)";
+            PlaceEdit("IDInput",.04f,.49f,.68f,.60f);
+            PlaceEdit("Switch",.71f,.49f,.96f,.60f);
+            editElo=NumberInput("EloInput","EloLabel","ELO (từ 100)",.04f,.29f,10);
+            editTokenpad=NumberInput("TokenpadInput","TokenpadLabel","TOKENPAD",.32f,.62f,19);
+            editEliteToken=NumberInput("EliteTokenInput","EliteTokenLabel","ELITE TOKEN",.65f,.96f,19);
+            PlaceEdit("SaveName",.04f,.15f,.96f,.27f);
+            Label(editForm.Find("SaveName").GetComponent<Button>()).text="LƯU PLAYER";
+            PlaceEdit("Feedback",.04f,.01f,.96f,.13f);
+            feedback.fontSize=14;
+        }
+        TMP_InputField NumberInput(string name,string label,string caption,float xMin,float xMax,int limit)
+        {
+            var heading=editForm.Find(label);
+            if(!heading) Text(label,editForm,caption,14,Muted,new Vector2(xMin,.41f),new Vector2(xMax,.48f),Vector2.zero,Vector2.zero);
+            var found=editForm.Find(name);
+            var input=found?found.GetComponent<TMP_InputField>():Input(name,editForm,new Vector2(xMin,.30f),new Vector2(xMax,.41f),limit);
+            input.characterLimit=limit; input.contentType=TMP_InputField.ContentType.IntegerNumber;
+            input.textComponent.enableAutoSizing=true; input.textComponent.fontSizeMin=10; input.textComponent.fontSizeMax=19;
+            return input;
+        }
+        void PlaceEdit(string name,float xMin,float yMin,float xMax,float yMax)
+        {
+            var rect=(RectTransform)editForm.Find(name);
+            rect.anchorMin=new Vector2(xMin,yMin); rect.anchorMax=new Vector2(xMax,yMax);
+            rect.offsetMin=rect.offsetMax=Vector2.zero;
         }
         TMP_InputField Input(string name,Transform parent,Vector2 min,Vector2 max,int limit)
         {

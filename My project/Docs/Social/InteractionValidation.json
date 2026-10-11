@@ -1,0 +1,146 @@
+{
+  "passed": true,
+  "count": 35,
+  "checks": [
+    {
+      "name": "BtnFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Friends opens six seeded friends",
+      "passed": true
+    },
+    {
+      "name": "Menu buttons are blocked",
+      "passed": true
+    },
+    {
+      "name": "Modal renders above the persistent music UI",
+      "passed": true
+    },
+    {
+      "name": "Friends scroll reaches last row",
+      "passed": true
+    },
+    {
+      "name": "FindFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Find friends shows thirty fixtures",
+      "passed": true
+    },
+    {
+      "name": "Search finds accent-free Vietnamese name",
+      "passed": true
+    },
+    {
+      "name": "FriendAction receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Adding friend changes session count",
+      "passed": true
+    },
+    {
+      "name": "Added fixture cannot be added twice",
+      "passed": true
+    },
+    {
+      "name": "MyFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Added friend appears by ID",
+      "passed": true
+    },
+    {
+      "name": "FriendAction receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Removing friend updates list and empty state",
+      "passed": true
+    },
+    {
+      "name": "Unknown search displays empty state",
+      "passed": true
+    },
+    {
+      "name": "Close receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Close restores Menu input",
+      "passed": true
+    },
+    {
+      "name": "BtnLeaderboard receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Leaderboard contains fixtures and current player",
+      "passed": true
+    },
+    {
+      "name": "MyPosition receives pointer",
+      "passed": true
+    },
+    {
+      "name": "My position scrolls to current player",
+      "passed": true
+    },
+    {
+      "name": "Filtered leaderboard retains original position",
+      "passed": true
+    },
+    {
+      "name": "MyPosition receives pointer",
+      "passed": true
+    },
+    {
+      "name": "My position clears filter",
+      "passed": true
+    },
+    {
+      "name": "Saved Elo and name update leaderboard immediately",
+      "passed": true
+    },
+    {
+      "name": "Current player row is highlighted",
+      "passed": true
+    },
+    {
+      "name": "Switching player replaces current leaderboard row",
+      "passed": true
+    },
+    {
+      "name": "New player receives independent six friends",
+      "passed": true
+    },
+    {
+      "name": "Returning player gets current progress",
+      "passed": true
+    },
+    {
+      "name": "Opening Profile closes Social and keeps Menu blocked",
+      "passed": true
+    },
+    {
+      "name": "Opening Social closes Profile and keeps Menu blocked",
+      "passed": true
+    },
+    {
+      "name": "Escape closes window and restores Menu input",
+      "passed": true
+    },
+    {
+      "name": "Reopening does not duplicate rows",
+      "passed": true
+    },
+    {
+      "name": "Original profile is preserved",
+      "passed": true
+    }
+  ]
+}

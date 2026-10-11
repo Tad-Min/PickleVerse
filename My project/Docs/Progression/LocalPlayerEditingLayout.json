@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "count": 16,
+  "checks": [
+    {
+      "name": "EloInput fits window at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "TokenpadInput fits window at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "EliteTokenInput fits window at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Labels fit at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "EloInput fits window at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "TokenpadInput fits window at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "EliteTokenInput fits window at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Labels fit at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "EloInput fits window at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "TokenpadInput fits window at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "EliteTokenInput fits window at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Labels fit at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "EloInput fits window at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "TokenpadInput fits window at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "EliteTokenInput fits window at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Labels fit at 2560x1080",
+      "passed": true
+    }
+  ]
+}

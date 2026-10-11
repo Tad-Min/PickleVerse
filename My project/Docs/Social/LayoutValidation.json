@@ -1,0 +1,198 @@
+{
+  "passed": true,
+  "count": 48,
+  "checks": [
+    {
+      "name": "Welcome buttons fit at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Welcome text fits at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "BtnFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "FindFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Friends search and controls fit at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Window follows safe area at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Visible labels fit at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "LeaderboardTab receives pointer",
+      "passed": true
+    },
+    {
+      "name": "MyPosition receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Current leaderboard row visible at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Close receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Close restores Menu at 1280x720",
+      "passed": true
+    },
+    {
+      "name": "Welcome buttons fit at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Welcome text fits at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "BtnFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "FindFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Friends search and controls fit at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Window follows safe area at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Visible labels fit at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "LeaderboardTab receives pointer",
+      "passed": true
+    },
+    {
+      "name": "MyPosition receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Current leaderboard row visible at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Close receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Close restores Menu at 1920x1080",
+      "passed": true
+    },
+    {
+      "name": "Welcome buttons fit at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Welcome text fits at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "BtnFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "FindFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Friends search and controls fit at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Window follows safe area at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Visible labels fit at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "LeaderboardTab receives pointer",
+      "passed": true
+    },
+    {
+      "name": "MyPosition receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Current leaderboard row visible at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Close receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Close restores Menu at 1024x768",
+      "passed": true
+    },
+    {
+      "name": "Welcome buttons fit at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Welcome text fits at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "BtnFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "FindFriends receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Friends search and controls fit at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Window follows safe area at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Visible labels fit at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "LeaderboardTab receives pointer",
+      "passed": true
+    },
+    {
+      "name": "MyPosition receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Current leaderboard row visible at 2560x1080",
+      "passed": true
+    },
+    {
+      "name": "Close receives pointer",
+      "passed": true
+    },
+    {
+      "name": "Close restores Menu at 2560x1080",
+      "passed": true
+    }
+  ]
+}

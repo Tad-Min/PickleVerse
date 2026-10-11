@@ -115,6 +115,20 @@ namespace PickleVerse.Progression
             if (name == Player.playerName) return;
             store.Transaction(p => p.playerName = name); Changed?.Invoke();
         }
+        public void EditLocalPlayer(string name, int elo, long tokenpad, long eliteToken)
+        {
+            if (!DeveloperControls) throw new InvalidOperationException("Chỉ chỉnh player trong Editor hoặc Development Build.");
+            if (Player.pendingMatch != null) throw new InvalidOperationException("Kết thúc trận và trở về Menu trước khi chỉnh player.");
+            name = LocalPlayerStore.CleanName(name);
+            if (name.Length == 0) throw new ArgumentException("Tên player không được để trống.");
+            if (elo < EloPolicy.Minimum) throw new ArgumentException("Elo phải từ 100 trở lên.");
+            if (tokenpad < 0 || eliteToken < 0) throw new ArgumentException("Số dư tiền không được âm.");
+            store.Transaction(p =>
+            {
+                p.playerName = name; p.elo = elo; p.coins = tokenpad; p.gems = eliteToken;
+            });
+            Changed?.Invoke();
+        }
         public void SwitchPlayer(string id, string name)
         {
             TickTime(); store.Switch(id, name);

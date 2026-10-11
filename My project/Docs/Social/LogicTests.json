@@ -1,0 +1,90 @@
+{
+  "status": "completed",
+  "duration": 0.4,
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.AddRejectsSelfUnknownAndDuplicatesAndRemoveIsIdempotent",
+      "Status": "Passed",
+      "Duration": 0.0264338,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.EmptyAndMissingQueriesAreHandled",
+      "Status": "Passed",
+      "Duration": 0.0021641,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.FixturesAreThirtyUniquePlayersAndDoNotChangeProfile",
+      "Status": "Passed",
+      "Duration": 0.0057029,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.LivePlayerIsIncludedExactlyOnceAndEloChangesReorder",
+      "Status": "Passed",
+      "Duration": 0.0058715,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.PlayersHaveSeparateSessionListsAndANewSessionRestoresSeeds",
+      "Status": "Passed",
+      "Duration": 0.0004813,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\" dan thanh \",\"DEMO-005\")",
+      "Status": "Passed",
+      "Duration": 0.00159,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"ĐAN THANH\",\"DEMO-005\")",
+      "Status": "Passed",
+      "Duration": 0.0001879,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"quynh nhu\",\"DEMO-019\")",
+      "Status": "Passed",
+      "Duration": 0.0001729,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"demo-030\",\"DEMO-030\")",
+      "Status": "Passed",
+      "Duration": 0.0001644,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"Quốc Bảo\",\"DEMO-018\")",
+      "Status": "Passed",
+      "Duration": 0.0001787,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.TiesHaveStableIdOrderAndFilteredPositionsStayGlobal",
+      "Status": "Passed",
+      "Duration": 0.0130363,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

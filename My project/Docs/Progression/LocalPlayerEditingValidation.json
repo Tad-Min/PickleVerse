@@ -1,0 +1,134 @@
+{
+  "passed": true,
+  "count": 32,
+  "checks": [
+    {
+      "name": "BtnEditPlayer accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "All three numeric inputs are present and show saved data",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "One save updates name, Elo and both balances",
+      "passed": true
+    },
+    {
+      "name": "Editor does not alter XP, streaks or history",
+      "passed": true
+    },
+    {
+      "name": "Menu wallet updates immediately",
+      "passed": true
+    },
+    {
+      "name": "Menu rank updates immediately",
+      "passed": true
+    },
+    {
+      "name": "Save action is labelled LƯU PLAYER",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: WRONG/99/20/30",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: WRONG/9999999999/20/30",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: WRONG/1250/-1/30",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: WRONG/1250/20/-1",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: WRONG/1250/9999999999999999999/30",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: WRONG//20/30",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Invalid values reject the entire edit: /1250/20/30",
+      "passed": true
+    },
+    {
+      "name": "Switch accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Switch ID does not apply stale editor values",
+      "passed": true
+    },
+    {
+      "name": "SaveName accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Floor Elo and zero balances are accepted",
+      "passed": true
+    },
+    {
+      "name": "Switch accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Reopening profile loads the persisted edit",
+      "passed": true
+    },
+    {
+      "name": "JSON contains the same balances and Elo",
+      "passed": true
+    },
+    {
+      "name": "Premium migration preserves saved developer test balance",
+      "passed": true
+    },
+    {
+      "name": "NameTag accepts pointer input",
+      "passed": true
+    },
+    {
+      "name": "Profile displays the edited rank and Elo",
+      "passed": true
+    }
+  ]
+}

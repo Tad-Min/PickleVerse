@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-12",
+  "passed": true,
+  "logicTests": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "interactionChecks": 35,
+  "layoutChecks": 48,
+  "menuRegressionChecks": 23,
+  "totalPassed": 117,
+  "resolutions": [
+    "1280x720",
+    "1920x1080",
+    "1024x768",
+    "2560x1080"
+  ],
+  "build": {
+    "status": "completed",
+    "buildId": "build_afca7bacedbd",
+    "result": "Succeeded",
+    "platform": "StandaloneWindows64",
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/ProgressionWindows/PickleVerse.exe",
+    "buildTimeMs": 47508,
+    "totalErrors": 0,
+    "totalWarnings": 1,
+    "errors": [],
+    "warnings": [
+      {
+        "message": "Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds."
+      }
+    ]
+  },
+  "notes": [
+    "Thirty fixed demo players plus the current player; live profile Elo is used.",
+    "Friends are session-only, separated by local player ID; a new run restores six seed friends.",
+    "Validation used separate local profiles and verified the original name, Elo, wallet, XP and history were preserved.",
+    "Source fixture tests and UI integration validation passed. No backend calls are made by the social feature."
+  ]
+}

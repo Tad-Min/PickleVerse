@@ -1,0 +1,5 @@
+{
+  "name": "PickleVerse.Social",
+  "rootNamespace": "PickleVerse.Social",
+  "references": ["PickleVerse.Progression"]
+}

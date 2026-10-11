@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-12",
+  "feature": "Local player editor: name, Elo, TOKENPAD, ELITE TOKEN",
+  "availableIn": [
+    "Editor",
+    "Development Build"
+  ],
+  "limits": {
+    "minimumElo": 100,
+    "maximumElo": 2147483647,
+    "minimumBalance": 0,
+    "maximumBalance": "9223372036854775807"
+  },
+  "tests": {
+    "progression": {
+      "Total": 44,
+      "Passed": 44,
+      "Failed": 0,
+      "Skipped": 0,
+      "Inconclusive": 0
+    },
+    "shop": {
+      "Total": 32,
+      "Passed": 32,
+      "Failed": 0,
+      "Skipped": 0,
+      "Inconclusive": 0
+    },
+    "editorWorkflow": 32,
+    "layoutAcrossFourResolutions": 16,
+    "menuRegression": 23,
+    "totalPassed": 147,
+    "failed": 0
+  },
+  "validationArtifacts": [
+    "Docs/Progression/LocalPlayerEditingValidation.json",
+    "Docs/Progression/LocalPlayerEditingLayout.json"
+  ],
+  "realPlayerIdentityWalletEloXpHistoryPreserved": true,
+  "build": {
+    "buildId": "build_edc59ae168ee",
+    "result": "Succeeded",
+    "platform": "StandaloneWindows64",
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/ProgressionWindows/PickleVerse.exe",
+    "totalErrors": 0,
+    "totalWarnings": 1,
+    "warnings": [
+      {
+        "message": "Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds."
+      }
+    ],
+    "buildStartedAt": "2026-10-11T17:56:51.3872682Z",
+    "buildEndedAt": "2026-10-11T17:57:38.9847218Z"
+  }
+}

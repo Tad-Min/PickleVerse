@@ -51,7 +51,10 @@ namespace PickleVerse.EditorTools
             menu.careerButton.interactable=true;
             var caption=menu.careerButton.GetComponentInChildren<TMP_Text>(); caption.text="Lịch sử đấu"; caption.color=new Color(.45f,.86f,.77f);
             if(!menu.modal) menu.BuildShell();
+            else menu.ConfigureEditForm();
             var face=menu.left.Find("Avatar"); face.GetComponent<Image>().color=name.Find("ImgAvatar").GetComponent<Image>().color;
+            // Keep the second WelcomeCard row when rerunning the progression setup tool.
+            menu.GetComponent<OfflineSocialMenu>()?.ConfigureWelcomeCard();
             if(!face.Find("Initial")) menu.Text("Initial",face,"P",34,new Color(.025f,.065f,.095f),Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
             const string configPath="Assets/Resources/Progression Config.asset";
             if(!AssetDatabase.LoadAssetAtPath<ProgressionConfig>(configPath)) AssetDatabase.CreateAsset(ProgressionConfig.Defaults(),configPath);
