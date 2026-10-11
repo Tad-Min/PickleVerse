@@ -1,0 +1,45 @@
+{
+  "assemblies": [
+    {
+      "assembly": "PickleVerse.Progression.Tests",
+      "summary": {
+        "Total": 44,
+        "Passed": 44,
+        "Failed": 0,
+        "Skipped": 0,
+        "Inconclusive": 0
+      }
+    },
+    {
+      "assembly": "PickleVerse.LocalMatch.Tests",
+      "summary": {
+        "Total": 44,
+        "Passed": 44,
+        "Failed": 0,
+        "Skipped": 0,
+        "Inconclusive": 0
+      }
+    },
+    {
+      "assembly": "PickleVerse.Multiplayer.Tests",
+      "summary": {
+        "Total": 60,
+        "Passed": 60,
+        "Failed": 0,
+        "Skipped": 0,
+        "Inconclusive": 0
+      }
+    },
+    {
+      "assembly": "PickleVerse.Shop.Tests",
+      "summary": {
+        "Total": 32,
+        "Passed": 32,
+        "Failed": 0,
+        "Skipped": 0,
+        "Inconclusive": 0
+      }
+    }
+  ],
+  "total": 180
+}

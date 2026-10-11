@@ -31,7 +31,8 @@ namespace PickleVerse.EditorTools
             menu.profileButton=name.GetComponent<Button>()??name.gameObject.AddComponent<Button>(); menu.profileButton.targetGraphic=name.GetComponent<Image>();
             menu.profileButton.targetGraphic.raycastTarget=true;
             foreach(var t in name.GetComponentsInChildren<TMP_Text>(true)) t.raycastTarget=false;
-            if(!menu.wallet) menu.wallet=menu.Text("Wallet",head,"<color=#C9F573>COIN</color>  0    <color=#73DCC4>GEM</color>  0",16,Color.white,new Vector2(.33f,.25f),new Vector2(.59f,.77f),Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
+            if(!menu.wallet) menu.wallet=menu.Text("Wallet",head,"TOKENPAD  0    ELITE TOKEN  0",16,Color.white,new Vector2(.33f,.25f),new Vector2(.59f,.77f),Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
+            menu.wallet.gameObject.SetActive(!canvas.GetComponentInChildren<PickleVerse.Shop.WalletBar>(true));
             menu.wallet.rectTransform.anchorMin=new Vector2(.33f,.08f); menu.wallet.rectTransform.anchorMax=new Vector2(.59f,.34f);
             menu.wallet.rectTransform.offsetMin=menu.wallet.rectTransform.offsetMax=Vector2.zero;
             if(!menu.editButton) menu.editButton=menu.MakeButton("BtnEditPlayer",head,"CHỈNH PLAYER",()=>{},new Vector2(.60f,.27f),new Vector2(.735f,.77f),new Color(.075f,.16f,.20f),new Color(.45f,.86f,.77f),13);

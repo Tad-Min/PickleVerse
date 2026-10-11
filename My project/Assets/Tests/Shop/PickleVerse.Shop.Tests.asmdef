@@ -1,0 +1,6 @@
+{
+ "name":"PickleVerse.Shop.Tests",
+ "references":["PickleVerse.Shop","PickleVerse.Progression"],
+ "includePlatforms":["Editor"],
+ "optionalUnityReferences":["TestAssemblies"]
+}

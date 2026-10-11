@@ -30,7 +30,7 @@ public static class MatchSfxSetup
         var configuration=AudioSettings.GetConfiguration();configuration.dspBufferSize=256;AudioSettings.Reset(configuration);
         var settingsScene=UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Scenes/UI/Settings.unity",UnityEditor.SceneManagement.OpenSceneMode.Additive);
         var note=settingsScene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<TMPro.TMP_Text>(true)).First(t=>t.name=="Note"&&t.text.Contains("âm lượng"));
-        note.text="Hiệu ứng trận đấu đã hoạt động. Nhạc nền sẽ được bổ sung sau.";
+        note.text="Nhạc nền phát ở các màn giao diện và tự dừng khi vào trận. Hiệu ứng trận đấu có âm lượng riêng.";
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(settingsScene);UnityEditor.SceneManagement.EditorSceneManager.SaveScene(settingsScene);UnityEditor.SceneManagement.EditorSceneManager.CloseScene(settingsScene,true);
         AudioSettings.GetDSPBufferSize(out var size,out var buffers);
         var clips=files.Select(f=>{

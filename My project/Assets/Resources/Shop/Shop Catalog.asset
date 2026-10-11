@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13379a2483f8bc0478ba2d1d73557daf, type: 3}
+  m_Name: Shop Catalog
+  m_EditorClassIdentifier: PickleVerse.Shop::PickleVerse.Shop.ShopCatalog
+  initialTokenpad: 0
+  initialElite: 0
+  botWinReward: 100
+  botLossReward: 50
+  onlineWinReward: 150
+  onlineLossReward: 75
+  tokenpadIcon: {fileID: 21300000, guid: dfd4efeea917e9b4aabef453f6f086b4, type: 3}
+  eliteIcon: {fileID: 21300000, guid: f284922341f814247b60ea5d169658cd, type: 3}
+  tokenpadSheen: {fileID: 2100000, guid: 78b28ab6aae0dd644a2293257fa0c2ec, type: 2}
+  eliteSheen: {fileID: 2100000, guid: 1b92c9dc80c76064780aa879785fbf4a, type: 2}
+  paddles:
+  - id: paddle.gemstone
+    title: GEMSTONE
+    description: "Vi\u1EC1n \u0111\xE1 qu\xFD, s\u1EAFc v\xE0ng v\xE0 m\u1EB7t carbon. \xC1nh l\u1EA5p l\xE1nh tinh t\u1EBF khi xoay d\u01B0\u1EDBi \xE1nh s\xE1ng."
+    collection: ELITE COLLECTION
+    tokenpadPrice: 0
+    elitePrice: 650
+    previewPrefab: {fileID: 5608760943000271986, guid: 1bd55ff049ea33c4e989236c21d32e05, type: 3}
+    gameplayPrefab: {fileID: 586711367654620934, guid: d125f6b56b0bba24b8ff69c56650ad5c, type: 3}
+    thumbnail: {fileID: -7541759722041312375, guid: dc028b31e84ba6b4c93deb46a048353f, type: 3}
+    gemstone: 1
+    releaseOrder: 2
+  - id: paddle.thot
+    title: THOT
+    description: "Hoa v\u0103n n\u1ED5i b\u1EADt cho phong c\xE1ch thi \u0111\u1EA5u ri\xEAng. Ch\u1ECDn Tokenpad ho\u1EB7c Elite \u0111\u1EC3 s\u1EDF h\u1EEFu."
+    collection: SIGNATURE COLLECTION
+    tokenpadPrice: 900
+    elitePrice: 250
+    previewPrefab: {fileID: 669162836545824645, guid: 732e36093f7e86543861612d5f6364db, type: 3}
+    gameplayPrefab: {fileID: 6054762527399542158, guid: b9d5992ada2c0b542b23dfa56f25763d, type: 3}
+    thumbnail: {fileID: 940161662237663999, guid: 67cbeaf4b1b14514b83ad397f505bbdb, type: 3}
+    gemstone: 0
+    releaseOrder: 1
+  defaultPaddle:
+    id: paddle.default
+    title: PICKLEVERSE
+    description: "V\u1EE3t m\u1EB7c \u0111\u1ECBnh c\u1EE7a PickleVerse. Thi\u1EBFt k\u1EBF g\u1ECDn g\xE0ng, lu\xF4n s\u1EB5n s\xE0ng cho nh\u1EEFng tr\u1EADn \u0111\u1EA5u \u0111\u1EA7u ti\xEAn."
+    collection: ORIGINAL COLLECTION
+    tokenpadPrice: 0
+    elitePrice: 0
+    previewPrefab: {fileID: 6306591974749609357, guid: fdd3ce98e44054e4b81130fd6ed44849, type: 3}
+    gameplayPrefab: {fileID: 7200189067453212356, guid: 4ac593753133da04cb23b5618441c11f, type: 3}
+    thumbnail: {fileID: -3602892913844299918, guid: 722c048cf523b3f4e8199be337c04e73, type: 3}
+    gemstone: 0
+    releaseOrder: 0

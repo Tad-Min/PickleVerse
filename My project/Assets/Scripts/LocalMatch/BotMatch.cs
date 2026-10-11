@@ -40,6 +40,7 @@ namespace PickleVerse.LocalMatch
         int initialServer;
         bool releasedServe, focused = true;
         readonly ServeCountdownCue countdown=new ServeCountdownCue();
+        string rewardMatchId=System.Guid.NewGuid().ToString("N");
         Vector3 serveOrigin;
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
@@ -60,6 +61,7 @@ namespace PickleVerse.LocalMatch
             TotalHits=TotalRallies=LongestRally=0;RallyLog.Clear();Paused=false;
             human.end=-1;bot.end=1;
             human.Initialize(); bot.Initialize();
+            if(human.paddle)PickleVerse.Shop.EquippedPaddle.Attach(human.paddle);
             initialServer = UnityEngine.Random.Range(0, 2);
             Rules = new SinglesRules(initialServer); PreparePoint(); Phase = MatchPhase.Intro;
             if (hud) hud.Bind(this);
@@ -302,6 +304,7 @@ namespace PickleVerse.LocalMatch
                 SfxPlayer.Play(GameSfx.GameWhistle);
                 Phase = MatchPhase.MatchOver; Message = Rules.Winner == 0 ? "Bạn thắng trận!" : "Bot thắng trận";
                 CompleteProgressionMatch(false);
+                if(!autoPlayer)PickleVerse.Shop.PlayerEconomy.Reward("bot:"+rewardMatchId,false,Rules.Winner==0);
                 Announcements?.Enqueue("GAME, MATCH!", (Rules.Winner == 0 ? "BẠN THẮNG TRẬN" : "BOT THẮNG TRẬN") + " • " + Rules.Games[0] + " - " + Rules.Games[1] + "\nGame " + endedGame + ": " + Rules.Points[0] + " - " + Rules.Points[1], Rules.Winner == 0 ? AnnouncementTone.Success : AnnouncementTone.Fault, 2.1f);
             }
             else if (Rules.GameFinished)
@@ -366,6 +369,7 @@ namespace PickleVerse.LocalMatch
         public void Restart()
         {
             CompleteProgressionMatch(true);
+            rewardMatchId=System.Guid.NewGuid().ToString("N");
             Announcements?.Clear();
             if(opening && opening.IsPlaying)opening.Cancel();
             Paused = false; Rules = new SinglesRules(initialServer); human.end = -1; bot.end = 1;

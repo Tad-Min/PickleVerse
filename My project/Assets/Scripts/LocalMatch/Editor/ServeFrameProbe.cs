@@ -38,7 +38,7 @@ namespace PickleVerse.LocalMatch.Editor
         public static string Begin(int server, float hold, string name)
         {
             if(!EditorApplication.isPlaying)throw new InvalidOperationException("Probe needs Play Mode");
-            Stop();match=UnityEngine.Object.FindFirstObjectByType<BotMatch>();
+            Stop();match=UnityEngine.Object.FindAnyObjectByType<BotMatch>();
             oldBackground=Application.runInBackground;Application.runInBackground=true;
             typeof(BotMatch).GetField("initialServer",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(match,server);
             typeof(BotMatch).GetField("focused",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(match,true);

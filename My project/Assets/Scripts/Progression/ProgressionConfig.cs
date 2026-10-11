@@ -7,7 +7,7 @@ namespace PickleVerse.Progression
     public sealed class ProgressionConfig : ScriptableObject
     {
         public int winXp = 10, lossXp = 5;
-        public RewardBundle dailyBonus = new RewardBundle(200, 2, 20), weeklyBonus = new RewardBundle(1000, 5, 50);
+        public RewardBundle dailyBonus = new RewardBundle(200, 0, 20), weeklyBonus = new RewardBundle(1000, 0, 50);
         public List<ProgressDefinition> definitions = new List<ProgressDefinition>();
         public void SetDefaults()
         {
@@ -41,7 +41,7 @@ namespace PickleVerse.Progression
             Add("W.Streak3", "Đạt chuỗi thắng 3 trận trong tuần", ProgressScope.Weekly, ProgressMetric.BestStreak, 3, 350, 2, 20);
         }
         void Add(string id, string title, ProgressScope scope, ProgressMetric metric, int target, int coins, int gems, int xp)
-        { definitions.Add(new ProgressDefinition(id, title, scope, metric, target, new RewardBundle(coins, gems, xp))); }
+        { definitions.Add(new ProgressDefinition(id, title, scope, metric, target, new RewardBundle(coins, 0, xp))); }
         public static ProgressionConfig Defaults()
         { var config = CreateInstance<ProgressionConfig>(); config.SetDefaults(); return config; }
     }

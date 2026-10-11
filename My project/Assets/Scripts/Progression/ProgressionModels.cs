@@ -12,7 +12,7 @@ namespace PickleVerse.Progression
     {
         public int coins, gems, xp;
         public RewardBundle(int coins, int gems, int xp) { this.coins = coins; this.gems = gems; this.xp = xp; }
-        public override string ToString() => $"{coins} Coin  ·  {gems} gem  ·  {xp} XP";
+        public override string ToString() => $"{coins} TOKENPAD  ·  {xp} XP";
     }
     [Serializable] public sealed class ProgressDefinition
     {
@@ -87,6 +87,9 @@ namespace PickleVerse.Progression
         public int version = 1;
         public string id, playerName, avatarId = "initial";
         public long createdUtcTicks, totalXp, coins, gems, wins, losses;
+        // Keep the legacy JSON balance names; coins = TOKENPAD, gems = paid ELITE TOKEN.
+        public int currencyVersion;
+        public string shopData = "";
         public int elo = 100, level = 1, levelXp, rankWinStreak, rankLossStreak;
         public double activeSeconds;
         public ProgressCounters lifetime = new ProgressCounters();
@@ -97,6 +100,17 @@ namespace PickleVerse.Progression
         public MatchResult pendingMatch;
         public long NextLevelXp => (long)level * 10;
         public double WinRate => wins + losses == 0 ? 0 : 100d * wins / (wins + losses);
+    }
+    public static class CurrencyPolicy
+    {
+        public static bool Migrate(PlayerProfile player)
+        {
+            if (player.currencyVersion >= 1) return false;
+            // Version 0 had only gameplay gems. No payment or verified top-up existed.
+            player.gems = 0;
+            player.currencyVersion = 1;
+            return true;
+        }
     }
     // Captures gameplay facts, once per stroke, only after the rules accept its landing/return.
     public sealed class StrokeProgressTracker

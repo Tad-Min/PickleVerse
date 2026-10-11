@@ -19,12 +19,12 @@ namespace PickleVerse.LocalMatch.Editor
         }
         public static string Inspect()
         {
-            var match = UnityEngine.Object.FindFirstObjectByType<BotMatch>();
+            var match = UnityEngine.Object.FindAnyObjectByType<BotMatch>();
             var a = new Audit {
                 scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().path,
-                cameras = UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).Length,
-                lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Length,
-                eventSystems = UnityEngine.Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None).Length,
+                cameras = UnityEngine.Object.FindObjectsByType<Camera>().Length,
+                lights = UnityEngine.Object.FindObjectsByType<Light>().Length,
+                eventSystems = UnityEngine.Object.FindObjectsByType<EventSystem>().Length,
                 humanClips = match.human.clips.Length, botClips = match.bot.clips.Length,
                 humanBones = match.human.visual.GetComponentInChildren<SkinnedMeshRenderer>().bones.Length,
                 botBones = match.bot.visual.GetComponentInChildren<SkinnedMeshRenderer>().bones.Length,
@@ -38,7 +38,7 @@ namespace PickleVerse.LocalMatch.Editor
         public static string Smoke(int seconds = 60)
         {
             if (!EditorApplication.isPlaying) throw new InvalidOperationException("Smoke test needs Play Mode.");
-            var match = UnityEngine.Object.FindFirstObjectByType<BotMatch>();
+            var match = UnityEngine.Object.FindAnyObjectByType<BotMatch>();
             match.enabled = false; match.autoPlayer = true; match.Restart();
             for (int i=0; i<seconds*120 && match.Phase!=MatchPhase.MatchOver;i++)
             {
@@ -51,7 +51,7 @@ namespace PickleVerse.LocalMatch.Editor
         }
         public static string PoseAudit()
         {
-            var match = UnityEngine.Object.FindFirstObjectByType<BotMatch>();
+            var match = UnityEngine.Object.FindAnyObjectByType<BotMatch>();
             var rows = new List<string>();
             foreach(var actor in new[]{match.human,match.bot})
             {
@@ -70,7 +70,7 @@ namespace PickleVerse.LocalMatch.Editor
         public static string ContactChecks()
         {
             if(!EditorApplication.isPlaying)throw new InvalidOperationException("Contact checks need Play Mode");
-            var match=UnityEngine.Object.FindFirstObjectByType<BotMatch>();match.enabled=false;
+            var match=UnityEngine.Object.FindAnyObjectByType<BotMatch>();match.enabled=false;
             var tests=new[]{1,2,4,3,5,6,9,10,12,17,18,20};var rows=new List<ContactResult>();
             foreach(int mask in tests)
             {
@@ -102,7 +102,7 @@ namespace PickleVerse.LocalMatch.Editor
         public static string InputDevices()
         {
             if(!EditorApplication.isPlaying)throw new InvalidOperationException("Input checks need Play Mode");
-            var match=UnityEngine.Object.FindFirstObjectByType<BotMatch>();match.enabled=false;match.autoPlayer=false;
+            var match=UnityEngine.Object.FindAnyObjectByType<BotMatch>();match.enabled=false;match.autoPlayer=false;
             var keyboard=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>();
             var update=typeof(BotMatch).GetMethod("Update",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
             var focus=typeof(BotMatch).GetField("focused",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);object oldFocus=focus.GetValue(match);focus.SetValue(match,true);

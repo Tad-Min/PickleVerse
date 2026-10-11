@@ -102,7 +102,7 @@ namespace PickleVerse.FrontEnd
             if(!Application.isPlaying || !ProgressionRuntime.Exists) return;
             var player=ProgressionRuntime.Instance.Player; var engine=ProgressionRuntime.Instance.Engine;
             menuName.text=player.playerName; menuLevel.text=$"LV {player.level}  ·  {EloPolicy.Rank(player.elo)}  {player.elo}";
-            wallet.text=$"<color=#C9F573>COIN</color>  {player.coins:N0}    <color=#73DCC4>GEM</color>  {player.gems:N0}";
+            wallet.text=$"<color=#C9F573>TOKENPAD</color>  {player.coins:N0}    <color=#73DCC4>ELITE TOKEN</color>  {player.gems:N0}";
             if(!modal.gameObject.activeSelf) return;
             Render(player,engine);
         }

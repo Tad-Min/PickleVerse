@@ -112,3 +112,5 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+# Local recovery snapshots include the original conflict markers and are never source assets.
+Docs/MergeRecovery/

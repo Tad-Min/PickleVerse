@@ -33,12 +33,12 @@ namespace PickleVerse.LocalMatch.Editor
             lighting.nightSky=SkyMaterial(NightImage,"MoonBurst",.70f,35);
             lighting.matchCamera=UnityEngine.Object.FindAnyObjectByType<MatchCamera>().GetComponent<Camera>();
             lighting.matchCamera.clearFlags=CameraClearFlags.Skybox;
-            var sun=UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l=>l.type==LightType.Directional);
+            var sun=UnityEngine.Object.FindObjectsByType<Light>().FirstOrDefault(l=>l.type==LightType.Directional);
             if(!sun)sun=new GameObject("Match Sun").AddComponent<Light>();
             sun.name="Match Sun";sun.type=LightType.Directional;sun.color=new Color(1,.93f,.82f);sun.intensity=1.1f;
             sun.transform.rotation=Quaternion.Euler(28,-35,0);sun.shadows=LightShadows.Soft;sun.shadowStrength=.8f;sun.shadowBias=.035f;sun.shadowNormalBias=.12f;
             lighting.sun=sun;
-            var lamps=UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Where(t=>t.name=="LampHousing").OrderBy(t=>t.position.z).ThenBy(t=>t.position.x).ToArray();
+            var lamps=UnityEngine.Object.FindObjectsByType<Transform>().Where(t=>t.name=="LampHousing").OrderBy(t=>t.position.z).ThenBy(t=>t.position.x).ToArray();
             if(lamps.Length!=4)throw new InvalidOperationException("Expected four corner lamp housings.");
             var arena=GameObject.Find("Arena").transform;
             lighting.floodlights=new Light[4];lighting.lampFaces=lamps.Select(t=>t.GetComponent<Renderer>()).ToArray();

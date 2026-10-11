@@ -1,0 +1,58 @@
+{
+  "passed": true,
+  "count": 13,
+  "checks": [
+    {
+      "name": "Fresh profile starts with both balances zero",
+      "passed": true
+    },
+    {
+      "name": "Full bot match applies XP and history only once",
+      "passed": true
+    },
+    {
+      "name": "Full bot match credits shared TOKENPAD once and no ELITE",
+      "passed": true
+    },
+    {
+      "name": "Daily reward is claimable",
+      "passed": true
+    },
+    {
+      "name": "Mission credits the same wallet without ELITE",
+      "passed": true
+    },
+    {
+      "name": "Shop purchase debits progression balance",
+      "passed": true
+    },
+    {
+      "name": "Replayed purchase cannot debit twice",
+      "passed": true
+    },
+    {
+      "name": "Bought paddle can be equipped",
+      "passed": true
+    },
+    {
+      "name": "Switching profile resets displayed wallet and inventory",
+      "passed": true
+    },
+    {
+      "name": "Returning profile restores purchase and equipment",
+      "passed": true
+    },
+    {
+      "name": "Menu displays unified balances",
+      "passed": true
+    },
+    {
+      "name": "Shop displays the same balances",
+      "passed": true
+    },
+    {
+      "name": "Real player balance is untouched by test",
+      "passed": true
+    }
+  ]
+}

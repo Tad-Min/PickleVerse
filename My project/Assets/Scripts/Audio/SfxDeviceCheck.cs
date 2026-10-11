@@ -1,4 +1,3 @@
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
 using System;
 using System.Collections;
 using System.IO;
@@ -17,6 +16,7 @@ namespace PickleVerse.Audio
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void StartCheck()
         {
+            if (!Application.isEditor && !Debug.isDebugBuild) return;
             var arg=Environment.GetCommandLineArgs().FirstOrDefault(a=>a.StartsWith("--pkv-sfx-report="));
             if(arg==null)return;var root=new GameObject("SFX Device Check");DontDestroyOnLoad(root);root.AddComponent<SfxDeviceCheck>().report=arg.Substring("--pkv-sfx-report=".Length);
         }
@@ -45,4 +45,3 @@ namespace PickleVerse.Audio
         }
     }
 }
-#endif

@@ -26,7 +26,11 @@ namespace PickleVerse.Multiplayer
             var current=ProgressionRuntime.Instance.Player;
             if(found.result.id!=current.pendingMatch?.id && found.result.id!=Roster?.matchId) return false;
             found.result.playerId=ProgressionRuntime.Instance.Player.id;
-            return ProgressionRuntime.Instance.Apply(found.result);
+            bool applied=ProgressionRuntime.Instance.Apply(found.result);
+            var saved=ProgressionRuntime.Instance.Player.history.Find(r=>r.id==found.result.id);
+            if(saved!=null&&saved.Eligible&&!saved.localForfeit&&saved.outcome!=MatchOutcome.Interrupted)
+                PickleVerse.Shop.PlayerEconomy.Reward("online:"+saved.id,true,saved.outcome==MatchOutcome.Won);
+            return applied;
         }
         async Task ResolvePendingProgressionAsync(string reason)
         {

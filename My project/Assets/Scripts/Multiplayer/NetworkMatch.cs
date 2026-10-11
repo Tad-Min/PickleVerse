@@ -395,7 +395,11 @@ namespace PickleVerse.Multiplayer
             Status.Value=new FixedString512Bytes($"Đội {(Rules.winner==0?"A":"B")} thắng trận {Rules.games[0]} : {Rules.games[1]} game — điểm game cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}"); Finished.Value=true;
             AnnouncementRpc("GAME, MATCH!",Status.Value.ToString(),(int)AnnouncementTone.Success,2.1f);
         }
-        void ResultChanged(bool old,bool complete) { if(complete) MultiplayerApp.Instance.ShowResult(Status.Value.ToString()); }
+        void ResultChanged(bool old,bool complete)
+        {
+            if(!complete)return;
+            MultiplayerApp.Instance.ShowResult(Status.Value.ToString());
+        }
         [Rpc(SendTo.ClientsAndHost)] void MatchSoundRpc(int sound)
         { SfxPlayer.Play((GameSfx)sound); }
         [Rpc(SendTo.ClientsAndHost)] void AnnouncementRpc(string title,string detail,int tone,float duration)

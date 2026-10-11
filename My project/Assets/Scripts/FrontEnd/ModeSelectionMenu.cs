@@ -15,6 +15,7 @@ namespace PickleVerse.FrontEnd
         public TMP_Text breadcrumb, title, subtitle, summary, difficultyDescription, loadingLabel;
         public GameObject loadingOverlay;
         public UnityEngine.UI.Button botButton, startButton;
+        public UnityEngine.UI.Button tutorialButton;
         public UnityEngine.UI.Button[] difficultyButtons, environmentButtons;
         public TMP_Text[] difficultySelected, environmentSelected;
         public UnityEngine.UI.RawImage courtPreview;
@@ -40,7 +41,7 @@ namespace PickleVerse.FrontEnd
         void Update()
         {
             ApplySafeArea();
-            if (!Loading && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
+            if (!PickleVerse.Settings.FrontEndModalInput.IsOpen && !Loading && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
         }
 
         void ApplySafeArea()
@@ -60,6 +61,7 @@ namespace PickleVerse.FrontEnd
             if (Loading) return;
             IsBotSetup = false;
             modePage.SetActive(true); botPage.SetActive(false);
+            if(tutorialButton)tutorialButton.gameObject.SetActive(true);
             breadcrumb.text = "CHƠI  /  CHỌN CHẾ ĐỘ";
             title.text = "Chọn cách bạn vào sân";
             subtitle.text = "Một trận đấu mới bắt đầu từ đây.";
@@ -72,6 +74,7 @@ namespace PickleVerse.FrontEnd
             if (Loading) return;
             IsBotSetup = true;
             modePage.SetActive(false); botPage.SetActive(true);
+            if(tutorialButton)tutorialButton.gameObject.SetActive(false);
             breadcrumb.text = "CHƠI  /  ĐẤU VỚI BOT";
             title.text = "Chuẩn bị trận đấu";
             subtitle.text = "Chọn đối thủ và bối cảnh phù hợp với bạn.";
@@ -157,7 +160,7 @@ namespace PickleVerse.FrontEnd
         {
             if (Loading) return;
             if (IsBotSetup) ShowModes();
-            else SceneManager.LoadScene("Menu");
+            else PickleVerse.Shop.LobbyNavigation.ReturnToLobby();
         }
 
         public void StartBot()

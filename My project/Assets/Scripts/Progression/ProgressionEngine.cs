@@ -59,7 +59,8 @@ namespace PickleVerse.Progression
         }
         public static void Grant(PlayerProfile p, RewardBundle reward)
         {
-            p.coins += Math.Max(0, reward.coins); p.gems += Math.Max(0, reward.gems);
+            p.coins += Math.Max(0, reward.coins);
+            // ELITE TOKEN is reserved for verified top-ups, including legacy reward configurations.
             long xp = Math.Max(0, reward.xp); p.totalXp += xp;
             long available = p.levelXp + xp;
             while (available >= p.NextLevelXp && p.level < int.MaxValue) { available -= p.NextLevelXp; p.level++; }

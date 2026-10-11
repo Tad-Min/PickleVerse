@@ -1,0 +1,5 @@
+{
+  "name":"PickleVerse.Shop",
+  "rootNamespace":"PickleVerse.Shop",
+  "references":["Unity.TextMeshPro","Unity.ugui","Unity.InputSystem","PickleVerse.Settings","PickleVerse.Progression"]
+}

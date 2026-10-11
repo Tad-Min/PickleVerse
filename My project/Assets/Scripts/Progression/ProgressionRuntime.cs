@@ -46,6 +46,7 @@ namespace PickleVerse.Progression
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++) if (args[i] == "-pkvProfile") requested = args[i + 1];
             store.Open(requested);
+            if (Player.currencyVersion < 1) store.Transaction(p => CurrencyPolicy.Migrate(p));
             RecoverPending(); RefreshPeriods();
             focused = Application.isFocused; lastTime = Time.realtimeSinceStartupAsDouble; nextSave = lastTime + 30;
         }
@@ -116,8 +117,12 @@ namespace PickleVerse.Progression
         }
         public void SwitchPlayer(string id, string name)
         {
-            TickTime(); store.Switch(id, name); RecoverPending(); RefreshPeriods(); Changed?.Invoke();
+            TickTime(); store.Switch(id, name);
+            if (Player.currencyVersion < 1) store.Transaction(p => CurrencyPolicy.Migrate(p));
+            RecoverPending(); RefreshPeriods(); Changed?.Invoke();
         }
+        public void UpdateWallet(Action<PlayerProfile> mutation)
+        { store.Transaction(mutation); Changed?.Invoke(); }
         public void Save() { TickTime(); store.Save(); }
         public static string FormatTime(double seconds)
         {

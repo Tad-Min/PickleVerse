@@ -1,6 +1,6 @@
 # Profile, thành tựu, nhiệm vụ và rank
 
-Triển khai trên Menu hiện tại bằng uGUI/TMP. `NameTag` mở Hồ sơ, nút Thành tựu đổi nội dung, `BtnMissions` mở nhiệm vụ ngày/tuần, `BtnCareer` mở 20 trận gần nhất và tỷ số từng game. Coin/gem nằm dưới logo; nhãn ngày/đêm vẫn dùng ô Currency hiện có. Modal chặn chuột và điều hướng bàn phím ở Menu, đóng bằng Escape và theo safe area.
+Triển khai trên Menu hiện tại bằng uGUI/TMP. `NameTag` mở Hồ sơ, nút Thành tựu đổi nội dung, `BtnMissions` mở nhiệm vụ ngày/tuần, `BtnCareer` mở 20 trận gần nhất và tỷ số từng game. Ví TOKENPAD/ELITE TOKEN dùng chung với Shop; nhãn ngày/đêm vẫn dùng ô Currency hiện có. Modal chặn chuột và điều hướng bàn phím ở Menu, đóng bằng Escape và theo safe area.
 
 ## Dữ liệu và cấu hình
 
@@ -8,7 +8,7 @@ Triển khai trên Menu hiện tại bằng uGUI/TMP. `NameTag` mở Hồ sơ, n
 - Chỉnh danh sách, mục tiêu, thưởng và XP trận trong Inspector của `Assets/Resources/Progression Config.asset`. Mặc định có đúng 10 thành tựu, 7 nhiệm vụ ngày, 10 nhiệm vụ tuần và hai thưởng tổng theo kế hoạch.
 - JSON: `Application.persistentDataPath/LocalPlayers/<ID>.json`; bản dự phòng `<ID>.json.bak`. Trên máy kiểm thử: `%USERPROFILE%/AppData/LocalLow/DefaultCompany/My project/LocalPlayers/`.
 - Ghi vào file tạm, flush xuống đĩa rồi thay file nguyên tử. Lease `<ID>.lock` dùng `FileShare.None`; hệ điều hành giải phóng lease khi phiên kết thúc. `selection.lock` bảo vệ chọn danh tính đồng thời. `preferred.txt` lưu lựa chọn ID trên Menu.
-- Player mới: tên 4 chữ cái, ID chữ/số tối đa 24 ký tự, Elo 100, level 1, XP/Coin/gem 0. Các phiên không có `-pkvProfile` chọn player đang rảnh hoặc tạo mới. `-pkvProfile <ID>` chọn rõ một player; ID đang có lease bị từ chối.
+- Player mới: tên 4 chữ cái, ID chữ/số tối đa 24 ký tự, Elo 100, level 1, XP/TOKENPAD/ELITE TOKEN 0. TOKENPAD thay Coin; ELITE TOKEN thay Gem và chỉ dành cho nạp có xác thực. Trận/thành tựu/nhiệm vụ không cấp ELITE. Phiên bản tiền tệ 0 chưa có hệ thống nạp nên loại Gem miễn phí cũ khi chuyển sang phiên bản 1; không xóa ELITE đã tồn tại ở phiên bản 1. Ví Shop demo cũ được nhập vào đúng một profile, giữ TOKENPAD và bộ sưu tập, bỏ ELITE demo; tiến trình và ví được lưu chung JSON nguyên tử. Hiện chưa có cổng nạp thật. Các phiên không có `-pkvProfile` chọn player đang rảnh hoặc tạo mới. `-pkvProfile <ID>` chọn rõ một player; ID đang có lease bị từ chối.
 - Nút Chỉnh player chỉ hiện trong Editor/Development Build. Đổi ID giữ tên của dữ liệu đã có. Đổi tên trong phòng lưu cùng dữ liệu cục bộ. ID này chọn Unity Authentication profile; ID online của Authentication được quản lý riêng.
 - Thời gian hoạt động dùng đồng hồ không phụ thuộc timeScale, không tính lúc mất focus/chạy nền; lưu mỗi 30 giây, khi mất focus, đổi player và thoát.
 
@@ -24,7 +24,7 @@ Ngày reset 00:00 UTC, tuần reset 00:00 UTC thứ Hai. Tự nhận các phần
 
 ## Ghép rank và bot
 
-Protocol multiplayer là **5**; các máy cần cùng bản build mới. Cấu hình `Assets/Settings/Multiplayer/Cloud/PickleVerse_1v1.mmq` dùng timeout 360 giây, Equality vùng/protocol, Difference Elo 120 và Intersection khóa cặp. Bộ sinh cấu hình giữ các quy tắc này. Menu Editor `PickleVerse > Multiplayer > Deploy Ranked 1v1 Test Configuration` chỉ triển khai queue 1v1. Biên nhận triển khai thực tế vào `pickleverse-test` nằm ở `Docs/MultiplayerCloudDeployment.txt`.
+Protocol multiplayer là **6** sau khi hợp nhất dữ liệu bot rank và skin vợt; các máy cần cùng bản build mới. Cấu hình `Assets/Settings/Multiplayer/Cloud/PickleVerse_1v1.mmq` dùng timeout 360 giây, Equality vùng/protocol, Difference Elo 120 và Intersection khóa cặp. Bộ sinh cấu hình giữ các quy tắc này. Menu Editor `PickleVerse > Multiplayer > Deploy Ranked 1v1 Test Configuration` chỉ triển khai queue 1v1. Biên nhận triển khai thực tế vào `pickleverse-test` nằm ở `Docs/MultiplayerCloudDeployment.txt`.
 
 **Điều chỉnh bắt buộc khi tích hợp dịch vụ:** [Unity giới hạn mảng custom data ở 100 phần tử](https://docs.unity.com/en-us/mps-sdk/matchmaking/mm-rate-limits), trong khi danh sách đầy đủ có thể có 241 khóa cặp. Vì vậy adapter chia khóa chuẩn hóa `min(E,O):max(E,O)` thành ba pha UTC, mỗi pha 10 giây, theo `(E+O)%3`. Mỗi ticket gửi tối đa 81 khóa; đủ cả khoảng ±120 trong mỗi vòng 30 giây. Hai phía cùng một cặp luôn dùng cùng pha. Việc hủy/tạo ticket không đặt lại đồng hồ tìm trận. Cách gửi một mảng 241 phần tử trong bản kế hoạch không được dịch vụ chấp nhận.
 
