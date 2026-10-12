@@ -96,6 +96,15 @@ namespace PickleVerse.FrontEnd
             StartCoroutine(LoadScene("PlayMultiplayer", "Đang mở phòng multiplayer…"));
         }
 
+        public void OpenTraining()
+        {
+            if(Loading||PickleVerse.Shop.LobbyNavigation.IsBusy)return;
+            if(!Application.CanStreamedLevelBeLoaded("Training")){subtitle.text="Chưa tìm thấy sân luyện tập.";return;}
+            Loading=true;
+            loadingOverlay.SetActive(true);loadingLabel.text="Đang mở học viện…";
+            PickleVerse.Shop.LobbyNavigation.OpenTraining();
+        }
+
         void Reveal(GameObject page)
         {
             if (reveal != null) StopCoroutine(reveal);

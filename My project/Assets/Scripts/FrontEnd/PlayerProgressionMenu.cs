@@ -12,11 +12,11 @@ using UnityEngine.UI;
 namespace PickleVerse.FrontEnd
 {
     // Scene bindings and shell are authored by ProgressionMenuSetup; rows are populated from the current player.
-    public sealed class PlayerProgressionMenu : MonoBehaviour
+    public sealed partial class PlayerProgressionMenu : MonoBehaviour
     {
         public TMP_FontAsset font;
         public Sprite rounded, avatar;
-        public Button profileButton, missionsButton, careerButton, editButton;
+        public Button profileButton, missionsButton, careerButton, editButton, progressionButton;
         public TMP_Text menuName, menuLevel, wallet;
         public RectTransform modal, modalSafe, window, left, right, content, summary;
         public TMP_Text title, subtitle, identityName, identityId, identityRank, levelText, xpText, summaryText, countdown, feedback;
@@ -25,7 +25,7 @@ namespace PickleVerse.FrontEnd
         public TMP_InputField editId, editName, editElo, editTokenpad, editEliteToken;
         public RectTransform editForm;
         public ScrollRect scroll;
-        enum View { Statistics, Achievements, Daily, Weekly, Career, Edit }
+        enum View { Statistics, Achievements, Daily, Weekly, Career, Edit, Training }
         View view;
         GameObject priorSelection;
         CanvasGroup menuInteraction;
@@ -38,6 +38,9 @@ namespace PickleVerse.FrontEnd
         {
             if(!modal) BuildShell();
             else ConfigureEditForm();
+            ConfigureTrainingUI();
+            if(!progressionButton)progressionButton=GetComponentsInChildren<Button>(true).FirstOrDefault(b=>b.name=="BtnProgression");
+            if(progressionButton){progressionButton.interactable=true;progressionButton.onClick.AddListener(OpenTrainingProgress);}
             var menuRoot=transform.Find("HomeSafeArea");
             if(menuRoot)
             {
@@ -57,7 +60,7 @@ namespace PickleVerse.FrontEnd
             ProgressionRuntime.Changed+=Refresh;
             Close(); Refresh();
         }
-        void OnDestroy() { ProgressionRuntime.Changed-=Refresh; }
+        void OnDestroy() { ProgressionRuntime.Changed-=Refresh;PickleVerse.Settings.FrontEndModalInput.Release(this); }
         void Update()
         {
             if(!modal.gameObject.activeSelf) return;
@@ -72,11 +75,13 @@ namespace PickleVerse.FrontEnd
         }
         public void OpenProfile() { Open(View.Statistics); }
         public void OpenMissions() { Open(View.Daily); }
+        public void OpenTrainingProgress() { Open(View.Training); }
         public void OpenCareer() { Open(View.Career); }
         public void OpenEditor() { if(ProgressionRuntime.DeveloperControls) Open(View.Edit); }
         void Open(View next)
         {
             GetComponent<OfflineSocialMenu>()?.Close();
+            if(!PickleVerse.Settings.FrontEndModalInput.TryAcquire(this))return;
             if(!modal.gameObject.activeSelf)
             {
                 priorSelection=EventSystem.current?.currentSelectedGameObject;
@@ -89,6 +94,7 @@ namespace PickleVerse.FrontEnd
         {
             if(!modal) return;
             modal.gameObject.SetActive(false);
+            PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction) menuInteraction.interactable=priorMenuInteraction;
             if(EventSystem.current && priorSelection && priorSelection.activeInHierarchy) EventSystem.current.SetSelectedGameObject(priorSelection);
         }
@@ -111,24 +117,25 @@ namespace PickleVerse.FrontEnd
         }
         void Render(PlayerProfile p,ProgressionEngine engine)
         {
-            bool profile=view==View.Statistics || view==View.Achievements, missions=view==View.Daily || view==View.Weekly;
-            title.text=profile?"HỒ SƠ":missions?"NHIỆM VỤ":view==View.Career?"LỊCH SỬ THI ĐẤU":"CHỈNH PLAYER";
-            subtitle.text=profile?"THỐNG KÊ VÀ TIẾN TRÌNH":missions?"TÍCH LŨY TIẾN TRÌNH • NHẬN PHẦN THƯỞNG":view==View.Career?"20 TRẬN GẦN NHẤT • GIỜ VIỆT NAM":"EDITOR / DEVELOPMENT BUILD";
+            bool profile=view==View.Statistics || view==View.Achievements, missions=view==View.Daily || view==View.Weekly, training=view==View.Training;
+            title.text=training?"TIẾN TRÌNH LUYỆN TẬP":profile?"HỒ SƠ":missions?"NHIỆM VỤ":view==View.Career?"LỊCH SỬ THI ĐẤU":"CHỈNH PLAYER";
+            subtitle.text=training?"THÀNH THẠO KỸ THUẬT • LỖI THƯỜNG GẶP • TIẾP TỤC LUYỆN":profile?"THỐNG KÊ VÀ TIẾN TRÌNH":missions?"TÍCH LŨY TIẾN TRÌNH • NHẬN PHẦN THƯỞNG":view==View.Career?"20 TRẬN GẦN NHẤT • GIỜ VIỆT NAM":"EDITOR / DEVELOPMENT BUILD";
             identityName.text=p.playerName; identityId.text="ID\n"+p.id;
             identityRank.text=$"<color=#C9F573>{EloPolicy.Rank(p.elo).ToUpperInvariant()}</color>\n{p.elo:N0} ELO";
             statsTab.gameObject.SetActive(profile); achievementTab.gameObject.SetActive(profile);
-            dailyTab.gameObject.SetActive(missions); weeklyTab.gameObject.SetActive(missions);
+            dailyTab.gameObject.SetActive(missions||training); weeklyTab.gameObject.SetActive(missions||training);trainingTab.gameObject.SetActive(missions||training);
             Tab(statsTab,view==View.Statistics); Tab(achievementTab,view==View.Achievements); Tab(dailyTab,view==View.Daily); Tab(weeklyTab,view==View.Weekly);
             summary.gameObject.SetActive(view!=View.Edit); editForm.gameObject.SetActive(view==View.Edit);
             scroll.gameObject.SetActive(view!=View.Edit);
             levelText.gameObject.SetActive(profile || view==View.Career); xpText.gameObject.SetActive(profile || view==View.Career);
             xpFill.transform.parent.gameObject.SetActive(profile || view==View.Career);
-            countdown.gameObject.SetActive(missions); summaryFill.transform.parent.gameObject.SetActive(missions); bonusButton.gameObject.SetActive(missions);
-            summaryText.gameObject.SetActive(missions);
+            countdown.gameObject.SetActive(missions); summaryFill.transform.parent.gameObject.SetActive(missions||training); bonusButton.gameObject.SetActive(missions||training);
+            summaryText.gameObject.SetActive(missions||training);
             levelText.text=$"LEVEL {p.level}"; xpText.text=$"{p.levelXp:N0} / {p.NextLevelXp:N0} XP";
             Fill(xpFill,p.levelXp/(float)p.NextLevelXp);
             ClearRows();
-            if(view==View.Statistics) BuildStatistics(p);
+            if(training) BuildTrainingProgress(p);
+            else if(view==View.Statistics) BuildStatistics(p);
             else if(view==View.Achievements || missions)
             {
                 var scope=view==View.Achievements?ProgressScope.Achievement:view==View.Daily?ProgressScope.Daily:ProgressScope.Weekly;

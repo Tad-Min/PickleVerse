@@ -28,19 +28,28 @@ namespace PickleVerse.Audio
         bool fading,appPaused;
         double scheduledAt;
         MusicUI view;
+        static bool trainingExercise;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
-        {SceneManager.activeSceneChanged-=SceneChanged;Instance=null;}
+        {SceneManager.activeSceneChanged-=SceneChanged;Instance=null;trainingExercise=false;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Bootstrap(){if(!Application.isBatchMode)SceneManager.activeSceneChanged+=SceneChanged;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void InitialScene(){if(!Application.isBatchMode)SceneChanged(default,SceneManager.GetActiveScene());}
         static void SceneChanged(Scene before,Scene next)
         {
-            if(MusicScenePolicy.Allows(next.name)&&!Instance)
+            if(next.name!="Training")trainingExercise=false;
+            if(MusicScenePolicy.Allows(next.name,trainingExercise)&&!Instance)
                 new GameObject("Front End Music").AddComponent<MusicPlayer>();
             if(Instance)Instance.ApplyScene(next.name);
+        }
+        /// <summary>Exercise silence is separate from the listener's music pause preference.</summary>
+        public static void SetTrainingExercise(bool exercising)
+        {
+            trainingExercise=exercising;
+            var scene=SceneManager.GetActiveScene();
+            if(scene.name=="Training")SceneChanged(default,scene);
         }
         void Awake()
         {
@@ -61,7 +70,7 @@ namespace PickleVerse.Audio
         }
         void ApplyScene(string scene)
         {
-            bool wasAllowed=Allowed;Allowed=MusicScenePolicy.Allows(scene);
+            bool wasAllowed=Allowed;Allowed=MusicScenePolicy.Allows(scene,trainingExercise);
             if(!Allowed)
             {
                 savedPosition=Position;StopAllCoroutines();Loading=fading=false;

@@ -9,13 +9,15 @@ namespace PickleVerse.Settings
         public static event System.Action<float,float,float> AudioLevelsChanged;
         public static float EffectsVolume {get;private set;}=1;
         static SettingsRuntime instance;
+        static Object presentationOwner;
+        static float presentationScale=1;
         RenderPipelineAsset originalPipeline;
         UniversalRenderPipelineAsset runtimePipeline;
         int originalFps, originalVsync;
         float originalVolume;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { instance=null; AudioLevelsChanged=null; GameSettings.Reload(); EffectsVolume=GameSettings.Current.effects; }
+        static void ResetStatics() { instance=null;presentationOwner=null;presentationScale=1; AudioLevelsChanged=null; GameSettings.Reload(); EffectsVolume=GameSettings.Current.effects; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Bootstrap()
         {
@@ -40,9 +42,19 @@ namespace PickleVerse.Settings
             QualitySettings.vSyncCount=data.vsync&&!Application.isMobilePlatform?1:0;
             if(!instance||!instance.runtimePipeline)return;
             var p=instance.runtimePipeline;
-            p.renderScale=data.renderScale;p.msaaSampleCount=data.msaa;p.shadowDistance=data.shadows?new[]{12f,25f,45f}[data.graphics]:0;
+            p.renderScale=presentationOwner?Mathf.Min(data.renderScale,presentationScale):data.renderScale;p.msaaSampleCount=data.msaa;p.shadowDistance=data.shadows?new[]{12f,25f,45f}[data.graphics]:0;
             p.mainLightShadowmapResolution=new[]{1024,2048,4096}[data.graphics];
             p.additionalLightsShadowmapResolution=new[]{512,1024,2048}[data.graphics];
+        }
+        public static void SetPresentationScale(Object owner,float scale)
+        {
+            if(!owner)return;presentationOwner=owner;presentationScale=Mathf.Clamp(scale,.5f,1);
+            if(instance&&instance.runtimePipeline)instance.runtimePipeline.renderScale=Mathf.Min(GameSettings.Current.renderScale,presentationScale);
+        }
+        public static void ReleasePresentationScale(Object owner)
+        {
+            if(presentationOwner!=owner)return;presentationOwner=null;
+            if(instance&&instance.runtimePipeline)instance.runtimePipeline.renderScale=GameSettings.Current.renderScale;
         }
         void OnDestroy()
         {

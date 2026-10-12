@@ -142,14 +142,14 @@ namespace PickleVerse.Audio
         }
         void Visibility()
         {
-            bool visible=player!=null&&player.Allowed&&MusicScenePolicy.ShowsWidget(scene)&&!SettingsOverlay.IsOpen&&!SettingsOverlay.Loading;
+            bool visible=player!=null&&player.Allowed&&MusicScenePolicy.ShowsWidget(scene)&&!SettingsOverlay.IsOpen&&!SettingsOverlay.Loading&&(!FrontEndModalInput.IsOpen||FrontEndModalInput.IsOwnedBy(this));
             if(!visible&&IsOpen)Close();if(canvas.enabled!=visible)canvas.enabled=visible;
             if(raycaster&&raycaster.enabled!=visible)raycaster.enabled=visible;
         }
         void BindCamera()
         {
-            var camera=Camera.main;if(!camera)return;
-            if(canvas.worldCamera!=camera){canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=camera;canvas.planeDistance=camera.nearClipPlane+.025f;}
+            // Front-end text and disc artwork stay at display resolution when the 3D lobby scales.
+            if(canvas.renderMode!=RenderMode.ScreenSpaceOverlay){canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.worldCamera=null;}
         }
         void ApplySafeArea()
         {

@@ -9,10 +9,12 @@ namespace PickleVerse.Tests
     public sealed class MusicPolicyTests
     {
         [TestCase("Menu",true)] [TestCase("ModeSelection",true)] [TestCase("PlayMultiplayer",true)] [TestCase("Shop",true)] [TestCase("Collection",true)]
-        [TestCase("BotMatch",false)] [TestCase("MultiplayerCourt",false)] [TestCase("Training",false)] [TestCase("SampleScene",false)] [TestCase("Settings",false)] [TestCase(null,false)]
+        [TestCase("BotMatch",false)] [TestCase("MultiplayerCourt",false)] [TestCase("Training",true)] [TestCase("SampleScene",false)] [TestCase("Settings",false)] [TestCase(null,false)]
         public void OnlyFrontEndPagesHaveMusic(string scene,bool expected){Assert.That(MusicScenePolicy.Allows(scene),Is.EqualTo(expected));}
-        [TestCase("Menu",true)] [TestCase("Shop",false)] [TestCase("Collection",false)] [TestCase("ModeSelection",false)] [TestCase("PlayMultiplayer",false)] [TestCase("BotMatch",false)] [TestCase(null,false)]
+        [TestCase("Menu",true)] [TestCase("Shop",false)] [TestCase("Collection",false)] [TestCase("ModeSelection",false)] [TestCase("PlayMultiplayer",false)] [TestCase("BotMatch",false)] [TestCase("Training",false)] [TestCase(null,false)]
         public void OnlyLobbyHasMusicWidget(string scene,bool expected){Assert.That(MusicScenePolicy.ShowsWidget(scene),Is.EqualTo(expected));}
+        [Test]public void TrainingHasMusicOnlyOutsideExercise()
+        {Assert.IsTrue(MusicScenePolicy.Allows("Training",false));Assert.IsFalse(MusicScenePolicy.Allows("Training",true));Assert.IsTrue(MusicScenePolicy.Allows("Menu",true));Assert.IsFalse(MusicScenePolicy.Allows("BotMatch",false));}
         [Test] public void PlaylistCyclesInBothDirections()
         {Assert.That(MusicScenePolicy.Wrap(4,4),Is.EqualTo(0));Assert.That(MusicScenePolicy.Wrap(-1,4),Is.EqualTo(3));Assert.That(MusicScenePolicy.Wrap(0,0),Is.EqualTo(-1));}
         [Test] public void AnotherOwnerCannotStealOrReleaseMusicModal()

@@ -98,6 +98,7 @@ namespace PickleVerse.Progression
         public List<string> achievementClaims = new List<string>(), processedMatches = new List<string>();
         public List<MatchResult> history = new List<MatchResult>();
         public MatchResult pendingMatch;
+        public TrainingProfile training = new TrainingProfile();
         public long NextLevelXp => (long)level * 10;
         public double WinRate => wins + losses == 0 ? 0 : 100d * wins / (wins + losses);
     }

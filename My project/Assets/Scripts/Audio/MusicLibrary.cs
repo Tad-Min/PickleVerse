@@ -21,7 +21,7 @@ namespace PickleVerse.Audio
     }
     public static class MusicScenePolicy
     {
-        public static bool Allows(string scene)=>scene=="Menu"||scene=="ModeSelection"||scene=="PlayMultiplayer"||scene=="Shop"||scene=="Collection";
+        public static bool Allows(string scene,bool trainingExercise=false)=>scene=="Menu"||scene=="ModeSelection"||scene=="PlayMultiplayer"||scene=="Shop"||scene=="Collection"||scene=="Training"&&!trainingExercise;
         public static bool ShowsWidget(string scene)=>scene=="Menu";
         public static int Wrap(int index,int count)=>count<=0?-1:(index%count+count)%count;
     }

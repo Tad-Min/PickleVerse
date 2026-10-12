@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace PickleVerse.Shop
 {
-    /// <summary>Keep one suspended lobby for front-end pages. Gameplay's Single loads release it.</summary>
+    /// <summary>Keep one suspended lobby for front-end pages and Training. Match Single loads release it.</summary>
     public sealed class LobbyNavigation : MonoBehaviour
     {
         static LobbyNavigation instance;
@@ -26,6 +26,7 @@ namespace PickleVerse.Shop
         static readonly ProfilerMarker restoreLighting=new ProfilerMarker("Lobby.Return.Lighting");
         static readonly ProfilerMarker restoreComponents=new ProfilerMarker("Lobby.Return.Components");
         public bool Busy {get;private set;}
+        public static bool IsBusy=>instance&&instance.Busy;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset(){instance=null;}
@@ -47,6 +48,7 @@ namespace PickleVerse.Shop
         public static void OpenShop(){Ensure().Open("Shop");}
         public static void OpenCollection(){Ensure().Open("Collection");}
         public static void OpenModes(){Ensure().Open("ModeSelection");}
+        public static void OpenTraining(){Ensure().Open("Training");}
         public static void ReturnToLobby(){var navigation=Ensure();if(!navigation.Busy)navigation.StartCoroutine(navigation.Return());}
         void Open(string destination)
         {
@@ -63,6 +65,11 @@ namespace PickleVerse.Shop
             var current=SceneManager.GetActiveScene();
             if(current.name!="Menu")
             {
+                if(suspended&&lobby.IsValid()&&lobby.isLoaded)
+                {
+                    yield return ReplacePage(current,destination);
+                    completed=true;yield break;
+                }
                 yield return SceneManager.LoadSceneAsync(destination);completed=true;yield break;
             }
             lobby=current;roots=lobby.GetRootGameObjects();
@@ -85,6 +92,20 @@ namespace PickleVerse.Shop
                 if(!completed&&lobby.IsValid()&&lobby.isLoaded&&behaviours!=null)
                 {SceneManager.SetActiveScene(lobby);ResumeComponents();suspended=false;}
             }
+        }
+        IEnumerator ReplacePage(Scene outgoing,string destination)
+        {
+            // Keep the already initialized lobby suspended while moving between modes
+            // and Training. Only the outgoing page is unloaded, never the lobby.
+            var load=SceneManager.LoadSceneAsync(destination,LoadSceneMode.Additive);
+            load.allowSceneActivation=false;
+            while(load.progress<.9f)yield return null;
+            if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
+            foreach(var root in outgoing.GetRootGameObjects())root.SetActive(false);
+            load.allowSceneActivation=true;yield return load;
+            SceneManager.SetActiveScene(SceneManager.GetSceneByName(destination));
+            yield return null;
+            if(outgoing.IsValid()&&outgoing.isLoaded&&outgoing!=lobby)yield return SceneManager.UnloadSceneAsync(outgoing);
         }
         IEnumerator Return()
         {

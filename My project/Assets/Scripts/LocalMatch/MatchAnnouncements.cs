@@ -15,6 +15,9 @@ namespace PickleVerse.LocalMatch
         public CanvasGroup opacity;
         public UnityEngine.UI.Image accent;
         public float enterSeconds = .18f, exitSeconds = .22f;
+        // Training advances this alongside its lesson simulation, including pause and QA stepping.
+        public bool externallyDriven;
+        public bool Suspended { get; set; }
         sealed class Notice
         {
             public string title, body;
@@ -33,6 +36,7 @@ namespace PickleVerse.LocalMatch
         void Awake() { Clear(); }
         void Update()
         {
+            if (externallyDriven) return;
             if (match && (match.Paused || match.Phase == MatchPhase.Cinematic))
             {
                 if (panel) panel.gameObject.SetActive(false);
@@ -62,7 +66,7 @@ namespace PickleVerse.LocalMatch
 
         public void Advance(float dt)
         {
-            if (match && match.Paused) return;
+            if (Suspended || match && match.Paused) return;
             dt = Mathf.Max(0, dt);
             if (current == null) StartNext();
             while (current != null)

@@ -45,6 +45,9 @@ namespace PickleVerse.FrontEnd
 
         void Awake()
         {
+            if(!GetComponent<LobbyRenderBudget>())gameObject.AddComponent<LobbyRenderBudget>();
+            var lobbyUi=safeArea?safeArea.GetComponentInParent<Canvas>():null;
+            if(lobbyUi){lobbyUi.renderMode=RenderMode.ScreenSpaceOverlay;lobbyUi.worldCamera=null;}
             if (blendedSky)
             {
                 skyInstance = new Material(blendedSky);
