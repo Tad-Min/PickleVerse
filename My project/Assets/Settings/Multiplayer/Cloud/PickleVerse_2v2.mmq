@@ -35,6 +35,12 @@
             "source": "Players.CustomData.region",
             "enableRule": true,
             "relaxations": []
+          },
+          {
+            "name": "SameProtocol",
+            "type": "Equality",
+            "source": "Players.CustomData.protocol",
+            "enableRule": true
           }
         ]
       }

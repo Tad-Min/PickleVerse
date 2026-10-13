@@ -41,7 +41,7 @@ namespace PickleVerse.LocalMatch
             if (floodlights != null) foreach (var light in floodlights) if (light) light.enabled = night;
             if (lampFaces != null) foreach (var face in lampFaces)
                 if (face && lampsOn && lampsOff) face.sharedMaterial = night ? lampsOn : lampsOff;
-            if(stadium)stadium.ApplyNight(night?1:0);
+            if(stadium)stadium.ApplyNight(night?1:0,true);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = night ? NightAmbientSky : new Color(.52f, .63f, .76f);

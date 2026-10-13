@@ -104,7 +104,7 @@ namespace PickleVerse.Multiplayer
             double now=Time.realtimeSinceStartupAsDouble;
             if (Mode==PlayMode.Singles && !Custom && (State==FlowState.Delay || State==FlowState.Searching) && rankedSearch.ClaimBot(now))
                 await Safe(StartRankedBotAsync());
-            else if (Mode==PlayMode.Doubles && Searching && clock.TimedOut(now)) { await Safe(CancelSearchAsync()); SetState(FlowState.WaitingRoom,"Hết thời gian tìm trận. Hãy thử lại."); }
+            else if (Mode==PlayMode.Doubles && Searching && Match==null && clock.TimedOut(now)) { await Safe(CancelSearchAsync()); SetState(FlowState.WaitingRoom,"Hết thời gian tìm trận. Hãy thử lại."); }
             if (State==FlowState.Delay && clock.CanSubmit(now) && IsCaptain && !connecting && !preparingSearch)
             { SetState(FlowState.Searching,"Đang tìm trận…"); _=Safe(SearchAsync(operation)); }
             // A missed Lobby event must not leave clients waiting forever for
@@ -112,13 +112,13 @@ namespace PickleVerse.Multiplayer
             // spending the client's Lobby request budget on its waiting room.
             if (State==FlowState.Connecting && Match!=null && now>=nextPoll && !polling)
             {
-                nextPoll=now+4; polling=true;
+                nextPoll=now+2; polling=true;
                 var currentMatch=Match;
                 try { await currentMatch.RefreshAsync(); }
                 catch(Exception e) { if(Match==currentMatch) Notice="Đang cập nhật kết nối: "+e.Message; }
                 finally { polling=false; Changed?.Invoke(); }
             }
-            if (Room!=null && State!=FlowState.Connecting && now>=nextPoll && !polling && !connecting && !Busy)
+            if (Room!=null && State!=FlowState.Connecting && !resolvingReady && now>=nextPoll && !polling && !connecting && !Busy)
             {
                 nextPoll=now+4; polling=true;
                 try
@@ -155,20 +155,30 @@ namespace PickleVerse.Multiplayer
                 catch(Exception e) { if (Room!=null) Notice="Đang cập nhật phòng: "+e.Message; }
                 finally { polling=false; Changed?.Invoke(); }
             }
-            if (State==FlowState.Connecting && Match!=null && Network.IsHost)
+            if (State==FlowState.Connecting && Match!=null && !courtLoading && !resolvingReady)
             {
-                if (!courtLoading && Roster.members.Where(m=>!m.bot).All(m=>ClientIdentities.Values.Contains(m.id)) && Network.ConnectedClients.Count==Roster.HumanCount)
+                bool allConnected=Network.IsHost && Roster.members.Where(m=>!m.bot).All(m=>ClientIdentities.Values.Contains(m.id)) && Network.ConnectedClients.Count==Roster.HumanCount;
+                await Safe(TickReadyAsync(allConnected));
+                if(Match==null || resolvingReady || !Network.IsHost || courtLoading) return;
+                if(allConnected && readyApproved)
                 {
-                    if (Match.Players.Any(p=>Prop(p,"cancelled")=="1")) { await RetryMatchAsync("Có người hủy; đang ghép lại."); return; }
-                    courtLoading=true; SetNotice("Đang tải sân cho tất cả người chơi…");
+                    if(Match.Players.Any(p=>Prop(p,"cancelled")=="1")) { await RetryMatchAsync("Có người hủy; đang ghép lại."); return; }
+                    courtLoading=true; connectionDeadline=now+60; SetNotice("Đang tải sân cho tất cả người chơi…");
                     Network.SceneManager.LoadScene("MultiplayerCourt",LoadSceneMode.Single);
                 }
-                else if(now>connectionDeadline) await RetryMatchAsync("Một người chưa kết nối được; đang ghép lại.");
+                else if(!allConnected && now>connectionDeadline)
+                {
+                    if(!RecoverReady("Một người chưa kết nối được; đang ghép lại.")) await RetryMatchAsync("Một người chưa kết nối được; đang ghép lại.");
+                }
             }
+            if(State==FlowState.Connecting && courtLoading && Match!=null && Network.IsHost && now>connectionDeadline &&
+                (!NetworkMatch.Instance || !NetworkMatch.Instance.Started.Value))
+                await RetryMatchAsync("Một máy chưa tải xong sân; đang ghép lại.");
         }
+
         async Task ConnectMatchAsync(MatchRoster roster,int generation)
         {
-            if(connecting||leavingModePage||generation!=operation) return; connecting=true; Roster=roster; SetState(FlowState.Connecting,"Đủ người; đang kết nối vào sân…");
+            if(connecting||leavingModePage||generation!=operation) return; connecting=true; readyApproved=false; localReady=ReadyDecision.Pending; readyDeadline=0; Roster=roster; SetState(FlowState.Connecting,"Đủ người; đang kết nối vào sân…");
             try
             {
                 // Allow recent room/readiness saves and SDK event refreshes to finish
@@ -198,10 +208,13 @@ namespace PickleVerse.Multiplayer
             // A late join completion must never move an active game back to Connecting.
             if(State!=FlowState.InMatch && State!=FlowState.Results) SetState(FlowState.Connecting,"Đủ người; đang kết nối vào sân…");
             AttachMatch(Match);
+            var connectedSession=Match;
             nextPoll=Time.realtimeSinceStartupAsDouble+4;
             connectionDeadline=Time.realtimeSinceStartupAsDouble+35;
             if(Network.IsHost) ClientIdentities[Network.LocalClientId]=PlayerId;
-            if(Match.IsHost) { Match.AsHost().SetProperty("aborted",new SessionProperty("0")); await Match.AsHost().SavePropertiesAsync(); }
+            await InitializeReadyAsync();
+            if(generation!=operation || Match!=connectedSession)return;
+            if(connectedSession.IsHost) { connectedSession.AsHost().SetProperty("aborted",new SessionProperty("0")); await connectedSession.AsHost().SavePropertiesAsync(); }
         }
         void SetConnectionIdentity() { MultiplayerSceneConfiguration.Validate(); Network.NetworkConfig.ConnectionData=Encoding.UTF8.GetBytes(PlayerId); intentionalShutdown=false; }
         void ApproveConnection(NetworkManager.ConnectionApprovalRequest request,NetworkManager.ConnectionApprovalResponse response)
@@ -229,6 +242,7 @@ namespace PickleVerse.Multiplayer
         void Disconnected(ulong id)
         {
             if(intentionalShutdown || quitting || reconnecting) return;
+            if(RecoverReady("Có người rời xác nhận; đang tìm lại…")) return;
             if(Network.IsHost)
             {
                 if(State==FlowState.Connecting) _=Safe(RetryMatchAsync("Có người hủy hoặc mất kết nối; đang ghép lại."));
@@ -240,18 +254,20 @@ namespace PickleVerse.Multiplayer
         void TransportFailed()
         {
             if(intentionalShutdown) return;
+            if(RecoverReady("Kết nối xác nhận bị dừng; đang tìm lại…")) return;
             if(Searching) { _=Safe(RetryMatchAsync("Kết nối bị mất trước khi trận bắt đầu; đang ghép lại.")); return; }
             if(Match?.IsHost==true) _=Safe(ReturnToRoomAsync("Kết nối host bị mất; trận kết thúc."));
             else if(State==FlowState.InMatch) _=Safe(ReconnectAsync());
         }
         async void MatchPlayerLeft(string id)
         {
+            if(RecoverReady("Có người rời xác nhận; đang tìm lại…")) return;
             if(State==FlowState.Connecting) await Safe(RetryMatchAsync("Có người rời; đang ghép lại."));
             else if(State==FlowState.InMatch && Network.IsServer) NetworkMatch.Instance?.PlayerLeftSession(id);
         }
-        void MatchChanged() { if(State==FlowState.Connecting && Match!=null && ((Match.Properties.TryGetValue("aborted",out var p) && p.Value=="1") || Match.Players.Any(player=>Prop(player,"cancelled")=="1"))) _=Safe(RetryMatchAsync("Có người hủy; đang ghép lại.")); }
-        void MatchDeleted() { if(!intentionalShutdown) _=Safe(Searching?RetryMatchAsync("Host hủy kết nối; đang ghép lại."):ReturnToRoomAsync("Host đã rời; trận kết thúc.")); }
-        void MatchHostChanged(string id) { if(!intentionalShutdown) _=Safe(Searching?RetryMatchAsync("Host hủy kết nối; đang ghép lại."):ReturnToRoomAsync("Host đã rời; trận kết thúc.")); }
+        void MatchChanged() { if(ReadyCheckActive || resolvingReady) return; if(State==FlowState.Connecting && Match!=null && ((Match.Properties.TryGetValue("aborted",out var p) && p.Value=="1") || Match.Players.Any(player=>Prop(player,"cancelled")=="1"))) _=Safe(RetryMatchAsync("Có người hủy; đang ghép lại.")); }
+        void MatchDeleted() { if(RecoverReady("Trận bị hủy; đang tìm lại…")) return; if(!intentionalShutdown) _=Safe(Searching?RetryMatchAsync("Host hủy kết nối; đang ghép lại."):ReturnToRoomAsync("Host đã rời; trận kết thúc.")); }
+        void MatchHostChanged(string id) { if(RecoverReady("Trận bị hủy; đang tìm lại…")) return; if(!intentionalShutdown) _=Safe(Searching?RetryMatchAsync("Host hủy kết nối; đang ghép lại."):ReturnToRoomAsync("Host đã rời; trận kết thúc.")); }
         void AttachMatch(ISession session)
         { session.PlayerHasLeft+=MatchPlayerLeft; session.Deleted+=MatchDeleted; session.Changed+=MatchChanged; session.SessionHostChanged+=MatchHostChanged; }
         void DetachMatch(ISession session)

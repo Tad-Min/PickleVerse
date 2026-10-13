@@ -136,18 +136,29 @@ namespace PickleVerse.Multiplayer
         }
         void RoomChanged()
         {
+            if(resolvingReady || ReadyCheckActive)return;
             if (!quitting) ReadRoom();
             if(!quitting && Room!=null && IsCaptain && Searching && !cancelling && Room.Players.Any(p=>Prop(p,"cancel")==observedSearch)) _=Safe(CancelSearchAsync());
             Changed?.Invoke();
         }
-        void RemovedFromRoom() { DetachRoom(); Room = null; roomData = new RoomData(); CancelLocal(); SetState(FlowState.WaitingRoom,"Phòng đã đóng hoặc bạn đã được mời ra."); }
+        void RemovedFromRoom()
+        {
+            // A party and its assigned match are separate sessions. Losing the party
+            // during ready check must not discard the accepting player's match decision.
+            bool keepMatch=Match!=null && (ReadyCheckActive || courtLoading || State==FlowState.InMatch || State==FlowState.Results);
+            DetachRoom();Room=null;roomData=new RoomData{mode=Mode,custom=keepMatch && Roster?.custom==true};
+            if(keepMatch){Changed?.Invoke();return;}
+            CancelLocal();SetState(FlowState.WaitingRoom,"Phòng đã đóng hoặc bạn đã được mời ra.");
+        }
         async void RoomHostChanged(string id)
         {
+            if(resolvingReady || ReadyCheckActive) return;
             if (Custom) { await Safe(LeaveRoomAsync()); SetState(FlowState.WaitingRoom,"Chủ phòng custom đã rời."); }
             else if (IsCaptain && Searching) await Safe(CancelSearchAsync());
         }
         async void RoomPlayerLeft(string id)
         {
+            if(resolvingReady || ReadyCheckActive) return;
             if (IsCaptain && Searching) await Safe(CancelSearchAsync());
             if (Custom && IsCaptain && State==FlowState.WaitingRoom && roomData.teams.Remove(id))
             {
@@ -158,7 +169,7 @@ namespace PickleVerse.Multiplayer
         }
         void ReadRoom()
         {
-            if(leavingModePage)return;
+            if(leavingModePage || resolvingReady || ReadyCheckActive)return;
             if (Room == null || !Room.Properties.TryGetValue("room",out var value)) return;
             var data = JsonConvert.DeserializeObject<RoomData>(value.Value);
             if (data == null) return;

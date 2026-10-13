@@ -15,6 +15,8 @@ namespace PickleVerse.Multiplayer
         public bool IsVisible => panel && panel.gameObject.activeSelf;
         public string RenderedMatchId { get; private set; }
         MultiplayerCourtUI court;
+        bool requested;
+        public void Open(){if(court && court.cinematic && court.cinematic.OutcomeReady)requested=true;}
         void Start()
         {
             court=GetComponent<MultiplayerCourtUI>(); Configure(court);
@@ -24,7 +26,7 @@ namespace PickleVerse.Multiplayer
         void Update()
         {
             var match=NetworkMatch.Instance;
-            if(!court || !match || !match.IsSpawned || !match.Finished.Value)
+            if(!requested || !court || !match || !match.IsSpawned || !match.Finished.Value)
             { if(panel) panel.gameObject.SetActive(false); RenderedMatchId=null; return; }
             if(!IsVisible)
             {
@@ -54,7 +56,7 @@ namespace PickleVerse.Multiplayer
         }
         public void Present(PlayerProfile player,MatchResult result)
         {
-            heading.text=result.outcome==MatchOutcome.Won?"CHIẾN THẮNG!":result.outcome==MatchOutcome.Lost?"TRẬN ĐẤU KẾT THÚC":"TRẬN ĐẤU GIÁN ĐOẠN";
+            heading.text=result.outcome==MatchOutcome.Won?"THẮNG":result.outcome==MatchOutcome.Lost?"THUA":"TRẬN ĐẤU GIÁN ĐOẠN";
             heading.color=result.outcome==MatchOutcome.Won?new Color(.79f,.96f,.45f):Color.white;
             opponent.text=player.playerName+"  vs  "+string.Join(" / ",result.opponents.Select(p=>p.name));
             delta.text=(result.eloDelta>=0?"+":"")+result.eloDelta+" ELO";

@@ -4667,6 +4667,7 @@ MonoBehaviour:
   resultActions: {fileID: 0}
   intro: {fileID: 0}
   announcements: {fileID: 0}
+  cinematic: {fileID: 0}
   continueButton: {fileID: 0}
   restartButton: {fileID: 0}
   modeButton: {fileID: 0}
@@ -5028,6 +5029,7 @@ GameObject:
   - component: {fileID: 748487070}
   - component: {fileID: 748487075}
   - component: {fileID: 748487076}
+  - component: {fileID: 748487077}
   m_Layer: 0
   m_Name: BotMatchHUD
   m_TagString: Untagged
@@ -5064,6 +5066,7 @@ MonoBehaviour:
   resultActions: {fileID: 1718950850}
   intro: {fileID: 769402073}
   announcements: {fileID: 748487075}
+  cinematic: {fileID: 748487077}
   continueButton: {fileID: 1214423053}
   restartButton: {fileID: 1355574095}
   modeButton: {fileID: 1222369570}
@@ -5216,6 +5219,23 @@ MonoBehaviour:
   experience: {fileID: 1995703841}
   roomButton: {fileID: 878143451}
   menuButton: {fileID: 1838671975}
+--- !u!114 &748487077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748487069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4a404d5027e064896f39d9da75ce5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.MultiplayerCinematic
+  femaleWalk: {fileID: 7400000, guid: ecd7b271a3d951542b87494f898afc02, type: 2}
+  maleWalk: {fileID: 7400000, guid: bcb0c8af5f6ad8e4bad3060df1020784, type: 2}
+  femaleWin: {fileID: 7400000, guid: 5f2a4dc824d26a040a51edad766dd02e, type: 2}
+  maleSuperSaiyan: {fileID: 7400000, guid: ce9f6548cdac6b540bdf5bb72bcd9d13, type: 2}
+  maleClap: {fileID: 7400000, guid: 93d7f8cd630bd0f41a8af3cc72d32098, type: 2}
 --- !u!1 &750923936
 GameObject:
   m_ObjectHideFlags: 0
@@ -10949,9 +10969,9 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
-    m_Bias: 0.05
-    m_NormalBias: 0.4
+    m_Strength: 0.8
+    m_Bias: 0.035
+    m_NormalBias: 0.12
     m_NearPlane: 0.2
     m_CullingMatrixOverride:
       e00: 1

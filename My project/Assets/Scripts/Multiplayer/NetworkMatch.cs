@@ -32,6 +32,8 @@ namespace PickleVerse.Multiplayer
         public NetworkVariable<bool> EndsSwapped=new NetworkVariable<bool>(),BetweenGames=new NetworkVariable<bool>(),BetweenPoints=new NetworkVariable<bool>();
         public NetworkVariable<bool> Paused=new NetworkVariable<bool>(),Finished=new NetworkVariable<bool>(),WaitingServe=new NetworkVariable<bool>(),Started=new NetworkVariable<bool>();
         public NetworkVariable<BallFrame> Ball=new NetworkVariable<BallFrame>();
+        public NetworkVariable<double> IntroStart=new NetworkVariable<double>(-1);
+        public NetworkVariable<int> WinningTeam=new NetworkVariable<int>(-1);
         public PickleballRules Rules { get; private set; }
         public Rigidbody Body { get; private set; }
         public MatchRoster Roster { get; private set; }
@@ -150,7 +152,7 @@ namespace PickleVerse.Multiplayer
         {
             if(Started.Value || !MultiplayerApp.Instance.ClientIdentities.ContainsKey(rpc.Receive.SenderClientId)) return;
             courtReady.Add(rpc.Receive.SenderClientId);
-            if(courtReady.Count==Roster.HumanCount) { BeginRally(); Started.Value=true; }
+            if(courtReady.Count==Roster.HumanCount && IntroStart.Value<0) { IntroStart.Value=NetworkManager.ServerTime.Time+.35; }
         }
         void StartChanged(bool old,bool started) { if(started) { BeginLocalProgression(); MultiplayerApp.Instance.MatchStarted(); } }
         public void TrySwing(NetworkPlayer player, ShotIntent intent)
@@ -181,7 +183,13 @@ namespace PickleVerse.Multiplayer
         }
         void FixedUpdate()
         {
-            if (!IsSpawned || Body == null || !Started.Value) return;
+            if (!IsSpawned || Body == null) return;
+            if(!Started.Value)
+            {
+                if(IsServer && IntroStart.Value>0 && NetworkManager.ServerTime.Time>=IntroStart.Value+MultiplayerCinematic.IntroDuration)
+                { BeginRally(); Started.Value=true; }
+                return;
+            }
             if (!IsServer) { SetBallPosition(Vector3.Lerp(Body.transform.position, Ball.Value.position, 1 - Mathf.Exp(-22 * Time.fixedDeltaTime))); return; }
             if (Paused.Value)
             {
@@ -198,6 +206,7 @@ namespace PickleVerse.Multiplayer
         }
         void StepSimulation(float dt)
         {
+            if (Finished.Value) return;
             foreach (var player in players.Values)
             {
                 if(bots.TryGetValue(player.Identity.Value.ToString(),out var brain))
@@ -412,14 +421,16 @@ namespace PickleVerse.Multiplayer
             if(!Finished.Value)MatchSoundRpc((int)GameSfx.GameWhistle);
             Body.isKinematic=true; Publish();
             PublishProgressionResults();
+            WinningTeam.Value=Rules.winner;
             Status.Value=new FixedString512Bytes($"Đội {(Rules.winner==0?"A":"B")} thắng trận {Rules.games[0]} : {Rules.games[1]} game — điểm game cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}"); Finished.Value=true;
-            AnnouncementRpc("GAME, MATCH!",Status.Value.ToString(),(int)AnnouncementTone.Success,2.1f);
+            AnnouncementRpc("KẾT THÚC TRẬN ĐẤU",Status.Value.ToString(),(int)AnnouncementTone.Success,2.1f);
         }
         void ResultChanged(bool old,bool complete)
         {
             if(!complete)return;
             replay?.Event("MatchEnd",Status.Value.ToString());replay?.Finish(true);
             MultiplayerApp.Instance.ShowResult(Status.Value.ToString());
+            MultiplayerCourtUI.Instance?.EnsureEndAnnouncement(Status.Value.ToString());
         }
         [Rpc(SendTo.ClientsAndHost)] void MatchSoundRpc(int sound)
         { SfxPlayer.Play((GameSfx)sound); }

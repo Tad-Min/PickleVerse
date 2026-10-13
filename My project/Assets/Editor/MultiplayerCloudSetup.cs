@@ -67,10 +67,12 @@ namespace PickleVerse.EditorTools
                         }
                     },["filteredPools"]=new JArray()
                 };
+                var rules=(JArray)json["defaultPool"]["matchLogic"]["matchDefinition"]["matchRules"];
+                // Partition tickets by their own protocol instead of pinning the queue to one build.
+                // Old/new clients can search simultaneously, but never share a network match.
+                rules.Add(new JObject { ["name"]="SameProtocol",["type"]="Equality",["source"]="Players.CustomData.protocol",["enableRule"]=true });
                 if(size==1)
                 {
-                    var rules=(JArray)json["defaultPool"]["matchLogic"]["matchDefinition"]["matchRules"];
-                    rules.Add(new JObject { ["name"]="SameProtocol",["type"]="Equality",["source"]="Players.CustomData.protocol",["reference"]=PickleVerse.Multiplayer.Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString(),["enableRule"]=true });
                     rules.Add(new JObject { ["name"]="EloWindow",["type"]="Difference",["source"]="Players.CustomData.elo",["reference"]=120,["enableRule"]=true });
                     rules.Add(new JObject { ["name"]="MutualPreference",["type"]="Intersection",["source"]="Players.CustomData.pairingKeys",["overlap"]=1,["enableRule"]=true });
                 }

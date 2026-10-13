@@ -124,20 +124,18 @@ namespace PickleVerse.Multiplayer
         }
         public static async Task CancelDuringConnect(MultiplayerApp app,bool cancel)
         {
-            await Wait(()=>app.State==FlowState.Connecting,"Chưa tìm được đối thủ",100);
+            await Wait(()=>app.CanAcceptMatch,"Chưa mở xác nhận trận",100);
             if(cancel)
             {
-                await app.CancelSearchAsync(); await Task.Delay(4500);
+                await Wait(()=>app.ReadyCount>=1,"Đối thủ chưa chấp nhận",15);
+                await app.DeclineMatchAsync(); await Task.Delay(4500);
                 if(app.State!=FlowState.WaitingRoom||app.Network.IsListening) throw new Exception("Kết quả muộn khởi động trận đã hủy");
                 await app.FindAsync(); if(app.Elapsed!="00:00") throw new Exception("Lượt tìm mới không đặt lại đồng hồ");
             }
             else
             {
-                string elapsed=app.Elapsed;
-                // Cancellation can precede this host subscribing to the session.
-                // Its 35-second connection deadline is then the recovery path.
-                await Wait(()=>app.State==FlowState.Searching,"Người còn chờ chưa tự tìm lại",50);
-                if(app.Elapsed=="00:00"||string.CompareOrdinal(app.Elapsed,elapsed)<0) throw new Exception("Tự tìm lại đặt lại đồng hồ");
+                await app.AcceptMatchAsync();
+                await Wait(()=>app.Match==null && (app.State==FlowState.Delay || app.State==FlowState.Searching),"Người chấp nhận chưa tự tìm lại",50);
             }
         }
         public static async Task CustomAdministration(MultiplayerApp app,bool host,string file)
