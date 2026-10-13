@@ -1,6 +1,14 @@
 {
- "name":"PickleVerse.Audio.Tests",
- "references":["PickleVerse.Audio", "PickleVerse.Settings"],
- "includePlatforms":["Editor"],
- "optionalUnityReferences":["TestAssemblies"]
+  "name": "PickleVerse.Audio.Tests",
+  "references": [
+    "PickleVerse.Audio",
+    "PickleVerse.Settings",
+    "PickleVerse.Entites"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
 }

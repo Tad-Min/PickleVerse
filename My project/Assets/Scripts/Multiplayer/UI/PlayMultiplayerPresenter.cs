@@ -18,7 +18,10 @@ namespace PickleVerse.Multiplayer.UI
     /// <summary>Serialized bindings to the user's Canvas. All room operations use services.</summary>
     public sealed class PlayMultiplayerPresenter : MonoBehaviour
     {
-        public TMP_InputField playerName, joinCode;
+        public TMP_InputField joinCode;
+        public UnityEngine.UI.Button back;
+        public TMP_Text navigationError;
+        bool returningToModes;
         public TMP_Text roomType, matchTime, roomCode;
         public UnityEngine.UI.Button join, singles, doubles, custom, copy, play, swap;
         public GameObject singlesPanel, doublesPanel, customPanel;
@@ -36,8 +39,7 @@ namespace PickleVerse.Multiplayer.UI
             var app = MultiplayerApp.Ensure(); app.RoomSceneName = gameObject.scene.name;
             rooms = app.RoomService; matchmaking = app.MatchmakingService; state = rooms.State; identity = app.IdentityService;
             state.Changed += Refresh;
-            playerName.characterLimit = 18;
-            playerName.onEndEdit.AddListener(NameChanged);
+            Bind(back, Back);
             Bind(singles, () => Run(rooms.SelectSinglesAsync));
             Bind(doubles, () => Run(rooms.SelectDoublesAsync));
             Bind(custom, () => Run(() => rooms.SelectCustomAsync(customMode)));
@@ -54,7 +56,7 @@ namespace PickleVerse.Multiplayer.UI
             MultiplayerApp.OpenDefaultRoomOnLoad = false;
             if (!args.Contains("-pkvCase") && (state.State == FlowState.Menu || openDefault))
                 await rooms.OpenAsync(profile, localPlayer.playerName);
-            playerName.SetTextWithoutNotify(state.DisplayName);
+            if(!this)return;
             Refresh();
         }
         void Bind(UnityEngine.UI.Button button, UnityAction action)
@@ -67,10 +69,13 @@ namespace PickleVerse.Multiplayer.UI
             try { await action(); } catch (Exception e) { MultiplayerApp.Instance.SetNotice(e.Message); }
             if (this) Refresh();
         }
-        void NameChanged(string value)
+        async void Back()
         {
-            if (state == null || state.Busy || state.State != FlowState.WaitingRoom) return;
-            Run(() => rooms.SetNameAsync(value));
+            if(returningToModes)return;returningToModes=true;Refresh();
+            if(navigationError)navigationError.text="";
+            try{await MultiplayerApp.Instance.ReturnToModeSelectionAsync();}
+            catch(Exception e){if(navigationError)navigationError.text="Không thể rời phòng: "+e.Message;MultiplayerApp.Instance.SetNotice(e.Message);}
+            finally{if(this){returningToModes=false;Refresh();}}
         }
         async Task PlayAsync()
         {
@@ -93,12 +98,13 @@ namespace PickleVerse.Multiplayer.UI
             bool showCode = isDoubles || state.Custom;
             roomCode.gameObject.SetActive(showCode); copy.gameObject.SetActive(showCode);
             roomCode.text = "MÃ PHÒNG ID:\n" + state.RoomCode; copy.interactable = state.RoomCode.Length > 0;
+            idle=idle&&!returningToModes;
             singles.interactable = doubles.interactable = custom.interactable = join.interactable = idle;
-            joinCode.interactable = playerName.interactable = idle;
-            if (!playerName.isFocused) playerName.SetTextWithoutNotify(state.DisplayName);
+            joinCode.interactable = idle && !returningToModes;
+            if(back)back.interactable=!returningToModes;
             if (swap) { swap.gameObject.SetActive(state.Custom); swap.interactable = idle; }
             play.GetComponentInChildren<TMP_Text>(true).text = RoomViewModel.PlayLabel(state);
-            play.interactable = state.Searching || (idle && (state.Custom ? RoomViewModel.CanStartCustom(state) : state.IsCaptain));
+            play.interactable = !returningToModes && (state.Searching || (idle && (state.Custom ? RoomViewModel.CanStartCustom(state) : state.IsCaptain)));
             matchTime.gameObject.SetActive(state.Searching); matchTime.text = state.Elapsed;
             var members = state.Members();
             Fill(singleSlot, members.FirstOrDefault(m => m.id == state.PlayerId));
@@ -140,7 +146,6 @@ namespace PickleVerse.Multiplayer.UI
         void OnDestroy()
         {
             if (state != null) state.Changed -= Refresh;
-            if (playerName) playerName.onEndEdit.RemoveListener(NameChanged);
             foreach (var listener in listeners) if (listener.button) listener.button.onClick.RemoveListener(listener.action);
         }
     }

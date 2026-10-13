@@ -23,6 +23,7 @@ namespace PickleVerse.Progression
         public static event Action Changed;
         public static event Action Quitting;
         LocalPlayerStore store;
+        public IUtcClock UtcClock { get; set; } = new SystemUtcClock();
         double lastTime, nextSave, nextPeriodCheck;
         bool focused, paused;
         public static bool DeveloperControls => Application.isEditor || Debug.isDebugBuild;
@@ -48,10 +49,12 @@ namespace PickleVerse.Progression
             store.Open(requested);
             if (Player.currencyVersion < 1) store.Transaction(p => CurrencyPolicy.Migrate(p));
             RecoverPending(); RefreshPeriods();
+            PruneReplays();
             focused = Application.isFocused; lastTime = Time.realtimeSinceStartupAsDouble; nextSave = lastTime + 30;
         }
         void RecoverPending()
         {
+            store.Transaction(p => DailyStreakEngine.Ensure(p, UtcClock.UtcNow));
             if (Player.pendingMatch == null) return;
             store.Transaction(p =>
             {
@@ -89,9 +92,10 @@ namespace PickleVerse.Progression
         }
         public void RefreshPeriods()
         {
-            var utc = DateTime.UtcNow;
-            if (Player.daily.key == ProgressionEngine.DayKey(utc) && Player.weekly.key == ProgressionEngine.WeekKey(utc)) return;
-            store.Transaction(p => Engine.RefreshPeriods(p, utc)); Changed?.Invoke();
+            var utc = UtcClock.UtcNow;
+            bool streakExpired = Player.dailyStreak != null && Player.dailyStreak.current > 0 && string.CompareOrdinal(Player.dailyStreak.lastDay, ProgressionEngine.DayKey(utc.AddDays(-1))) < 0;
+            if (!streakExpired && Player.daily.key == ProgressionEngine.DayKey(utc) && Player.weekly.key == ProgressionEngine.WeekKey(utc)) return;
+            store.Transaction(p => { Engine.RefreshPeriods(p, utc); DailyStreakEngine.Refresh(p, utc); }); Changed?.Invoke();
         }
         public bool Claim(string id)
         {
@@ -101,7 +105,7 @@ namespace PickleVerse.Progression
         public bool Apply(MatchResult result)
         {
             bool applied = false;
-            store.Transaction(p => applied = Engine.Apply(p, result)); Changed?.Invoke(); return applied;
+            store.Transaction(p => {applied = Engine.Apply(p, result);DailyStreakEngine.Refresh(p,UtcClock.UtcNow);}); if(applied) PruneReplays(); Changed?.Invoke(); return applied;
         }
         public void BeginMatch(MatchResult match)
         {
@@ -133,11 +137,16 @@ namespace PickleVerse.Progression
         {
             TickTime(); store.Switch(id, name);
             if (Player.currencyVersion < 1) store.Transaction(p => CurrencyPolicy.Migrate(p));
-            RecoverPending(); RefreshPeriods(); Changed?.Invoke();
+            RecoverPending(); RefreshPeriods(); PruneReplays(); Changed?.Invoke();
         }
         public void UpdateWallet(Action<PlayerProfile> mutation)
         { store.Transaction(mutation); Changed?.Invoke(); }
         public void Save() { TickTime(); store.Save(); }
+        void PruneReplays()
+        {
+            try { var ids=Player.history.ConvertAll(r=>r.id); if(Player.pendingMatch!=null)ids.Add(Player.pendingMatch.id); PickleVerse.Replays.ReplayStorage.Repository.RecoverAndPrune(Player.id,ids); }
+            catch(Exception e){Debug.LogWarning("Replay cleanup: "+e.Message);}
+        }
         public static string FormatTime(double seconds)
         {
             var span = TimeSpan.FromSeconds(Math.Max(0, seconds));

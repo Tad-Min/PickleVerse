@@ -1,5 +1,8 @@
 {
   "name": "PickleVerse.Social",
   "rootNamespace": "PickleVerse.Social",
-  "references": ["PickleVerse.Progression"]
+  "references": [
+    "PickleVerse.Progression",
+    "PickleVerse.Entites"
+  ]
 }

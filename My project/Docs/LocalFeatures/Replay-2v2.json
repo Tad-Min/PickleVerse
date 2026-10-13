@@ -1,0 +1,18 @@
+{
+  "actors": 4,
+  "beforeEndChange": [
+    -4.0,
+    -4.0,
+    4.0,
+    4.0
+  ],
+  "afterEndChange": [
+    4.0,
+    4.0,
+    -4.0,
+    -4.0
+  ],
+  "status": "REPLAY   1.0 / 2.0s · 1.0×\n7 – 3 điểm · 1 – 0 game\nFixture 4 người · đổi sân ở 1 giây",
+  "gameplayControllers": 0,
+  "cached": 61
+}

@@ -1,8 +1,18 @@
 {
   "name": "PickleVerse.Social.Tests",
-  "references": ["PickleVerse.Social", "PickleVerse.Progression", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "PickleVerse.Social",
+    "PickleVerse.Progression",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "PickleVerse.Entites"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "overrideReferences": true,
-  "precompiledReferences": ["nunit.framework.dll"],
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
   "autoReferenced": false
 }

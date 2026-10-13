@@ -100,7 +100,7 @@ namespace PickleVerse.Multiplayer
         }
         async void Update()
         {
-            if (Settings==null || quitting) return;
+            if (Settings==null || quitting || leavingModePage) return;
             double now=Time.realtimeSinceStartupAsDouble;
             if (Mode==PlayMode.Singles && !Custom && (State==FlowState.Delay || State==FlowState.Searching) && rankedSearch.ClaimBot(now))
                 await Safe(StartRankedBotAsync());
@@ -168,7 +168,7 @@ namespace PickleVerse.Multiplayer
         }
         async Task ConnectMatchAsync(MatchRoster roster,int generation)
         {
-            if(connecting) return; connecting=true; Roster=roster; SetState(FlowState.Connecting,"Đủ người; đang kết nối vào sân…");
+            if(connecting||leavingModePage||generation!=operation) return; connecting=true; Roster=roster; SetState(FlowState.Connecting,"Đủ người; đang kết nối vào sân…");
             try
             {
                 // Allow recent room/readiness saves and SDK event refreshes to finish
@@ -335,8 +335,18 @@ namespace PickleVerse.Multiplayer
         async Task LeaveMatchAsync()
         {
             intentionalShutdown=true;
-            var old=Match; Match=null;
-            if(old!=null) { DetachMatch(old); await Safe(old.LeaveAsync()); }
+            var old=Match;
+            if(old!=null && leavingModePage)
+            {
+                // The Back flow must retain the session and surface a failed leave for retry.
+                await old.LeaveAsync();
+                if(Match==old) { DetachMatch(old); Match=null; }
+            }
+            else
+            {
+                Match=null;
+                if(old!=null) { DetachMatch(old); await Safe(old.LeaveAsync()); }
+            }
             if(Network!=null && Network.IsListening) Network.Shutdown();
             ClientIdentities.Clear(); Roster=null;
             courtLoading=false;

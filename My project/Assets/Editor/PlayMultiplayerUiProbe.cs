@@ -18,9 +18,7 @@ public static class PlayMultiplayerUiProbe
         double until=Time.realtimeSinceStartupAsDouble+20;
         while(app.Busy && Time.realtimeSinceStartupAsDouble<until)await Task.Delay(100);
         if(app.State!=FlowState.WaitingRoom||p.roomType.text!="1Vs1"||!p.singlesPanel.activeSelf)throw new Exception("Default room failed: "+app.Notice);
-        if(!System.Text.RegularExpressions.Regex.IsMatch(p.playerName.text,"^[A-Z]{4}$"))throw new Exception("Blank name was not generated: "+p.playerName.text);
-        p.playerName.text="EditorUI"; p.playerName.onEndEdit.Invoke("EditorUI"); await Task.Delay(300);
-        if(app.DisplayName!="EditorUI"||p.singleSlot.name.text!="EditorUI")throw new Exception("Name binding failed");
+        if(app.DisplayName!=PickleVerse.Progression.ProgressionRuntime.Instance.Player.playerName||p.singleSlot.name.text!=app.DisplayName)throw new Exception("Local profile name binding failed");
         p.doubles.onClick.Invoke(); while(app.Busy)await Task.Delay(100);
         if(app.Mode!=PlayMode.Doubles||p.roomType.text!="2Vs2"||!p.copy.gameObject.activeSelf||string.IsNullOrEmpty(app.RoomCode))throw new Exception("Doubles binding failed");
         p.copy.onClick.Invoke(); if(GUIUtility.systemCopyBuffer!=app.RoomCode)throw new Exception("Copy failed");
@@ -34,7 +32,7 @@ public static class PlayMultiplayerUiProbe
         if(app.Mode!=PlayMode.Singles||!string.IsNullOrEmpty(app.RoomCode)||p.copy.gameObject.activeSelf)throw new Exception("Singles switch failed");
         p.custom.onClick.Invoke(); while(app.Busy)await Task.Delay(100);
         if(!app.Custom||app.Mode!=PlayMode.Doubles||p.play.interactable)throw new Exception("Custom host start guard failed");
-        var result=new{passed=true,defaultRoom="1Vs1",generatedName=true,name="EditorUI",duoCode=true,copy=true,cancelAt=elapsed,customNoReady=true};
+        var result=new{passed=true,defaultRoom="1Vs1",name=app.DisplayName,duoCode=true,copy=true,cancelAt=elapsed,customNoReady=true};
         System.IO.File.WriteAllText("Docs/PlayMultiplayerUiTest.json",Newtonsoft.Json.JsonConvert.SerializeObject(result,Newtonsoft.Json.Formatting.Indented));
         return result;
     }

@@ -71,6 +71,7 @@ namespace PickleVerse.Progression
             if (result == null || string.IsNullOrEmpty(result.id) || result.playerId != p.id || p.processedMatches.Contains(result.id)) return false;
             RefreshPeriods(p, new DateTime(result.endedUtcTicks, DateTimeKind.Utc));
             p.processedMatches.Add(result.id);
+            DailyStreakEngine.Apply(p, result);
             if (p.pendingMatch?.id == result.id) p.pendingMatch = null;
             bool won = result.outcome == MatchOutcome.Won;
             if (result.outcome != MatchOutcome.Interrupted && result.Eligible)

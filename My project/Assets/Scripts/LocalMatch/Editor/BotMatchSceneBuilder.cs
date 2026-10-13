@@ -237,7 +237,7 @@ namespace PickleVerse.LocalMatch.Editor
             Button("Help",root,"F1 / Hướng dẫn",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-59),new Vector2(150,36),hud.ToggleHelp);
             Button("Touch",root,"Cảm ứng",new Vector2(1,1),new Vector2(1,1),new Vector2(-16,-102),new Vector2(130,36),hud.ToggleTouch);
             Button("Timeout",root,"T / Time-out",new Vector2(0,1),new Vector2(0,1),new Vector2(20,-62),new Vector2(140,36),hud.Timeout);
-            hud.difficultyLabel = Text("Difficulty",root,"Bot: Vừa",new Vector2(0,1),new Vector2(0,1),new Vector2(20,-110),new Vector2(160,30),18,TextAlignmentOptions.Left);
+            hud.difficultyLabel = Text("Difficulty",root,"Bot: Vừa",new Vector2(0,1),new Vector2(0,1),new Vector2(20,-110),new Vector2(390,78),18,TextAlignmentOptions.TopLeft);
             var touch = Rect("TouchControls",root,Vector2.zero,Vector2.zero,Vector2.zero,Vector2.zero); touch.anchorMax = Vector2.one; touch.offsetMax = touch.offsetMin = Vector2.zero; hud.touchControls = touch.gameObject;
             var joystick = Panel("MoveJoystick",touch,new Vector2(0,0),new Vector2(0,0),new Vector2(24,25),new Vector2(156,156),new Color(.03f,.12f,.17f,.7f)); joystick.GetComponent<UnityEngine.UI.Image>().raycastTarget = true;
             var knob = Panel("Knob",joystick,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(52,52),mint);

@@ -1,0 +1,16 @@
+{
+  "unity": "6000.6.2f1",
+  "actors": 2,
+  "bones": [
+    85,
+    72
+  ],
+  "captures": 180,
+  "medianMs": 0.188,
+  "p95Ms": 0.47050000000000003,
+  "maxMs": 4.7121,
+  "maxBufferedFrames": 44,
+  "retainedManagedBytes": 4096,
+  "compressedBytes": 100820,
+  "note": "Editor, full visual rig, 34 ms requested capture interval; actual scheduling varies. Compression/file writes on worker. Capture timing only; completion drains last chunk. Not full-game FPS benchmark."
+}

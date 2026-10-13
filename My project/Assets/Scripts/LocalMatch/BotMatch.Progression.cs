@@ -17,6 +17,8 @@ namespace PickleVerse.LocalMatch
             var runtime = ProgressionRuntime.Instance; var player = runtime.Player;
             progressionCompleted = false;
             bool ranked = RankedBotLaunch.Active;
+            if(ranked && botDifficulty==3)botDifficulty=1;
+            if(botDifficulty==3&&!ranked){behaviorBot=GetComponent<BhTreeBot>()??gameObject.AddComponent<BhTreeBot>();behaviorBot.Initialize(this,player.elo);}
             progressionResult = new MatchResult
             {
                 id = Guid.NewGuid().ToString("N"), playerId = player.id, startedUtcTicks = DateTime.UtcNow.Ticks,
@@ -25,6 +27,7 @@ namespace PickleVerse.LocalMatch
             };
             progressionResult.opponents.Add(new OpponentInfo { id = "BOT", name = ranked ? "Bot rank" : "Bot", elo = progressionResult.opponentElo });
             runtime.BeginMatch(progressionResult);
+            BeginReplay();
             ProgressionRuntime.Quitting -= OnProgressionQuit; ProgressionRuntime.Quitting += OnProgressionQuit;
         }
         void CaptureProgressionGame()
@@ -36,6 +39,8 @@ namespace PickleVerse.LocalMatch
         {
             if (progressionResult == null || progressionCompleted || !ProgressionRuntime.Exists) return;
             progressionCompleted = true;
+            replay?.Event("MatchEnd",forfeit?"Forfeit":"Complete");
+            replay?.Finish(!forfeit);
             progressionResult.outcome = forfeit ? MatchOutcome.Lost : Rules.Winner == 0 ? MatchOutcome.Won : MatchOutcome.Lost;
             progressionResult.localForfeit = forfeit;
             progressionResult.reason = forfeit ? "Chủ động rời hoặc chơi lại khi trận chưa kết thúc" : "";

@@ -49,6 +49,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/Tutorial.unity
     m_guid: fcfaa1577365d2f4e9491c56bbe2544e
+  - m_enabled: 1
+    m_path: Assets/Scenes/Replay.unity
+    m_guid: f68fe0502ff1c2f4295c2354b8daa8d7
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

@@ -126,7 +126,7 @@ namespace PickleVerse.FrontEnd
         public void SetDifficulty(int level)
         {
             if (Loading) return;
-            SelectedDifficulty = Mathf.Clamp(level, 0, 2);
+            SelectedDifficulty = Mathf.Clamp(level, 0, 3);
             RefreshChoices();
         }
 
@@ -147,9 +147,10 @@ namespace PickleVerse.FrontEnd
             {
                 "Dễ  ·  Bot phản ứng chậm hơn, phù hợp để làm quen.",
                 "Vừa  ·  Nhịp đấu cân bằng, phù hợp để luyện combo.",
-                "Khó  ·  Bot phản ứng nhanh và đánh chính xác hơn."
+                "Khó  ·  Bot phản ứng nhanh và đánh chính xác hơn.",
+                "BhTree  ·  Behavior graph thử nghiệm, cấu hình theo Elo local."
             }[SelectedDifficulty];
-            summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
+            summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ", "BHTREE" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
             courtPreview.texture = SelectedNight ? nightPreview : dayPreview;
         }
 
@@ -195,3 +196,4 @@ namespace PickleVerse.FrontEnd
         }
     }
 }
+

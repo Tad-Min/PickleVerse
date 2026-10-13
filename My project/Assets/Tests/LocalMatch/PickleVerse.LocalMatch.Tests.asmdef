@@ -1,6 +1,17 @@
 {
   "name": "PickleVerse.LocalMatch.Tests",
-  "references": ["PickleVerse.Rules", "PickleVerse.LocalMatch"],
-  "includePlatforms": ["Editor"],
-  "optionalUnityReferences": ["TestAssemblies"]
+  "references": [
+    "PickleVerse.Rules",
+    "PickleVerse.LocalMatch",
+    "PickleVerse.Entites",
+    "Unity.Behavior",
+    "Unity.Behavior.SerializableGUID",
+    "Unity.Netcode.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace PickleVerse.Shop
 {
-    public enum ShopCurrency { Tokenpad, Elite }
     [Serializable] public sealed class PaddleOffer
     {
         public string id,title,description,collection;

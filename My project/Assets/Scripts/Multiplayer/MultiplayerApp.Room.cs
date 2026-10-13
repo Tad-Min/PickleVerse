@@ -22,7 +22,10 @@ namespace PickleVerse.Multiplayer
     {
         public async Task PlayAsync(string requestedProfile)
         {
+            modeNavigation.Open();
+            int page=navigationEpoch;
             await InitializeAsync(requestedProfile);
+            if(leavingModePage||page!=navigationEpoch)return;
             await LeaveRoomAsync(); Mode = PlayMode.Singles; roomData = new RoomData();
             SetState(FlowState.WaitingRoom, "Phòng 1vs1 — bấm Tìm trận khi sẵn sàng.");
         }
@@ -79,19 +82,24 @@ namespace PickleVerse.Multiplayer
         }
         async Task CreateRoomAsync(bool custom, PlayMode mode)
         {
+            int page=navigationEpoch;
             roomData = new RoomData { custom = custom, mode = mode };
             var options = new SessionOptions { Name = custom ? "PickleVerse Custom" : "PickleVerse Duo", Type = "room", IsPrivate = true,
                 MaxPlayers = custom ? 2 * (int)mode : 2, PlayerProperties = PlayerProperties(),
                 SessionProperties = new Dictionary<string,SessionProperty> { ["room"] = new SessionProperty(JsonConvert.SerializeObject(roomData), VisibilityPropertyOptions.Member),
                     ["protocol"] = new SessionProperty(MultiplayerSceneConfiguration.ProtocolVersion.ToString(), VisibilityPropertyOptions.Member) } };
-            AttachRoom(await MultiplayerService.Instance.CreateSessionAsync(options));
+            var created=await MultiplayerService.Instance.CreateSessionAsync(options);
+            if(leavingModePage||page!=navigationEpoch){await DiscardLateRoom(created);throw new OperationCanceledException("Đã quay lại chọn chế độ.");}
+            AttachRoom(created);
         }
         public async Task JoinRoomAsync(string code)
         {
+            int page=navigationEpoch;
             if (Searching) throw new InvalidOperationException("Hủy tìm trận trước.");
             MultiplayerSceneConfiguration.Validate();
             await LeaveRoomAsync();
             var joined = await MultiplayerService.Instance.JoinSessionByCodeAsync(code.Trim().ToUpperInvariant(), new JoinSessionOptions { Type = "room", PlayerProperties = PlayerProperties() });
+            if(leavingModePage||page!=navigationEpoch){await DiscardLateRoom(joined);throw new OperationCanceledException("Đã quay lại chọn chế độ.");}
             // Validate before subscribing: a Changed event from an incompatible room
             // must never start network scene synchronization in this build.
             if (!joined.Properties.TryGetValue("protocol", out var protocol) || protocol.Value != MultiplayerSceneConfiguration.ProtocolVersion.ToString())
@@ -150,6 +158,7 @@ namespace PickleVerse.Multiplayer
         }
         void ReadRoom()
         {
+            if(leavingModePage)return;
             if (Room == null || !Room.Properties.TryGetValue("room",out var value)) return;
             var data = JsonConvert.DeserializeObject<RoomData>(value.Value);
             if (data == null) return;
@@ -243,13 +252,24 @@ namespace PickleVerse.Multiplayer
         public async Task LeaveRoomAsync()
         {
             if(Searching) await CancelSearchAsync();
-            var old=Room; DetachRoom(); Room=null;
+            var old=Room;
             if(old!=null)
             {
                 if(old.IsHost && roomData.custom) await old.AsHost().DeleteAsync();
                 else { if(old.IsHost && old.PlayerCount>1) { old.AsHost().Host=old.Players.First(p=>p.Id!=PlayerId).Id; await old.AsHost().SavePropertiesAsync(); } await old.LeaveAsync(); }
             }
+            if(Room==old){DetachRoom();Room=null;}
             roomData=new RoomData(); measured.Clear();
+        }
+        static Task DiscardLateRoom(ISession session)=>session.IsHost?session.AsHost().DeleteAsync():session.LeaveAsync();
+        readonly ModeNavigationGuard modeNavigation=new ModeNavigationGuard();
+        bool leavingModePage=>modeNavigation.Leaving;
+        int navigationEpoch=>modeNavigation.Epoch;
+        public async Task ReturnToModeSelectionAsync()
+        {
+            await modeNavigation.ReturnAsync(()=>{cancelledSearch=observedSearch;CancelLocal();},
+                ()=>Searching?CancelSearchAsync():Task.CompletedTask,LeaveMatchAsync,LeaveRoomAsync,
+                ()=>{OpenDefaultRoomOnLoad=false;SetState(FlowState.Menu,"Đã rời phòng.");SceneManager.LoadScene("ModeSelection");});
         }
     }
 }
