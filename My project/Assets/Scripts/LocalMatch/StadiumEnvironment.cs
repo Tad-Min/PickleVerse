@@ -11,8 +11,8 @@ namespace PickleVerse.LocalMatch
         public Light[] poleLights,roofLights;
         // All scanned lamp anchors remain available. One source per Y cluster and two per roof bank
         // illuminate the same fixture group; the other lamp faces use the shared emissive material.
-        public Light[] poleIllumination,roofIllumination;
-        public float roofNightIntensity=110;
+        public Light[] poleIllumination,roofIllumination,standIllumination;
+        public float roofNightIntensity=80,poleNightIntensity=45,standNightIntensity=8;
         public Renderer[] poleEmitters,roofEmitters,decorEmitters;
         public Material lightsOn,lightsOff;
         public MeshFilter competitionSurface,kitchenSurface,courtLines,netStructure;
@@ -22,8 +22,15 @@ namespace PickleVerse.LocalMatch
         /// <summary>Authoring utility: retain the scanned anchors, group closely spaced lamp heads.</summary>
         public void ConfigureFixtureGroups()
         {
-            poleIllumination=poleLights.GroupBy(l=>(Mathf.Abs(l.transform.localPosition.z)<11?"near":"far")+"_"+Mathf.Sign(l.transform.localPosition.x)+"_"+Mathf.Sign(l.transform.localPosition.z))
-                .Select(g=>g.OrderByDescending(l=>l.shadows!=LightShadows.None).ThenBy(l=>l.transform.localPosition.sqrMagnitude).First()).ToArray();
+            var poleGroups=poleLights.GroupBy(l=>(Mathf.Abs(l.transform.localPosition.z)<11?"near":"far")+"_"+Mathf.Sign(l.transform.localPosition.x)+"_"+Mathf.Sign(l.transform.localPosition.z)).ToArray();
+            poleIllumination=poleGroups.Select(g=>g.OrderByDescending(l=>l.shadows!=LightShadows.None).ThenBy(l=>l.transform.localPosition.sqrMagnitude).First()).ToArray();
+            standIllumination=poleGroups.Select(g=>g.Where(l=>!poleIllumination.Contains(l)).OrderByDescending(l=>Mathf.Abs(l.transform.localPosition.x)).First()).ToArray();
+            foreach(var light in standIllumination)
+            {
+                var p=light.transform.position;bool corner=Mathf.Abs(p.z)>11;
+                light.transform.LookAt(new Vector3(Mathf.Sign(p.x)*(corner?13.8f:15.6f),2.4f,corner?Mathf.Sign(p.z)*17.5f:p.z));
+                light.range=16;light.spotAngle=105;light.innerSpotAngle=60;light.shadows=LightShadows.None;
+            }
             roofIllumination=roofLights.GroupBy(l=>
             {
                 var p=l.transform.localPosition;
@@ -42,6 +49,7 @@ namespace PickleVerse.LocalMatch
                 light.range=32;light.spotAngle=50;light.innerSpotAngle=32.5f;light.shadows=LightShadows.None;
             }
             applied=-1;
+            foreach(var light in poleLights.Concat(roofLights))if(light){light.color=Color.white;light.useColorTemperature=false;light.colorTemperature=6500;}
         }
         public void ApplyNight(float night)
         {
@@ -52,8 +60,9 @@ namespace PickleVerse.LocalMatch
             foreach(var l in roofLights)if(l)l.enabled=false;
             var poles=poleIllumination!=null&&poleIllumination.Length>0?poleIllumination:poleLights;
             var roofs=roofIllumination!=null&&roofIllumination.Length>0?roofIllumination:roofLights;
-            foreach(var l in poles)if(l){l.enabled=true;l.intensity=Mathf.Lerp(8f,65f,night);}
+            foreach(var l in poles)if(l){l.enabled=true;l.intensity=Mathf.Lerp(8f,poleNightIntensity,night);}
             foreach(var l in roofs)if(l){l.enabled=roof;l.intensity=roofNightIntensity*night;}
+            if(standIllumination!=null)foreach(var l in standIllumination)if(l){l.enabled=roof;l.intensity=standNightIntensity*night;}
             if(lightsOn&&lightsOff)
             {
                 if(first)foreach(var r in poleEmitters)if(r)r.sharedMaterial=lightsOn;

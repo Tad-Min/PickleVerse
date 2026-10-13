@@ -3100,7 +3100,7 @@ MonoBehaviour:
   lampsOn: {fileID: 2100000, guid: e32a228d140087848aeed839f58942c6, type: 2}
   stadium: {fileID: 1270418022}
   selectedNight: 0
-  useLocalLaunchSettings: 0
+  useLocalLaunchSettings: 1
 --- !u!4 &510363279
 Transform:
   m_ObjectHideFlags: 0

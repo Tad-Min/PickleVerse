@@ -60,8 +60,9 @@ namespace PickleVerse.Multiplayer
         public override void OnNetworkSpawn()
         {
             Instance=this;
-            if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject(initialRoster??MultiplayerApp.Instance.Roster));
+            if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject((initialRoster??MultiplayerApp.Instance.Roster).WithEnvironment(BotMatchLaunchSettings.Night)));
             Roster=JsonConvert.DeserializeObject<MatchRoster>(RosterJson.Value.ToString());
+            ApplyEnvironment();
             BuildBall(); MultiplayerApp.Instance.CourtLoaded();
             Finished.OnValueChanged+=ResultChanged;
             Started.OnValueChanged+=StartChanged;
@@ -86,6 +87,11 @@ namespace PickleVerse.Multiplayer
             if(aimMarker) Destroy(aimMarker.gameObject);
         }
         public void SetRoster(MatchRoster roster) { initialRoster=roster; }
+        void ApplyEnvironment()
+        {
+            var environment=UnityEngine.Object.FindAnyObjectByType<MatchEnvironmentLighting>();
+            if(environment&&Roster!=null)environment.SelectForMatch(Roster.night);
+        }
         void BuildBall()
         {
             var settings=MultiplayerApp.Instance.Settings;

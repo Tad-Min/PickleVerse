@@ -21,7 +21,7 @@ Quét mesh bằng các thành phần hình học nối nhau của vật liệu p
 - 8 cột Y, mỗi cột 5 đầu đèn: **40 spotlight** đặt dưới đúng mặt đèn.
 - 6 hàng đèn mái thẳng, mỗi hàng 11 đèn, cộng 4 đoạn góc cong, mỗi đoạn 15 đèn: **126 spotlight**.
 - Ban ngày: ánh sáng mặt trời và đèn cột Y; spotlight mái tắt, vật liệu đèn mái không phát sáng.
-- Ban đêm: tắt sun, các mặt đèn Y và mái phát sáng. Trong Menu, các giá trị dim theo chu kỳ trời ngày/đêm. Sau lần tối ưu, 166 vị trí đèn được giữ lại nhưng nguồn chiếu sáng được gộp thành 8 nguồn Y và 16 nguồn mái; các nguồn mái hướng vào sân, intensity 110 và range 32 m.
+- Ban đêm: tắt sun, các mặt đèn Y và mái phát sáng trắng. Trong Menu, các giá trị dim theo chu kỳ trời ngày/đêm. Giữ 166 vị trí đèn; nguồn chiếu sáng gồm 8 Y chiếu sân (intensity 45), 16 mái (intensity 80, range 32 m) và 8 Y chiếu nhẹ ra khán đài (intensity 8, không bóng phụ). Ban ngày chỉ sun và 8 Y chiếu sân hoạt động.
 - Chỉ 4 đầu đèn Y gần sân có bóng thời gian thực. Các đầu đèn còn lại chiếu sáng không tạo thêm shadow map, giúp tránh chi phí của 166 bản đồ bóng.
 
 ## Camera và nhân vật
@@ -37,7 +37,7 @@ Gộp hình học tĩnh theo vật liệu và khu vực không đổi hình dạ
 Kiểm tra trên Unity 6000.6.2f1/Windows:
 
 - 230 EditMode tests đạt.
-- 63 kiểm tra scene/hình học/ánh sáng/HUD đạt sau tối ưu, gồm biên sân, Kitchen, profile băng lưới, nền và collider lưới Multiplayer, số fixture, ngày/đêm và không thiếu script.
+- Bộ kiểm tra scene/hình học/ánh sáng/HUD gồm biên sân, Kitchen, profile băng lưới, nền và collider lưới Multiplayer, số fixture, màu trắng, đèn khán đài, ngày/đêm và không thiếu script.
 - Cả 12 bài Training chạy bằng input, animation, tiếp xúc vợt và bóng tới kết quả 3 sao trên hồ sơ QA.
 - Tutorial qua 32 kiểm tra, gồm diễn giải luật và tiếp xúc thực của 9 tổ hợp đánh.
 - Intro được kiểm tra tại 8 mốc camera; nhân vật nằm trong khung và đường quay không đi vào mái/khán đài.
