@@ -35,6 +35,10 @@ namespace PickleVerse.Multiplayer
         public PlayMode mode;
         public bool custom;
         public List<RoomMember> members = new List<RoomMember>();
+        // Optional JSON field: older match payloads remain daytime. The host captures this once.
+        public bool night;
+        public MatchRoster WithEnvironment(bool selectedNight) => new MatchRoster
+        {matchId=matchId,region=region,mode=mode,custom=custom,members=members,night=selectedNight};
         public int Count => members.Count;
         public int HumanCount => members.FindAll(p=>!p.bot).Count;
         public bool RankedBot => !custom && mode==PlayMode.Singles && members.Exists(p=>p.bot);
