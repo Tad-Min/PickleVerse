@@ -55,13 +55,14 @@ namespace PickleVerse.Multiplayer
         public int PlayerEnd(int team) => (team==0 ? -1 : 1) * (EndsSwapped.Value ? -1 : 1);
         public void RequestNextGame() { if(IsServer) NextGame(); }
         void NextGame()
-        { if(!BetweenGames.Value || Finished.Value) return; Rules.NextGame(); EndsSwapped.Value=Rules.ends[0]>0; BetweenGames.Value=false; BeginRally(); }
+        { if(!BetweenGames.Value || Finished.Value) return; Rules.NextGame(); EndsSwapped.Value=Rules.ends[0]>0; ReplayEventRpc("EndChange","");BetweenGames.Value=false; BeginRally(); }
 
         public override void OnNetworkSpawn()
         {
             Instance=this;
-            if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject(initialRoster??MultiplayerApp.Instance.Roster));
+            if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject((initialRoster??MultiplayerApp.Instance.Roster).WithEnvironment(BotMatchLaunchSettings.Night)));
             Roster=JsonConvert.DeserializeObject<MatchRoster>(RosterJson.Value.ToString());
+            ApplyEnvironment();
             BuildBall(); MultiplayerApp.Instance.CourtLoaded();
             Finished.OnValueChanged+=ResultChanged;
             Started.OnValueChanged+=StartChanged;
@@ -76,6 +77,7 @@ namespace PickleVerse.Multiplayer
         }
         public override void OnNetworkDespawn()
         {
+            replay?.Finish(false);
             SnapshotPendingProgression();
             UnbindProgression();
             if(Instance==this) Instance=null; Finished.OnValueChanged-=ResultChanged; Started.OnValueChanged-=StartChanged;
@@ -85,6 +87,11 @@ namespace PickleVerse.Multiplayer
             if(aimMarker) Destroy(aimMarker.gameObject);
         }
         public void SetRoster(MatchRoster roster) { initialRoster=roster; }
+        void ApplyEnvironment()
+        {
+            var environment=UnityEngine.Object.FindAnyObjectByType<MatchEnvironmentLighting>();
+            if(environment&&Roster!=null)environment.SelectForMatch(Roster.night);
+        }
         void BuildBall()
         {
             var settings=MultiplayerApp.Instance.Settings;
@@ -160,6 +167,7 @@ namespace PickleVerse.Multiplayer
         }
         void BeginRally()
         {
+            ReplayEventRpc("NewRally","");
             Rules.NewRally(); rallyEnding = rallyCommitted = false; BetweenPoints.Value=false; releasedServe = false;
             progressStrokes.NewRally();
             foreach(var brain in bots.Values) brain.Reset();
@@ -224,6 +232,7 @@ namespace PickleVerse.Multiplayer
                             server.ConsumeContact(false);
                             progressStrokes.Launch(server.Team.Value*2+server.Index.Value,true,Rules.strokeCount);
                             ballVelocity = LaunchBall(server,actor.Intent);
+                            ReplayEventRpc("Serve",server.Identity.Value.ToString());
                         }
                     }
                 }
@@ -256,6 +265,7 @@ namespace PickleVerse.Multiplayer
                         progressStrokes.AcceptFlight();
                         progressStrokes.Launch(player.Team.Value*2+player.Index.Value,false,Rules.strokeCount);
                         ballVelocity = LaunchBall(player,shot);
+                        ReplayEventRpc("Hit",player.Identity.Value+":"+shot.kind);
                         foreach (var other in players.Values.Where(p => p.Team.Value != player.Team.Value)) other.SplitStep();
                         shotLabel = shot.ToString(); shotLabelUntil = Time.realtimeSinceStartupAsDouble + 1;
                     }
@@ -275,13 +285,14 @@ namespace PickleVerse.Multiplayer
                 }
             }
             if (!Rules.live && !Rules.waitingServe && !rallyEnding)
-            { rallyEnding = true; ballVelocity = Vector3.zero;MatchSoundRpc((int)GameSfx.FaultWhistle); }
+            { rallyEnding = true; ballVelocity = Vector3.zero;MatchSoundRpc((int)GameSfx.FaultWhistle);ReplayEventRpc("Fault",Rules.reason); }
             if (rallyEnding && !Array.Exists(Rules.volleyMomentum, v => v))
             {
                 int loser = Rules.pendingFault, endedGame = Rules.GameNumber, priorServer = Rules.servingTeam;
                 string fault = Rules.reason;
                 int beforeA=Rules.score[0], beforeB=Rules.score[1];
                 Rules.SettleRally();
+                if(Rules.gameFinished)ReplayEventRpc("GameEnd",Rules.score[0]+":"+Rules.score[1]);
                 teamPoints[0]+=Math.Max(0,Rules.score[0]-beforeA); teamPoints[1]+=Math.Max(0,Rules.score[1]-beforeB);
                 if(Rules.gameFinished) CaptureProgressionGame();
                 rallyCommitted=true; BetweenPoints.Value=true; rallyDeadline=Time.realtimeSinceStartupAsDouble+2.1;
@@ -296,7 +307,7 @@ namespace PickleVerse.Multiplayer
                 }
                 else if(Rules.endChangeDue)
                 {
-                    MatchSoundRpc((int)GameSfx.GameWhistle);Rules.SwapEnds(); EndsSwapped.Value=Rules.ends[0]>0;
+                    MatchSoundRpc((int)GameSfx.GameWhistle);Rules.SwapEnds(); EndsSwapped.Value=Rules.ends[0]>0;ReplayEventRpc("EndChange","");
                     rallyDeadline=Time.realtimeSinceStartupAsDouble+2.6;
                     AnnouncementRpc("ĐỔI BÊN","CHANGE ENDS • Mốc 6 điểm trong game quyết định",(int)AnnouncementTone.ChangeEnds,1.4f);
                 }
@@ -314,6 +325,7 @@ namespace PickleVerse.Multiplayer
         }
         void LateUpdate()
         {
+            EnsureReplay();
             if(!IsSpawned || !Body || !Started.Value)return;
             var frame=Ball.Value;
             var server=NetworkPlayer.All.FirstOrDefault(p=>p.Team.Value==ServerTeam.Value && p.Index.Value==ServerIndex.Value);
@@ -398,6 +410,7 @@ namespace PickleVerse.Multiplayer
         void ResultChanged(bool old,bool complete)
         {
             if(!complete)return;
+            replay?.Event("MatchEnd",Status.Value.ToString());replay?.Finish(true);
             MultiplayerApp.Instance.ShowResult(Status.Value.ToString());
         }
         [Rpc(SendTo.ClientsAndHost)] void MatchSoundRpc(int sound)

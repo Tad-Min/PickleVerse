@@ -26,8 +26,8 @@ public static class StadiumSetup
     static Material Led(bool on)
     {
         var m=new Material(Shader.Find("Universal Render Pipeline/Lit")){name=on?"Stadium LED On":"Stadium LED Off"};
-        m.color=on?new Color(1,.89f,.68f):new Color(.14f,.15f,.17f);
-        m.SetFloat("_Smoothness",.45f);if(on){m.EnableKeyword("_EMISSION");m.SetColor("_EmissionColor",new Color(1,.82f,.55f)*1.8f);}
+        m.color=on?new Color(.94f,.94f,.94f):new Color(.14f,.15f,.17f);
+        m.SetFloat("_Smoothness",.45f);if(on){m.EnableKeyword("_EMISSION");m.SetColor("_EmissionColor",Color.white*1.2f);}
         return Save(m,Folder+"/Materials/LED "+(on?"On":"Off")+".mat");
     }
     static List<Bounds> Islands(MeshFilter filter)
@@ -150,6 +150,7 @@ public static class StadiumSetup
                     var bot=EditorSceneManager.OpenScene("Assets/Scenes/BotMatch.unity",OpenSceneMode.Additive);var reference=bot.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<MatchEnvironmentLighting>()).First();lighting.daySky=reference.daySky;lighting.nightSky=reference.nightSky;EditorSceneManager.CloseScene(bot,true);
                 }
                 lighting.matchCamera=camera;lighting.sun=scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<Light>(true)).First(l=>l.type==LightType.Directional);lighting.stadium=environment;lighting.floodlights=Array.Empty<Light>();lighting.lampFaces=Array.Empty<Renderer>();
+                if(scene.name=="MultiplayerCourt")lighting.useLocalLaunchSettings=true;
                 lighting.sun.transform.rotation=Quaternion.Euler(55,-35,0);
                 lighting.sun.intensity=1.1f;lighting.sun.color=new Color(1,.93f,.82f);lighting.sun.shadows=LightShadows.Soft;
                 lighting.Apply(lighting.selectedNight);EditorUtility.SetDirty(lighting);

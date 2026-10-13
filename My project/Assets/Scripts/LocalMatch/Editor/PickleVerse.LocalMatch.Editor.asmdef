@@ -1,5 +1,15 @@
 {
   "name": "PickleVerse.LocalMatch.Editor",
-  "references": ["PickleVerse.LocalMatch", "PickleVerse.Rules", "Unity.InputSystem", "Unity.TextMeshPro", "Unity.ugui", "PickleVerse.CharacterMotion"],
-  "includePlatforms": ["Editor"]
+  "references": [
+    "PickleVerse.LocalMatch",
+    "PickleVerse.Rules",
+    "Unity.InputSystem",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "PickleVerse.CharacterMotion",
+    "PickleVerse.Entites"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
 }

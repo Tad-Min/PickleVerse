@@ -221,13 +221,13 @@ namespace PickleVerse.FrontEnd
             }
             RenderSettings.sun = sun && sun.enabled ? sun : null;
             if (floodlights != null) foreach (var light in floodlights) if (light) { light.enabled = NightWeight > .01f; light.intensity = 40 * NightWeight; }
-            if (portraitLight) portraitLight.intensity = Mathf.Lerp(2.5f, 5.5f, NightWeight);
+            if (portraitLight) {portraitLight.intensity = Mathf.Lerp(2.5f, 4f, NightWeight);portraitLight.color=Color.white;portraitLight.useColorTemperature=false;}
             if (lampFaces != null) foreach (var face in lampFaces) if (face && lampsOn && lampsOff) face.sharedMaterial = NightWeight > .35f ? lampsOn : lampsOff;
             if(stadium)stadium.ApplyNight(NightWeight);
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = Color.Lerp(new Color(.52f,.63f,.76f),new Color(.055f,.078f,.125f),NightWeight);
-            RenderSettings.ambientEquatorColor = Color.Lerp(new Color(.34f,.40f,.48f),new Color(.032f,.046f,.070f),NightWeight);
-            RenderSettings.ambientGroundColor = Color.Lerp(new Color(.20f,.23f,.25f),new Color(.018f,.025f,.033f),NightWeight);
+            RenderSettings.ambientSkyColor = Color.Lerp(new Color(.52f,.63f,.76f),MatchEnvironmentLighting.NightAmbientSky,NightWeight);
+            RenderSettings.ambientEquatorColor = Color.Lerp(new Color(.34f,.40f,.48f),MatchEnvironmentLighting.NightAmbientEquator,NightWeight);
+            RenderSettings.ambientGroundColor = Color.Lerp(new Color(.20f,.23f,.25f),MatchEnvironmentLighting.NightAmbientGround,NightWeight);
             RenderSettings.ambientIntensity = 1;
             RenderSettings.reflectionIntensity = Mathf.Lerp(.65f,.20f,NightWeight);
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogStartDistance = 38;

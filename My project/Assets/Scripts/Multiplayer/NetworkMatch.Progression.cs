@@ -14,11 +14,6 @@ namespace PickleVerse.Multiplayer
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T:IReaderWriter { serializer.SerializeValue(ref json); }
         public bool Equals(ProgressionEnvelope other) => json==other.json;
     }
-    [Serializable] public sealed class OnlineMatchResult
-    {
-        public string onlineId;
-        public MatchResult result;
-    }
     public sealed partial class NetworkMatch
     {
         public NetworkVariable<ProgressionEnvelope> ProgressionResults = new NetworkVariable<ProgressionEnvelope>(new ProgressionEnvelope { json="" });

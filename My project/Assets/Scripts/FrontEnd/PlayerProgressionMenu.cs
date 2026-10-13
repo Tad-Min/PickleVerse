@@ -138,6 +138,11 @@ namespace PickleVerse.FrontEnd
             else if(view==View.Statistics) BuildStatistics(p);
             else if(view==View.Achievements || missions)
             {
+                if(view==View.Daily&&p.dailyStreak!=null)
+                {
+                    var streak=p.dailyStreak;bool played=streak.days.Contains(ProgressionEngine.DayKey(DateTime.UtcNow));
+                    AddMessage("DAILY STREAK · "+streak.current+" ngày",(played?"Đã chơi hôm nay":"Chơi ít nhất một trận để giữ chuỗi")+"\nDài nhất: "+streak.best+" ngày · Đổi ngày lúc 07:00 giờ Việt Nam");
+                }
                 var scope=view==View.Achievements?ProgressScope.Achievement:view==View.Daily?ProgressScope.Daily:ProgressScope.Weekly;
                 foreach(var def in engine.Config.definitions.Where(d=>d.scope==scope)) AddProgressRow(p,engine,def);
                 if(missions)
@@ -174,6 +179,7 @@ namespace PickleVerse.FrontEnd
             Stat("Tổng kinh nghiệm",p.totalXp.ToString("N0")+" XP"); Stat("Trận thắng",p.wins.ToString("N0"));
             Stat("Trận thua",p.losses.ToString("N0")); Stat("Tỷ lệ thắng",p.WinRate.ToString("0.0")+"%");
             Stat("Chuỗi thắng dài nhất",p.lifetime.bestStreak+" trận");
+            Stat("Chuỗi ngày chơi dài nhất",(p.dailyStreak?.best??0)+" ngày");
         }
         void RefreshStatisticsTime() { if(activeTime && ProgressionRuntime.Exists) activeTime.text=ProgressionRuntime.FormatTime(ProgressionRuntime.Instance.Player.activeSeconds); }
         TMP_Text Stat(string key,string value)
@@ -214,6 +220,13 @@ namespace PickleVerse.FrontEnd
             Text("Outcome",row,$"{result.OutcomeLabel}\n{result.gamesWon} : {result.gamesLost} game  ·  {(result.eloDelta>=0?"+":"")}{result.eloDelta} Elo",17,result.outcome==MatchOutcome.Won?Lime:Mint,new Vector2(.71f,.26f),new Vector2(.98f,.97f),Vector2.zero,Vector2.zero,TextAlignmentOptions.MidlineRight);
             var detail=Text("Detail",row,"Bấm để xem tỷ số từng game",13,Muted,new Vector2(0,0),new Vector2(.98f,.28f),new Vector2(18,4),new Vector2(-12,0));
             var button=row.gameObject.AddComponent<Button>(); button.targetGraphic=row.GetComponent<Image>(); StyleButton(button,Card); bool expanded=false;
+            var replayLabel=PickleVerse.Replays.ReplayStorage.Availability(result.playerId,result.id);
+            var replayRect=new GameObject("WatchReplay",typeof(RectTransform),typeof(Image),typeof(Button)).GetComponent<RectTransform>();replayRect.SetParent(row,false);
+            replayRect.anchorMin=new Vector2(.53f,0);replayRect.anchorMax=new Vector2(.98f,.27f);replayRect.offsetMin=replayRect.offsetMax=Vector2.zero;
+            replayRect.GetComponent<Image>().color=Card;
+            var replayButton=replayRect.GetComponent<Button>();StyleButton(replayButton,Card);replayButton.interactable=replayLabel.StartsWith("Xem replay",StringComparison.Ordinal);
+            Text("Label",replayRect,replayLabel,13,Mint,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
+            replayButton.onClick.AddListener(()=>{float prior=scroll.verticalNormalizedPosition;Close();PickleVerse.Replays.ReplayLaunch.Select(result.playerId,result.id,()=>{PickleVerse.Shop.LobbyNavigation.ReturnToLobby();StartCoroutine(RestoreHistory(prior));});PickleVerse.Shop.LobbyNavigation.OpenReplay();});
             button.onClick.AddListener(()=> {
                 expanded=!expanded; row.GetComponent<LayoutElement>().preferredHeight=expanded?158:112;
                 detail.text=expanded?string.Join("   ·   ",result.scores.Select((s,i)=>$"Game {i+1}: {s.own}–{s.opponent}{(s.completed?"":" (chưa xong)")}"))+ (string.IsNullOrEmpty(result.reason)?"":"\n"+result.reason):"Bấm để xem tỷ số từng game";
@@ -222,6 +235,11 @@ namespace PickleVerse.FrontEnd
         }
         void AddMessage(string heading,string body)
         { var row=Row("Empty",120); Text("Message",row,heading+"\n<size=17><color=#A1BFC9>"+body+"</color></size>",24,White,Vector2.zero,Vector2.one,new Vector2(24,0),new Vector2(-24,0),TextAlignmentOptions.Center); }
+        System.Collections.IEnumerator RestoreHistory(float position)
+        {
+            yield return null;while(PickleVerse.Shop.LobbyNavigation.IsBusy)yield return null;
+            OpenCareer();scroll.verticalNormalizedPosition=position;
+        }
         void SaveEditor(bool switchId)
         {
             try

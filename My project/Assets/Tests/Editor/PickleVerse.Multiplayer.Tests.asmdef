@@ -1,8 +1,20 @@
 {
-  "name":"PickleVerse.Multiplayer.Tests",
-  "references":["PickleVerse.Multiplayer", "Unity.Services.Multiplayer", "Unity.Services.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
-  "includePlatforms":["Editor"],
-  "overrideReferences":true,
-  "precompiledReferences":["nunit.framework.dll", "Newtonsoft.Json.dll"],
-  "autoReferenced":false
+  "name": "PickleVerse.Multiplayer.Tests",
+  "references": [
+    "PickleVerse.Multiplayer",
+    "Unity.Services.Multiplayer",
+    "Unity.Services.Core",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "PickleVerse.Entites"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "Newtonsoft.Json.dll"
+  ],
+  "autoReferenced": false
 }

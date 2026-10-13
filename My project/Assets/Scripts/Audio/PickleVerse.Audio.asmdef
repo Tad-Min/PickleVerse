@@ -1,5 +1,11 @@
 {
   "name": "PickleVerse.Audio",
   "rootNamespace": "PickleVerse.Audio",
-  "references": ["PickleVerse.Settings", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem"]
+  "references": [
+    "PickleVerse.Settings",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Unity.InputSystem",
+    "PickleVerse.Entites"
+  ]
 }

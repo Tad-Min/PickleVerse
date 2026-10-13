@@ -4,19 +4,6 @@ using System.Linq;
 
 namespace PickleVerse.Progression
 {
-    public enum TrainingSkill { Serve, Drive, Dink, Volley, Modifiers, Drop, Reset, Smash, Footwork, Approach, DoublesCover, DoublesTransition }
-    public enum TrainingError { WrongInput, Early, Late, Kitchen, Momentum, Net, Out, Target, ServeFeet, Movement, Spacing }
-    [Serializable] public sealed class TrainingDrill
-    {
-        public string id, title, explanation, coaching;
-        public TrainingSkill skill;
-        public int tier, trials, required, reward, xp;
-        public int[] masks;
-        public string[] prerequisites;
-        public bool Doubles => skill == TrainingSkill.DoublesCover || skill == TrainingSkill.DoublesTransition;
-        public string TierName => new[]{"Cơ bản","Kiểm soát","Nâng cao","Đánh đôi"}[tier];
-        public int Mask(int trial) => masks[trial % masks.Length];
-    }
     public static class TrainingCurriculum
     {
         static TrainingDrill D(string id,string title,TrainingSkill skill,int tier,int[] masks,string explanation,string coaching,params string[] prerequisites)
@@ -38,36 +25,6 @@ namespace PickleVerse.Progression
         public static TrainingDrill Find(string id)=>Lessons.FirstOrDefault(d=>d.id==id);
         public static string ErrorName(TrainingError e)=>new[]{"Sai phím hoặc kỹ thuật","Đánh quá sớm","Đánh hụt / quá muộn","Volley trong Kitchen","Đà volley vào Kitchen","Bóng chạm lưới","Bóng ngoài sân","Chưa trúng vùng đích","Chân giao bóng sai","Chưa hồi vị / tiến lên","Khoảng cách đội hình"}[(int)e];
         public static string Tip(TrainingError e)=>new[]{"Giữ đúng tổ hợp trên HUD; giữ modifier đến lúc thả nút đánh.","Đợi bóng nảy nếu bài yêu cầu. Thả nút khi vợt có đủ thời gian tới bóng.","Di chuyển vào vòng đón bóng và thả sớm hơn thời điểm tiếp xúc.","Lùi cả hai chân ra ngoài vạch Kitchen trước khi volley.","Dừng lại sau volley; đừng để đà chạy đưa chân vào Kitchen.","Tiếp bóng phía trước người và đúng độ cao của kỹ thuật.","Giữ bóng trong đường biên; ưu tiên kiểm soát hơn lực.","Đón bóng đúng vị trí và chọn đúng hướng thẳng / chéo của vùng sáng.","Giữ chân sau baseline, giữa đường giữa sân và biên dọc khi giao.","Sau cú đánh, di chuyển về vùng hồi vị được đánh dấu.","Giữ cùng hàng với đồng đội, khoảng cách 1–3 mét và không để khe giữa quá lớn."}[(int)e];
-    }
-    [Serializable] public sealed class TrainingErrorCount {public TrainingError error;public int count;}
-    [Serializable] public sealed class TrainingAttempt
-    {
-        public string id,lessonId,playerId;
-        public int trials,successes,contacts;
-        public double seconds,timingTotal;
-        public bool completed,passed,review;
-        public int stars,rewardTokenpad,rewardXp;
-        public List<TrainingErrorCount> errors=new List<TrainingErrorCount>();
-        public double Accuracy=>trials==0?0:(double)successes/trials;
-        public double Timing=>contacts==0?1:timingTotal/contacts;
-        public int Errors=>errors.Sum(e=>e.count);
-        public void Error(TrainingError error){var row=errors.Find(e=>e.error==error);if(row==null){row=new TrainingErrorCount{error=error};errors.Add(row);}row.count++;}
-    }
-    [Serializable] public sealed class TrainingLessonRecord
-    {
-        public string id;
-        public int attempts,retries,completions,bestStars,trials,successes;
-        public double seconds,bestAccuracy;
-        public List<TrainingErrorCount> errors=new List<TrainingErrorCount>();
-        public List<float> accuracyHistory=new List<float>();
-    }
-    [Serializable] public sealed class TrainingProfile
-    {
-        public int version=1;
-        public string lastLesson="serve";
-        public TrainingAttempt active;
-        public List<TrainingLessonRecord> lessons=new List<TrainingLessonRecord>();
-        public List<string> completedAttempts=new List<string>();
     }
     public static class TrainingEngine
     {
@@ -111,4 +68,5 @@ namespace PickleVerse.Progression
             data.completedAttempts.Add(a.id);data.active=a;return true;
         }
     }
+
 }

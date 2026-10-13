@@ -1,0 +1,10 @@
+{
+  "name": "PickleVerse.Replays",
+  "references": [
+    "PickleVerse.Entites",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Unity.InputSystem"
+  ],
+  "autoReferenced": true
+}

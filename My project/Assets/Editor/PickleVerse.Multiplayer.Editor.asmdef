@@ -1,5 +1,24 @@
 {
-  "name":"PickleVerse.Multiplayer.Editor",
-  "references":["PickleVerse.Multiplayer", "PickleVerse.LocalMatch", "PickleVerse.FrontEnd", "PickleVerse.Progression", "PickleVerse.Shop", "Unity.Services.Core.Editor", "Unity.Services.Core.Environments.Editor", "Unity.Services.DeploymentApi", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem", "Unity.Netcode.Runtime"],
-  "includePlatforms":["Editor"]
+  "name": "PickleVerse.Multiplayer.Editor",
+  "references": [
+    "PickleVerse.Multiplayer",
+    "PickleVerse.LocalMatch",
+    "PickleVerse.FrontEnd",
+    "PickleVerse.Progression",
+    "PickleVerse.Shop",
+    "Unity.Services.Core.Editor",
+    "Unity.Services.Core.Environments.Editor",
+    "Unity.Services.DeploymentApi",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Unity.InputSystem",
+    "Unity.Netcode.Runtime",
+    "PickleVerse.Entites",
+    "Unity.Behavior.SerializableGUID",
+    "PickleVerse.Replays",
+    "Unity.Behavior"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
 }

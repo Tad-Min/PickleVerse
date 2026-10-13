@@ -49,6 +49,7 @@ namespace PickleVerse.Shop
         public static void OpenCollection(){Ensure().Open("Collection");}
         public static void OpenModes(){Ensure().Open("ModeSelection");}
         public static void OpenTraining(){Ensure().Open("Training");}
+        public static void OpenReplay(){Ensure().Open("Replay");}
         public static void ReturnToLobby(){var navigation=Ensure();if(!navigation.Busy)navigation.StartCoroutine(navigation.Return());}
         void Open(string destination)
         {

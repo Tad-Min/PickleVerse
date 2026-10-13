@@ -1,6 +1,9 @@
 {
   "name": "PickleVerse.Progression",
   "rootNamespace": "PickleVerse.Progression",
-  "references": [],
+  "references": [
+    "PickleVerse.Entites",
+    "PickleVerse.Replays"
+  ],
   "autoReferenced": true
 }

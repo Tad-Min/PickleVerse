@@ -14,7 +14,7 @@ public static class StadiumRenderSetup
     public static void Configure(StadiumEnvironment env)
     {
         env.ConfigureFixtureGroups();
-        env.roofNightIntensity=110;
+        env.roofNightIntensity=80;env.poleNightIntensity=45;env.standNightIntensity=8;
         foreach(var r in env.GetComponentsInChildren<Renderer>())
         {
             if(r.name.Contains("WarmLight")||new[]{"BlueSeats","PlantLeaves","Terracotta","SportsBanner","VietnamSatin"}.Any(n=>r.name.Contains(n)))r.shadowCastingMode=ShadowCastingMode.Off;
@@ -85,6 +85,6 @@ public static class StadiumRenderSetup
             var s=new SerializedObject(feature);s.FindProperty("m_Settings.Downsample").boolValue=true;s.ApplyModifiedPropertiesWithoutUndo();EditorUtility.SetDirty(feature);AssetDatabase.SaveAssetIfDirty(feature);
         }
         EditorSceneManager.OpenScene("Assets/Scenes/UI/Menu.unity");
-        return new{scenes=rows,poleSources=8,roofSources=16,roofIntensity=110,ssaoHalfResolution=true};
+        return new{scenes=rows,poleSources=8,roofSources=16,standSources=8,roofIntensity=80,ssaoHalfResolution=true};
     }
 }

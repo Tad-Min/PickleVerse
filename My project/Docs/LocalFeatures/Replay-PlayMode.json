@@ -1,0 +1,26 @@
+{
+  "seeks": [
+    {
+      "requested": 0.0,
+      "actual": 0.0,
+      "cached": 60
+    },
+    {
+      "requested": 12.0,
+      "actual": 12.0,
+      "cached": 64
+    },
+    {
+      "requested": 33.2,
+      "actual": 33.150170300000354,
+      "cached": 16
+    }
+  ],
+  "rates": [
+    0.5,
+    1.0,
+    2.0
+  ],
+  "noProgressionMutation": true,
+  "skinActors": 2
+}

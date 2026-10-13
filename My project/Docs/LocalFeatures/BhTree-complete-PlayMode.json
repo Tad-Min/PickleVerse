@@ -1,0 +1,17 @@
+{
+  "fixture": "controlled two game-ending rallies via SinglesRules and FinishRally",
+  "phase": "MatchOver",
+  "winner": 0,
+  "games": [
+    2,
+    0
+  ],
+  "complete": true,
+  "chunks": 1,
+  "streak": 1,
+  "events": [
+    "NewRally",
+    "GameEnd",
+    "MatchEnd"
+  ]
+}

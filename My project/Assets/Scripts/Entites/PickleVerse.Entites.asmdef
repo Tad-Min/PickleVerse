@@ -1,0 +1,7 @@
+{
+  "name": "PickleVerse.Entites",
+  "rootNamespace": "PickleVerse",
+  "references": [],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

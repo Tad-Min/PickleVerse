@@ -49,7 +49,7 @@ namespace PickleVerse.LocalMatch
             serveClock.text = match.Phase == MatchPhase.PreServe ? "GIAO BÓNG  " + Mathf.Max(0, 10f - match.ServeElapsed).ToString("0.0") + "s" : match.Phase == MatchPhase.Rally ? (rules.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY") : "";
             if(match.Phase==MatchPhase.Rally && rules.ExpectedHitter==0 && match.PredictContact(match.human.end,true,out _,out var eta,match.human.ContactOffset(new ShotIntent(ShotKind.Drive)).y))
                 serveClock.text+="\n<size=16>Thả "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Drive))+" sau "+Mathf.Max(0,eta-.433f).ToString("0.0")+"s</size>";
-            difficultyLabel.text = "Bot: " + new[] { "Dễ", "Vừa", "Khó" }[match.botDifficulty];
+            difficultyLabel.text = "Bot: " + match.BotLabel;
             bool show = !SettingsOverlay.IsOpen && (match.Paused || match.Phase == MatchPhase.Intro || match.Phase == MatchPhase.Timeout);
             modal.SetActive(show);
             if (!show) return;
@@ -95,3 +95,4 @@ namespace PickleVerse.LocalMatch
         void OnDestroy(){GameSettings.Changed-=RefreshBindings;}
     }
 }
+

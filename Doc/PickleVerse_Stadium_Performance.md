@@ -2,6 +2,10 @@
 
 Ngày kiểm tra: 13/10/2026. Áp dụng cho BotMatch, Training, Tutorial và MultiplayerCourt; prefab sân dùng chung cũng cập nhật ánh sáng trong Menu.
 
+**Cập nhật ánh sáng theo phản hồi:** đèn sân và mặt đèn dùng trắng trung tính; intensity mái 80 (trước 110), Y chiếu sân 45 (trước 65). Có thêm 8 đầu đèn Y hướng ra khán đài, intensity 8, không tạo bóng phụ. Ban ngày các nguồn phụ này tắt. Multiplayer dùng lựa chọn ngày/đêm trong snapshot roster của chủ trận; máy khách và người kết nối lại áp dụng snapshot đó thay vì lựa chọn riêng. Các số FPS trong bảng bên dưới là bài đo trước lần tinh chỉnh màu/cường độ này; JSON mới tại `UnityWork/StadiumPerformance/night-white-tune.json`.
+
+Lần tinh chỉnh này qua 233/233 EditMode tests, 73 kiểm tra scene và 27 kiểm tra runtime ánh sáng. Đã kiểm tra payload ngày/đêm của host áp dụng đúng khi lựa chọn lưu trên máy khách trái ngược; đây là kiểm tra deserialize/callback, chưa phải thử truyền mạng giữa hai thiết bị. Bài đo Editor ban đêm: BotMatch 123,44 FPS, Training 140,96 FPS, Tutorial 132,09 FPS, MultiplayerCourt với bốn nhân vật mô phỏng 115,26 FPS trung bình. Ảnh kiểm tra nằm trong `UnityWork/NightLighting/`.
+
 ## Thay đổi
 
 - Giữ 166 vị trí đèn đã quét từ model, nhưng gộp nguồn chiếu sáng theo cụm: **8 nguồn ở cột Y, 16 nguồn ở mái**. Các mặt đèn trong từng cụm vẫn phát sáng. Ban ngày dùng sun + Y, ban đêm dùng Y + mái. Giữ 4 nguồn Y có bóng thời gian thực cho nhân vật.

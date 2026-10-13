@@ -17,6 +17,9 @@ namespace PickleVerse.LocalMatch
         public bool selectedNight;
         public bool useLocalLaunchSettings = true;
         public bool IsNight { get; private set; }
+        public static readonly Color NightAmbientSky=new Color(.070f,.078f,.090f);
+        public static readonly Color NightAmbientEquator=new Color(.050f,.057f,.065f);
+        public static readonly Color NightAmbientGround=new Color(.035f,.040f,.045f);
 
         void Awake()
         {
@@ -41,9 +44,9 @@ namespace PickleVerse.LocalMatch
             if(stadium)stadium.ApplyNight(night?1:0);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = night ? new Color(.055f, .078f, .125f) : new Color(.52f, .63f, .76f);
-            RenderSettings.ambientEquatorColor = night ? new Color(.032f, .046f, .070f) : new Color(.34f, .40f, .48f);
-            RenderSettings.ambientGroundColor = night ? new Color(.018f, .025f, .033f) : new Color(.20f, .23f, .25f);
+            RenderSettings.ambientSkyColor = night ? NightAmbientSky : new Color(.52f, .63f, .76f);
+            RenderSettings.ambientEquatorColor = night ? NightAmbientEquator : new Color(.34f, .40f, .48f);
+            RenderSettings.ambientGroundColor = night ? NightAmbientGround : new Color(.20f, .23f, .25f);
             RenderSettings.ambientIntensity = 1;
             RenderSettings.reflectionIntensity = night ? .20f : .65f;
             RenderSettings.fog = true;

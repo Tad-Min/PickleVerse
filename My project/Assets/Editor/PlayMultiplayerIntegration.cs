@@ -261,7 +261,7 @@ namespace PickleVerse.EditorTools
         {
             var canvas = scene.GetRootGameObjects().Single(g => g.name == "Canvas").transform;
             var p = canvas.GetComponent<PlayMultiplayerPresenter>() ?? canvas.gameObject.AddComponent<PlayMultiplayerPresenter>();
-            p.playerName = Find<TMP_InputField>(canvas, "TxtPlayerName"); p.joinCode = Find<TMP_InputField>(canvas, "NavPanel/TxtJoinID");
+            p.joinCode = Find<TMP_InputField>(canvas, "NavPanel/TxtJoinID");
             p.roomType = Find<TMP_Text>(canvas, "TxtRoomType"); p.matchTime = Find<TMP_Text>(canvas, "TxtMatchTime");
             p.roomCode = Find<TMP_Text>(canvas, "NavPanel/TxtRoomId");
             p.join = Find<UnityEngine.UI.Button>(canvas, "NavPanel/BtnJoin"); p.singles = Find<UnityEngine.UI.Button>(canvas, "NavPanel/Btn1Vs1");
@@ -285,6 +285,7 @@ namespace PickleVerse.EditorTools
             swap.GetComponentInChildren<TMP_Text>().fontSize=24;
             var customNameTemplate=Find<TMP_Text>(teams[0],"Player1Panel/TxtName");
             p.customSlots = teams.SelectMany(team => team.Cast<Transform>().Where(t => t.name.StartsWith("Player")).OrderBy(t => t.name).Select(t => Slot(t, customNameTemplate, kickTemplate))).ToArray();
+            LocalFeaturesSetup.ConfigureRoom(scene);
             if (p.customSlots.Length != 4) throw new InvalidOperationException("Custom needs four player slots.");
             foreach(var slot in p.customSlots)
             {

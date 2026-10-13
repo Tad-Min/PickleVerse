@@ -17,7 +17,9 @@ namespace PickleVerse.LocalMatch
         public MatchHud hud;
         public BotMatchIntro opening;
         public BotMatchVictory victory;
-        [Range(0, 2)] public int botDifficulty = 1;
+        [Range(0, 3)] public int botDifficulty = 1;
+        BhTreeBot behaviorBot;
+        public string BotLabel => botDifficulty==3 ? "BhTree · "+(behaviorBot?$"{behaviorBot.Elo} Elo\nPhản xạ {behaviorBot.ReactionSeconds:0.00}s · Sai số {behaviorBot.AimError:0.00}m\n{behaviorBot.Branch}":"đang chuẩn bị") : new[]{"Dễ","Vừa","Khó"}[botDifficulty];
         [Range(.12f,.6f)] public float contactAssistRadius = .45f;
         public bool autoPlayer;
         public SinglesRules Rules { get; private set; }
@@ -138,7 +140,8 @@ namespace PickleVerse.LocalMatch
             if (Paused || Phase == MatchPhase.Intro || Phase == MatchPhase.Cinematic || Phase == MatchPhase.MatchOver) return;
             phaseTime += dt;
             opponent.difficulty = botDifficulty; testPlayer.difficulty = 2;
-            opponent.Step(this, bot, dt, out var botMove, out var botRun);
+            Vector2 botMove;bool botRun;
+            if(botDifficulty==3&&behaviorBot)behaviorBot.Step(dt,out botMove,out botRun);else opponent.Step(this, bot, dt, out botMove, out botRun);
             if (autoPlayer) testPlayer.Step(this, human, dt, out humanMovement, out running);
             bool motion = Phase == MatchPhase.PreServe || Phase == MatchPhase.Rally || Phase == MatchPhase.Settling;
             human.Step(humanMovement, running, dt, motion); bot.Step(botMove, botRun, dt, motion);
@@ -238,13 +241,14 @@ namespace PickleVerse.LocalMatch
             if (actor.playerId == 1 && shot.kind != ShotKind.Serve)
             {
                 // Fixed aim uncertainty by difficulty, never targets using the future human input.
-                float error = botDifficulty == 0 ? .30f : botDifficulty == 1 ? .16f : .08f;
+                float error = botDifficulty==3&&behaviorBot?behaviorBot.AimError:botDifficulty == 0 ? .30f : botDifficulty == 1 ? .16f : .08f;
                 x += Mathf.Sin(TotalHits * 13.37f) * error; depth += Mathf.Cos(TotalHits * 7.11f) * error;
             }
             return new Vector3(x, Court.BallRadius, -actor.end * depth);
         }
         void Launch(MatchActor actor, ShotIntent shot)
         {
+            replay?.Event(shot.kind==ShotKind.Serve?"Serve":"Hit",actor.playerId+":"+shot.kind);
             var target = ShotTarget(actor, shot);
             if (actor.playerId == 1 && progressionResult?.kind == PickleVerse.Progression.MatchKind.RankedBot)
             {
@@ -255,13 +259,14 @@ namespace PickleVerse.LocalMatch
             progressStrokes.Launch(actor.playerId, shot.kind == ShotKind.Serve, Rules.Stroke);
             BallVelocity = ShotTrajectory.Launch(shot, BallPosition, target);
         }
-        public bool PredictContact(int end, bool requireBounce, out Vector3 point, out float delay, float height = .85f)
+        public bool PredictContact(int end, bool requireBounce, out Vector3 point, out float delay, float height = .85f, bool beforeBounce = false)
         {
             Vector3 p = BallPosition, v = BallVelocity; bool bounced = Rules.Bounces > 0;
+            if(beforeBounce&&bounced){point=Vector3.zero;delay=0;return false;}
             for (int i = 1; i <= 300; i++)
             {
                 BallFlight.Integrate(ref p, ref v, .01f);
-                if (p.y <= Court.BallRadius) { if (bounced) break; bounced = true; BallFlight.Rebound(ref p, ref v); }
+                if (p.y <= Court.BallRadius) { if (bounced||beforeBounce) break; bounced = true; BallFlight.Rebound(ref p, ref v); }
                 if (p.z * end > .5f && p.z * end < 9f && Mathf.Abs(p.y-height)<.10f && (!requireBounce || bounced)) { point = p; delay = i * .01f; return true; }
             }
             point = Vector3.zero; delay = 0; return false;
@@ -281,6 +286,7 @@ namespace PickleVerse.LocalMatch
         void BeginFault()
         {
             if (Phase == MatchPhase.Settling) return;
+            replay?.Event("Fault",Rules.FaultPlayer+":"+Rules.LastFault);
             Phase = MatchPhase.Settling; phaseTime = 0; input.Cancel(); TouchShotMask = 0;
             countdown.Reset();SfxPlayer.Play(GameSfx.FaultWhistle);
             Message = FaultText(Rules.LastFault) + " • " + (Rules.FaultPlayer == 0 ? "Bạn" : "Bot") + " phạm lỗi";
@@ -294,6 +300,7 @@ namespace PickleVerse.LocalMatch
             Message = FaultText(Rules.LastFault) + " • " + (loser == 0 ? "Bạn" : "Bot") + " phạm lỗi";
             int ownBefore = Rules.Points[0];
             Rules.CommitRally(); TotalRallies++;
+            if(Rules.GameFinished)replay?.Event("GameEnd",Rules.Points[0]+":"+Rules.Points[1]);
             if (progressionResult != null) progressionResult.points += Rules.Points[0] - ownBefore;
             if (Rules.GameFinished) CaptureProgressionGame();
             RallyLog.Add(TotalRallies + ": " + Message + " | " + Rules.Points[0] + "-" + Rules.Points[1]);
@@ -354,14 +361,14 @@ namespace PickleVerse.LocalMatch
             Actor(1 - Rules.Server).ResetAt(new Vector3(-lane * 1.45f, 0, Actor(1 - Rules.Server).end * 6.1f), Actor(1 - Rules.Server).end);
             Rules.PrepareServe(Actor(Rules.Server).end); Phase = MatchPhase.PreServe; phaseTime = ServeElapsed = 0;
             countdown.Reset();
-            opponent.Reset(); testPlayer.Reset(); releasedServe = false; input.Cancel();
+            opponent.Reset(); testPlayer.Reset(); behaviorBot?.ResetPoint(); replay?.Event("NewRally"); releasedServe = false; input.Cancel();
             Message = (Rules.Server == 0 ? "Bạn giao • giữ rồi thả " + GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Drive)) : "Bot giao • chờ bóng nảy rồi trả") + " • Điểm gọi " + Rules.Points[Rules.Server] + "–" + Rules.Points[1 - Rules.Server];
             ActiveShotKeys=ShotFeedback="";
             human.RefreshPose(); bot.RefreshPose();
             BallPosition = Actor(Rules.Server).HeldBallPosition; BallVelocity = Vector3.zero;
             if(ballTrail) {ballTrail.emitting=false;ballTrail.Clear();}
         }
-        void SwapEnds() { human.end *= -1; bot.end *= -1; }
+        void SwapEnds() { human.end *= -1; bot.end *= -1; replay?.Event("EndChange"); }
         public void Continue()
         {
             if (Paused) { TogglePause(); return; }
@@ -385,7 +392,7 @@ namespace PickleVerse.LocalMatch
         public void EndCinematic() {PreparePoint();UpdateVisuals();}
         public void TogglePause() { Paused = !Paused; input.Cancel(); TouchShotMask = 0; TouchMovement = Vector2.zero; if(Paused)SfxPlayer.StopAll(); }
         public void Timeout() { if (Phase == MatchPhase.PreServe && !human.Swinging && !bot.Swinging && Rules.TakeTimeout(0)) { Phase = MatchPhase.Timeout; phaseTime = 0; countdown.Reset(); Message = "Time-out • tối đa 60 giây • Enter để tiếp tục"; input.Cancel(); } }
-        public void SetDifficulty(int level) { botDifficulty = Mathf.Clamp(level, 0, 2); }
+        public void SetDifficulty(int level) { botDifficulty = Mathf.Clamp(level, 0, 3); }
         public bool IsGameplay => true;
         public bool IsPaused => Paused;
         public bool CanSignOut => false;
