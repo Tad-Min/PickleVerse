@@ -11,13 +11,14 @@ namespace PickleVerse.Settings
         static SettingsRuntime instance;
         static Object presentationOwner;
         static float presentationScale=1;
+        static int presentationMsaa;
         RenderPipelineAsset originalPipeline;
         UniversalRenderPipelineAsset runtimePipeline;
         int originalFps, originalVsync;
         float originalVolume;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { instance=null;presentationOwner=null;presentationScale=1; AudioLevelsChanged=null; GameSettings.Reload(); EffectsVolume=GameSettings.Current.effects; }
+        static void ResetStatics() { instance=null;presentationOwner=null;presentationScale=1;presentationMsaa=0; AudioLevelsChanged=null; GameSettings.Reload(); EffectsVolume=GameSettings.Current.effects; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Bootstrap()
         {
@@ -40,21 +41,34 @@ namespace PickleVerse.Settings
             EffectsVolume=data.effects;AudioLevelsChanged?.Invoke(data.master,data.music,data.effects);
             Application.targetFrameRate=data.fps;
             QualitySettings.vSyncCount=data.vsync&&!Application.isMobilePlatform?1:0;
+            ApplyGraphics(data);
+        }
+        static void ApplyGraphics(SettingsData data)
+        {
             if(!instance||!instance.runtimePipeline)return;
             var p=instance.runtimePipeline;
-            p.renderScale=presentationOwner?Mathf.Min(data.renderScale,presentationScale):data.renderScale;p.msaaSampleCount=data.msaa;p.shadowDistance=data.shadows?new[]{12f,25f,45f}[data.graphics]:0;
+            p.renderScale=presentationOwner?Mathf.Min(data.renderScale,presentationScale):data.renderScale;
+            p.msaaSampleCount=presentationOwner&&presentationMsaa>0?Mathf.Min(data.msaa,presentationMsaa):data.msaa;
+            p.shadowDistance=data.shadows?new[]{12f,25f,45f}[data.graphics]:0;
             p.mainLightShadowmapResolution=new[]{1024,2048,4096}[data.graphics];
             p.additionalLightsShadowmapResolution=new[]{512,1024,2048}[data.graphics];
+            if(presentationOwner is MatchRenderBudget)
+            {
+                p.shadowDistance=Mathf.Min(p.shadowDistance,30);
+                p.mainLightShadowmapResolution=Mathf.Min(p.mainLightShadowmapResolution,2048);
+                // Four authored 512px Y shadow maps fit the 1024px atlas.
+                p.additionalLightsShadowmapResolution=Mathf.Min(p.additionalLightsShadowmapResolution,1024);
+            }
         }
-        public static void SetPresentationScale(Object owner,float scale)
+        public static void SetPresentationScale(Object owner,float scale,int msaaCeiling=0)
         {
-            if(!owner)return;presentationOwner=owner;presentationScale=Mathf.Clamp(scale,.5f,1);
-            if(instance&&instance.runtimePipeline)instance.runtimePipeline.renderScale=Mathf.Min(GameSettings.Current.renderScale,presentationScale);
+            if(!owner)return;presentationOwner=owner;presentationScale=Mathf.Clamp(scale,.25f,1);presentationMsaa=msaaCeiling;
+            ApplyGraphics(GameSettings.Current);
         }
         public static void ReleasePresentationScale(Object owner)
         {
-            if(presentationOwner!=owner)return;presentationOwner=null;
-            if(instance&&instance.runtimePipeline)instance.runtimePipeline.renderScale=GameSettings.Current.renderScale;
+            if(presentationOwner!=owner)return;presentationOwner=null;presentationMsaa=0;
+            ApplyGraphics(GameSettings.Current);
         }
         void OnDestroy()
         {

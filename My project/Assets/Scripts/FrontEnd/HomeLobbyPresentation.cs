@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using PickleVerse.Settings;
+using PickleVerse.LocalMatch;
 
 namespace PickleVerse.FrontEnd
 {
@@ -26,6 +27,7 @@ namespace PickleVerse.FrontEnd
         public Light[] floodlights;
         public Renderer[] lampFaces;
         public Material lampsOff, lampsOn;
+        public StadiumEnvironment stadium;
         public RectTransform safeArea;
         public TMP_Text timeLabel;
         public UnityEngine.UI.Button playButton;
@@ -215,12 +217,13 @@ namespace PickleVerse.FrontEnd
                 sun.enabled = NightWeight < .995f;
                 sun.intensity = 1.1f * (1 - NightWeight);
                 sun.color = Color.Lerp(new Color(1,.93f,.82f), new Color(1,.68f,.43f), Mathf.Sin(NightWeight * Mathf.PI) * .4f);
-                sun.transform.rotation = Quaternion.Euler(Mathf.Lerp(28,8,NightWeight),-35,0);
+                sun.transform.rotation = Quaternion.Euler(Mathf.Lerp(stadium?55:28,stadium?18:8,NightWeight),-35,0);
             }
             RenderSettings.sun = sun && sun.enabled ? sun : null;
             if (floodlights != null) foreach (var light in floodlights) if (light) { light.enabled = NightWeight > .01f; light.intensity = 40 * NightWeight; }
             if (portraitLight) portraitLight.intensity = Mathf.Lerp(2.5f, 5.5f, NightWeight);
             if (lampFaces != null) foreach (var face in lampFaces) if (face && lampsOn && lampsOff) face.sharedMaterial = NightWeight > .35f ? lampsOn : lampsOff;
+            if(stadium)stadium.ApplyNight(NightWeight);
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = Color.Lerp(new Color(.52f,.63f,.76f),new Color(.055f,.078f,.125f),NightWeight);
             RenderSettings.ambientEquatorColor = Color.Lerp(new Color(.34f,.40f,.48f),new Color(.032f,.046f,.070f),NightWeight);

@@ -13,12 +13,15 @@ namespace PickleVerse.LocalMatch
         public Light[] floodlights;
         public Renderer[] lampFaces;
         public Material lampsOff, lampsOn;
+        public StadiumEnvironment stadium;
         public bool selectedNight;
         public bool useLocalLaunchSettings = true;
         public bool IsNight { get; private set; }
 
         void Awake()
         {
+            if (stadium && !GetComponent<PickleVerse.Settings.MatchRenderBudget>())
+                gameObject.AddComponent<PickleVerse.Settings.MatchRenderBudget>();
             if (useLocalLaunchSettings) selectedNight = BotMatchLaunchSettings.Night;
             Apply(selectedNight);
         }
@@ -35,6 +38,7 @@ namespace PickleVerse.LocalMatch
             if (floodlights != null) foreach (var light in floodlights) if (light) light.enabled = night;
             if (lampFaces != null) foreach (var face in lampFaces)
                 if (face && lampsOn && lampsOff) face.sharedMaterial = night ? lampsOn : lampsOff;
+            if(stadium)stadium.ApplyNight(night?1:0);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = night ? new Color(.055f, .078f, .125f) : new Color(.52f, .63f, .76f);

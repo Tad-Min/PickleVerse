@@ -220,7 +220,7 @@ namespace PickleVerse.LocalMatch.Editor
         static void BuildHud(BotMatch match)
         {
             var canvasObject = new GameObject("Match HUD", typeof(RectTransform), typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));
-            var canvas = canvasObject.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera=UnityEngine.Object.FindAnyObjectByType<Camera>();canvas.planeDistance=.75f;
+            var canvas = canvasObject.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.worldCamera=null;
             var scaler = canvasObject.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1280,720); scaler.matchWidthOrHeight = .5f;
             var hud = canvasObject.AddComponent<MatchHud>(); match.hud = hud; var root = canvasObject.transform;
             var eventSystem = new GameObject("Match EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));

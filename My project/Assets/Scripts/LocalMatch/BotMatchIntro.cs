@@ -15,6 +15,7 @@ namespace PickleVerse.LocalMatch
         public UnityEngine.UI.Image topBar, bottomBar;
         public float establishingSeconds=.85f, entranceSeconds=4f, returnSeconds=1f, announcementSeconds=1.1f;
         public float femaleGroundOffset=.0153f, maleGroundOffset=.0298f;
+        public Transform playerEntrance,opponentEntrance;
         public bool IsPlaying { get; private set; }
         public float Elapsed { get; private set; }
         public float Duration => establishingSeconds+entranceSeconds*2+returnSeconds+announcementSeconds;
@@ -31,10 +32,10 @@ namespace PickleVerse.LocalMatch
             public Vector3 start,end;
             public float groundOffset;
             public Transform[] bones; public Vector3[] positions,scales; public Quaternion[] rotations;
-            public PoseCache(MatchActor actor,AnimationClip clip,float groundOffset)
+            public PoseCache(MatchActor actor,AnimationClip clip,float groundOffset,Transform entrance)
             {
                 this.actor=actor;this.clip=clip;this.groundOffset=groundOffset;end=actor.transform.position;
-                start=new Vector3(end.x,0,actor.end*9.45f);
+                start=entrance?entrance.position:new Vector3(end.x,0,actor.end*9.45f);
                 actor.ResetAt(end,actor.end);actor.RefreshPose();
                 bones=actor.visual.GetComponentsInChildren<Transform>(true);
                 positions=new Vector3[bones.Length];rotations=new Quaternion[bones.Length];scales=new Vector3[bones.Length];
@@ -62,7 +63,7 @@ namespace PickleVerse.LocalMatch
             if(!match || !followCamera || !femaleWalk || !maleWalk || !overlay)return false;
             if(IsPlaying)Cancel();
             view=followCamera.GetComponent<Camera>();followWasEnabled=followCamera.enabled;followCamera.enabled=false;
-            humanPose=new PoseCache(match.human,femaleWalk,femaleGroundOffset);botPose=new PoseCache(match.bot,maleWalk,maleGroundOffset);
+            humanPose=new PoseCache(match.human,femaleWalk,femaleGroundOffset,playerEntrance);botPose=new PoseCache(match.bot,maleWalk,maleGroundOffset,opponentEntrance);
             int count=match.hud.transform.childCount-1;hudObjects=new GameObject[count];hudActive=new bool[count];int index=0;
             foreach(Transform child in match.hud.transform)
             {

@@ -20,6 +20,7 @@ namespace PickleVerse.LocalMatch
         public Light portraitLight;
         public GameObject[] gameplayHud = System.Array.Empty<GameObject>();
         public float cameraSeconds = 1.25f;
+        public Transform nearPresentation,farPresentation;
         public bool Active { get; private set; }
         public bool Ready { get; private set; }
         public MatchActor Winner { get; private set; }
@@ -63,7 +64,8 @@ namespace PickleVerse.LocalMatch
             cameraPosition = view.transform.position; cameraRotation = view.transform.rotation; cameraFov = view.fieldOfView;
             // Freeze the current gameplay view without moving it during the banners.
             followWasEnabled = followCamera.enabled; followCamera.enabled = false;
-            stagePosition = new Vector3(0, actorPosition.y, PresentedActor.end * 4.8f);
+            var anchor=PresentedActor.end<0?nearPresentation:farPresentation;
+            stagePosition = anchor?anchor.position:new Vector3(0, actorPosition.y, PresentedActor.end * 4.8f);
             defeatAnimation = null;
             foreach (var entry in PresentedActor.clips) if (entry.name == "PKV_Fault_Reaction") { defeatAnimation = entry.clip; break; }
             bones = PresentedActor.visual.GetComponentsInChildren<Transform>(true);
