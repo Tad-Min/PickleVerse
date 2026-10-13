@@ -15,6 +15,8 @@ namespace PickleVerse.Multiplayer
         public Vector3 BallVelocity => ballVelocity;
         public int BotShots { get; private set; }
         public int BotReturns { get; private set; }
+        public int BotContactAttempts { get; private set; }
+        public int BotMisses { get; private set; }
         public void AutomateLocalPlayerForSmoke()
         {
             if(!IsServer || !Debug.isDebugBuild || (!Application.isEditor && !System.Environment.GetCommandLineArgs().Contains("-pkvCase")))
@@ -24,12 +26,26 @@ namespace PickleVerse.Multiplayer
         }
         Vector3 LaunchBall(NetworkPlayer player,PickleVerse.LocalMatch.ShotIntent shot)
         {
-            if(!player.Automated.Value) return shots.Launch(player.Actor,shot,ballPosition,Rules.serverWorldX);
-            var target=shots.Target(player.Actor,shot,ballPosition,Rules.serverWorldX);
-            int elo=Roster.Find(player.Identity.Value.ToString()).elo;
-            target.x=EloPolicy.BotDecision(botAccuracy,elo)?Mathf.Clamp(target.x,-2.1f,2.1f):(target.x<0?-4.8f:4.8f);
-            BotShots++; if(shot.kind!=PickleVerse.LocalMatch.ShotKind.Serve) BotReturns++;
-            return ShotTrajectory.Launch(shot,ballPosition,target);
+            if(player.Automated.Value)
+            { BotShots++; if(shot.kind!=PickleVerse.LocalMatch.ShotKind.Serve) BotReturns++; }
+            return shots.Launch(player.Actor,shot,ballPosition,Rules.serverWorldX);
+        }
+        bool BotMissedContact(NetworkPlayer player) => player.Automated.Value &&
+            bots.TryGetValue(player.Identity.Value.ToString(),out var brain) && brain.Contact.Missed(Rules.strokeCount);
+        bool TryBotContact(NetworkPlayer player)
+        {
+            if(!player.Automated.Value) return true;
+            var id=player.Identity.Value.ToString(); var chance=bots[id].Contact;
+            bool decided=chance.HasDecision(Rules.strokeCount);
+            bool hit=chance.Resolve(botAccuracy,Roster.Find(id).elo,Rules.strokeCount);
+            if(!decided)
+            {
+                BotContactAttempts++;
+                if(!hit) { BotMisses++; ReplayEventRpc("Miss",id); }
+            }
+            // A whiff consumes the swing, not the flight or the rules' current hitter.
+            if(!hit) player.Actor.MissContact();
+            return hit;
         }
         public bool PredictContact(int end,bool requireBounce,out Vector3 point,out float delay,float height=.85f)
         {
@@ -50,8 +66,9 @@ namespace PickleVerse.Multiplayer
         readonly System.Random random;
         float reaction,cooldown;
         int seenStroke=-1;
+        internal readonly BotContactChance Contact=new BotContactChance();
         public MultiplayerBot(int seed) { random=new System.Random(seed); }
-        public void Reset() { seenStroke=-1; reaction=cooldown=0; }
+        public void Reset() { seenStroke=-1; reaction=cooldown=0; Contact.Reset(); }
         public void Step(NetworkMatch match,NetworkPlayer player,float dt,out Vector2 move,out bool run)
         {
             move=Vector2.zero; run=false; cooldown=Mathf.Max(0,cooldown-dt);
@@ -59,7 +76,7 @@ namespace PickleVerse.Multiplayer
             var rules=match.Rules; var actor=player.Actor;
             if(rules.waitingServe)
             {
-                if(rules.servingTeam==player.Team.Value && rules.serverIndex==player.Index.Value && match.ServeElapsed.Value>1.1f && !actor.Swinging)
+                if(!Contact.Missed(rules.strokeCount) && rules.servingTeam==player.Team.Value && rules.serverIndex==player.Index.Value && match.ServeElapsed.Value>1.1f && !actor.Swinging)
                     match.TrySwing(player,new ShotIntent {kind=ShotKind.Groundstroke,crossCourt=true});
                 return;
             }
@@ -82,7 +99,7 @@ namespace PickleVerse.Multiplayer
                     if(volley) target.z=actor.end*Mathf.Max(Mathf.Abs(target.z),2.85f);
                     var delta=target-actor.transform.position; delta.y=0;
                     float arrival=delta.magnitude/(actor.runSpeed*(actor.Swinging?.6f:1));
-                    if(reaction<=0 && cooldown<=0 && !actor.Swinging && delay<=intent.ContactDelay+.025f && arrival<intent.ContactDelay+.1f)
+                    if(!Contact.Missed(rules.strokeCount) && reaction<=0 && cooldown<=0 && !actor.Swinging && delay<=intent.ContactDelay+.025f && arrival<intent.ContactDelay+.1f)
                     { match.TrySwing(player,BotMatchGameplayService.FromLocal(intent)); if(actor.Swinging) cooldown=intent.Duration; }
                 }
             }

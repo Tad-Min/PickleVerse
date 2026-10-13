@@ -16,7 +16,7 @@ namespace PickleVerse.LocalMatch
             move = Vector2.zero; run = false; cooldown = Mathf.Max(0, cooldown - dt);
             if (match.Phase == MatchPhase.PreServe)
             {
-                if (match.Rules.Server == actor.playerId && match.ServeElapsed > 1.1f && !actor.Swinging)
+                if (!match.BotMissedContact(actor) && match.Rules.Server == actor.playerId && match.ServeElapsed > 1.1f && !actor.Swinging)
                     match.RequestShot(actor.playerId, new ShotIntent(ShotKind.Serve, difficulty == 2, true));
                 return;
             }
@@ -43,7 +43,7 @@ namespace PickleVerse.LocalMatch
                     if (chooseVolley) target.z = actor.end * Mathf.Max(Mathf.Abs(target.z), 2.85f);
                     Vector3 delta = target - actor.transform.position; delta.y = 0;
                     float arrival = delta.magnitude / (actor.runSpeed * (actor.Swinging ? .6f : 1));
-                    if (reaction <= 0 && cooldown <= 0 && !actor.Swinging && delay <= intent.ContactDelay + .025f && arrival < intent.ContactDelay + .10f)
+                    if (!match.BotMissedContact(actor) && reaction <= 0 && cooldown <= 0 && !actor.Swinging && delay <= intent.ContactDelay + .025f && arrival < intent.ContactDelay + .10f)
                     {
                         if (match.RequestShot(actor.playerId, intent)) cooldown = intent.Duration;
                     }

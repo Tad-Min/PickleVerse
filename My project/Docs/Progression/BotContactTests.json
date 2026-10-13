@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-13",
+  "mode": "Unity EditMode",
+  "passed": true,
+  "total": 215,
+  "assemblies": [
+    { "name": "PickleVerse.Progression.Tests", "total": 89, "passed": 89, "failed": 0 },
+    { "name": "PickleVerse.LocalMatch.Tests", "total": 61, "passed": 61, "failed": 0 },
+    { "name": "PickleVerse.Multiplayer.Tests", "total": 65, "passed": 65, "failed": 0 }
+  ],
+  "integrationReport": "BotContactValidation.json"
+}

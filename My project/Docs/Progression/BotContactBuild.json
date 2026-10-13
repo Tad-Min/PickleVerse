@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "buildId": "build_60447f0d7c02",
+  "result": "Succeeded",
+  "platform": "StandaloneWindows64",
+  "outputPath": "D:/Repository/PickleVerse/My project/Builds/BotContactWindows/PickleVerse.exe",
+  "totalSizeBytes": 586663603,
+  "buildTimeMs": 641857,
+  "buildStartedAt": "2026-10-13T10:55:43.9038436Z",
+  "buildEndedAt": "2026-10-13T11:06:25.7615662Z",
+  "totalWarnings": 5,
+  "totalErrors": 0
+}

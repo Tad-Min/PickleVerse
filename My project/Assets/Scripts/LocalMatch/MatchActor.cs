@@ -102,6 +102,11 @@ namespace PickleVerse.LocalMatch
             string key=shot.kind==ShotKind.Serve?"PKV_Serve_FH_Underhand":shot.kind==ShotKind.Smash?"PKV_Overhead_Smash":shot.kind==ShotKind.Drop?"PKV_ThirdShotDrop"+suffix:shot.kind==ShotKind.Dink?"PKV_Dink"+suffix:shot.BeforeBounce?"PKV_Volley"+suffix:"PKV_Groundstroke"+suffix;
             return Array.Find(clips,c=>c.name==key).contactOffset;
         }
+        public void MissContact()
+        {
+            contactConsumed = true;
+            if(Intent.kind==ShotKind.Serve) SfxPlayer.Stop(GameSfx.Countdown);
+        }
         public void ConsumeContact(bool volley)
         {
             if(contactConsumed)return;
