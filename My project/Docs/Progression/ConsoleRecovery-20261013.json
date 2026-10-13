@@ -1,0 +1,253 @@
+{
+  "multiplayerTests": {
+    "total": 70,
+    "passed": 70,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "localMatchTests": {
+    "passed": 61,
+    "failed": 0,
+    "total": 61
+  },
+  "progressionTests": {
+    "total": 89,
+    "passed": 89,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "menuValidation": {
+    "passed": true,
+    "count": 23,
+    "checks": [
+      {
+        "name": "NameTag receives pointer input at NameTag",
+        "passed": true
+      },
+      {
+        "name": "NameTag opens saved player profile via NameTag",
+        "passed": true
+      },
+      {
+        "name": "NameTag receives pointer input at TxtName",
+        "passed": true
+      },
+      {
+        "name": "NameTag opens saved player profile via TxtName",
+        "passed": true
+      },
+      {
+        "name": "NameTag receives pointer input at NameTag",
+        "passed": true
+      },
+      {
+        "name": "Achievements receives pointer input at Achievements",
+        "passed": true
+      },
+      {
+        "name": "Achievements remain available",
+        "passed": true
+      },
+      {
+        "name": "Character selector is blocked by profile modal",
+        "passed": true
+      },
+      {
+        "name": "Close receives pointer input at Close",
+        "passed": true
+      },
+      {
+        "name": "Closing profile restores character selector",
+        "passed": true
+      },
+      {
+        "name": "BtnMissions receives pointer input at BtnMissions",
+        "passed": true
+      },
+      {
+        "name": "Daily missions remain available",
+        "passed": true
+      },
+      {
+        "name": "Weekly receives pointer input at Weekly",
+        "passed": true
+      },
+      {
+        "name": "Weekly missions remain available",
+        "passed": true
+      },
+      {
+        "name": "BtnCareer receives pointer input at BtnCareer",
+        "passed": true
+      },
+      {
+        "name": "Career opens the history window",
+        "passed": true
+      },
+      {
+        "name": "Menu shows shared TOKENPAD and paid ELITE balances",
+        "passed": true
+      },
+      {
+        "name": "BtnStore receives pointer input at BtnStore",
+        "passed": true
+      },
+      {
+        "name": "Shop still opens after the scene merge",
+        "passed": true
+      },
+      {
+        "name": "Returning from Shop preserves profile bindings",
+        "passed": true
+      },
+      {
+        "name": "NameTag receives pointer input at NameTag",
+        "passed": true
+      },
+      {
+        "name": "NameTag works after returning from Shop",
+        "passed": true
+      },
+      {
+        "name": "Validation preserves identity and both balances",
+        "passed": true
+      }
+    ]
+  },
+  "botValidation": {
+    "passed": true,
+    "count": 20,
+    "scope": "Real NGO loopback host, multiplayer prefabs, authored swing/contact, rules and ball simulation. Does not wait six minutes or use cloud matchmaking.",
+    "checks": [
+      {
+        "name": "Loopback host starts",
+        "passed": true
+      },
+      {
+        "name": "Named bot uses the normal multiplayer actors",
+        "passed": true
+      },
+      {
+        "name": "Fixture serve accepted",
+        "passed": true
+      },
+      {
+        "name": "Real paddle has a return opportunity",
+        "passed": true
+      },
+      {
+        "name": "Return miss leaves the ball flight unchanged",
+        "passed": true
+      },
+      {
+        "name": "Return miss does not call rules Hit or record a shot",
+        "passed": true
+      },
+      {
+        "name": "Return miss consumes only one contact opportunity",
+        "passed": true
+      },
+      {
+        "name": "Whiff does not play a ball impact sound",
+        "passed": true
+      },
+      {
+        "name": "Miss grants no valid return or serve progress",
+        "passed": true
+      },
+      {
+        "name": "Bot cannot re-swing to reroll the same missed ball",
+        "passed": true
+      },
+      {
+        "name": "Unreturned ball ends through the normal second-bounce rule",
+        "passed": true
+      },
+      {
+        "name": "Fixture serve accepted",
+        "passed": true
+      },
+      {
+        "name": "Real paddle has a return opportunity",
+        "passed": true
+      },
+      {
+        "name": "Successful return uses the shared human trajectory",
+        "passed": true
+      },
+      {
+        "name": "New rally resets the contact decision",
+        "passed": true
+      },
+      {
+        "name": "Successful shot lands inside the court",
+        "passed": true
+      },
+      {
+        "name": "Missed serve drops and ends instead of reattaching for a retry",
+        "passed": true
+      },
+      {
+        "name": "Missed serve has one chance and no successful serve sound",
+        "passed": true
+      },
+      {
+        "name": "Human serve bypasses bot accuracy",
+        "passed": true
+      },
+      {
+        "name": "Real player progression remains untouched",
+        "passed": true
+      }
+    ]
+  },
+  "build": {
+    "status": "completed",
+    "buildId": "build_7804519a7025",
+    "result": "Succeeded",
+    "platform": "StandaloneWindows64",
+    "outputPath": "D:/Repository/PickleVerse/My project/Builds/ConsoleRecoveryWindows/PickleVerse.exe",
+    "totalSizeBytes": 586653091,
+    "buildTimeMs": 48530,
+    "buildStartedAt": "2026-10-13T11:35:06.2813871Z",
+    "buildEndedAt": "2026-10-13T11:35:54.8121787Z",
+    "totalWarnings": 1,
+    "totalErrors": 0
+  },
+  "initialConsole": {
+    "compilationFailed": true,
+    "warnings": 228,
+    "errors": 13
+  },
+  "fixes": [
+    "Keep shared multiplayer DTOs and enums in PickleVerse.Entites; preserve the new night field and WithEnvironment helper.",
+    "Serialize room maps through JSON properties; verify team assignments, versions, acknowledgements, and old room payloads.",
+    "Restore the conflicted Menu Vietnamese Bold font as one complete asset from commit 86c9709, preserving its GUID.",
+    "Align LED material names with their filenames; remove the unused training field.",
+    "Remove the unsupported Git attribute macro in the project subfolder and use whole-asset font merging."
+  ],
+  "remainingBuildWarnings": [
+    "Unity Pipeline runtime control is disabled in Player builds because no RuntimePipelineConfig is supplied. No project compiler or asset warnings remain."
+  ],
+  "finalConsole": {
+    "sampledUtc": "2026-10-13T11:38:15.3453392Z",
+    "ageMs": 249,
+    "compilationFailed": false,
+    "compiling": false,
+    "consoleErrors": 0,
+    "consoleWarnings": 1,
+    "consoleLogs": 36,
+    "seeded": true
+  },
+  "finalEditor": {
+    "activeScene": "Menu",
+    "sceneDirty": false,
+    "sharedTypesAssembly": "PickleVerse.Entites",
+    "fontLoaded": true,
+    "missingScripts": 0,
+    "playing": false
+  },
+  "checkedAtUtc": "2026-10-13T11:38:16.8378634Z"
+}

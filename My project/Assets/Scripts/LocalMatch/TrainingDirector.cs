@@ -55,7 +55,7 @@ namespace PickleVerse.LocalMatch
         Vector3 ballPosition,ballVelocity,serveOrigin,cameraStart;
         Quaternion cameraRotation;
         float cameraFov,elapsed,flightTime,wait,recoveryTime,serveTime,lastSave,renderTime;
-        bool incoming,outgoing,bounced,coachLaunched,hit,releasedServe,candidate,recovering,partnerTurnDue,needsRecovery,outcomeAnnounced,leaving;
+        bool incoming,outgoing,bounced,coachLaunched,hit,releasedServe,candidate,recovering,needsRecovery,outcomeAnnounced,leaving;
         TrainingError lastError;
         Vector3 trialPlayerOrigin;
         MatchActor receiver,feeder;
@@ -98,7 +98,7 @@ namespace PickleVerse.LocalMatch
             var active=TrainingEngine.Ensure(runtime.Player).active;
             if(!retry&&active!=null&&!active.completed&&active.lessonId==Lesson.id)Session=Clone(active);
             else{runtime.UpdateWallet(p=>TrainingEngine.Start(p,Lesson.id,retry));Session=Clone(runtime.Player.training.active);}
-            Phase=TrainingPhase.Practice;elapsed=lastSave=renderTime=0;PartnerTurn=false;partnerTurnDue=false;Feedback="Theo vùng sáng và chỉ báo timing.";PrepareTrial(true);SetTouch(Application.isMobilePlatform);hud.ShowPractice();CaptureCamera();
+            Phase=TrainingPhase.Practice;elapsed=lastSave=renderTime=0;PartnerTurn=false;Feedback="Theo vùng sáng và chỉ báo timing.";PrepareTrial(true);SetTouch(Application.isMobilePlatform);hud.ShowPractice();CaptureCamera();
         }
         public void Retry(){StartLesson(true);}
         public void NextLesson(){var id=TrainingEngine.Recommended(TrainingEngine.Ensure(ProgressionRuntime.Instance.Player));Select(id);}

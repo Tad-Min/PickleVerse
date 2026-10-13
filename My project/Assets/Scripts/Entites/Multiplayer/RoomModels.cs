@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Newtonsoft.Json;
 
 namespace PickleVerse.Multiplayer
 {
@@ -25,8 +25,10 @@ namespace PickleVerse.Multiplayer
         public int generation;
         public int revision;
         public int readyEpoch;
-        public Dictionary<string,int> teams=new Dictionary<string,int>(),teamVersions=new Dictionary<string,int>();
-        public Dictionary<string,string> handledTeamRequests=new Dictionary<string,string>();
+        // These maps travel through Newtonsoft JSON; Unity does not persist this DTO.
+        [JsonProperty] public Dictionary<string,int> teams { get; set; } = new Dictionary<string,int>();
+        [JsonProperty] public Dictionary<string,int> teamVersions { get; set; } = new Dictionary<string,int>();
+        [JsonProperty] public Dictionary<string,string> handledTeamRequests { get; set; } = new Dictionary<string,string>();
         public MatchRoster roster;
     }
     [Serializable] public class MatchRoster
@@ -35,6 +37,10 @@ namespace PickleVerse.Multiplayer
         public PlayMode mode;
         public bool custom;
         public List<RoomMember> members = new List<RoomMember>();
+        // Missing in older JSON payloads: default to the daytime environment.
+        public bool night;
+        public MatchRoster WithEnvironment(bool selectedNight) => new MatchRoster
+        {matchId=matchId,region=region,mode=mode,custom=custom,members=members,night=selectedNight};
         public int Count => members.Count;
         public int HumanCount => members.FindAll(p=>!p.bot).Count;
         public bool RankedBot => !custom && mode==PlayMode.Singles && members.Exists(p=>p.bot);

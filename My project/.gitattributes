@@ -6,8 +6,7 @@
 # This template is maintained from the gitattributes/gitattributes repository
 # and distributed under MIT License.
 
-# Legacy LFS macro. Unity text rules are inline because this project is a repository subfolder.
-[attr]lfs               filter=lfs diff=lfs merge=lfs -text
+# Attribute macros are only supported at the repository root. This project is a subfolder.
 
 # Optionally collapse Unity YAML files on GitHub diffs
 # Add linguist-generated to the YAML rules below to collapse GitHub diffs.
@@ -167,3 +166,8 @@ Packages/packages-lock.json linguist-generated
 
 # Exceptions for .asset files such as lightning pre-baking
 LightingData.asset     binary
+
+# TMP atlas/glyph caches must merge as a whole asset to avoid inconsistent font tables.
+Assets/Fonts/*.asset merge=binary
+"Assets/LocalMatchContent/Match Vietnamese Font.asset" merge=binary
+"Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset" merge=binary
