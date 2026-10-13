@@ -2,7 +2,7 @@ using System;
 
 namespace PickleVerse.Rules
 {
-    public enum Fault { None, ServeFoot, ServeMotion, ServeTimeout, ServeShort, ServeWrongCourt, Out, OwnCourt, TwoBounce, DoubleBounce, DoubleHit, KitchenVolley, KitchenMomentum, NetTouch, BodyHit, NetPlane, PermanentObject }
+    public enum Fault { None, ServeFoot, ServeMotion, ServeTimeout, ServeShort, ServeWrongCourt, Out, OwnCourt, TwoBounce, DoubleBounce, DoubleHit, KitchenVolley, KitchenMomentum, NetTouch, BodyHit, NetPlane, PermanentObject, ServeMiss }
     public struct CourtPoint
     {
         public float x, y, z;

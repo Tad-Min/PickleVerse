@@ -8,7 +8,12 @@ namespace PickleVerse.Multiplayer
     {
         ReplayRecorder replay;
         [Unity.Netcode.Rpc(Unity.Netcode.SendTo.ClientsAndHost)]
-        void ReplayEventRpc(string kind,string detail){replay?.Event(kind,detail);}
+        void ReplayEventRpc(string kind,string detail)
+        {
+            if(kind=="Miss" && !IsServer)
+                NetworkPlayer.All.FirstOrDefault(p=>p.Identity.Value.ToString()==detail)?.Actor?.MissContact();
+            replay?.Event(kind,detail);
+        }
         void EnsureReplay()
         {
             if(replay||!Started.Value||Finished.Value||Roster==null||!PickleVerse.Progression.ProgressionRuntime.Exists)return;

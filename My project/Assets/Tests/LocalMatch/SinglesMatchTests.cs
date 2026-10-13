@@ -26,6 +26,12 @@ namespace PickleVerse.Tests
         [Test] public void VolleyKitchenFaultButBouncedDinkIsLegal() { var r=OpenRally();Assert.AreEqual(Fault.KitchenVolley,r.Hit(1,P(1,1.7f),true));r=OpenRally();r.Bounce(P(1,1.7f));Assert.AreEqual(Fault.None,r.Hit(1,P(1,1.7f),true)); }
         [Test] public void KitchenMomentumOverridesDeadBallBeforeScore() { var r=OpenRally();r.Hit(1,P(-1,3),false);r.Fail(0,Fault.DoubleBounce);r.Fail(1,Fault.KitchenMomentum,true);r.CommitRally();Assert.AreEqual(1,r.Points[0]); }
         [Test] public void ReceiverWinningOnlyChangesServe() { var r=Served();r.Fail(0,Fault.Out);r.CommitRally();Assert.AreEqual(1,r.Server);Assert.AreEqual(0,r.Points[1]); }
+        [Test] public void MissedServeLosesServeWithoutCreatingAStroke()
+        {
+            var r=new SinglesRules(); r.PrepareServe(-1); r.Fail(0,Fault.ServeMiss); r.CommitRally();
+            Assert.That(r.Stroke,Is.Zero); Assert.That(r.LastHitter,Is.EqualTo(-1));
+            Assert.That(r.Server,Is.EqualTo(1)); Assert.That(r.Points[0]+r.Points[1],Is.Zero);
+        }
         [Test] public void ServerWinningScoresAndStaysServer() { var r=Served();r.Fail(1,Fault.Out);r.CommitRally();Assert.AreEqual(0,r.Server);Assert.AreEqual(1,r.Points[0]); }
         [Test] public void SecondBounceOutsideStillFaultsReceiver() { var r=Served();r.Bounce(P(-1,5));Assert.AreEqual(Fault.DoubleBounce,r.Bounce(P(-9,12)));Assert.AreEqual(1,r.FaultPlayer); }
         [Test] public void ElevenTenDoesNotWinAndTwelveTenDoes() { var r=new SinglesRules();r.PrepareServe(-1);for(int i=0;i<10;i++)Lose(r,1);Lose(r,0);for(int i=0;i<10;i++)Lose(r,0);Lose(r,1);Lose(r,1);Assert.IsFalse(r.GameFinished);Lose(r,1);Assert.IsTrue(r.GameFinished);Assert.AreEqual(12,r.Points[0]); }

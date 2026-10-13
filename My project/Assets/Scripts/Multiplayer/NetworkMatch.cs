@@ -213,13 +213,20 @@ namespace PickleVerse.Multiplayer
                 if(second>=0&&second<10&&second!=countdownSecond){countdownSecond=second;MatchSoundRpc((int)GameSfx.Countdown);}
                 var server = players.Values.First(p => p.Team.Value == Rules.servingTeam && p.Index.Value == Rules.serverIndex);
                 var actor = server.Actor;
-                ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity);
-                if (actor.Swinging && actor.Intent.kind == PickleVerse.LocalMatch.ShotKind.Serve)
+                if(BotMissedContact(server))
+                {
+                    // The released ball keeps falling after a whiff; never reattach it for a retry.
+                    BallFlight.Integrate(ref ballPosition,ref ballVelocity,dt);
+                    if(ballPosition.y<=Court.BallRadius)
+                    { ballPosition.y=Court.BallRadius; Rules.Fault(server.Team.Value,"Giao bóng hụt"); }
+                }
+                else ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity);
+                if (Rules.waitingServe && actor.Swinging && actor.Intent.kind == PickleVerse.LocalMatch.ShotKind.Serve)
                 {
                     if (actor.SwingTime >= .8f && actor.ContactActive && Vector3.Distance(ballPosition, actor.paddleFace.position) <= MultiplayerApp.Instance.Settings.contactAssistRadius)
                     {
                         var left = actor.Feet(true); var right = actor.Feet(false);
-                        if (Rules.Serve(server.Team.Value, server.Index.Value, server.transform.position, ballPosition,
+                        if (TryBotContact(server) && Rules.Serve(server.Team.Value, server.Index.Value, server.transform.position, ballPosition,
                             new Vector3(0, actor.PaddleHeadTop, 0), actor.hand.position, actor.PaddleVelocity,
                             Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1)))
                         {
@@ -250,6 +257,7 @@ namespace PickleVerse.Multiplayer
                 {
                     if (!Rules.live || player.Team.Value == Rules.lastHitTeam || !shots.CanContact(player.Actor, previous, ballPosition, Rules.bounceCount, MultiplayerApp.Instance.Settings.contactAssistRadius)) continue;
                     var actor = player.Actor; var shot = actor.Intent;
+                    if(!TryBotContact(player)) continue;
                     bool volley = Rules.bounceCount == 0;
                     bool hit = Rules.Hit(player.Team.Value, player.Index.Value, actor.transform.position,
                         ballPosition, BotMatchGameplayService.FromLocal(shot).kind, actor.InKitchen);

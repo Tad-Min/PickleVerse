@@ -1,0 +1,87 @@
+{
+  "passed": true,
+  "count": 20,
+  "scope": "Real NGO loopback host, multiplayer prefabs, authored swing/contact, rules and ball simulation. Does not wait six minutes or use cloud matchmaking.",
+  "checks": [
+    {
+      "name": "Loopback host starts",
+      "passed": true
+    },
+    {
+      "name": "Named bot uses the normal multiplayer actors",
+      "passed": true
+    },
+    {
+      "name": "Fixture serve accepted",
+      "passed": true
+    },
+    {
+      "name": "Real paddle has a return opportunity",
+      "passed": true
+    },
+    {
+      "name": "Return miss leaves the ball flight unchanged",
+      "passed": true
+    },
+    {
+      "name": "Return miss does not call rules Hit or record a shot",
+      "passed": true
+    },
+    {
+      "name": "Return miss consumes only one contact opportunity",
+      "passed": true
+    },
+    {
+      "name": "Whiff does not play a ball impact sound",
+      "passed": true
+    },
+    {
+      "name": "Miss grants no valid return or serve progress",
+      "passed": true
+    },
+    {
+      "name": "Bot cannot re-swing to reroll the same missed ball",
+      "passed": true
+    },
+    {
+      "name": "Unreturned ball ends through the normal second-bounce rule",
+      "passed": true
+    },
+    {
+      "name": "Fixture serve accepted",
+      "passed": true
+    },
+    {
+      "name": "Real paddle has a return opportunity",
+      "passed": true
+    },
+    {
+      "name": "Successful return uses the shared human trajectory",
+      "passed": true
+    },
+    {
+      "name": "New rally resets the contact decision",
+      "passed": true
+    },
+    {
+      "name": "Successful shot lands inside the court",
+      "passed": true
+    },
+    {
+      "name": "Missed serve drops and ends instead of reattaching for a retry",
+      "passed": true
+    },
+    {
+      "name": "Missed serve has one chance and no successful serve sound",
+      "passed": true
+    },
+    {
+      "name": "Human serve bypasses bot accuracy",
+      "passed": true
+    },
+    {
+      "name": "Real player progression remains untouched",
+      "passed": true
+    }
+  ]
+}

@@ -8,8 +8,18 @@ namespace PickleVerse.LocalMatch
     {
         StrokeProgressTracker progressStrokes = new StrokeProgressTracker();
         readonly System.Random botAccuracyRandom = new System.Random();
+        readonly BotContactChance rankedBotContact = new BotContactChance();
         MatchResult progressionResult;
         bool progressionCompleted;
+        public bool BotMissedContact(MatchActor actor) => actor.playerId == 1 &&
+            progressionResult?.kind == MatchKind.RankedBot && rankedBotContact.Missed(Rules.Stroke);
+        bool TryRankedBotContact(MatchActor actor)
+        {
+            if(actor.playerId != 1 || progressionResult?.kind != MatchKind.RankedBot) return true;
+            bool hit=rankedBotContact.Resolve(botAccuracyRandom,progressionResult.opponentElo,Rules.Stroke);
+            if(!hit) { actor.MissContact(); replay?.Event("Miss",actor.playerId.ToString()); }
+            return hit;
+        }
         void BeginProgressionMatch()
         {
             progressStrokes = new StrokeProgressTracker();

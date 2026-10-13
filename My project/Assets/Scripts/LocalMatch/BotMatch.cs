@@ -152,11 +152,14 @@ namespace PickleVerse.LocalMatch
                 countdown.Step(ServeElapsed);
                 var server = Actor(Rules.Server);
                 var servePosition = BallPosition; var serveVelocity = BallVelocity;
-                ServeBallMotion.Step(server, ref releasedServe, ref serveOrigin, ref servePosition, ref serveVelocity);
+                if(BotMissedContact(server)) BallFlight.Integrate(ref servePosition,ref serveVelocity,dt);
+                else ServeBallMotion.Step(server, ref releasedServe, ref serveOrigin, ref servePosition, ref serveVelocity);
                 BallPosition = servePosition; BallVelocity = serveVelocity;
-                if (server.Swinging && server.Intent.kind == ShotKind.Serve)
+                if(BotMissedContact(server) && BallPosition.y<=Court.BallRadius)
+                { Rules.Fail(Rules.Server,Fault.ServeMiss); BeginFault(); }
+                if (Phase == MatchPhase.PreServe && server.Swinging && server.Intent.kind == ShotKind.Serve)
                 {
-                    if (server.SwingTime >= .8f && server.ContactActive && Vector3.Distance(BallPosition,server.paddleFace.position)<=contactAssistRadius)
+                    if (server.SwingTime >= .8f && server.ContactActive && Vector3.Distance(BallPosition,server.paddleFace.position)<=contactAssistRadius && TryRankedBotContact(server))
                     {
                         // This is the authored underhand motion: no spin/toss imparted on release.
                         BallPosition = new Vector3(serveOrigin.x, BallPosition.y, serveOrigin.z);
@@ -222,6 +225,7 @@ namespace PickleVerse.LocalMatch
             // Small contact assist around the visible paddle; no ball teleport or guaranteed hit.
             float distance = DistanceSegment(previous, BallPosition, face);
             if (distance > contactAssistRadius || Vector3.Distance(BallPosition, actor.transform.position + Vector3.up * .9f) > 1.55f) return;
+            if(!TryRankedBotContact(actor)) return;
             bool volley = Rules.Bounces == 0;
             var result = Rules.Hit(actor.playerId, ToPoint(BallPosition), actor.InKitchen);
             actor.ConsumeContact(volley);
@@ -250,12 +254,6 @@ namespace PickleVerse.LocalMatch
         {
             replay?.Event(shot.kind==ShotKind.Serve?"Serve":"Hit",actor.playerId+":"+shot.kind);
             var target = ShotTarget(actor, shot);
-            if (actor.playerId == 1 && progressionResult?.kind == PickleVerse.Progression.MatchKind.RankedBot)
-            {
-                if (!PickleVerse.Progression.EloPolicy.BotDecision(botAccuracyRandom,progressionResult.opponentElo))
-                    target.x = target.x < 0 ? -4.8f : 4.8f;
-                else target.x = Mathf.Clamp(target.x, -2.1f, 2.1f);
-            }
             progressStrokes.Launch(actor.playerId, shot.kind == ShotKind.Serve, Rules.Stroke);
             BallVelocity = ShotTrajectory.Launch(shot, BallPosition, target);
         }
@@ -356,6 +354,7 @@ namespace PickleVerse.LocalMatch
         void PreparePoint()
         {
             progressStrokes.NewRally();
+            rankedBotContact.Reset();
             int lane = (Rules.Points[Rules.Server] % 2 == 0 ? 1 : -1) * -Actor(Rules.Server).end;
             Actor(Rules.Server).ResetAt(new Vector3(lane * 1.45f, 0, Actor(Rules.Server).end * 7.25f), Actor(Rules.Server).end);
             Actor(1 - Rules.Server).ResetAt(new Vector3(-lane * 1.45f, 0, Actor(1 - Rules.Server).end * 6.1f), Actor(1 - Rules.Server).end);
@@ -427,6 +426,7 @@ namespace PickleVerse.LocalMatch
         {
             switch (fault) {
                 case Fault.ServeFoot: return "Lỗi chân giao bóng"; case Fault.ServeMotion: return "Giao bóng không hợp lệ"; case Fault.ServeTimeout: return "Quá 10 giây giao bóng";
+                case Fault.ServeMiss: return "Giao bóng hụt";
                 case Fault.ServeShort: return "Giao vào Kitchen / vạch Kitchen"; case Fault.ServeWrongCourt: return "Giao sai ô chéo"; case Fault.Out: return "OUT"; case Fault.OwnCourt: return "Bóng không qua lưới";
                 case Fault.TwoBounce: return "Vi phạm hai lần nảy bắt buộc"; case Fault.DoubleBounce: return "Bóng nảy hai lần"; case Fault.KitchenVolley: return "Volley trong Kitchen"; case Fault.KitchenMomentum: return "Đà sau Volley chạm Kitchen";
                 case Fault.BodyHit: return "Bóng chạm người"; case Fault.NetTouch: return "Chạm lưới"; case Fault.NetPlane: return "Đánh trước mặt phẳng lưới"; default: return fault.ToString();
