@@ -27,9 +27,14 @@ public static class MatchReadyIntegrationValidation
         public readonly Dictionary<string,SessionProperty> props=new Dictionary<string,SessionProperty>();
         public readonly List<IReadOnlyPlayer> players=new List<IReadOnlyPlayer>();
         public readonly Dictionary<string,Dictionary<string,PlayerProperty>> data=new Dictionary<string,Dictionary<string,PlayerProperty>>();
-        public IHostSession sdk;public bool Left;
-        public Session(int count)
+        public IHostSession sdk;public bool Left;public int NetworkStarts;
+        public readonly bool host;
+        public NetworkState NetworkState=NetworkState.Stopped;
+        public Session(int count,bool isHost=true)
         {
+            host=isHost;
+            var network=ReadySdkProxy.Make<IHostSessionNetwork>((m,a)=>m.Name=="get_State"?NetworkState:m.Name=="StartRelayNetworkAsync"?StartNetwork():null);
+            var clientNetwork=ReadySdkProxy.Make<IClientSessionNetwork>((m,a)=>m.Name=="get_State"?NetworkState:null);
             for(int i=0;i<count;i++)
             {
                 string id=i==0?"qa-local":"qa-"+i;var p=new Dictionary<string,PlayerProperty>();data[id]=p;
@@ -39,7 +44,8 @@ public static class MatchReadyIntegrationValidation
             {
                 switch(m.Name)
                 {
-                    case "get_IsHost":return true;
+                    case "get_IsHost":return host;
+                    case "get_Network":return m.ReturnType==typeof(IHostSessionNetwork)?network:(object)clientNetwork;
                     case "get_Id":return "qa-session";
                     case "get_Properties":return props;
                     case "get_Players":return m.ReturnType==typeof(IReadOnlyList<IPlayer>)?players.Cast<IPlayer>().ToList():(object)players;
@@ -52,6 +58,7 @@ public static class MatchReadyIntegrationValidation
                 }
             });
         }
+        Task StartNetwork(){NetworkStarts++;NetworkState=NetworkState.Started;return Task.CompletedTask;}
         static object SetPlayer(Dictionary<string,PlayerProperty> p,object[] args){p[(string)args[0]]=(PlayerProperty)args[1];return null;}
     }
     static void Set(object o,string property,object value)=>o.GetType().GetProperty(property).GetSetMethod(true).Invoke(o,new[]{value});
@@ -70,7 +77,10 @@ public static class MatchReadyIntegrationValidation
                 var session=new Session(count);var roster=new MatchRoster{matchId="qa-"+test,mode=count==4?PickleVerse.Multiplayer.PlayMode.Doubles:PickleVerse.Multiplayer.PlayMode.Singles};
                 for(int i=0;i<count;i++)roster.members.Add(new RoomMember{id=i==0?"qa-local":"qa-"+i,team=i/(count/2)});
                 Set(app,"Mode",roster.mode);Set(app,"Roster",roster);Set(app,"Match",session.sdk);Set(app,"State",FlowState.Connecting);
-                await Invoke(app,"InitializeReadyAsync");await Invoke(app,"TickReadyAsync",true);
+                await Invoke(app,"InitializeReadyAsync");
+                check("accept works before gameplay transport "+test,app.CanAcceptMatch&&!app.Network.IsListening);
+                await Invoke(app,"StartAcceptedNetworkAsync");check("no allocation before approval "+test,session.NetworkStarts==0);
+                await Invoke(app,"TickReadyAsync",true);
                 check("deadline and modal "+test,app.ReadyCheckActive&&app.CanAcceptMatch&&app.ReadySeconds>18);
                 if(test==0)
                 {
@@ -90,6 +100,7 @@ public static class MatchReadyIntegrationValidation
                     for(int i=1;i<count;i++)session.data["qa-"+i]["readyDecision"]=new PlayerProperty("accepted");
                     await Invoke(app,"TickReadyAsync",true);
                     check("all four approve the same match",session.props["readyPhase"].Value=="go"&&!app.ReadyCheckActive);
+                    await Invoke(app,"StartAcceptedNetworkAsync");await Invoke(app,"StartAcceptedNetworkAsync");check("transport starts once after every acceptance",session.NetworkStarts==1);
                     Set(app,"Match",null);
                 }
                 else if(test==1)
@@ -108,6 +119,14 @@ public static class MatchReadyIntegrationValidation
                     check("timeout requeues the accepting player",session.Left&&app.Match==null&&app.State==FlowState.Delay);
                 }
             }
+            var guestSession=new Session(2,false);
+            Set(app,"Roster",new MatchRoster{matchId="guest-qa",mode=PickleVerse.Multiplayer.PlayMode.Singles,members=new List<RoomMember>{new RoomMember{id="qa-local",team=0},new RoomMember{id="qa-1",team=1}}});
+            Set(app,"Match",guestSession.sdk);Set(app,"State",FlowState.Connecting);
+            await Invoke(app,"InitializeReadyAsync");await Invoke(app,"TickReadyAsync",false);
+            check("guest can accept while host has not started countdown",app.CanAcceptMatch&&!app.Network.IsConnectedClient);
+            await app.AcceptMatchAsync();check("guest publishes acceptance without gameplay connection",app.ReadyCheckAccepted);
+            guestSession.props["readyPhase"]=new SessionProperty("go");await Invoke(app,"TickReadyAsync",true);
+            check("guest observes common approval",!app.ReadyCheckActive);
             var report=new{passed=true,count=checks.Count,checks,scope="Actual MultiplayerApp ready methods with in-memory MPS interfaces; no live Relay."};Directory.CreateDirectory("../UnityWork/MultiplayerPresentation");File.WriteAllText("../UnityWork/MultiplayerPresentation/ready-integration.json",Newtonsoft.Json.JsonConvert.SerializeObject(report,Newtonsoft.Json.Formatting.Indented));return report;
         }
         finally

@@ -16,7 +16,8 @@ namespace PickleVerse.Multiplayer
         public bool ReadyCheckAccepted => localReady == ReadyDecision.Accepted;
         public bool ReadyCheckBusy => savingReady || resolvingReady;
         public float ReadySeconds => readyDeadline == 0 ? MatchReadyPolicy.Seconds : Mathf.Max(0, (float)((readyDeadline - DateTime.UtcNow.Ticks) / (double)TimeSpan.TicksPerSecond));
-        public bool CanAcceptMatch => ReadyCheckActive && readyDeadline > 0 && ReadySeconds > 0 && !ReadyCheckBusy && !ReadyCheckAccepted;
+        // Confirm the match session first. Gameplay transport is deliberately started later.
+        public bool CanAcceptMatch => ReadyCheckActive && ReadySeconds > 0 && !ReadyCheckBusy && !ReadyCheckAccepted;
         public int ReadyCount => ReadyDecisions().Values.Count(d => d == ReadyDecision.Accepted) + (Roster?.members.Count(p => p.bot) ?? 0);
         Dictionary<string, ReadyDecision> ReadyDecisions()
         {
@@ -40,6 +41,8 @@ namespace PickleVerse.Multiplayer
                     host.SetProperty("readyDeadline", new SessionProperty("0", VisibilityPropertyOptions.Member));
                     await host.SavePropertiesAsync();
                 }
+                // A late joining client can already see the host's countdown.
+                if(Match!=null && Match.Properties.TryGetValue("readyDeadline",out var deadline))long.TryParse(deadline.Value,out readyDeadline);
             }
             finally { initializingReady = false; }
         }
@@ -71,7 +74,7 @@ namespace PickleVerse.Multiplayer
             }
             finally { savingReady = false; Changed?.Invoke(); }
         }
-        async Task TickReadyAsync(bool allConnected)
+        async Task TickReadyAsync(bool allPresent)
         {
             if (initializingReady || tickingReady || resolvingReady || readyApproved || Match == null || Custom) return;
             tickingReady = true; var session = Match;
@@ -80,31 +83,33 @@ namespace PickleVerse.Multiplayer
                 if (session.Properties.TryGetValue("readyDeadline", out var deadline)) long.TryParse(deadline.Value, out readyDeadline);
                 string phase = session.Properties.TryGetValue("readyPhase", out var p) ? p.Value : "waiting";
                 if (phase == "rejected") { await ResolveReadyAsync("Có người chưa sẵn sàng. Đang tìm trận khác…"); return; }
-                if (phase == "go") { readyApproved = true; Changed?.Invoke(); return; }
+                if (phase == "go") { ApproveReady(); return; }
                 if (!session.IsHost)
                 {
                     // A missed Lobby event is covered by the existing refresh and disconnect paths.
                     if (readyDeadline > 0 && ReadySeconds <= 0 && localReady == ReadyDecision.Pending) await DeclineMatchAsync();
                     return;
                 }
-                if (readyDeadline == 0 && allConnected)
+                if (readyDeadline == 0 && allPresent)
                 {
                     readyDeadline = DateTime.UtcNow.AddSeconds(MatchReadyPolicy.Seconds).Ticks;
                     session.AsHost().SetProperty("readyDeadline", new SessionProperty(readyDeadline.ToString(), VisibilityPropertyOptions.Member));
                     await session.AsHost().SavePropertiesAsync(); Changed?.Invoke();
                     if (session != Match) return;
                 }
-                var outcome = MatchReadyPolicy.Evaluate(Roster, ReadyDecisions(), readyDeadline > 0 && ReadySeconds <= 0, allConnected);
+                var outcome = MatchReadyPolicy.Evaluate(Roster, ReadyDecisions(), readyDeadline > 0 && ReadySeconds <= 0, allPresent);
                 if (outcome == ReadyOutcome.Rejected) await RejectReadyOnHostAsync(session);
                 else if (outcome == ReadyOutcome.Approved)
                 {
                     session.AsHost().SetProperty("readyPhase", new SessionProperty("go", VisibilityPropertyOptions.Member));
                     await session.AsHost().SavePropertiesAsync();
-                    if (session == Match) { readyApproved = true; Changed?.Invoke(); }
+                    if (session == Match) { ApproveReady(); }
                 }
             }
             finally { tickingReady = false; }
         }
+        void ApproveReady()
+        {if(readyApproved)return;readyApproved=true;connectionDeadline=Time.realtimeSinceStartupAsDouble+45;Changed?.Invoke();}
         async Task RejectReadyOnHostAsync(ISession session)
         {
             session.AsHost().SetProperty("readyPhase", new SessionProperty("rejected", VisibilityPropertyOptions.Member));

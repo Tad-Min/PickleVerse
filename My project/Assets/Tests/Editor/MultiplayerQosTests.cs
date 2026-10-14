@@ -181,5 +181,17 @@ namespace PickleVerse.Tests
             Assert.IsNull(players[0].QosResults);
             Assert.AreEqual("europe", GroupMatchmaker.SelectRelayRegion(players));
         }
+        [TestCase(true)] [TestCase(false)]
+        public void HostingAssignmentRegionCannotBeUsedAsRelayRegion(bool measured)
+        {
+            var members=new List<RoomMember>{new RoomMember{id="a"},new RoomMember{id="b"}};
+            var qos=new Dictionary<string,List<QosResult>> {
+                ["a"]=measured?Samples(Sample(60,region:"asia-southeast1")):Samples(),
+                ["b"]=measured?Samples(Sample(75,region:"asia-southeast1")):Samples()};
+            var players=GroupMatchmaker.BuildTicketPlayers(members,qos);
+            var teams=new List<Team>{new Team("A",playerIds:new List<string>{"a"}),new Team("B",playerIds:new List<string>{"b"})};
+            var roster=GroupMatchmaker.Roster("test","foreign-hosting-region",teams,players,PlayMode.Singles);
+            Assert.AreEqual(measured?"asia-southeast1":null,roster.region);
+        }
     }
 }

@@ -233,7 +233,8 @@ namespace PickleVerse.Multiplayer
                     result.members.Add(new RoomMember { id=id, team=t, name=data.name??"Player", gender=data.gender??"Male", group=data.group??id, elo=data.elo });
                 }
             if (!result.IsValid()) throw new InvalidOperationException("Kết quả ghép sai số người hoặc đội.");
-            if(string.IsNullOrEmpty(result.region)) result.region=SelectRelayRegion(players);
+            // The assignment region describes Matchmaker hosting, not Relay allocation.
+            result.region=SelectRelayRegion(players);
             foreach (var group in result.members.GroupBy(m => m.group))
                 if (group.Select(p => p.team).Distinct().Count() != 1) throw new InvalidOperationException("Hệ thống ghép đã tách nhóm bạn.");
             return result;

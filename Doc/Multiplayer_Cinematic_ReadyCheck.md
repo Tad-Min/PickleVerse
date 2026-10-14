@@ -1,6 +1,20 @@
 # MultiplayerCourt: cinematic, kết quả và xác nhận trận
 
-Ngày cập nhật: 13/10/2026.
+Ngày cập nhật: 14/10/2026.
+
+## Sửa lỗi xác nhận trên hai máy — 14/10/2026
+
+Luồng trước đây khởi tạo kết nối thi đấu ngay trong `CreateOrJoinSessionAsync`. Máy khách phải kết nối xong mới nhận được session để hiện UI; nút Chấp nhận lại chờ đủ kết nối mới được bật. Log của dự án ghi `Failed to create allocation`, làm máy khách không tới được bước xác nhận còn host chờ kết nối.
+
+Đã chuyển sang tạo phiên chờ bằng `WithNetworkHandler` trước, chưa tạo Relay hoặc khởi động NGO. Cả hai phía có thể xác nhận ngay sau khi tham gia phiên chờ, kể cả khi chưa có kết nối thi đấu hoặc host chưa công bố đồng hồ. Host bắt đầu đồng hồ khi đủ thành viên của roster trong session. Chỉ khi mọi người chấp nhận mới gọi `IHostSessionNetwork.StartRelayNetworkAsync`; đủ kết nối rồi mới tải sân.
+
+Vùng từ assignment của Matchmaker không được dùng trực tiếp làm vùng Relay nữa. Vùng Relay được chọn từ số đo của toàn bộ người chơi, hoặc chọn tự động nếu thiếu dữ liệu. Nếu dịch vụ trả lỗi vùng không tồn tại, thử chọn vùng tự động; lỗi quyền truy cập vẫn được báo rõ.
+
+Protocol tăng lên **8** để tách khỏi các build dùng luồng cũ. Cả hai máy cần pull code mới và build lại cùng phiên bản. Các queue dùng SameProtocol dạng Equality giữa các vé không cần khóa lại một số phiên bản cụ thể.
+
+Kiểm chứng sửa lỗi: 23 kiểm tra thực thi MultiplayerApp với adapter Sessions; thử hai registry dịch vụ, hai tài khoản Authentication độc lập cùng tạo/tham gia một phiên riêng, cả hai xác nhận rồi kết nối thật qua Relay với `SessionNetworkHandler` của game: 9/9 kiểm tra đạt. Có thử tạo/tham gia đồng thời. Đây là hai phía trong một Editor, chưa phải hai máy vật lý hoặc tìm trận công khai.
+
+Bộ EditMode sau sửa lỗi: **329/329** bài đạt, bao gồm chọn đúng vùng Relay, thử lại khi vùng không tồn tại, không che lỗi quyền truy cập và không khởi tạo kết nối cho trận đã hủy.
 
 ## Luồng chơi
 
@@ -40,7 +54,7 @@ Thiết kế áp dụng cho PickleVerse: một hộp thoại tập trung, nút c
 
 Các công cụ lặp lại kiểm tra nằm trong `My project/Tools/MultiplayerPresentationValidation.cs`, `MatchReadyIntegrationValidation.cs`, `NightLightingValidation.cs`. Báo cáo và ảnh kiểm tra nằm trong thư mục cục bộ `UnityWork/MultiplayerPresentation`.
 
-## Cấu hình Cloud cần triển khai
+## Lịch sử cấu hình Cloud ngày 13/10/2026
 
 Đã sửa cả hai file `PickleVerse_1v1.mmq` và `PickleVerse_2v2.mmq`: rule `SameProtocol` ghép các vé có cùng phiên bản, thay vì khóa queue vào protocol 6. Công cụ `MultiplayerCloudSetup.WriteConfigs` cũng tạo lại đúng rule này.
 

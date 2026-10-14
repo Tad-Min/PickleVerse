@@ -110,7 +110,7 @@ namespace PickleVerse.Multiplayer
             SetConnectionIdentity();
             try
             {
-                var session=await Unity.Services.Multiplayer.MultiplayerService.Instance.CreateSessionAsync(MatchOptions(2,null));
+                var session=await Unity.Services.Multiplayer.MultiplayerService.Instance.CreateSessionAsync(MatchOptions(2));
                 if(generation!=operation) { await session.LeaveAsync(); return; }
                 Match=session;
                 session.IsLocked=true;
