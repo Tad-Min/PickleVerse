@@ -40,7 +40,6 @@
             "name": "SameProtocol",
             "type": "Equality",
             "source": "Players.CustomData.protocol",
-            "reference": "6",
             "enableRule": true
           },
           {

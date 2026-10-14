@@ -140,6 +140,7 @@ namespace PickleVerse.Multiplayer
         {
             if (!IsSpawned || !Actor || !MultiplayerApp.Instance) return;
             var match = NetworkMatch.Instance;
+            if(MultiplayerCourtUI.Instance && MultiplayerCourtUI.Instance.cinematic && MultiplayerCourtUI.Instance.cinematic.OwnsPose) return;
             if (!IsServer)
             {
                 if (!IsOwner)

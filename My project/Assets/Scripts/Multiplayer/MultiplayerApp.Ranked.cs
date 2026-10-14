@@ -98,6 +98,7 @@ namespace PickleVerse.Multiplayer
                     new RoomMember {id=PlayerId,name=DisplayName,gender=Gender,elo=player.elo,team=0,group=PlayerId,ready=true},
                     new RoomMember {id="BOT"+Guid.NewGuid().ToString("N").Substring(0,21),name=botName,gender=UnityEngine.Random.value<.5f?"Male":"Female",elo=EloPolicy.BotElo(player.elo,player.rankLossStreak),team=1,group="BOT",ready=true,bot=true}
                 }};
+            readyApproved=false; localReady=ReadyDecision.Pending; readyDeadline=0;
             SetConnectionIdentity();
             try
             {

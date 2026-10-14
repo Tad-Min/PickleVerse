@@ -51,8 +51,9 @@ namespace PickleVerse.LocalMatch
             applied=-1;
             foreach(var light in poleLights.Concat(roofLights))if(light){light.color=Color.white;light.useColorTemperature=false;light.colorTemperature=6500;}
         }
-        public void ApplyNight(float night)
+        public void ApplyNight(float night,bool force=false)
         {
+            if(force)applied=-1;
             night=Mathf.Clamp01(night);
             if(applied>=0&&Mathf.Abs(applied-night)<.003f)return;
             bool first=applied<0;nightWeight=night;applied=night;bool roof=night>.025f;

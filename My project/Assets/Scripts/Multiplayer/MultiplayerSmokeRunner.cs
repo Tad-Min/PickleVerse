@@ -26,6 +26,7 @@ namespace PickleVerse.Multiplayer
                 FlowState last=app.State;
                 app.Changed+=()=> { if(app.State!=last) { last=app.State; Debug.Log("SMOKE "+profile+" "+last+" "+app.Elapsed+" "+app.Notice); } };
                 _=Diagnostics(app,profile);
+                if(Arg("-pkvBehavior")!="cancelConnect")_=AcceptForSmoke(app);
                 await app.PlayAsync(profile);
                 if(test.StartsWith("departure"))
                 {
@@ -79,7 +80,7 @@ namespace PickleVerse.Multiplayer
                     await app.FindAsync();
                 }
                 else if(test!="customAdminHost"&&test!="customAdminGuest") await app.FindAsync();
-                if(Arg("-pkvBehavior")=="cancelConnect") await MultiplayerSmokeChecks.CancelDuringConnect(app,Arg("-pkvRole")=="S1");
+                if(Arg("-pkvBehavior")=="cancelConnect") {await MultiplayerSmokeChecks.CancelDuringConnect(app,Arg("-pkvRole")=="S1");_=AcceptForSmoke(app);}
                 if(test=="fallback" || test=="cancelFallback")
                 {
                     double began=Time.realtimeSinceStartupAsDouble;
@@ -102,7 +103,7 @@ namespace PickleVerse.Multiplayer
                         Time.timeScale=1;
                         var history=PickleVerse.Progression.ProgressionRuntime.Instance.Player.history;
                         if(history.Count==0 || history[0].kind!=PickleVerse.Progression.MatchKind.RankedBot || history[0].localForfeit || !history[0].scores.Any(s=>s.completed) || match.BotReturns==0) throw new InvalidOperationException("Bot rank chưa hoàn tất trận bằng gameplay thật.");
-                        await Task.Delay(300); var summary=MultiplayerCourtUI.Instance.resultScreen;
+                        await OpenSummaryForSmoke(); var summary=MultiplayerCourtUI.Instance.resultScreen;
                         if(!summary.IsVisible || summary.RenderedMatchId!=history[0].id || !summary.delta.text.Contains(history[0].eloDelta.ToString()) || !summary.rank.text.Contains(PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo).ToUpperInvariant())) throw new InvalidOperationException("Trang tổng kết bot thiếu Elo/rank đã lưu.");
                         File.WriteAllText(file+"."+profile+".history.json",JsonUtility.ToJson(PickleVerse.Progression.ProgressionRuntime.Instance.Player,true));
                     }
@@ -151,7 +152,7 @@ namespace PickleVerse.Multiplayer
                     if(Math.Max(NetworkMatch.Instance.GamesA.Value,NetworkMatch.Instance.GamesB.Value)!=2) throw new InvalidOperationException("Trận chưa đủ hai game thắng: "+games);
                     if(NetworkMatch.Instance.Rules!=null && (!NetworkMatch.Instance.Rules.complete || NetworkMatch.Instance.Rules.score.Max()<11)) throw new InvalidOperationException("Game kết thúc do rời/mất kết nối, chưa phải thắng 11 điểm");
                     if(Math.Max(NetworkMatch.Instance.ScoreA.Value,NetworkMatch.Instance.ScoreB.Value)<11) throw new InvalidOperationException("Kết quả không phải game đủ 11 điểm: "+NetworkMatch.Instance.Status.Value);
-                    await Task.Delay(500);
+                    await OpenSummaryForSmoke();
                     var saved=PickleVerse.Progression.ProgressionRuntime.Instance.Player.history.Find(h=>h.id==app.Roster.matchId);
                     var summary=MultiplayerCourtUI.Instance.resultScreen;
                     if(saved==null || !summary.IsVisible || summary.RenderedMatchId!=saved.id || !summary.delta.text.Contains(saved.eloDelta.ToString()) || !summary.rank.text.Contains(PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo).ToUpperInvariant())) throw new InvalidOperationException("Trang tổng kết multiplayer thiếu Elo/rank đã lưu.");
@@ -179,6 +180,23 @@ namespace PickleVerse.Multiplayer
                         listening=app.Network.IsListening,host=app.Network.IsHost,connected=app.Network.IsConnectedClient,
                         clients=app.Network.ConnectedClientsIds,identities=app.ClientIdentities}));
             }
+        }
+        static async Task AcceptForSmoke(MultiplayerApp app)
+        {
+            // Only installed by the explicit -pkvCase command-line switch.
+            while(app && app.State!=FlowState.InMatch && app.State!=FlowState.Results)
+            {if(app.CanAcceptMatch)await app.AcceptMatchAsync();await Task.Delay(100);}
+        }
+        static async Task OpenSummaryForSmoke()
+        {
+            double deadline=Time.realtimeSinceStartupAsDouble+15;
+            while(Time.realtimeSinceStartupAsDouble<deadline)
+            {
+                var ui=MultiplayerCourtUI.Instance;
+                if(ui && ui.cinematic && ui.cinematic.OutcomeReady){ui.resultScreen.Open();await Task.Delay(200);return;}
+                await Task.Delay(100);
+            }
+            throw new InvalidOperationException("Thông báo/cinematic kết quả chưa hoàn tất.");
         }
     }
 }

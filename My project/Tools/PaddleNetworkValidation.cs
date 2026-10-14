@@ -45,7 +45,7 @@ public static class PaddleNetworkValidation
             var bot=UnityEngine.Object.Instantiate(app.Settings.playerPrefab);var automated=bot.GetComponent<NetworkPlayer>();automated.Initialize(new RoomMember{id="fixture-bot",name="Minh",gender="Male",team=1,bot=true},1,new Vector3(0,0,6));bot.GetComponent<NetworkObject>().SpawnWithOwnership(manager.LocalClientId);await Task.Delay(100);
             Check("Server-owned ranked bot remains automated",automated.Automated.Value&&!automated.IsLocalHuman);
             Check("Ranked bot does not publish the human's equipped skin",automated.PaddleSkin.Value.ToString()==ShopCatalog.DefaultPaddleId&&automated.Actor.paddle.GetComponent<PaddleAppearance>().CurrentId==ShopCatalog.DefaultPaddleId);bot.GetComponent<NetworkObject>().Despawn();
-            Check("Protocol distinguishes the merged bot and paddle layout",PickleVerse.Multiplayer.Services.MultiplayerSceneConfiguration.ProtocolVersion==6);
+            Check("Protocol distinguishes the merged bot and paddle layout",PickleVerse.Multiplayer.Services.MultiplayerSceneConfiguration.ProtocolVersion>=7);
             Check("Real wallet untouched by network test",PlayerPrefs.GetString(LocalEconomyStorage.Key,"")==stored);
             var report=new{passed=true,count=checks.Count,scope="Local NGO host and RPC/NetworkVariable callbacks; no two-client Internet test",checks};Directory.CreateDirectory("../UnityWork/Collection");File.WriteAllText("../UnityWork/Collection/network-validation.json",Newtonsoft.Json.JsonConvert.SerializeObject(report,Newtonsoft.Json.Formatting.Indented));return report;
         }

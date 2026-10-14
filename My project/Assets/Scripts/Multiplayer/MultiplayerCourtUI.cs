@@ -16,6 +16,9 @@ namespace PickleVerse.Multiplayer
         public TMP_Text selection,timing,modeLabel,modalTitle,modalBody,resultSummary,introCaption;
         public GameObject shotPanel,help,touchControls,modal,resultActions,intro;
         public MatchAnnouncements announcements;
+        public MultiplayerCinematic cinematic;
+        public bool EndAnnouncementReceived {get;private set;}
+        public bool EndAnnouncementFinished {get;private set;}
         public UnityEngine.UI.Button continueButton,restartButton,modeButton,timeoutButton;
         public UnityEngine.UI.Button leave,returnToRoom;
         public MultiplayerResultScreen resultScreen;
@@ -28,7 +31,7 @@ namespace PickleVerse.Multiplayer
         public int TouchShotMask { get; set; }
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
-        public bool InputBlocked => localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
+        public bool InputBlocked => cinematic && cinematic.OwnsPose || localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
         public bool IsGameplay => true;
         public bool IsPaused => localInputPaused;
         public bool CanSignOut => false;
@@ -38,9 +41,14 @@ namespace PickleVerse.Multiplayer
         void Awake() { Instance=this; resultScreen=GetComponent<MultiplayerResultScreen>(); if(!resultScreen) resultScreen=gameObject.AddComponent<MultiplayerResultScreen>(); resultScreen.Configure(this); }
         public void ShowAnnouncement(string title,string detail,float duration,AnnouncementTone tone=AnnouncementTone.Neutral)
         {
-            if(announcements)announcements.Enqueue(title,detail,tone,duration);
+            bool ending=title=="KẾT THÚC TRẬN ĐẤU" || title=="GAME, MATCH!";
+            if(ending && EndAnnouncementReceived)return;
+            if(ending)EndAnnouncementReceived=true;
+            if(announcements)announcements.Enqueue(title,detail,tone,duration,finished:ending?()=>EndAnnouncementFinished=true:(Action)null);
             else notices.Enqueue(new Notice{text=title+"\n"+detail,duration=duration});
         }
+        public void EnsureEndAnnouncement(string detail)
+        {if(!EndAnnouncementReceived)ShowAnnouncement("KẾT THÚC TRẬN ĐẤU",detail,2.1f,AnnouncementTone.Success);}
         void Start()
         {
             GameSettings.Changed+=RefreshBindings;
@@ -100,6 +108,11 @@ namespace PickleVerse.Multiplayer
             var app=MultiplayerApp.Instance;
             var match=NetworkMatch.Instance;
             bool hasMatch=match && match.IsSpawned;
+            if(hasMatch && match.Finished.Value && !EndAnnouncementReceived)EnsureEndAnnouncement(match.Status.Value.ToString());
+            if(!announcements && EndAnnouncementReceived && Time.unscaledTime>=announcementUntil && notices.Count==0)EndAnnouncementFinished=true;
+            if(cinematic && cinematic.OwnsPose)
+            {if(intro)intro.SetActive(false);if(modal)modal.SetActive(false);if(shotPanel)shotPanel.SetActive(false);return;}
+
             bool nextGame=hasMatch && match.BetweenGames.Value && !match.Finished.Value && match.IsServer;
             // NGO can despawn the match before the court UI is unloaded.
             bool ended=hasMatch?match.Finished.Value:!app || (!app.Searching && app.State!=FlowState.Reconnecting);

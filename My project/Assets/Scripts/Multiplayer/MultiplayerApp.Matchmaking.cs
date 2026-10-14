@@ -48,6 +48,7 @@ namespace PickleVerse.Multiplayer
         }
         public async Task CancelSearchAsync()
         {
+            if(ReadyCheckActive) { await DeclineMatchAsync(); return; }
             if (!Searching || cancelling) return;
             cancelling=true; cancelledSearch=observedSearch;
             try
@@ -140,7 +141,7 @@ namespace PickleVerse.Multiplayer
         {
             int generation=operation;
             return new SessionOptions { Name="PickleVerse Match",Type="match",MaxPlayers=count,IsPrivate=true,
-                PlayerProperties=new Dictionary<string,PlayerProperty> { ["identity"]=new PlayerProperty(PlayerId),["cancelled"]=new PlayerProperty("0") } }.WithRelayNetwork(new RelayNetworkOptions(region,true)).WithNetworkHandler(new SessionNetworkHandler(Network,()=>generation==operation && !quitting));
+                PlayerProperties=new Dictionary<string,PlayerProperty> { ["identity"]=new PlayerProperty(PlayerId),["cancelled"]=new PlayerProperty("0"),["readyDecision"]=new PlayerProperty("pending") } }.WithRelayNetwork(new RelayNetworkOptions(region,true)).WithNetworkHandler(new SessionNetworkHandler(Network,()=>generation==operation && !quitting));
         }
     }
 }
