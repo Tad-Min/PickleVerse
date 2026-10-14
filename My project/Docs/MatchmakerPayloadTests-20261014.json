@@ -1,0 +1,82 @@
+[
+  {
+    "name": "AcceptsHighPingAndKeepsLowestPingFirst",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "RetriesMissingResponseAndAcceptsNextValidMeasurement",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "ProbeFailureDoesNotPreventMatchmaking",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "PacketLossDoesNotImposeAnotherQualityLimit",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "MissingRepliesUseAutomaticRelayRegion",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "FiltersInvalidDuplicatesBeforeAggregatingRegion",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "CancelledSearchDoesNotStartProbe",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "IgnoresSuccessfulProbeThatCompletesAfterCancellation",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "CancellationStopsRetryDelay",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "ConcurrentAdaptersDoNotOverlapSdkProbes",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "CancellationWhileWaitingForSdkDoesNotStartAnotherProbe",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "PlayersWithDifferentRegionsRemainInOneTicket",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "ChoosesRegionForAllMatchedPlayersInsteadOfFirstPlayersPreference",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "ManyRegionsAndSdkAnnotationsRespectTicketPayloadLimits",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "RegionMetadataArraysStayBoundedAndIgnoreOversizedRegionIds",
+    "passed": true,
+    "error": null
+  },
+  {
+    "name": "StoredMeasurementsSelectRegionAfterMatchingWithoutTicketQos",
+    "passed": true,
+    "error": null
+  }
+]

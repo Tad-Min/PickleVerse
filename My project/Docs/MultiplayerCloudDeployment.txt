@@ -1,3 +1,4 @@
-2026-10-14T03:20:08.0052181Z
+2026-10-14T04:11:40.2694448Z
 Environment: pickleverse-test
-PickleVerse_1v1: Deployed The queue PickleVerse-1v1 has been updated. The following pools have been updated: LowPing.
+Assets/Settings/Multiplayer/Cloud/PickleVerse_1v1.mmq: Up to date 
+Assets/Settings/Multiplayer/Cloud/PickleVerse_2v2.mmq: Deployed The queue PickleVerse-2v2 has been updated. The following pools have been updated: LowPing.

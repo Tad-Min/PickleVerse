@@ -1,0 +1,366 @@
+{
+  "entries": [
+    {
+      "seq": 9,
+      "timestampUtc": "2026-10-14T04:31:36.9343103Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene",
+      "stackTrace": "",
+      "seeded": false
+    },
+    {
+      "seq": 10,
+      "timestampUtc": "2026-10-14T04:31:37.9215705Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "Overriding environment to 'pickleverse-test' through InitializationOptions",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Services.Core.Environments.EnvironmentsOptionsExtensions:SetEnvironmentName (Unity.Services.Core.InitializationOptions,string) (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Environments/EnvironmentsOptionsExtensions.cs:30)\nPickleVerse.Multiplayer.Services.PlayerIdentityService/<InitializeAsync>d__10:MoveNext () (at Assets/Scripts/Multiplayer/Services/PlayerIdentityService.cs:26)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<PickleVerse.Multiplayer.Services.PlayerIdentityService/<InitializeAsync>d__10> (PickleVerse.Multiplayer.Services.PlayerIdentityService/<InitializeAsync>d__10&)\nPickleVerse.Multiplayer.Services.PlayerIdentityService:InitializeAsync (string,string)\nPickleVerse.Multiplayer.MultiplayerApp/<InitializeAsync>d__180:MoveNext () (at Assets/Scripts/Multiplayer/MultiplayerApp.cs:99)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<PickleVerse.Multiplayer.MultiplayerApp/<InitializeAsync>d__180> (PickleVerse.Multiplayer.MultiplayerApp/<InitializeAsync>d__180&)\nPickleVerse.Multiplayer.MultiplayerApp:InitializeAsync (string)\nPickleVerse.Multiplayer.MultiplayerApp/<PlayAsync>d__42:MoveNext () (at Assets/Scripts/Multiplayer/MultiplayerApp.Room.cs:27)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<PickleVerse.Multiplayer.MultiplayerApp/<PlayAsync>d__42> (PickleVerse.Multiplayer.MultiplayerApp/<PlayAsync>d__42&)\nPickleVerse.Multiplayer.MultiplayerApp:PlayAsync (string)\nPickleVerse.Multiplayer.Services.RoomService/<>c__DisplayClass5_0/<<OpenAsync>b__0>d:MoveNext () (at Assets/Scripts/Multiplayer/Services/RoomService.cs:19)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<PickleVerse.Multiplayer.Services.RoomService/<>c__DisplayClass5_0/<<OpenAsync>b__0>d> (PickleVerse.Multiplayer.Services.RoomService/<>c__DisplayClass5_0/<<OpenAsync>b__0>d&)\nPickleVerse.Multiplayer.Services.RoomService/<>c__DisplayClass5_0:<OpenAsync>b__0 ()\nPickleVerse.Multiplayer.MultiplayerApp/<ExecuteAsync>d__209:MoveNext () (at Assets/Scripts/Multiplayer/MultiplayerApp.cs:401)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<PickleVerse.Multiplayer.MultiplayerApp/<ExecuteAsync>d__209> (PickleVerse.Multiplayer.MultiplayerApp/<ExecuteAsync>d__209&)\nPickleVerse.Multiplayer.MultiplayerApp:ExecuteAsync (System.Func`1<System.Threading.Tasks.Task>)\nPickleVerse.Multiplayer.Services.RoomService:OpenAsync (string,string) (at Assets/Scripts/Multiplayer/Services/RoomService.cs:16)\nPickleVerse.Multiplayer.UI.PlayMultiplayerPresenter/<Start>d__26:MoveNext () (at Assets/Scripts/Multiplayer/UI/PlayMultiplayerPresenter.cs:58)\nSystem.Runtime.CompilerServices.AsyncVoidMethodBuilder:Start<PickleVerse.Multiplayer.UI.PlayMultiplayerPresenter/<Start>d__26> (PickleVerse.Multiplayer.UI.PlayMultiplayerPresenter/<Start>d__26&)\nPickleVerse.Multiplayer.UI.PlayMultiplayerPresenter:Start ()\n",
+      "seeded": false
+    },
+    {
+      "seq": 11,
+      "timestampUtc": "2026-10-14T04:31:47.8829812Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: executing job with 10000ms timeout",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:127)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 12,
+      "timestampUtc": "2026-10-14T04:31:47.8875071Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.116.181.88:7778 took 2ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 13,
+      "timestampUtc": "2026-10-14T04:31:47.8905345Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.124.138.42:7778 took 1ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 14,
+      "timestampUtc": "2026-10-14T04:31:47.891038Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.151.83.253:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 15,
+      "timestampUtc": "2026-10-14T04:31:47.8925477Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.55.12.160:7778 took 2ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 16,
+      "timestampUtc": "2026-10-14T04:31:47.8925477Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.75.250.9:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 17,
+      "timestampUtc": "2026-10-14T04:31:47.8935526Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.82.227.179:7778 took 1ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 18,
+      "timestampUtc": "2026-10-14T04:31:47.8935526Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.88.79.163:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 19,
+      "timestampUtc": "2026-10-14T04:31:47.8945957Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.93.31.77:7778 took 1ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 20,
+      "timestampUtc": "2026-10-14T04:31:47.8945957Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.95.231.177:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 21,
+      "timestampUtc": "2026-10-14T04:31:47.8956002Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 35.200.5.172:7778 took 1ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 22,
+      "timestampUtc": "2026-10-14T04:31:47.8956002Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 35.204.68.24:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 23,
+      "timestampUtc": "2026-10-14T04:31:48.396162Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: not enough time to receive 25 outstanding responses",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:RecvQosResponses (Unity.Networking.QoS.NetworkEndPoint,System.DateTime,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle,bool) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:358)\nUnity.Networking.QoS.QosJob:RecvQosResponsesTimed (Unity.Networking.QoS.NetworkEndPoint,System.DateTime,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle,bool) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:322)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:184)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 24,
+      "timestampUtc": "2026-10-14T04:31:48.396162Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: received 30 responses of 30/55 in 501ms waiting avg 17ms per response",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:RecvQosResponsesTimed (Unity.Networking.QoS.NetworkEndPoint,System.DateTime,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle,bool) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:331)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:184)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 25,
+      "timestampUtc": "2026-10-14T04:31:48.396162Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: took 513ms to process 11 servers",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:146)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 26,
+      "timestampUtc": "2026-10-14T04:31:48.4180534Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QoS PickleVerse-1v1, lần 1/3: europe-central2=không có phản hồi hợp lệ; asia-southeast1=170 ms, mất gói 0%; australia-southeast1=227 ms, mất gói 0%; us-central1=253 ms, mất gói 0%; us-east1=không có phản hồi hợp lệ; us-west1=225 ms, mất gói 0%; europe-north1=không có phản hồi hợp lệ; asia-south1=167 ms, mất gói 0%; southamerica-east1=không có phản hồi hợp lệ; asia-northeast1=166 ms, mất gói 0%; europe-west4=không có phản hồi hợp lệ. Có dữ liệu: 6 vùng; không giới hạn ping.",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nPickleVerse.Multiplayer.GroupMatchmaker/<>c:<.ctor>b__14_0 (string) (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:45)\nPickleVerse.Multiplayer.GroupMatchmaker/<MeasureAsync>d__15:MoveNext () (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:73)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<Unity.Services.Matchmaker.Models.QosResult>>:SetResult (System.Collections.Generic.List`1<Unity.Services.Matchmaker.Models.QosResult>)\nPickleVerse.Multiplayer.GroupMatchmaker/<MeasureOnceAsync>d__18:MoveNext () (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:105)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.IList`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>>:SetResult (System.Collections.Generic.IList`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>)\nUnity.Services.Qos.WrappedQosService/<GetQosResultsAsync>d__24:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/WrappedQosService.cs:199)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>>:SetResult (System.Collections.Generic.List`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>)\nUnity.Services.Qos.Runner.BaselibQosRunner/<MeasureQosV2Async>d__6:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/BaselibQosRunner.cs:97)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<Unity.Services.Qos.Internal.QosResult>>:SetResult (System.Collections.Generic.List`1<Unity.Services.Qos.Internal.QosResult>)\nUnity.Services.Qos.Runner.BaselibQosRunner/<MeasureQosAsync>d__3:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/BaselibQosRunner.cs:53)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Qos.Runner.IQosJob>:SetResult (Unity.Services.Qos.Runner.IQosJob)\nUnity.Services.Qos.Runner.BaselibQosRunner/<RunQosJob>d__7:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/BaselibQosRunner.cs:113)\nUnityEngine.UnitySynchronizationContext:ExecuteTasks ()\n",
+      "seeded": false
+    },
+    {
+      "seq": 27,
+      "timestampUtc": "2026-10-14T04:31:49.2705856Z",
+      "level": "error",
+      "logType": "Error",
+      "message": "[Multiplayer]: BadRequest (21400) \r\n Title: Ticket Validation Error \r\n Errors: \r\n{\"property\":[\"customData contains string entry longer than 200 characters (key: relayQosJson)\"]}\r\n",
+      "stackTrace": "UnityEngine.Logger:Log (UnityEngine.LogType,string,object,UnityEngine.Object)\nUnity.Services.Multiplayer.Logger:Log (UnityEngine.LogType,object,UnityEngine.Object) (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Multiplayer/Utils/Logger.cs:18)\nUnity.Services.Multiplayer.Logger:LogError (object,UnityEngine.Object) (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Multiplayer/Utils/Logger.cs:58)\nUnity.Services.Multiplayer.Logger:LogError (object) (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Multiplayer/Utils/Logger.cs:53)\nUnity.Services.Matchmaker.WrappedMatchmakerService:ResolveErrorWrapping (Unity.Services.Matchmaker.MatchmakerExceptionReason,System.Exception) (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/SDK/WrappedMatchmakerService.cs:435)\nUnity.Services.Matchmaker.WrappedMatchmakerService/<TryCatchRequest>d__17`2<Unity.Services.Matchmaker.Tickets.CreateTicketRequest, Unity.Services.Matchmaker.Models.CreateTicketResponse>:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/SDK/WrappedMatchmakerService.cs:354)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Response`1<Unity.Services.Matchmaker.Models.CreateTicketResponse>>:SetException (System.Exception)\nUnity.Services.Matchmaker.Apis.Tickets.TicketsApiClient/<CreateTicketAsync>d__7:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Apis/TicketsApi.cs:122)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<MakeRequestAsync>d__1:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:41)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<CreateWebRequestAsync>d__3:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:56)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<CreateHttpClientResponse>d__4:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:84)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<>c__DisplayClass4_0/<<CreateHttpClientResponse>b__0>d:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:81)\nSystem.Threading.Tasks.TaskCompletionSource`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.UnityWebRequestHelpers/<>c__DisplayClass0_0:<GetAwaiter>b__0 (UnityEngine.AsyncOperation) (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/UnityWebRequestHelpers.cs:34)\nUnityEngine.AsyncOperation:InvokeCompletionEvent ()\n",
+      "seeded": false
+    },
+    {
+      "seq": 28,
+      "timestampUtc": "2026-10-14T04:31:49.2736463Z",
+      "level": "warn",
+      "logType": "Warning",
+      "message": "Matchmaking attempt failed: Unity.Services.Matchmaker.MatchmakerServiceException: HTTP/1.1 400 Bad Request ---> Unity.Services.Matchmaker.Http.HttpException`1[Unity.Services.Matchmaker.Models.ProblemDetails]: (400) HTTP/1.1 400 Bad Request\r\n  at Unity.Services.Matchmaker.Http.ResponseHandler.HandleAsyncResponse (Unity.Services.Matchmaker.Http.HttpClientResponse response, System.Collections.Generic.Dictionary`2[TKey,TValue] statusCodeToTypeMap) [0x0006d] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\Http\\ResponseHandler.cs:123 \r\n  at Unity.Services.Matchmaker.Http.ResponseHandler.HandleAsyncResponse[T] (Unity.Services.Matchmaker.Http.HttpClientResponse response, System.Collections.Generic.Dictionary`2[TKey,TValue] statusCodeToTypeMap) [0x00000] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\Http\\ResponseHandler.cs:227 \r\n  at Unity.Services.Matchmaker.Apis.Tickets.TicketsApiClient.CreateTicketAsync (Unity.Services.Matchmaker.Tickets.CreateTicketRequest request, Unity.Services.Matchmaker.Configuration operationConfiguration) [0x00110] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\Apis\\TicketsApi.cs:121 \r\n  at Unity.Services.Matchmaker.WrappedMatchmakerService.TryCatchRequest[TRequest,TReturn] (System.Func`3[T1,T2,TResult] func, TRequest request) [0x0003f] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\SDK\\WrappedMatchmakerService.cs:331 \r\n   --- End of inner exception stack trace ---\r\n  at Unity.Services.Matchmaker.WrappedMatchmakerService.ResolveErrorWrapping (Unity.Services.Matchmaker.MatchmakerExceptionReason reason, System.Exception exception) [0x00105] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\SDK\\WrappedMatchmakerService.cs:441 \r\n  at Unity.Services.Matchmaker.WrappedMatchmakerService.TryCatchRequest[TRequest,TReturn] (System.Func`3[T1,T2,TResult] func, TRequest request) [0x00109] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\SDK\\WrappedMatchmakerService.cs:354 \r\n  at Unity.Services.Matchmaker.WrappedMatchmakerService.CreateTicketAsync (System.Collections.Generic.List`1[T] players, Unity.Services.Matchmaker.CreateTicketOptions options) [0x0013b] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\SDK\\WrappedMatchmakerService.cs:117 \r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x001b6] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:121 \r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x0042a] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:141 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchRankedSinglesAsync (System.Int32 generation, System.Threading.CancellationToken token) [0x00275] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Ranked.cs:75 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchAsync (System.Int32 generation) [0x0010b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Matchmaking.cs:108 ",
+      "stackTrace": "UnityEngine.Debug:LogWarning (object)\nPickleVerse.Multiplayer.MultiplayerApp/<SearchAsync>d__8:MoveNext () (at Assets/Scripts/Multiplayer/MultiplayerApp.Matchmaking.cs:136)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:SetException (System.Exception)\nPickleVerse.Multiplayer.MultiplayerApp/<SearchRankedSinglesAsync>d__13:MoveNext () (at Assets/Scripts/Multiplayer/MultiplayerApp.Ranked.cs:62)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Models.StoredMatchmakingResults>:SetException (System.Exception)\nPickleVerse.Multiplayer.GroupMatchmaker/<FindAsync>d__19:MoveNext () (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:141)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Models.CreateTicketResponse>:SetException (System.Exception)\nUnity.Services.Matchmaker.WrappedMatchmakerService/<CreateTicketAsync>d__7:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/SDK/WrappedMatchmakerService.cs:127)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Response`1<Unity.Services.Matchmaker.Models.CreateTicketResponse>>:SetException (System.Exception)\nUnity.Services.Matchmaker.WrappedMatchmakerService/<TryCatchRequest>d__17`2<Unity.Services.Matchmaker.Tickets.CreateTicketRequest, Unity.Services.Matchmaker.Models.CreateTicketResponse>:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/SDK/WrappedMatchmakerService.cs:361)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Response`1<Unity.Services.Matchmaker.Models.CreateTicketResponse>>:SetException (System.Exception)\nUnity.Services.Matchmaker.Apis.Tickets.TicketsApiClient/<CreateTicketAsync>d__7:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Apis/TicketsApi.cs:122)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<MakeRequestAsync>d__1:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:41)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<CreateWebRequestAsync>d__3:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:56)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<CreateHttpClientResponse>d__4:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:84)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.HttpClient/<>c__DisplayClass4_0/<<CreateHttpClientResponse>b__0>d:MoveNext () (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/HttpClient.cs:81)\nSystem.Threading.Tasks.TaskCompletionSource`1<Unity.Services.Matchmaker.Http.HttpClientResponse>:SetResult (Unity.Services.Matchmaker.Http.HttpClientResponse)\nUnity.Services.Matchmaker.Http.UnityWebRequestHelpers/<>c__DisplayClass0_0:<GetAwaiter>b__0 (UnityEngine.AsyncOperation) (at ./Library/PackageCache/com.unity.services.multiplayer@3bd2e24872f4/Runtime/Matchmaker/Http/UnityWebRequestHelpers.cs:34)\nUnityEngine.AsyncOperation:InvokeCompletionEvent ()\n",
+      "seeded": false
+    },
+    {
+      "seq": 29,
+      "timestampUtc": "2026-10-14T04:35:19.9356454Z",
+      "level": "error",
+      "logType": "Error",
+      "message": "Assets\\Tests\\Editor\\MultiplayerQosTests.cs(152,100): error CS7036: There is no argument given that corresponds to the required parameter 'key' of 'JToken.Value<T>(object)'",
+      "stackTrace": "",
+      "seeded": false
+    },
+    {
+      "seq": 30,
+      "timestampUtc": "2026-10-14T04:37:57.7439577Z",
+      "level": "error",
+      "logType": "Error",
+      "message": "Failed to handle /api/exec request: Main thread operation timed out after 5000ms",
+      "stackTrace": "UnityEngine.Debug:LogError (object)\nUnity.Pipeline.BasePipelineServer/<HandleExecRequest>d__115:MoveNext () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:2071)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:SetException (System.Exception)\nUnity.Pipeline.BasePipelineServer/<ExecuteGated>d__105:MoveNext () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:1403)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:SetException (System.Exception)\nUnity.Pipeline.BasePipelineServer/<>c__DisplayClass115_0/<<HandleExecRequest>b__0>d:MoveNext () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:2032)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<object>:SetException (System.Exception)\nUnity.Pipeline.BasePipelineServer/<ExecuteCommandByName>d__133:MoveNext () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:2478)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<object>:SetException (System.Exception)\nUnity.Pipeline.BasePipelineServer/<ExecuteCommand>d__134:MoveNext () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:2517)\nSystem.Threading._ThreadPoolWaitCallback:PerformWaitCallback ()\n",
+      "seeded": false
+    },
+    {
+      "seq": 31,
+      "timestampUtc": "2026-10-14T04:39:37.77366Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "Overriding environment to 'pickleverse-test' through InitializationOptions",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Services.Core.Environments.EnvironmentsOptionsExtensions:SetEnvironmentName (Unity.Services.Core.InitializationOptions,string) (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Environments/EnvironmentsOptionsExtensions.cs:30)\nPipelineEvaluation.PipelineEval_f3fc2635/<>c/<<Execute>b__0_0>d:MoveNext ()\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<PipelineEvaluation.PipelineEval_f3fc2635/<>c/<<Execute>b__0_0>d> (PipelineEvaluation.PipelineEval_f3fc2635/<>c/<<Execute>b__0_0>d&)\nPipelineEvaluation.PipelineEval_f3fc2635/<>c:<Execute>b__0_0 ()\nPipelineEvaluation.PipelineEval_f3fc2635:Execute ()\nSystem.Reflection.MethodBase:Invoke (object,object[])\nUnity.Pipeline.Compilation.EvalCodeCompiler:ExecuteCompiledAssembly (System.Reflection.Assembly) (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Compilation/EvalCodeCompiler.cs:190)\nUnity.Pipeline.Compilation.EvalCodeCompiler:CompileAndExecuteOnMainThread (string,int,System.Diagnostics.Stopwatch) (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Compilation/EvalCodeCompiler.cs:54)\nUnity.Pipeline.Runtime.Commands.CodeEvalCommand:EvaluateSource (string,int,string) (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Commands/CodeEvalCommand.cs:112)\nUnity.Pipeline.Runtime.Commands.CodeEvalCommand:EvaluateCode (string,int) (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Commands/CodeEvalCommand.cs:24)\nSystem.Reflection.MethodBase:Invoke (object,object[])\nUnity.Pipeline.BasePipelineServer:ExecuteCommandDirect (Unity.Pipeline.Commands.CommandInfo,object[]) (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:2634)\nUnity.Pipeline.BasePipelineServer/<>c__DisplayClass134_0:<ExecuteCommand>b__1 () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/BasePipelineServer.cs:2508)\nUnity.Pipeline.Threading.Dispatcher/WorkItem`1<object>:ExecuteCore () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/Dispatcher.cs:284)\nUnity.Pipeline.Threading.Dispatcher/WorkItem:Execute () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/Dispatcher.cs:229)\nUnity.Pipeline.Threading.Dispatcher:ProcessWorkQueue (int) (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/Dispatcher.cs:195)\nUnity.Pipeline.Threading.Dispatcher:ProcessWorkQueue () (at ./Library/PackageCache/com.unity.pipeline@ab05e9cd7f74/Runtime/Common/Dispatcher.cs:210)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\n",
+      "seeded": false
+    },
+    {
+      "seq": 32,
+      "timestampUtc": "2026-10-14T04:39:39.1310262Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: executing job with 10000ms timeout",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:127)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 33,
+      "timestampUtc": "2026-10-14T04:39:39.13656Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.116.181.88:7778 took 2ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 34,
+      "timestampUtc": "2026-10-14T04:39:39.1396814Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.124.138.42:7778 took 2ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 35,
+      "timestampUtc": "2026-10-14T04:39:39.1396814Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.151.83.253:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 36,
+      "timestampUtc": "2026-10-14T04:39:39.1416846Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.55.12.160:7778 took 2ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 37,
+      "timestampUtc": "2026-10-14T04:39:39.1416846Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.75.250.9:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 38,
+      "timestampUtc": "2026-10-14T04:39:39.1436813Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.82.227.179:7778 took 2ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 39,
+      "timestampUtc": "2026-10-14T04:39:39.1436813Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.88.79.163:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 40,
+      "timestampUtc": "2026-10-14T04:39:39.1451936Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.93.31.77:7778 took 1ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 41,
+      "timestampUtc": "2026-10-14T04:39:39.1451936Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 34.95.231.177:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 42,
+      "timestampUtc": "2026-10-14T04:39:39.1478084Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 35.200.5.172:7778 took 3ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 43,
+      "timestampUtc": "2026-10-14T04:39:39.1478084Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: send to 35.204.68.24:7778 took 0ms",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:ProcessServer (Unity.Networking.QoS.QosJob/InternalQosServer,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:225)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:165)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 44,
+      "timestampUtc": "2026-10-14T04:39:39.4925735Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: received 55 responses of 55/55 in 345ms waiting avg 6ms per response",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:RecvQosResponsesTimed (Unity.Networking.QoS.NetworkEndPoint,System.DateTime,Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle,bool) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:331)\nUnity.Networking.QoS.QosJob:ProcessServers (Unity.Baselib.LowLevel.Binding/Baselib_Socket_Handle) (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:184)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:142)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 45,
+      "timestampUtc": "2026-10-14T04:39:39.4925735Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QosJob: took 363ms to process 11 servers",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nUnity.Networking.QoS.QosJob:Execute () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/QosJob.cs:146)\nUnity.Jobs.IJobExtensions/JobStruct`1<Unity.Networking.QoS.QosJob>:Execute (Unity.Networking.QoS.QosJob&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)\n",
+      "seeded": false
+    },
+    {
+      "seq": 46,
+      "timestampUtc": "2026-10-14T04:39:39.5173193Z",
+      "level": "log",
+      "logType": "Log",
+      "message": "QoS PickleVerse-1v1, lần 1/3: europe-central2=287 ms, mất gói 0%; asia-southeast1=60 ms, mất gói 0%; australia-southeast1=193 ms, mất gói 0%; us-central1=224 ms, mất gói 0%; us-east1=251 ms, mất gói 0%; us-west1=185 ms, mất gói 0%; europe-north1=304 ms, mất gói 0%; asia-south1=111 ms, mất gói 0%; southamerica-east1=347 ms, mất gói 0%; asia-northeast1=110 ms, mất gói 0%; europe-west4=267 ms, mất gói 0%. Có dữ liệu: 11 vùng; không giới hạn ping.",
+      "stackTrace": "UnityEngine.Debug:Log (object)\nPickleVerse.Multiplayer.GroupMatchmaker/<>c:<.ctor>b__16_0 (string) (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:46)\nPickleVerse.Multiplayer.GroupMatchmaker/<MeasureAsync>d__17:MoveNext () (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:74)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<Unity.Services.Matchmaker.Models.QosResult>>:SetResult (System.Collections.Generic.List`1<Unity.Services.Matchmaker.Models.QosResult>)\nPickleVerse.Multiplayer.GroupMatchmaker/<MeasureOnceAsync>d__20:MoveNext () (at Assets/Scripts/Multiplayer/GroupMatchmaker.cs:106)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.IList`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>>:SetResult (System.Collections.Generic.IList`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>)\nUnity.Services.Qos.WrappedQosService/<GetQosResultsAsync>d__24:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/WrappedQosService.cs:199)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>>:SetResult (System.Collections.Generic.List`1<System.ValueTuple`2<Unity.Services.Qos.V2.Models.QosServer, Unity.Services.Qos.IQosMeasurements>>)\nUnity.Services.Qos.Runner.BaselibQosRunner/<MeasureQosV2Async>d__6:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/BaselibQosRunner.cs:97)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<Unity.Services.Qos.Internal.QosResult>>:SetResult (System.Collections.Generic.List`1<Unity.Services.Qos.Internal.QosResult>)\nUnity.Services.Qos.Runner.BaselibQosRunner/<MeasureQosAsync>d__3:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/BaselibQosRunner.cs:53)\nSystem.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<Unity.Services.Qos.Runner.IQosJob>:SetResult (Unity.Services.Qos.Runner.IQosJob)\nUnity.Services.Qos.Runner.BaselibQosRunner/<RunQosJob>d__7:MoveNext () (at ./Library/PackageCache/com.unity.services.qos@03d4b52d4980/Runtime/Runner/BaselibQosRunner.cs:113)\nUnityEngine.UnitySynchronizationContext:ExecuteTasks ()\n",
+      "seeded": false
+    }
+  ],
+  "cursor": 46,
+  "session": "a080e623130e49d8a361d87926777327",
+  "returned": 38,
+  "dropped": false,
+  "reset": false,
+  "counts": {
+    "error": 3,
+    "warn": 1,
+    "log": 34
+  },
+  "groundTruth": {
+    "sampledUtc": "2026-10-14T04:39:40.6621852Z",
+    "ageMs": 25,
+    "compilationFailed": false,
+    "compiling": false,
+    "consoleErrors": 1,
+    "consoleWarnings": 0,
+    "consoleLogs": 16,
+    "seeded": true
+  }
+}

@@ -1,0 +1,132 @@
+[
+  {
+    "name": "PickleVerse-2v2",
+    "config": {
+      "Schema": "https://ugs-config-schemas.unity3d.com/v1/matchmaker/matchmaker-queue.schema.json",
+      "Name": {},
+      "Enabled": true,
+      "MaxPlayersPerTicket": 2,
+      "DefaultPool": {
+        "Variants": [],
+        "Name": {},
+        "Enabled": true,
+        "TimeoutSeconds": 120,
+        "MatchLogic": {
+          "MatchDefinition": {
+            "teams": [
+              {
+                "name": "Team",
+                "teamCount": {
+                  "min": 2,
+                  "max": 2,
+                  "relaxations": []
+                },
+                "playerCount": {
+                  "min": 2,
+                  "max": 2,
+                  "relaxations": []
+                },
+                "teamRules": []
+              }
+            ],
+            "matchRules": [
+              {
+                "source": "Players.CustomData.protocol",
+                "name": "SameProtocol",
+                "type": 5,
+                "reference": null,
+                "overlap": 0.0,
+                "enableRule": true,
+                "not": false,
+                "relaxations": [],
+                "externalData": null
+              }
+            ]
+          },
+          "Name": "Rules",
+          "BackfillEnabled": false
+        },
+        "MatchHosting": {
+          "Type": 2
+        }
+      },
+      "FilteredPools": []
+    }
+  },
+  {
+    "name": "PickleVerse-1v1",
+    "config": {
+      "Schema": "https://ugs-config-schemas.unity3d.com/v1/matchmaker/matchmaker-queue.schema.json",
+      "Name": {},
+      "Enabled": true,
+      "MaxPlayersPerTicket": 1,
+      "DefaultPool": {
+        "Variants": [],
+        "Name": {},
+        "Enabled": true,
+        "TimeoutSeconds": 360,
+        "MatchLogic": {
+          "MatchDefinition": {
+            "teams": [
+              {
+                "name": "Team",
+                "teamCount": {
+                  "min": 2,
+                  "max": 2,
+                  "relaxations": []
+                },
+                "playerCount": {
+                  "min": 1,
+                  "max": 1,
+                  "relaxations": []
+                },
+                "teamRules": []
+              }
+            ],
+            "matchRules": [
+              {
+                "source": "Players.CustomData.protocol",
+                "name": "SameProtocol",
+                "type": 5,
+                "reference": null,
+                "overlap": 0.0,
+                "enableRule": true,
+                "not": false,
+                "relaxations": [],
+                "externalData": null
+              },
+              {
+                "source": "Players.CustomData.elo",
+                "name": "EloWindow",
+                "type": 4,
+                "reference": 120,
+                "overlap": 0.0,
+                "enableRule": true,
+                "not": false,
+                "relaxations": [],
+                "externalData": null
+              },
+              {
+                "source": "Players.CustomData.pairingKeys",
+                "name": "MutualPreference",
+                "type": 8,
+                "reference": null,
+                "overlap": 1.0,
+                "enableRule": true,
+                "not": false,
+                "relaxations": [],
+                "externalData": null
+              }
+            ]
+          },
+          "Name": "Rules",
+          "BackfillEnabled": false
+        },
+        "MatchHosting": {
+          "Type": 2
+        }
+      },
+      "FilteredPools": []
+    }
+  }
+]

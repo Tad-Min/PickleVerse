@@ -1,0 +1,9 @@
+[
+  {
+    "error": "Unity.Services.Matchmaker.Http.HttpException: (403) HTTP/1.1 403 Forbidden\r\n  at Unity.Services.Matchmaker.Http.ResponseHandler.HandleAsyncResponse (Unity.Services.Matchmaker.Http.HttpClientResponse response, System.Collections.Generic.Dictionary`2[TKey,TValue] statusCodeToTypeMap) [0x00066] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\Http\\ResponseHandler.cs:121 \r\n  at Unity.Services.Matchmaker.Apis.Tickets.TicketsApiClient.DeleteTicketAsync (Unity.Services.Matchmaker.Tickets.DeleteTicketRequest request, Unity.Services.Matchmaker.Configuration operationConfiguration) [0x00107] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\Apis\\TicketsApi.cs:148 \r\n  at Unity.Services.Matchmaker.WrappedMatchmakerService.TryCatchRequest[TRequest] (System.Func`3[T1,T2,TResult] func, TRequest request) [0x0003f] in .\\Library\\PackageCache\\com.unity.services.multiplayer@3bd2e24872f4\\Runtime\\Matchmaker\\SDK\\WrappedMatchmakerService.cs:246 ",
+    "remainingTickets": [
+      "cf58c688-b7fa-41cd-8d7f-f9f35c9710a1",
+      "1fe8ec99-cb23-4f1e-8b52-a11bf929ae58"
+    ]
+  }
+]

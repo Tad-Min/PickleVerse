@@ -15,7 +15,6 @@ MonoBehaviour:
   environment: pickleverse-test
   singlesQueue: PickleVerse-1v1
   doublesQueue: PickleVerse-2v2
-  maximumLatencyMs: 150
   reconnectSeconds: 30
   playerPrefab: {fileID: 6737982789964891341, guid: 97c0c37e9d566b242a271bb4b63b2600, type: 3}
   matchPrefab: {fileID: 6210019421029378209, guid: 31efa4cd7424ad04795b6558197fe602, type: 3}

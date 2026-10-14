@@ -1,0 +1,6 @@
+[
+  {
+    "error": "Unity.Services.Core.ServicesInitializationException: You are attempting to initialize Unity Services in Edit Mode. Unity Services can only be initialized in Play Mode\r\n  at Unity.Services.Core.UnityServices.InitializeAsync (Unity.Services.Core.InitializationOptions options) [0x0002a] in .\\Library\\PackageCache\\com.unity.services.core@3464cb68d709\\Runtime\\Core\\UnityServices.cs:130 \r\n  at PipelineEvaluation.PipelineEval_d34f72f4+<>c.<Execute>b__0_0 () [0x000eb] in <83b0b2a33a6f443fbe25346e36737a99>:0 ",
+    "remainingTickets": []
+  }
+]

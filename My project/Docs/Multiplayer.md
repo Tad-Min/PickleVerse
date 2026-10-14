@@ -79,7 +79,7 @@ Find, Join và StartCustom kiểm tra scene trước khi đổi trạng thái ho
 
 Profile `Assets/Settings/BuildProfiles/MultiplayerWindows.asset` phải chứa cả `PlayMultiplayer` và `MultiplayerCourt`, cùng những scene đang được NGO đồng bộ. Editor và mọi Player cần cùng danh sách scene/bản build. Scene Hash lỗi khi client không có scene host gửi trong bảng build của nó. Đã thêm kiểm tra trước kết nối và trước build; protocol phiên bản 3 ngăn bản cũ tham gia.
 
-Services dùng môi trường `pickleverse-test`, hai queue `PickleVerse-1v1` / `PickleVerse-2v2`, Relay nên có thể kết nối khác mạng khi Internet/UGS hoạt động. QoS giới hạn 150 ms, không tự nới. Test nhiều phiên trên một máy chưa chứng minh kết nối giữa hai máy vật lý.
+Services dùng môi trường `pickleverse-test`, hai queue `PickleVerse-1v1` / `PickleVerse-2v2`, Relay nên có thể kết nối khác mạng khi Internet/UGS hoạt động. Không giới hạn ping hoặc bắt buộc cùng vùng ưu tiên khi ghép. QoS chỉ giúp chọn vùng Relay sau khi đủ người; không có số đo chung thì Relay tự chọn vùng. Test nhiều phiên trên một máy chưa chứng minh kết nối giữa hai máy vật lý.
 
 Host rời kết thúc phiên. Khách mất kết nối: tạm dừng tối đa 30 giây, kết nối lại cùng danh tính; quá hạn đội đó thua. Chủ động rời cũng bị xử thua. Chưa có host migration, xếp hạng hoặc lịch sử lâu dài.
 

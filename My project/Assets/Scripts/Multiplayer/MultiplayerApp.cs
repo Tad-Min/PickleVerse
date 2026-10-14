@@ -147,10 +147,6 @@ namespace PickleVerse.Multiplayer
                     if (IsCaptain && Searching && Room.Players.Any(p=>Prop(p,"cancel")==observedSearch)) await CancelSearchAsync();
                     if (Searching && !Custom && Mode==PlayMode.Doubles && !measured.ContainsKey(PlayerId)) await PublishQosAsync();
                 }
-                catch(ConnectionQualityException e)
-                {
-                    if (Searching) { await CancelSearchAsync(); SetState(FlowState.WaitingRoom,e.Message); }
-                }
                 catch(OperationCanceledException) { }
                 catch(Exception e) { if (Room!=null) Notice="Đang cập nhật phòng: "+e.Message; }
                 finally { polling=false; Changed?.Invoke(); }

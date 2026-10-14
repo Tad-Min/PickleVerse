@@ -1,0 +1,30 @@
+[
+  {
+    "queue": "PickleVerse-1v1",
+    "accepted": true,
+    "players": 1,
+    "measuredAndFixtureRegions": 41,
+    "oldJsonLength": 16820,
+    "maxString": 28,
+    "maxArray": 41,
+    "bytes": 1361,
+    "status": "InProgress"
+  },
+  {
+    "deleted": "0cad7ad8-acd0-48ce-99f9-9267f0c18e06"
+  },
+  {
+    "queue": "PickleVerse-2v2",
+    "accepted": true,
+    "players": 2,
+    "measuredAndFixtureRegions": 41,
+    "oldJsonLength": 16820,
+    "maxString": 32,
+    "maxArray": 41,
+    "bytes": 2725,
+    "status": "InProgress"
+  },
+  {
+    "deleted": "2f671302-fe9a-4bd4-829e-42a320778d22"
+  }
+]

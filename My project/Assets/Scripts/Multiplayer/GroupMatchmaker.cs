@@ -11,11 +11,6 @@ using Unity.Services.Qos;
 
 namespace PickleVerse.Multiplayer
 {
-    public sealed class ConnectionQualityException : InvalidOperationException
-    {
-        public ConnectionQualityException(string message) : base(message) { }
-    }
-
     public sealed class MatchmakingAssignmentException : InvalidOperationException
     {
         public MatchmakingAssignmentException(string queue, string serverMessage)
@@ -26,7 +21,7 @@ namespace PickleVerse.Multiplayer
     public sealed class GroupMatchmaker
     {
         const int MeasurementAttempts = 3;
-        const double MaximumPacketLoss = .1;
+        const int MaximumCustomDataStringLength = 200, MaximumCustomDataArrayItems = 100;
         // The SDK discovery cache and QoS runner do not support concurrent measurements.
         static readonly SemaphoreSlim MeasurementGate = new SemaphoreSlim(1, 1);
         readonly Func<string, Task<List<QosResult>>> measure;
@@ -54,7 +49,7 @@ namespace PickleVerse.Multiplayer
             this.elapsedMilliseconds = elapsedMilliseconds ?? (() => ticketClock.ElapsedMilliseconds);
         }
 
-        public async Task<List<QosResult>> MeasureAsync(string queue, int maxLatency, CancellationToken token = default)
+        public async Task<List<QosResult>> MeasureAsync(string queue, CancellationToken token = default)
         {
             await MeasurementGate.WaitAsync(token);
             try
@@ -63,18 +58,26 @@ namespace PickleVerse.Multiplayer
                 for (int attempt = 1; attempt <= MeasurementAttempts; attempt++)
                 {
                     token.ThrowIfCancellationRequested();
-                    last = await measure(queue) ?? new List<QosResult>();
+                    try { last = await measure(queue) ?? new List<QosResult>(); }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                    catch (Exception e)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        log($"QoS {queue}, lần {attempt}/{MeasurementAttempts}: {e.Message}");
+                        last = new List<QosResult>();
+                    }
                     token.ThrowIfCancellationRequested();
-                    var accepted = last.Where(q => Reachable(q) && q.Latency.Value <= maxLatency && q.PacketLoss.Value < MaximumPacketLoss)
+                    var accepted = last.Where(Reachable)
                         .GroupBy(q => q.RegionId)
                         .Select(g => new QosResult(g.Key, g.Average(q => q.PacketLoss.Value), g.Average(q => q.Latency.Value), g.First().Annotations))
                         .OrderBy(q => q.Latency).ToList();
-                    log($"QoS {queue}, lần {attempt}/{MeasurementAttempts}, giới hạn {maxLatency} ms: " +
-                        string.Join("; ", last.Select(Describe)) + $". Đạt: {accepted.Count} vùng.");
+                    log($"QoS {queue}, lần {attempt}/{MeasurementAttempts}: " +
+                        string.Join("; ", last.Select(Describe)) + $". Có dữ liệu: {accepted.Count} vùng; không giới hạn ping.");
                     if (accepted.Count > 0) return accepted;
                     if (attempt < MeasurementAttempts) await delay(1000, token);
                 }
-                throw new ConnectionQualityException(FailureMessage(last, maxLatency));
+                log($"QoS {queue}: không có số đo hợp lệ; tiếp tục ghép và để Relay tự chọn vùng.");
+                return new List<QosResult>();
             }
             finally { MeasurementGate.Release(); }
         }
@@ -88,16 +91,6 @@ namespace PickleVerse.Multiplayer
             if (!Reachable(q)) return (q?.RegionId ?? "Vùng không xác định") + "=không có phản hồi hợp lệ";
             return q.RegionId + "=" + q.Latency.Value.ToString("0", CultureInfo.InvariantCulture) + " ms, mất gói " +
                 (q.PacketLoss.Value * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
-        }
-
-        static string FailureMessage(List<QosResult> results, int maxLatency)
-        {
-            var best = results.Where(Reachable).OrderBy(q => q.Latency).FirstOrDefault();
-            if (best == null)
-                return $"Không nhận được phản hồi đo kết nối sau {MeasurementAttempts} lần. Kiểm tra kết nối mạng rồi thử lại.";
-            if (best.Latency.Value <= maxLatency)
-                return $"Mất gói quá cao sau {MeasurementAttempts} lần đo: {Describe(best)} (yêu cầu mất gói dưới 10%). Hãy thử lại.";
-            return $"Không có vùng kết nối đạt giới hạn {maxLatency} ms sau {MeasurementAttempts} lần đo. Vùng gần nhất: {Describe(best)}. Hãy thử lại.";
         }
 
         static async Task<List<QosResult>> MeasureOnceAsync(string queue)
@@ -117,16 +110,7 @@ namespace PickleVerse.Multiplayer
             try
             {
                 token.ThrowIfCancellationRequested();
-                var common=qos[members[0].id].Select(q=>q.RegionId).Where(region=>members.All(m=>qos[m.id].Any(q=>q.RegionId==region)))
-                    .OrderBy(region=>members.Max(m=>qos[m.id].First(q=>q.RegionId==region).Latency)).ToList();
-                if(common.Count==0) throw new InvalidOperationException("Nhóm không có vùng kết nối chung dưới giới hạn ping.");
-                string selectedRegion=common[0];
-                var players = members.Select(m => {
-                    var data = new Dictionary<string,object> { ["name"]=m.name, ["gender"]=m.gender, ["group"]=m.group, ["region"]=selectedRegion,
-                        ["protocol"]=Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString(), ["elo"]=m.elo };
-                    if (pairingKeys != null) data["pairingKeys"] = pairingKeys;
-                    return new Player(m.id, data, qos[m.id].Where(q=>q.RegionId==selectedRegion).ToList());
-                }).ToList();
+                var players = BuildTicketPlayers(members, qos, pairingKeys);
                 // A priority change can split a UTC phase near its start. Keep successive
                 // CreateTicket requests within Unity's one-request-per-second allowance.
                 await creationGate.WaitAsync(token);
@@ -158,6 +142,51 @@ namespace PickleVerse.Multiplayer
                     await DeleteTicketAsync(ticket);
                 }
             }
+        }
+        public static List<Player> BuildTicketPlayers(List<RoomMember> members, Dictionary<string,List<QosResult>> qos, List<string> pairingKeys = null)
+        {
+            return members.Select(m => {
+                List<QosResult> samples = null;
+                qos?.TryGetValue(m.id, out samples);
+                var regions = (samples ?? new List<QosResult>()).Where(q => Reachable(q) && q.RegionId.Length <= MaximumCustomDataStringLength)
+                    .GroupBy(q => q.RegionId)
+                    .Select(g => new { region = g.Key, latency = g.Average(q => q.Latency.Value) })
+                    .OrderBy(q => q.latency).ThenBy(q => q.region, StringComparer.Ordinal)
+                    .Take(MaximumCustomDataArrayItems).ToList();
+                var data = new Dictionary<string,object> { ["name"]=m.name, ["gender"]=m.gender, ["group"]=m.group,
+                    ["protocol"]=Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString(), ["elo"]=m.elo,
+                    ["relayRegions"]=regions.Select(q => q.region).ToList(),
+                    ["relayLatencies"]=regions.Select(q => q.latency).ToList() };
+                if (pairingKeys != null) data["pairingKeys"] = pairingKeys;
+                // Ticket QoS can still partition regions even without a custom region rule.
+                // Matchmaker limits strings to 200 characters and arrays to 100 items.
+                // Primitive arrays preserve all useful measurements without SDK annotations.
+                return new Player(m.id, data);
+            }).ToList();
+        }
+        // QoS selects a region after everyone has matched; it never partitions the queue.
+        // No common measurement means null, which enables Relay's automatic selection.
+        public static string SelectRelayRegion(List<Player> players)
+        {
+            if (players == null || players.Count == 0) return null;
+            var samples = players.Select(p => RelayQos(p).Where(Reachable)
+                .GroupBy(q => q.RegionId).ToDictionary(g => g.Key, g => g.Average(q => q.Latency.Value))).ToList();
+            return samples[0].Keys.Where(region => samples.All(s => s.ContainsKey(region)))
+                .OrderBy(region => samples.Max(s => s[region]))
+                .ThenBy(region => samples.Average(s => s[region]))
+                .ThenBy(region => region, StringComparer.Ordinal).FirstOrDefault();
+        }
+        static List<QosResult> RelayQos(Player player)
+        {
+            // Read legacy tickets too, for peers using the same network protocol.
+            if (player.QosResults?.Count > 0) return player.QosResults;
+            var data = player.CustomData?.GetAs<TicketPlayerData>();
+            if (data?.relayRegions != null && data.relayLatencies != null && data.relayRegions.Count == data.relayLatencies.Count)
+                return data.relayRegions.Select((region, index) => new QosResult(region, 0, data.relayLatencies[index])).ToList();
+            var json = data?.relayQosJson;
+            if (string.IsNullOrEmpty(json)) return new List<QosResult>();
+            try { return JsonConvert.DeserializeObject<List<QosResult>>(json) ?? new List<QosResult>(); }
+            catch (JsonException) { return new List<QosResult>(); }
         }
         public static void ValidateAssignment(MatchIdAssignment assignment, string queue)
         {
@@ -204,19 +233,18 @@ namespace PickleVerse.Multiplayer
                     result.members.Add(new RoomMember { id=id, team=t, name=data.name??"Player", gender=data.gender??"Male", group=data.group??id, elo=data.elo });
                 }
             if (!result.IsValid()) throw new InvalidOperationException("Kết quả ghép sai số người hoặc đội.");
-            if(string.IsNullOrEmpty(result.region) && players.Count>0)
-            {
-                result.region=players[0].CustomData.GetAs<TicketPlayerData>().region;
-            }
+            if(string.IsNullOrEmpty(result.region)) result.region=SelectRelayRegion(players);
             foreach (var group in result.members.GroupBy(m => m.group))
                 if (group.Select(p => p.team).Distinct().Count() != 1) throw new InvalidOperationException("Hệ thống ghép đã tách nhóm bạn.");
             return result;
         }
         [Serializable] public sealed class TicketPlayerData
         {
-            public string name, gender, group, region, protocol;
+            public string name, gender, group, region, protocol, relayQosJson;
             public int elo=100;
             public List<string> pairingKeys;
+            public List<string> relayRegions;
+            public List<double> relayLatencies;
         }
     }
 }

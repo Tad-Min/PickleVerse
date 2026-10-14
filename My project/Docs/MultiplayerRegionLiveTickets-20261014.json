@@ -1,0 +1,42 @@
+[
+  {
+    "queue": "PickleVerse-1v1",
+    "found": true,
+    "matchId": "b7ca6e49-3428-4162-abff-d81ec03d5692",
+    "players": 2,
+    "latencies": [
+      800,
+      900
+    ],
+    "regions": [
+      "asia-southeast1",
+      "europe-west4"
+    ]
+  },
+  {
+    "deleted": "8a3c3474-c52c-4d29-b5dd-7a9240062afc"
+  },
+  {
+    "deleted": "e7d8cb9c-666d-492e-9f10-cf553748c03f"
+  },
+  {
+    "queue": "PickleVerse-2v2",
+    "found": true,
+    "matchId": "b4387e17-5b76-4aed-ba2e-715968fb25b8",
+    "players": 4,
+    "latencies": [
+      800,
+      900
+    ],
+    "regions": [
+      "asia-southeast1",
+      "europe-west4"
+    ]
+  },
+  {
+    "deleted": "7e5ecd2b-f8e5-4364-b98c-0ce10ad82d96"
+  },
+  {
+    "deleted": "ca9a2963-bce9-4f20-9290-9e3d6a6457a0"
+  }
+]

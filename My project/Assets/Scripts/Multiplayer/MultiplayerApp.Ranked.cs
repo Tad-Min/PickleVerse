@@ -54,7 +54,7 @@ namespace PickleVerse.Multiplayer
         }
         async Task SearchRankedSinglesAsync(int generation, CancellationToken token)
         {
-            var qos = await groupMatcher.MeasureAsync(Settings.singlesQueue,Settings.maximumLatencyMs,token);
+            var qos = await groupMatcher.MeasureAsync(Settings.singlesQueue,token);
             token.ThrowIfCancellationRequested();
             var player = ProgressionRuntime.Instance.Player;
             var members = Members();

@@ -62,7 +62,7 @@ namespace PickleVerse.EditorTools
                             ["matchDefinition"]=new JObject
                             {
                                 ["teams"]=new JArray(new JObject { ["name"]="Team",["teamCount"]=new JObject { ["min"]=2,["max"]=2 },["playerCount"]=new JObject { ["min"]=size,["max"]=size },["teamRules"]=new JArray() }),
-                                ["matchRules"]=new JArray(new JObject { ["name"]="SameMeasuredRegion",["type"]="Equality",["source"]="Players.CustomData.region",["enableRule"]=true,["relaxations"]=new JArray() })
+                                ["matchRules"]=new JArray()
                             }
                         }
                     },["filteredPools"]=new JArray()
