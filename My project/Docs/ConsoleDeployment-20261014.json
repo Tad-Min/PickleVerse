@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-14T03:20:08.0052181Z",
+  "environment": "pickleverse-test",
+  "path": "Assets/Settings/Multiplayer/Cloud/PickleVerse_1v1.mmq",
+  "message": "Deployed",
+  "detail": "The queue PickleVerse-1v1 has been updated. The following pools have been updated: LowPing."
+}

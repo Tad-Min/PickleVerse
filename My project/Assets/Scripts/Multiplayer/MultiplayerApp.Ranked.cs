@@ -81,6 +81,14 @@ namespace PickleVerse.Multiplayer
                     }
                     catch (OperationCanceledException) when (!token.IsCancellationRequested && generation==operation)
                     { if(rankedSearch.Expanded(Time.realtimeSinceStartupAsDouble)) SetNotice("Đang tìm đối thủ trong khoảng ±120 Elo…"); }
+                    catch (TimeoutException) when (!token.IsCancellationRequested && generation==operation)
+                    {
+                        // A pool ticket can expire before our six-minute search deadline.
+                        // Wait for this UTC phase to end, then renew without resetting the clock.
+                        SetNotice("Chưa có đối thủ phù hợp; đang tiếp tục tìm…");
+                        try { await Task.Delay(Timeout.Infinite,stage.Token); }
+                        catch (OperationCanceledException) when (!token.IsCancellationRequested && generation==operation) { }
+                    }
                 }
             }
         }

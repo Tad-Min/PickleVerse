@@ -133,6 +133,7 @@ namespace PickleVerse.Multiplayer
             {
                 if(generation!=operation || token.IsCancellationRequested) return;
                 if (e is ConnectionQualityException) Debug.LogWarning("Matchmaking QoS rejected: "+e.Message);
+                else if (e is TimeoutException) Debug.Log("Matchmaking hết thời gian: "+e.Message);
                 else Debug.LogWarning("Matchmaking attempt failed: "+e);
                 await CancelSearchAsync(); SetState(FlowState.WaitingRoom,"Không tìm được trận: "+e.Message);
             }

@@ -1,0 +1,71 @@
+{
+  "cursor": 122,
+  "session": "d3b5293e4e7b443ca49bac7918022321",
+  "entries": [
+    {
+      "timestampUtc": "2026-10-14T02:43:48.4385341Z",
+      "level": "warn",
+      "message": "[Worker1] Import Error Code:(4)\nMessage: Build asset version error: assets/scripts/multiplayer/networkmatch.cs in SourceAssetDB has modification time of '2026-10-13T11:15:21.5570879Z' while content on disk has modification time of '2026-10-14T02:43:36.729196Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:43:48.8063946Z",
+      "level": "warn",
+      "message": "[Worker2] Import Error Code:(4)\nMessage: Build asset version error: assets/scripts/multiplayer/multiplayerapp.room.cs in SourceAssetDB has modification time of '2026-10-13T09:32:05.7487695Z' while content on disk has modification time of '2026-10-14T02:43:36.6066244Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:43:49.4640033Z",
+      "level": "warn",
+      "message": "[Worker1] Import Error Code:(4)\nMessage: Build asset version error: assets/fonts/menu vietnamese bold.asset in SourceAssetDB has modification time of '2026-10-13T15:47:14.3682507Z' while content on disk has modification time of '2026-10-14T02:43:44.2214283Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:43:49.4823458Z",
+      "level": "warn",
+      "message": "[Worker2] Import Error Code:(4)\nMessage: Build asset version error: assets/scripts/multiplayer/multiplayerapp.cs in SourceAssetDB has modification time of '2026-10-13T10:03:48.0778583Z' while content on disk has modification time of '2026-10-14T02:43:36.6249248Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:43:49.6446922Z",
+      "level": "warn",
+      "message": "[Worker2] Import Error Code:(4)\nMessage: Build asset version error: assets/scripts/localmatch/stadiumenvironment.cs in SourceAssetDB has modification time of '2026-10-13T11:15:21.5392137Z' while content on disk has modification time of '2026-10-14T02:43:36.4771821Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:43:49.7113077Z",
+      "level": "warn",
+      "message": "[Worker2] Import Error Code:(4)\nMessage: Build asset version error: assets/scripts/localmatch/matchenvironmentlighting.cs in SourceAssetDB has modification time of '2026-10-13T11:15:21.5326887Z' while content on disk has modification time of '2026-10-14T02:43:36.4596996Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:43:49.7504562Z",
+      "level": "warn",
+      "message": "[Worker1] Import Error Code:(4)\nMessage: Build asset version error: assets/scenes/multiplayercourt.unity in SourceAssetDB has modification time of '2026-10-13T11:15:21.5169733Z' while content on disk has modification time of '2026-10-14T02:43:36.4124834Z'\n"
+    },
+    {
+      "timestampUtc": "2026-10-14T02:45:53.0423177Z",
+      "level": "warn",
+      "message": "Matchmaking attempt failed: System.TimeoutException: Chưa tìm được trận phù hợp. Hãy thử lại.\r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00425] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:144 \r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00531] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:153 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchRankedSinglesAsync (System.Int32 generation, System.Threading.CancellationToken token) [0x0026e] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Ranked.cs:75 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchAsync (System.Int32 generation) [0x0010b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Matchmaking.cs:108 "
+    },
+    {
+      "timestampUtc": "2026-10-14T02:46:13.6030574Z",
+      "level": "warn",
+      "message": "Matchmaking attempt failed: System.TimeoutException: Chưa tìm được trận phù hợp. Hãy thử lại.\r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00425] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:144 \r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00531] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:153 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchRankedSinglesAsync (System.Int32 generation, System.Threading.CancellationToken token) [0x0026e] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Ranked.cs:75 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchAsync (System.Int32 generation) [0x0010b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Matchmaking.cs:108 "
+    },
+    {
+      "timestampUtc": "2026-10-14T02:46:46.0241269Z",
+      "level": "warn",
+      "message": "Matchmaking attempt failed: System.TimeoutException: Chưa tìm được trận phù hợp. Hãy thử lại.\r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00425] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:144 \r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00531] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:153 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchRankedSinglesAsync (System.Int32 generation, System.Threading.CancellationToken token) [0x0026e] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Ranked.cs:75 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchAsync (System.Int32 generation) [0x0010b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Matchmaking.cs:108 "
+    },
+    {
+      "timestampUtc": "2026-10-14T02:47:12.6198198Z",
+      "level": "warn",
+      "message": "Matchmaking attempt failed: System.TimeoutException: Chưa tìm được trận phù hợp. Hãy thử lại.\r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00425] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:144 \r\n  at PickleVerse.Multiplayer.GroupMatchmaker.FindAsync (System.String queue, System.Collections.Generic.List`1[T] members, System.Collections.Generic.Dictionary`2[TKey,TValue] qos, System.Threading.CancellationToken token, System.Collections.Generic.List`1[T] pairingKeys) [0x00531] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\GroupMatchmaker.cs:153 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchRankedSinglesAsync (System.Int32 generation, System.Threading.CancellationToken token) [0x0026e] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Ranked.cs:75 \r\n  at PickleVerse.Multiplayer.MultiplayerApp.SearchAsync (System.Int32 generation) [0x0010b] in D:\\Repository\\PickleVerse\\My project\\Assets\\Scripts\\Multiplayer\\MultiplayerApp.Matchmaking.cs:108 "
+    }
+  ],
+  "groundTruth": {
+    "sampledUtc": "2026-10-14T02:52:16.3631803Z",
+    "ageMs": 43,
+    "compilationFailed": false,
+    "compiling": false,
+    "consoleErrors": 0,
+    "consoleWarnings": 1,
+    "consoleLogs": 50,
+    "seeded": true
+  }
+}

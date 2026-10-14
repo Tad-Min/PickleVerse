@@ -16,6 +16,12 @@ namespace PickleVerse.Multiplayer
         public ConnectionQualityException(string message) : base(message) { }
     }
 
+    public sealed class MatchmakingAssignmentException : InvalidOperationException
+    {
+        public MatchmakingAssignmentException(string queue, string serverMessage)
+            : base($"Máy chủ từ chối vé ghép trận {queue}: {serverMessage ?? "Không có thông tin lỗi."}") { }
+    }
+
     /// <summary>SDK's session matchmaking accepts one player; this adapter supports a whole duo ticket.</summary>
     public sealed class GroupMatchmaker
     {
@@ -140,8 +146,7 @@ namespace PickleVerse.Multiplayer
                     token.ThrowIfCancellationRequested();
                     var assignment = status.Value as MatchIdAssignment;
                     if (assignment == null) continue;
-                    if (assignment.Status == MatchIdAssignment.StatusOptions.Failed || assignment.Status == MatchIdAssignment.StatusOptions.Timeout)
-                        throw new TimeoutException("Chưa tìm được trận phù hợp. Hãy thử lại.");
+                    ValidateAssignment(assignment, queue);
                     if (assignment.Status == MatchIdAssignment.StatusOptions.Found)
                         return await MatchmakerService.Instance.GetMatchmakingResultsAsync(assignment.MatchId);
                 }
@@ -153,6 +158,14 @@ namespace PickleVerse.Multiplayer
                     await DeleteTicketAsync(ticket);
                 }
             }
+        }
+        public static void ValidateAssignment(MatchIdAssignment assignment, string queue)
+        {
+            if (assignment == null) return;
+            if (assignment.Status == MatchIdAssignment.StatusOptions.Failed)
+                throw new MatchmakingAssignmentException(queue, assignment.Message);
+            if (assignment.Status == MatchIdAssignment.StatusOptions.Timeout)
+                throw new TimeoutException("Chưa tìm được trận phù hợp. Hãy thử lại.");
         }
         // Cleanup must finish even when the search token was cancelled. Unity allows
         // one deletion per second; adjacent search phases can otherwise leave a live ticket.

@@ -1,0 +1,10 @@
+{
+  "compilationFailed": false,
+  "assignmentChecks": { "passed": 4, "total": 4, "method": "Direct invocation of compiled NUnit methods" },
+  "deployment": { "environment": "pickleverse-test", "queue": "PickleVerse-1v1", "succeeded": true, "fixedProtocolReferenceRemoved": true },
+  "liveTicket": { "isolatedDiagnosticProtocol": true, "statuses": ["InProgress", "InProgress", "InProgress", "InProgress"], "deleted": true },
+  "localhostLifecycle": { "started": true, "stopped": true, "destroyed": true, "newNetcodeErrors": 0 },
+  "console": { "errors": 0, "warnings": 0, "historySaved": "ConsoleHistory-20261014.json" },
+  "editor": { "playing": false, "scene": "Menu", "unsavedSceneChangesPreserved": true },
+  "windowsBuildUpdated": false
+}
