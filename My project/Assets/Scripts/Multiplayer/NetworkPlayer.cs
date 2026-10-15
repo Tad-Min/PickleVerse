@@ -288,16 +288,17 @@ namespace PickleVerse.Multiplayer
             ResetInput(); sequence = Math.Max(sequence, acknowledged);
             ResetActor(position, end); Actor.RefreshPose();
         }
-        public void BeginSwing(ShotIntent intent, Vector3 predictedBall)
+        public void BeginSwing(ShotIntent intent, Vector3 predictedBall, float contactDelay = -1)
         {
-            if (!IsServer || !Actor || !Actor.Swing(BotMatchGameplayService.ToLocal(intent), predictedBall)) return;
+            if (!IsServer || !Actor || !Actor.Swing(BotMatchGameplayService.ToLocal(intent), predictedBall, contactDelay)) return;
             SetActiveShotKeys();
-            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall);
+            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall, Actor.ContactDelay, NetworkManager.ServerTime.Time);
         }
-        [ClientRpc] void SwingClientRpc(int kind, bool attack, bool crossCourt, Vector3 predictedBall)
+        [ClientRpc] void SwingClientRpc(int kind, bool attack, bool crossCourt, Vector3 predictedBall, float delay, double started)
         {
             if (IsServer || !Actor) return;
-            if(Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall))SetActiveShotKeys();
+            if(Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall, delay))
+            { Actor.SynchronizeSwing((float)System.Math.Max(0,NetworkManager.ServerTime.Time-started)); SetActiveShotKeys(); }
         }
         void SetActiveShotKeys()
         {
@@ -306,10 +307,21 @@ namespace PickleVerse.Multiplayer
             else activeShotMask=(shot.kind==PickleVerse.LocalMatch.ShotKind.Drop?3:shot.kind==PickleVerse.LocalMatch.ShotKind.Smash?5:shot.kind==PickleVerse.LocalMatch.ShotKind.Reset?6:shot.kind==PickleVerse.LocalMatch.ShotKind.Dink?2:shot.kind==PickleVerse.LocalMatch.ShotKind.Volley?4:1)|(shot.power?8:0)|(shot.cross?16:0);
             pendingShotMask=0;
         }
-        public void ConsumeContact(bool volley)
-        { if (!IsServer || !Actor) return; Actor.ConsumeContact(volley); ContactClientRpc(volley); }
-        [ClientRpc] void ContactClientRpc(bool volley)
-        { if (!IsServer && Actor) Actor.ConsumeContact(volley); }
+        public void ConsumeContact(bool volley, Vector3? position = null, bool successful = true, Vector3 velocity = default)
+        {
+            if (!IsServer || !Actor) return;
+            Vector3 contact = position ?? Actor.paddleFace.position;
+            Actor.ConsumeContact(volley,contact,successful);
+            ContactClientRpc(volley,contact,successful,velocity,NetworkManager.ServerTime.Time);
+        }
+        [ClientRpc] void ContactClientRpc(bool volley, Vector3 position, bool successful, Vector3 velocity, double time)
+        {
+            if (!IsServer && Actor)
+            {
+                Actor.ConsumeContact(volley,position,successful);
+                if(successful)NetworkMatch.Instance?.PresentContact(position,velocity,time);
+            }
+        }
         public void SplitStep()
         { if (!IsServer || !Actor) return; Actor.SplitStep(); SplitStepClientRpc(); }
         [ClientRpc] void SplitStepClientRpc()

@@ -35,8 +35,7 @@ namespace PickleVerse.Multiplayer
             var shot = actor.Intent;
             if (shot.AfterBounce && bounces == 0 || shot.BeforeBounce && bounces != 0) return false;
             if (shot.kind == LocalKind.Smash && ball.y < 1.65f) return false;
-            return SegmentDistance(previous, ball, actor.paddleFace.position) <= radius &&
-                Vector3.Distance(ball, actor.transform.position + Vector3.up * .9f) <= 1.55f;
+            return actor.CanContact(previous, ball, radius, out _);
         }
         public Vector3 Target(MatchActor actor, LocalIntent shot, Vector3 ball, float serverX) => ShotTrajectory.Target(actor, shot, ball, serverX);
         public Vector3 Launch(MatchActor actor, LocalIntent shot, Vector3 ball, float serverX) => ShotTrajectory.Launch(shot, ball, Target(actor, shot, ball, serverX));

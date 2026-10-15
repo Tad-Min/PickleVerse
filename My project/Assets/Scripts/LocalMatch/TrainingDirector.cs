@@ -156,8 +156,8 @@ namespace PickleVerse.LocalMatch
             if(!incoming){Fail(TrainingError.Early);return;}
             float remaining=feed.duration-flightTime;
             if(remaining>shot.ContactDelay+.23f){Fail(TrainingError.Early);return;}
-            if(remaining<shot.ContactDelay-.17f){Fail(TrainingError.Late);return;}
-            chosen=shot;player.Swing(shot,feed.At(feed.duration));
+            if(remaining<.10f){Fail(TrainingError.Late);return;}
+            chosen=shot;player.Swing(shot,feed.At(feed.duration),remaining);
         }
         void Simulation(float dt)
         {
@@ -169,7 +169,7 @@ namespace PickleVerse.LocalMatch
                 {
                     ballPosition=new Vector3(serveOrigin.x,ballPosition.y,serveOrigin.z);
                     var fault=rules.Serve(0,player.Feet(true),player.Feet(false),Point(ballPosition),serveTime,player.PaddleVelocity.y>0,player.PaddleHeadTop<=player.hand.position.y+.015f);
-                    if(fault!=Fault.None){Fail(fault==Fault.ServeFoot?TrainingError.ServeFeet:TrainingError.Early,true);return;}Session.contacts++;Session.timingTotal+=Math.Abs(player.SwingTime-chosen.ContactDelay);player.ConsumeContact(false);LaunchReturn(player,chosen);
+                    if(fault!=Fault.None){Fail(fault==Fault.ServeFoot?TrainingError.ServeFeet:TrainingError.Early,true);return;}Session.contacts++;Session.timingTotal+=Math.Abs(player.SwingTime-player.ContactDelay);player.ConsumeContact(false,ballPosition);LaunchReturn(player,chosen);
                 }
                 else if(serveTime>10){Fail(TrainingError.Late);return;}
             }
@@ -177,7 +177,7 @@ namespace PickleVerse.LocalMatch
             {
                 wait-=dt;
                 if(wait<=0&&!coachLaunched&&!feeder.Swinging)feeder.Swing(new ShotIntent(ShotKind.Drive),ReceivePosition);
-                if(!coachLaunched&&feeder.ContactActive)
+                if(!coachLaunched&&feeder.ContactActive&&feeder.SwingTime>=feeder.ContactDelay)
                 {
                     feeder.ConsumeContact(false);coachLaunched=true;
                     Vector3 contact=PartnerTurn?partner.transform.TransformPoint(partner.ContactOffset(expected)):ReceivePosition+player.ContactOffset(expected);
@@ -186,17 +186,19 @@ namespace PickleVerse.LocalMatch
             }
             if(incoming)
             {
+                Vector3 previousBall=ballPosition;
                 flightTime+=dt;ballPosition=feed.At(flightTime);
                 if(feed.hasBounce&&!bounced&&flightTime>=feed.bounceTime){bounced=true;rules.Bounce(Point(feed.bouncePoint));}
                 if(PartnerTurn&&!partner.Swinging&&feed.duration-flightTime<=expected.ContactDelay+.01f)partner.Swing(expected,feed.At(feed.duration));
                 receiver=PartnerTurn?partner:player;
-                if(receiver.ContactActive&&!hit&&Vector3.Distance(ballPosition,receiver.paddleFace.position)<.55f&&Mathf.Abs(flightTime-feed.duration)<.17f)
+                if(!hit&&receiver.CanContact(previousBall,ballPosition,PaddleContact.MaxAssist,out _)&&Mathf.Abs(flightTime-feed.duration)<.17f)
                 {
                     // Consume every physical contact once, using the shared BotMatch sound selector.
-                    receiver.ConsumeContact(!bounced);
-                    if(expected.AfterBounce&&!bounced){Fail(TrainingError.Early);return;}
-                    if((expected.BeforeBounce||expected.kind==ShotKind.Smash)&&bounced){Fail(TrainingError.Late);return;}
+                    ballPosition=receiver.ContactPoint;
+                    if(expected.AfterBounce&&!bounced){receiver.ConsumeContact(!bounced,ballPosition,false);Fail(TrainingError.Early);return;}
+                    if((expected.BeforeBounce||expected.kind==ShotKind.Smash)&&bounced){receiver.ConsumeContact(!bounced,ballPosition,false);Fail(TrainingError.Late);return;}
                     var fault=rules.Hit(0,Point(ballPosition),receiver.InKitchen);
+                    receiver.ConsumeContact(!bounced,ballPosition,fault==Fault.None);
                     if(fault!=Fault.None){Fail(fault==Fault.KitchenVolley?TrainingError.Kitchen:TrainingError.Early,true);return;}
                     if(!PartnerTurn){Session.contacts++;Session.timingTotal+=Math.Abs(flightTime-feed.duration);}
                     LaunchReturn(receiver,PartnerTurn?expected:chosen);

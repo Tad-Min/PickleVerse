@@ -21,7 +21,11 @@ namespace PickleVerse.LocalMatch
         public Vector3 Velocity { get; private set; }
         public ShotIntent Intent { get; private set; }
         public bool Swinging { get; private set; }
-        public bool ContactActive => Swinging && !contactConsumed && Mathf.Abs(swingTime - Intent.ContactDelay) <= .115f;
+        public bool ContactActive => Swinging && !contactConsumed && Mathf.Abs(swingTime - ContactDelay) <= PaddleContact.TimingWindow;
+        public float ContactDelay { get; private set; }
+        public float SwingDuration => ContactDelay + Intent.Duration - Intent.ContactDelay;
+        public Vector3 PreviousPaddlePosition { get; private set; }
+        public Vector3 ContactPoint { get; private set; }
         public bool VolleyMomentum { get; private set; }
         public string CurrentClip => clipName;
         public float SwingTime => swingTime;
@@ -40,6 +44,12 @@ namespace PickleVerse.LocalMatch
         float clipTime, swingTime, lastVolleyTime, balanceTime;
         bool contactConsumed;
         float sourceContactPhase;
+        Vector3 impactPoint;
+        float impactTime;
+        bool contactConfirmed;
+        Vector3 overheadContactOffset;
+        bool overheadCalibrated;
+        PaddleImpactVfx impactVfx;
         readonly MovementFoley foley=new MovementFoley();
         public bool InKitchen => Court.InKitchen(Feet(true)) || Court.InKitchen(Feet(false));
         public CourtPoint Feet(bool left)
@@ -59,8 +69,21 @@ namespace PickleVerse.LocalMatch
             // Gameplay samples the complete pose, then applies grip/IK. Unity's automatic
             // legacy pass must not overwrite that pose later in the PlayerLoop.
             animationPlayer.enabled = false;
+            impactVfx = GetComponent<PaddleImpactVfx>();
+            if (!impactVfx) impactVfx = gameObject.AddComponent<PaddleImpactVfx>();
             foreach (var entry in clips) if (entry.clip) animationPlayer.AddClip(entry.clip, entry.name);
+            if (paddleFace && Has("PKV_Overhead_Smash"))
+            {
+                // Measure the posed paddle on this rig, including the constrained overhead IK.
+                // Male/female proportions differ; a nominal 2.02 m target was outside arm reach.
+                Swing(new ShotIntent(ShotKind.Smash), transform.position + transform.forward);
+                swingTime=ContactDelay; Sample(0);
+                overheadContactOffset=transform.InverseTransformPoint(paddleFace.position);overheadCalibrated=true;
+                Swinging=false;
+            }
             Play("PKV_Idle_Ready");
+            Sample(0);
+            PreviousPaddlePosition=paddleFace?paddleFace.position:transform.position;
         }
         public void RefreshPose() { Sample(0); }
         public void SampleEntrance(AnimationClip clip,float time)
@@ -84,36 +107,69 @@ namespace PickleVerse.LocalMatch
             foley.Reset();
             if (paddle) paddle.SetActive(true);
             if (animationPlayer) Play("PKV_Idle_Ready");
+            PreviousPaddlePosition = paddleFace ? paddleFace.position : transform.position;
+            if (impactVfx) impactVfx.Clear();
         }
-        public bool Swing(ShotIntent shot, Vector3 predictedBall)
+        public bool Swing(ShotIntent shot, Vector3 predictedBall, float contactDelay = -1)
         {
             if (Swinging) return false;
-            Intent = shot; Swinging = true; swingTime = 0; contactConsumed = false;
-            bool backhand = Vector3.Dot(predictedBall - transform.position, transform.right) < -.05f;
-            string suffix = backhand ? "_BH" : "_FH";
-            string action = shot.kind == ShotKind.Serve ? "PKV_Serve_FH_Underhand" : shot.kind == ShotKind.Smash ? "PKV_Overhead_Smash" : shot.kind == ShotKind.Drop ? "PKV_ThirdShotDrop" + suffix : shot.kind == ShotKind.Dink ? "PKV_Dink" + suffix : shot.BeforeBounce ? "PKV_Volley" + suffix : "PKV_Groundstroke" + suffix;
-            var profile = Array.Find(clips, c => c.name == action);
+            Intent = shot; Swinging = true; swingTime = 0; contactConsumed = contactConfirmed = false;
+            ContactDelay = shot.kind == ShotKind.Serve || contactDelay < 0 ? shot.ContactDelay : Mathf.Clamp(contactDelay, .10f, shot.ContactDelay + .08f);
+            // Some authored forehands cross the centre line, while backhand contacts
+            // are almost centred. A left/right sign test selected the wrong drop clip.
+            Vector3 localBall=transform.InverseTransformPoint(predictedBall);
+            bool backhand=(localBall-ContactOffset(shot,true)).sqrMagnitude < (localBall-ContactOffset(shot,false)).sqrMagnitude;
+            string action = ActionName(shot,backhand);
+            var profile = Profile(action);
             sourceContactPhase = profile.contactPhase;
             Play(action); return true;
         }
+        public bool CanContact(Vector3 previousBall, Vector3 ball, float assist, out float distance)
+        {
+            distance = float.PositiveInfinity;
+            if (!ContactActive || !paddleFace) return false;
+            distance = PaddleContact.Distance(previousBall, ball, PreviousPaddlePosition, paddleFace.position);
+            ContactPoint = Vector3.Lerp(previousBall,ball,PaddleContact.ClosestTime(previousBall,ball,PreviousPaddlePosition,paddleFace.position));
+            float limit=Intent.kind==ShotKind.Smash?.16f:PaddleContact.MaxAssist;
+            return distance <= Mathf.Min(assist, limit) &&
+                Vector3.Distance(ContactPoint, transform.position + Vector3.up * .9f) <= 1.55f;
+        }
         public Vector3 ContactOffset(ShotIntent shot, bool backhand = false)
         {
-            string suffix=backhand?"_BH":"_FH";
-            string key=shot.kind==ShotKind.Serve?"PKV_Serve_FH_Underhand":shot.kind==ShotKind.Smash?"PKV_Overhead_Smash":shot.kind==ShotKind.Drop?"PKV_ThirdShotDrop"+suffix:shot.kind==ShotKind.Dink?"PKV_Dink"+suffix:shot.BeforeBounce?"PKV_Volley"+suffix:"PKV_Groundstroke"+suffix;
-            return Array.Find(clips,c=>c.name==key).contactOffset;
+            if (shot.kind==ShotKind.Smash && overheadCalibrated) return overheadContactOffset;
+            return Profile(ActionName(shot,backhand)).contactOffset;
         }
+        ClipEntry Profile(string key)
+        { foreach(var clip in clips)if(clip.name==key)return clip;return default; }
+        static string ActionName(ShotIntent shot,bool backhand) =>
+            shot.kind==ShotKind.Serve?"PKV_Serve_FH_Underhand":shot.kind==ShotKind.Smash?"PKV_Overhead_Smash":
+            shot.kind==ShotKind.Drop?(backhand?"PKV_ThirdShotDrop_BH":"PKV_ThirdShotDrop_FH"):
+            shot.kind==ShotKind.Dink?(backhand?"PKV_Dink_BH":"PKV_Dink_FH"):
+            shot.BeforeBounce?(backhand?"PKV_Volley_BH":"PKV_Volley_FH"):(backhand?"PKV_Groundstroke_BH":"PKV_Groundstroke_FH");
         public void MissContact()
         {
             contactConsumed = true;
             if(Intent.kind==ShotKind.Serve) SfxPlayer.Stop(GameSfx.Countdown);
         }
-        public void ConsumeContact(bool volley)
+        public void ConsumeContact(bool volley, Vector3? position = null, bool successful = true)
         {
             if(contactConsumed)return;
-            SfxPlayer.Play(Intent.kind==ShotKind.Serve?GameSfx.Serve:Intent.power?GameSfx.HitStrong:GameSfx.HitNormal,paddleFace?paddleFace.position:transform.position+Vector3.up);
+            impactPoint = position ?? (paddleFace ? paddleFace.position : transform.position + Vector3.up);
+            impactTime = swingTime;
+            contactConsumed = contactConfirmed = true;
+            // Resolve the visible pose at the same event that reverses the ball, then
+            // retain a short contact pose before continuing the authored follow-through.
+            if (Swinging) Sample(0);
+            SfxPlayer.Play(Intent.kind==ShotKind.Serve?GameSfx.Serve:Intent.power?GameSfx.HitStrong:GameSfx.HitNormal,impactPoint);
+            if (successful && impactVfx) impactVfx.Play(impactPoint, Intent, transform.forward);
             if(Intent.kind==ShotKind.Serve)SfxPlayer.Stop(GameSfx.Countdown);
-            contactConsumed = true;
             if (volley) { VolleyMomentum = true; lastVolleyTime = 0; balanceTime = 0; }
+        }
+        public void SynchronizeSwing(float elapsed)
+        {
+            if (!Swinging) return;
+            swingTime = Mathf.Clamp(elapsed, 0, SwingDuration - .001f); Sample(0);
+            PreviousPaddlePosition = paddleFace.position;
         }
         public void Reaction(bool won, bool matchOver = false)
         {
@@ -127,6 +183,7 @@ namespace PickleVerse.LocalMatch
         public void Step(Vector2 movement, bool run, float dt, bool canMove = true)
         {
             Vector3 previousFace=paddleFace?paddleFace.position:Vector3.zero;
+            PreviousPaddlePosition = previousFace;
             if (canMove)
             {
                 var p = transform.position; var velocity = Velocity;
@@ -142,6 +199,7 @@ namespace PickleVerse.LocalMatch
         public void RenderNetworkPose(Vector3 velocity, bool run, float dt, bool canMove = true)
         {
             Vector3 previousFace = paddleFace ? paddleFace.position : Vector3.zero;
+            PreviousPaddlePosition = previousFace;
             Velocity = velocity; AdvancePose(dt, run, canMove);
             foley.Step(transform.position,run,dt,canMove);
             if (paddleFace) PaddleVelocity = (paddleFace.position - previousFace) / Mathf.Max(.0001f, dt);
@@ -159,7 +217,8 @@ namespace PickleVerse.LocalMatch
             if (Swinging)
             {
                 swingTime += dt;
-                if (swingTime >= Intent.Duration) { Swinging = false; Play(VolleyMomentum ? "PKV_NVZ_MomentumRecovery" : "PKV_Idle_Ready"); }
+                float endTime = contactConfirmed ? impactTime + .035f + Intent.Duration - Intent.ContactDelay : SwingDuration;
+                if (swingTime >= endTime) { Swinging = false; Play(VolleyMomentum ? "PKV_NVZ_MomentumRecovery" : "PKV_Idle_Ready"); }
             }
             else if (canMove && !IsReaction())
             {
@@ -183,20 +242,41 @@ namespace PickleVerse.LocalMatch
             if (!animationPlayer || !Has(clipName)) return;
             clipTime += dt;
             var state = animationPlayer[clipName];
-            float duration = Swinging ? Intent.Duration : state.length;
+            float duration = Swinging ? SwingDuration : state.length;
             bool loop = clipName.Contains("Idle") || clipName.Contains("Walk") || clipName.Contains("Run") || clipName.Contains("Shuffle") || clipName.Contains("Backpedal");
             float time = Swinging ? swingTime : clipTime;
             float phase = Mathf.Min(time / Mathf.Max(.01f,duration),1f);
             if (Swinging && sourceContactPhase > 0)
             {
-                float hit = Intent.ContactDelay / Intent.Duration;
-                phase = phase < hit ? phase / hit * sourceContactPhase : sourceContactPhase + (phase-hit)/(1-hit)*(1-sourceContactPhase);
+                float after = contactConfirmed ? Mathf.Max(0, swingTime - impactTime - .035f) : Mathf.Max(0, swingTime - ContactDelay);
+                phase = !contactConfirmed && swingTime < ContactDelay
+                    ? swingTime / ContactDelay * sourceContactPhase
+                    : sourceContactPhase + after / (Intent.Duration - Intent.ContactDelay) * (1 - sourceContactPhase);
+                phase = Mathf.Clamp01(phase);
             }
             state.time = loop ? time % Mathf.Max(.01f, state.length) : phase * state.length;
             state.enabled = true;
             state.clip.SampleAnimation(visual.gameObject,state.time);
             if(Swinging && Intent.kind==ShotKind.Smash) OverheadPose(phase);
             if(Swinging && Intent.kind==ShotKind.Serve) ServeGrip(swingTime<=.8f?Mathf.SmoothStep(0,1,swingTime/.5f):Mathf.Max(0,1-(swingTime-.8f)/.7f));
+            if (Swinging && contactConfirmed) AlignPaddle(impactPoint, Mathf.Clamp01(1 - Mathf.Max(0, swingTime-impactTime-.035f)/.12f));
+        }
+        void AlignPaddle(Vector3 point, float weight)
+        {
+            if (!upperArm || !forearm || !hand || !paddleFace || weight <= 0) return;
+            Quaternion wrist = hand.rotation;
+            Vector3 a = upperArm.position, b = forearm.position, c = hand.position;
+            Vector3 target = c + Vector3.ClampMagnitude(point - paddleFace.position, PaddleContact.MaxAssist) * weight;
+            float first = Vector3.Distance(a, b), second = Vector3.Distance(b, c);
+            Vector3 direction = (target - a).normalized;
+            float distance = Mathf.Clamp(Vector3.Distance(a, target), Mathf.Abs(first-second)+.001f, first+second-.001f);
+            Vector3 bend = Vector3.ProjectOnPlane(b-a, direction).normalized;
+            if (bend.sqrMagnitude < .01f) bend = Vector3.ProjectOnPlane(transform.right, direction).normalized;
+            float along = (first*first-second*second+distance*distance)/(2*distance);
+            Vector3 elbow = a + direction*along + bend*Mathf.Sqrt(Mathf.Max(0,first*first-along*along));
+            upperArm.rotation = Quaternion.FromToRotation(b-a,elbow-a)*upperArm.rotation;
+            forearm.rotation = Quaternion.FromToRotation(hand.position-forearm.position,a+direction*distance-forearm.position)*forearm.rotation;
+            hand.rotation = wrist;
         }
         public void ServeGrip(float weight)
         {
@@ -208,8 +288,7 @@ namespace PickleVerse.LocalMatch
         void OverheadPose(float phase)
         {
             if(!upperArm || !forearm || !hand || !paddleFace)return;
-            float gamePhase=Mathf.Clamp01(swingTime/Intent.Duration);
-            float weight=Mathf.Sin(gamePhase*Mathf.PI);
+            float weight = swingTime <= ContactDelay ? Mathf.SmoothStep(0,1,swingTime/ContactDelay) : Mathf.Max(0,1-(swingTime-ContactDelay)/(Intent.Duration-Intent.ContactDelay));
             Vector3 desiredAxis=(Vector3.up*.25f+transform.forward*.15f).normalized;
             Quaternion wrist=Quaternion.FromToRotation(paddleFace.position-hand.position,desiredAxis)*hand.rotation;
             hand.rotation=Quaternion.Slerp(hand.rotation,wrist,weight);

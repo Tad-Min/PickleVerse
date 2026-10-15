@@ -119,7 +119,7 @@ namespace PickleVerse.LocalMatch
                 if(Lesson.kind==TutorialKind.Serve)coach.Swing(new ShotIntent(ShotKind.Serve),player.transform.position);
                 else coach.Swing(new ShotIntent(ShotKind.Drive),player.transform.position);
             }
-            if(!launched&&coach.Swinging&&coach.ContactActive)
+            if(!launched&&coach.Swinging&&coach.ContactActive&&coach.SwingTime>=coach.ContactDelay)
             {
                 coach.ConsumeContact(false);launched=true;
                 Vector3 target=Contact(player,expected);
@@ -134,6 +134,7 @@ namespace PickleVerse.LocalMatch
             if(!launched&&coach.Swinging){ball.gameObject.SetActive(true);ballPosition=coach.HeldBallPosition;}
             if(flight)
             {
+                Vector3 previousBall=ballPosition;
                 flightTime+=dt;var actor=receiver==0?player:coach;
                 if(arc.hasBounce&&!bounced&&flightTime>=arc.bounceTime)
                 {bounced=true;rules.Bounce(Point(arc.bouncePoint));if(Lesson.kind==TutorialKind.Serve)Feedback=receiver==0?"NẢY 1 • Bên nhận đã chờ bóng nảy.":"NẢY 2 • Bên giao cũng phải chờ bóng nảy.";}
@@ -142,12 +143,13 @@ namespace PickleVerse.LocalMatch
                 ShotIntent intent=receiver==1?new ShotIntent(ShotKind.Drive):expected;
                 if((automatic||buffered)&&!actor.Swinging&&!hit&&arc.duration-flightTime<=intent.ContactDelay+.012f)
                     actor.Swing(intent,arc.At(arc.duration));
-                if(actor.ContactActive&&!hit&&Mathf.Abs(flightTime-arc.duration)<.13f&&Vector3.Distance(ballPosition,actor.paddleFace.position)<.65f)
+                if(!hit&&Mathf.Abs(flightTime-arc.duration)<.13f&&actor.CanContact(previousBall,ballPosition,PaddleContact.MaxAssist,out _))
                 {
                     bool volley=!bounced;
                     if((intent.AfterBounce&&bounced||intent.BeforeBounce&&!bounced)&& (automatic||buffered))
                     {
-                        var fault=rules.Hit(actor.playerId,Point(ballPosition),actor.InKitchen);actor.ConsumeContact(volley);hit=true;flight=false;
+                        ballPosition=actor.ContactPoint;
+                        var fault=rules.Hit(actor.playerId,Point(ballPosition),actor.InKitchen);actor.ConsumeContact(volley,ballPosition,fault==Fault.None);hit=true;flight=false;
                         if(fault!=Fault.None){FaultFeedback(fault);ballVelocity=Vector3.down;returning=true;}
                         else if(Lesson.kind==TutorialKind.Serve&&receiver==0)
                         {
