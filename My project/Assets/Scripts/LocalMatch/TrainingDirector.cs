@@ -164,7 +164,7 @@ namespace PickleVerse.LocalMatch
             if(Phase!=TrainingPhase.Practice)return;
             if(Lesson.skill==TrainingSkill.Serve&&!outgoing)
             {
-                serveTime+=dt;ServeBallMotion.Step(player,ref releasedServe,ref serveOrigin,ref ballPosition,ref ballVelocity);
+                serveTime+=dt;ServeBallMotion.Step(player,ref releasedServe,ref serveOrigin,ref ballPosition,ref ballVelocity,dt);
                 if(player.Swinging&&player.SwingTime>=.8f&&player.ContactActive&&Vector3.Distance(ballPosition,player.paddleFace.position)<.5f)
                 {
                     ballPosition=new Vector3(serveOrigin.x,ballPosition.y,serveOrigin.z);

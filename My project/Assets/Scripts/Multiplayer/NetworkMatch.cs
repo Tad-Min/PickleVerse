@@ -237,7 +237,7 @@ namespace PickleVerse.Multiplayer
                     if(ballPosition.y<=Court.BallRadius)
                     { ballPosition.y=Court.BallRadius; Rules.Fault(server.Team.Value,"Giao bóng hụt"); }
                 }
-                else ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity);
+                else ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity,dt);
                 if (Rules.waitingServe && actor.Swinging && actor.Intent.kind == PickleVerse.LocalMatch.ShotKind.Serve)
                 {
                     if (actor.SwingTime >= .8f && actor.ContactActive && Vector3.Distance(ballPosition, actor.paddleFace.position) <= MultiplayerApp.Instance.Settings.contactAssistRadius)

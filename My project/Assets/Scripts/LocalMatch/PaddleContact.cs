@@ -28,6 +28,7 @@ namespace PickleVerse.LocalMatch
             predicted=ball;
             if (shot.kind == ShotKind.Serve) return shot.ContactDelay;
             Vector3 p = ball, v = velocity;
+            Vector3 body=actor.transform.position,bodyVelocity=actor.Velocity,start=body;
             float best = float.PositiveInfinity, time = shot.ContactDelay;
             Vector3 forehand=actor.transform.TransformPoint(actor.ContactOffset(shot,false));
             Vector3 backhand=actor.transform.TransformPoint(actor.ContactOffset(shot,true));
@@ -36,7 +37,8 @@ namespace PickleVerse.LocalMatch
             {
                 BallFlight.Integrate(ref p, ref v, step);
                 if (p.y <= Court.BallRadius && v.y < 0) BallFlight.Rebound(ref p, ref v);
-                Vector3 movement = Vector3.ClampMagnitude(actor.Velocity * (t * .6f), .65f);
+                MatchMovement.Step(ref body,ref bodyVelocity,actor.MovementIntent,actor.MovementRun,true,actor.end,step,actor.walkSpeed,actor.runSpeed);
+                Vector3 movement=body-start;
                 float error = Mathf.Min((p-forehand-movement).sqrMagnitude,(p-backhand-movement).sqrMagnitude);
                 if (t >= .10f && error < best) { best = error; time = t; predicted=p; }
             }
@@ -44,6 +46,17 @@ namespace PickleVerse.LocalMatch
             if(best <= .85f * .85f)return Mathf.Clamp(time, .10f, shot.ContactDelay + .08f);
             predicted=ball+velocity*shot.ContactDelay+Vector3.down*(.5f*BallFlight.Gravity*shot.ContactDelay*shot.ContactDelay);
             return shot.ContactDelay;
+        }
+        public static Vector3 PredictMovement(MatchActor actor,float time)
+        {
+            Vector3 position=actor.transform.position,velocity=actor.Velocity,start=position;
+            while(time>.00001f)
+            {
+                float dt=Mathf.Min(time,1f/120);
+                MatchMovement.Step(ref position,ref velocity,actor.MovementIntent,actor.MovementRun,true,actor.end,dt,actor.walkSpeed,actor.runSpeed);
+                time-=dt;
+            }
+            return position-start;
         }
     }
 }

@@ -101,6 +101,7 @@ namespace PickleVerse.LocalMatch
             // WASD/touch forward always points into the court after an end change.
             move = Vector2.ClampMagnitude(move, 1); move *= -human.end;
             bool cancel=GameControls.Pressed(GameAction.CancelShot);
+            if(!autoPlayer)human.ObserveMovement(move,run);
             if(tapMask!=0)TickInput(mask|tapMask,cancel);
             TickInput(mask,cancel);
             accumulator += Mathf.Min(Time.deltaTime, .20f);

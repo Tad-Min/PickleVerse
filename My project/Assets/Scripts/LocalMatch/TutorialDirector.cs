@@ -77,14 +77,14 @@ namespace PickleVerse.LocalMatch
             if(Lesson.kind==TutorialKind.Complete){player.Step(Vector2.zero,false,dt,false);coach.Step(Vector2.zero,false,dt,false);CameraStep();return;}
             if(Lesson.kind==TutorialKind.Movement)
             {
-                player.Step(movement,run,dt);coach.Step(Vector2.zero,false,dt,false);
+                player.Step(movement,run,dt,true);coach.Step(Vector2.zero,false,dt,false);
                 moved|=Vector3.Distance(player.transform.position,movementOrigin)>.55f;
                 if(movement.sqrMagnitude>.1f&&run)runTime+=dt;ran|=runTime>.18f;
                 Feedback=!moved?"Di chuyển một đoạn ngắn trong sân.":!ran?"Đúng rồi. Bây giờ thử chạy một đoạn.":"Đã biết di chuyển và chạy. Tiếp tục để tập đánh bóng.";
             }
             else
             {
-                Vector2 coachMove=Vector2.zero,playerMove=Vector2.zero;
+                Vector2 coachMove=Vector2.zero,playerMove=Lesson.kind==TutorialKind.Shot?movement:Vector2.zero;
                 if(Lesson.kind==TutorialKind.Serve&&launched&&receiver==0&&coach.transform.position.z>5.55f)coachMove=new Vector2(0,-1);
                 if(Lesson.kind==TutorialKind.KitchenVolley&&Elapsed>.65f&&player.transform.position.z<-1.25f)playerMove=new Vector2(0,1);
                 player.Step(playerMove,false,dt,playerMove!=Vector2.zero);coach.Step(coachMove,false,dt,coachMove!=Vector2.zero);
