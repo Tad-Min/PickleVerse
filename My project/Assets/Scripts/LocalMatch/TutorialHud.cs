@@ -17,6 +17,9 @@ namespace PickleVerse.LocalMatch
         Rect lastSafeArea;
         Vector2 lastResolution;
         bool touchWanted;
+        bool touchLayoutDirty=true;
+        int lastProgressShot=-1;
+        TutorialKind? lastProgressKind;
         public void Bind(TutorialDirector value)
         {
             tutorial=value;next.onClick.AddListener(tutorial.Next);replay.onClick.AddListener(tutorial.Replay);
@@ -27,6 +30,7 @@ namespace PickleVerse.LocalMatch
         }
         public void ShowLesson()
         {
+            touchLayoutDirty=true;
             if(!tutorial)return;var lesson=tutorial.Lesson;
             chapter.text=lesson.kind==TutorialKind.Complete?"ĐÃ HOÀN THÀNH":"CƠ BẢN  /  "+(tutorial.LessonIndex+1).ToString("00")+" - 17";
             title.text=lesson.title;body.text=lesson.body;bool shot=lesson.kind==TutorialKind.Shot,move=lesson.kind==TutorialKind.Movement;
@@ -55,7 +59,7 @@ namespace PickleVerse.LocalMatch
         public void Refresh()
         {
             if(!tutorial)return;next.interactable=tutorial.CanContinue;feedback.text=tutorial.Feedback;
-            progress.text=tutorial.Lesson.kind==TutorialKind.Shot?"ĐÃ LÀM QUEN  "+tutorial.ShotsCompleted+" / 9 CÚ ĐÁNH":"Khoảng 2–3 phút • Chỉ hướng dẫn cơ bản";
+            if(lastProgressKind!=tutorial.Lesson.kind||lastProgressShot!=tutorial.ShotsCompleted){lastProgressKind=tutorial.Lesson.kind;lastProgressShot=tutorial.ShotsCompleted;progress.text=tutorial.Lesson.kind==TutorialKind.Shot?"ĐÃ LÀM QUEN  "+tutorial.ShotsCompleted+" / 9 CÚ ĐÁNH":"Khoảng 2–3 phút • Chỉ hướng dẫn cơ bản";}
         }
         void Update()
         {
@@ -65,7 +69,8 @@ namespace PickleVerse.LocalMatch
         }
         void LateUpdate()
         {
-            if(!tutorial||!touchRoot.activeSelf)return;
+            if(!tutorial||!touchRoot.activeSelf||!touchLayoutDirty)return;
+            touchLayoutDirty=false;
             var settings=GameSettings.Current;
             foreach(var control in tutorial.touchControls)
             {

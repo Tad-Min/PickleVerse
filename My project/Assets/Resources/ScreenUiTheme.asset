@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4348f27b027f96a4aa92145555c07ceb, type: 3}
+  m_Name: ScreenUiTheme
+  m_EditorClassIdentifier: PickleVerse.Settings::PickleVerse.Settings.ScreenUiTheme
+  font: {fileID: 11400000, guid: f0b761371ec749542b1a65b3df4eabd1, type: 2}
+  panel: {fileID: 2100000, guid: 8b617d42e6358cb4eaef01bff23846ae, type: 2}
+  quiet: {fileID: 2100000, guid: c706a655b4ef71044a5ec5556ec161cd, type: 2}
+  action: {fileID: 2100000, guid: 2861ab3f8411e7444bbc83b37eed355a, type: 2}
+  background: {fileID: 2100000, guid: 1fd8273ff5aa5944da09c12eec5d0cd7, type: 2}

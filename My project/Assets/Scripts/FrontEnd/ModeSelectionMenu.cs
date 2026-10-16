@@ -11,7 +11,9 @@ namespace PickleVerse.FrontEnd
     public sealed class ModeSelectionMenu : MonoBehaviour
     {
         public RectTransform safeArea;
-        public GameObject modePage, botPage;
+        public GameObject modePage, botPage, roomPage;
+        public TMP_InputField roomJoinCode;
+        public bool IsRoomSetup { get; private set; }
         public TMP_Text breadcrumb, title, subtitle, summary, difficultyDescription, loadingLabel;
         public GameObject loadingOverlay;
         public UnityEngine.UI.Button botButton, startButton;
@@ -34,6 +36,7 @@ namespace PickleVerse.FrontEnd
         {
             SelectedDifficulty = BotMatchLaunchSettings.Difficulty;
             SelectedNight = BotMatchLaunchSettings.Night;
+            if(roomJoinCode)roomJoinCode.onSubmit.AddListener(_=>JoinPrivateRoom());
             ApplySafeArea();
             ShowModes();
         }
@@ -60,6 +63,8 @@ namespace PickleVerse.FrontEnd
         {
             if (Loading) return;
             IsBotSetup = false;
+            IsRoomSetup = false;
+            if(roomPage)roomPage.SetActive(false);
             modePage.SetActive(true); botPage.SetActive(false);
             if(tutorialButton)tutorialButton.gameObject.SetActive(true);
             breadcrumb.text = "CHƠI  /  CHỌN CHẾ ĐỘ";
@@ -73,6 +78,7 @@ namespace PickleVerse.FrontEnd
         {
             if (Loading) return;
             IsBotSetup = true;
+            IsRoomSetup=false;if(roomPage)roomPage.SetActive(false);
             modePage.SetActive(false); botPage.SetActive(true);
             if(tutorialButton)tutorialButton.gameObject.SetActive(false);
             breadcrumb.text = "CHƠI  /  ĐẤU VỚI BOT";
@@ -85,6 +91,32 @@ namespace PickleVerse.FrontEnd
 
         public void OpenMultiplayer()
         {
+            PickleVerse.Multiplayer.UI.RoomLaunchRequest.Clear();
+            OpenRoomScene("Đang mở phòng multiplayer…");
+        }
+
+        public void OpenRooms()
+        {
+            if(Loading||!roomPage)return;
+            IsBotSetup=false;IsRoomSetup=true;modePage.SetActive(false);botPage.SetActive(false);roomPage.SetActive(true);
+            if(tutorialButton)tutorialButton.gameObject.SetActive(false);
+            breadcrumb.text="CHƠI  /  PHÒNG RIÊNG";title.text="Lập đội. Hẹn đối thủ.";subtitle.text="Tạo phòng riêng hoặc nhập mã để tham gia cùng bạn bè.";
+            Reveal(roomPage);Focus(roomPage.GetComponentInChildren<UnityEngine.UI.Button>());
+        }
+        public void CreateSinglesRoom(){CreateRoom(PickleVerse.Multiplayer.PlayMode.Singles);}
+        public void CreateDoublesRoom(){CreateRoom(PickleVerse.Multiplayer.PlayMode.Doubles);}
+        void CreateRoom(PickleVerse.Multiplayer.PlayMode mode)
+        {
+            if(Loading)return;PickleVerse.Multiplayer.UI.RoomLaunchRequest.Create(mode);OpenRoomScene("Đang tạo phòng "+(mode==PickleVerse.Multiplayer.PlayMode.Singles?"1v1":"2v2")+"…");
+        }
+        public void JoinPrivateRoom()
+        {
+            if(Loading)return;
+            if(!roomJoinCode||string.IsNullOrWhiteSpace(roomJoinCode.text)){subtitle.text="Nhập mã phòng mà bạn bè đã chia sẻ.";roomJoinCode?.ActivateInputField();return;}
+            PickleVerse.Multiplayer.UI.RoomLaunchRequest.Join(roomJoinCode.text);OpenRoomScene("Đang tham gia phòng…");
+        }
+        void OpenRoomScene(string message)
+        {
             if (Loading) return;
             if (!Application.CanStreamedLevelBeLoaded("PlayMultiplayer"))
             {
@@ -93,7 +125,7 @@ namespace PickleVerse.FrontEnd
             }
             Loading = true;
             PickleVerse.Multiplayer.MultiplayerApp.OpenDefaultRoomOnLoad = true;
-            StartCoroutine(LoadScene("PlayMultiplayer", "Đang mở phòng multiplayer…"));
+            StartCoroutine(LoadScene("PlayMultiplayer", message));
         }
 
         public void OpenTraining()
@@ -169,7 +201,7 @@ namespace PickleVerse.FrontEnd
         public void Back()
         {
             if (Loading) return;
-            if (IsBotSetup) ShowModes();
+            if (IsBotSetup || IsRoomSetup) ShowModes();
             else PickleVerse.Shop.LobbyNavigation.ReturnToLobby();
         }
 

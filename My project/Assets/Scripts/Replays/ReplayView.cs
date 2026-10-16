@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using TMPro;
+using PickleVerse.Settings;
 namespace PickleVerse.Replays
 {
     public static class ReplayLaunch
@@ -28,6 +29,9 @@ namespace PickleVerse.Replays
         float speed=1;
         bool playing;
         TMP_Text label,playLabel;
+        TMP_Text timeLabel;
+        float nextLabelUpdate;
+        Button[] rateButtons;
         Slider seek;
         public double Playhead => playhead;
         public float PlaybackSpeed => speed;
@@ -98,7 +102,12 @@ namespace PickleVerse.Replays
                     if(a.ballRotation?.Length==4&&b.ballRotation?.Length==4)ballObject.rotation=Quaternion.Slerp(new Quaternion(a.ballRotation[0],a.ballRotation[1],a.ballRotation[2],a.ballRotation[3]),new Quaternion(b.ballRotation[0],b.ballRotation[1],b.ballRotation[2],b.ballRotation[3]),t);
                     if(a.ballScale?.Length==3&&b.ballScale?.Length==3)ballObject.localScale=Vector3.Lerp(new Vector3(a.ballScale[0],a.ballScale[1],a.ballScale[2]),new Vector3(b.ballScale[0],b.ballScale[1],b.ballScale[2]),t);
                 }
-                label.text=$"REPLAY{(metadata.complete?"":" · CHƯA HOÀN TẤT")}   {playhead:0.0} / {metadata.duration:0.0}s · {speed:0.0}×\n{a.scoreA} – {a.scoreB} điểm · {a.gamesA} – {a.gamesB} game\n{a.status}";
+                if(Time.unscaledTime>=nextLabelUpdate||!playing)
+                {
+                    nextLabelUpdate=Time.unscaledTime+.1f;
+                    label.text=$"{a.scoreA}  :  {a.scoreB}   ĐIỂM     /     {a.gamesA} – {a.gamesB}  GAME\n{a.status}{(metadata.complete?"":" · BẢN GHI CHƯA HOÀN TẤT")}";
+                    timeLabel.text=$"{TimeSpan.FromSeconds(playhead):mm\\:ss}  /  {TimeSpan.FromSeconds(metadata.duration):mm\\:ss}";
+                }
                 seek.SetValueWithoutNotify((float)playhead);
             }
             catch(Exception e){Error(e);}
@@ -122,28 +131,40 @@ namespace PickleVerse.Replays
         }
         TMP_Text Text(string name,Transform parent,string text,Vector2 min,Vector2 max,int size=20)
         {
-            var rect=Rect(name,parent,min,max);var tmp=rect.gameObject.AddComponent<TextMeshProUGUI>();tmp.font=TMP_Settings.defaultFontAsset;tmp.text=text;tmp.fontSize=size;tmp.color=Color.white;tmp.alignment=TextAlignmentOptions.Center;tmp.raycastTarget=false;return tmp;
+            var rect=Rect(name,parent,min,max);var tmp=rect.gameObject.AddComponent<TextMeshProUGUI>();tmp.font=ScreenUiTheme.Current?ScreenUiTheme.Current.font:TMP_Settings.defaultFontAsset;tmp.text=text;tmp.fontSize=size;tmp.color=ScreenUiTheme.Text;tmp.alignment=TextAlignmentOptions.Center;tmp.raycastTarget=false;return tmp;
         }
         UnityEngine.UI.Button Button(string name,Transform parent,string text,Vector2 min,Vector2 max,UnityEngine.Events.UnityAction action)
         {
             var rect=Rect(name,parent,min,max);var image=rect.gameObject.AddComponent<UnityEngine.UI.Image>();image.color=new Color(.06f,.24f,.28f,.96f);
-            var button=rect.gameObject.AddComponent<UnityEngine.UI.Button>();button.targetGraphic=image;button.onClick.AddListener(action);Text("Label",rect,text,Vector2.zero,Vector2.one);return button;
+            var button=rect.gameObject.AddComponent<UnityEngine.UI.Button>();button.targetGraphic=image;button.onClick.AddListener(action);Text("Label",rect,text,new Vector2(.05f,0),new Vector2(.95f,1),16);ScreenUiTheme.ButtonStyle(button);return button;
         }
         void BuildControls()
         {
             var canvas=new GameObject("Replay Canvas",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));canvas.GetComponent<Canvas>().renderMode=RenderMode.ScreenSpaceOverlay;
             canvas.transform.SetParent(transform,false);
-            var scaler=canvas.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
+            var scaler=canvas.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1280,720);scaler.matchWidthOrHeight=1;
             if(!EventSystem.current){var events=new GameObject("Replay EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));events.transform.SetParent(transform,false);}
-            label=Text("Status",canvas.transform,"Đang mở replay…",new Vector2(.18f,.82f),new Vector2(.82f,.99f),22);
-            var back=Button("Back",canvas.transform,"QUAY LẠI HISTORY",new Vector2(.02f,.92f),new Vector2(.19f,.98f),ReplayLaunch.Close);
-            var play=Button("Play",canvas.transform,"DỪNG",new Vector2(.04f,.025f),new Vector2(.13f,.085f),()=>{if(metadata==null)return;if(!playing&&playhead>=metadata.duration)Seek(0);playing=!playing;playLabel.text=playing?"DỪNG":"PHÁT";});playLabel=play.GetComponentInChildren<TMP_Text>();
-            float[] rates={.5f,1,2};for(int i=0;i<3;i++){float rate=rates[i];Button("Speed"+i,canvas.transform,rate+"×",new Vector2(.70f+i*.07f,.025f),new Vector2(.76f+i*.07f,.085f),()=>speed=rate);}
-            var track=Rect("Seek",canvas.transform,new Vector2(.16f,.035f),new Vector2(.67f,.075f));track.gameObject.AddComponent<UnityEngine.UI.Image>().color=new Color(.1f,.22f,.25f);
-            var fill=Rect("Fill",track,Vector2.zero,Vector2.one);fill.gameObject.AddComponent<UnityEngine.UI.Image>().color=new Color(.5f,.85f,.72f);
-            var handle=Rect("Handle",track,Vector2.zero,Vector2.one);handle.sizeDelta=new Vector2(15,0);var handleImage=handle.gameObject.AddComponent<UnityEngine.UI.Image>();handleImage.color=Color.white;
+            var safe=Rect("Safe Area",canvas.transform,Vector2.zero,Vector2.one);safe.gameObject.AddComponent<UiSafeArea>();
+            var header=Panel("Replay Header",safe,new Vector2(.03f,.86f),new Vector2(.97f,.97f));
+            var back=Button("Back",header,"‹  LỊCH SỬ ĐẤU",new Vector2(.015f,.13f),new Vector2(.20f,.87f),ReplayLaunch.Close);
+            Text("Mode",header,"XEM LẠI TRẬN ĐẤU",new Vector2(.22f,.21f),new Vector2(.47f,.79f),18).color=ScreenUiTheme.Gold;
+            label=Text("Status",header,"Đang mở bản ghi…",new Vector2(.49f,.12f),new Vector2(.97f,.88f),16);
+            var dock=Panel("Playback Dock",safe,new Vector2(.03f,.035f),new Vector2(.97f,.17f));
+            var play=Button("Play",dock,"TẠM DỪNG",new Vector2(.02f,.18f),new Vector2(.17f,.82f),()=>{if(metadata==null)return;if(!playing&&playhead>=metadata.duration)Seek(0);playing=!playing;playLabel.text=playing?"TẠM DỪNG":"PHÁT";});playLabel=play.GetComponentInChildren<TMP_Text>();ScreenUiTheme.ButtonStyle(play,true);
+            timeLabel=Text("Time",dock,"00:00 / 00:00",new Vector2(.20f,.60f),new Vector2(.67f,.93f),14);timeLabel.color=ScreenUiTheme.Muted;
+            Text("Speed Heading",dock,"TỐC ĐỘ PHÁT",new Vector2(.71f,.64f),new Vector2(.98f,.91f),11).color=ScreenUiTheme.Muted;
+            rateButtons=new Button[3];float[] rates={.5f,1,2};for(int i=0;i<3;i++){float rate=rates[i];int index=i;rateButtons[i]=Button("Speed"+i,dock,rate+"×",new Vector2(.71f+i*.09f,.15f),new Vector2(.79f+i*.09f,.59f),()=>{speed=rate;for(int j=0;j<3;j++)ScreenUiTheme.Selection(rateButtons[j],j==index);});}ScreenUiTheme.Selection(rateButtons[1],true);
+            var track=Rect("Seek",dock,new Vector2(.20f,.08f),new Vector2(.67f,.60f));track.gameObject.AddComponent<Canvas>();var raycaster=track.gameObject.AddComponent<GraphicRaycaster>();
+            var hit=track.gameObject.AddComponent<Image>();hit.color=Color.clear;
+            var rail=Rect("Track",track,new Vector2(0,.43f),new Vector2(1,.57f));rail.gameObject.AddComponent<Image>().color=new Color(.18f,.26f,.35f);rail.GetComponent<Image>().raycastTarget=false;
+            var fillArea=Rect("Fill Area",track,new Vector2(0,.43f),new Vector2(1,.57f));
+            var fill=Rect("Fill",fillArea,Vector2.zero,Vector2.one);fill.gameObject.AddComponent<Image>().color=ScreenUiTheme.Mint;fill.GetComponent<Image>().raycastTarget=false;
+            var handleArea=Rect("Handle Area",track,new Vector2(0,.30f),new Vector2(1,.70f));
+            var handle=Rect("Handle",handleArea,Vector2.zero,Vector2.one);handle.sizeDelta=new Vector2(12,0);var handleImage=handle.gameObject.AddComponent<Image>();handleImage.color=ScreenUiTheme.Gold;
             seek=track.gameObject.AddComponent<Slider>();seek.fillRect=fill;seek.handleRect=handle;seek.targetGraphic=handleImage;seek.interactable=false;seek.onValueChanged.AddListener(v=>Seek(v));
+            safe.gameObject.AddComponent<UiPanelReveal>();
         }
+        RectTransform Panel(string name,Transform parent,Vector2 min,Vector2 max){var r=Rect(name,parent,min,max);var image=r.gameObject.AddComponent<Image>();image.material=ScreenUiTheme.Current?ScreenUiTheme.Current.panel:null;image.raycastTarget=false;return r;}
         void OnDestroy(){if(actors!=null)foreach(var actor in actors)if(actor)Destroy(actor.gameObject);}
     }
 }
