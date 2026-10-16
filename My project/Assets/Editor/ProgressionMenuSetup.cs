@@ -21,6 +21,8 @@ namespace PickleVerse.EditorTools
             var scene=SceneManager.GetActiveScene();
             if(scene.path!="Assets/Scenes/UI/Menu.unity") scene=EditorSceneManager.OpenScene("Assets/Scenes/UI/Menu.unity");
             var canvas=scene.GetRootGameObjects().Single(g=>g.name=="CanvasHome").GetComponent<Canvas>();
+            if(canvas.GetComponent<HomeMenuShell>())
+            {Debug.Log("Menu uses the Blender lobby layout. Re-author with Tools/RefreshLobbyUi.cs; progression bindings are retained.");return;}
             var safe=canvas.transform.Find("HomeSafeArea");
             var menu=canvas.GetComponent<PlayerProgressionMenu>()??canvas.gameObject.AddComponent<PlayerProgressionMenu>();
             menu.font=AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/FrontEndContent/Mode Vietnamese Font.asset");

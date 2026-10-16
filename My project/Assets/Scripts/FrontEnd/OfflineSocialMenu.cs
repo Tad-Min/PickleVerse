@@ -19,11 +19,18 @@ namespace PickleVerse.FrontEnd
         public TMP_InputField search;
         public TMP_Text title, selfName, selfId, selfElo, selfPosition, count, feedback;
         public RectTransform selfRow;
+        public bool drawerMode;
+        public UnityEngine.UI.Image drawerShade;
+        public bool IsOpen=>opened;
+        float drawerProgress;
+        Rect lastDrawerSafe;
+        Vector2 lastDrawerScreen;
         bool leaderboard, directory, opened, priorInteraction;
         CanvasGroup menuInteraction;
         GameObject priorSelection;
         static readonly Color Ink=new Color(.025f,.065f,.095f), Surface=new Color(.045f,.115f,.15f), Card=new Color(.075f,.16f,.20f), Mint=new Color(.45f,.86f,.77f), Lime=new Color(.79f,.96f,.45f), White=new Color(.94f,.97f,.96f), Muted=new Color(.63f,.75f,.79f);
         OfflineSocialDirectory Data => OfflineSocialSession.Directory;
+        float DeviceDpi=>GetComponent<HomeMenuShell>()?.Dpi??Screen.dpi;
 
         void Awake()
         {
@@ -46,12 +53,25 @@ namespace PickleVerse.FrontEnd
             ProgressionRuntime.Changed+=Refresh;
             modal.gameObject.SetActive(false);
         }
-        void OnDestroy() { ProgressionRuntime.Changed-=Refresh; }
+        void OnDestroy() { ProgressionRuntime.Changed-=Refresh;PickleVerse.Settings.FrontEndModalInput.Release(this); }
+        void OnDisable()
+        {
+            if(!opened)return;
+            opened=false;drawerProgress=0;PickleVerse.Settings.FrontEndModalInput.Release(this);
+            if(menuInteraction)menuInteraction.interactable=priorInteraction;
+            if(modal)modal.gameObject.SetActive(false);
+        }
         void Update()
         {
-            if(!opened) return;
+            if(!opened&&(!drawerMode||drawerProgress<=0)) return;
             ApplySafeArea();
-            if(Keyboard.current?.escapeKey.wasPressedThisFrame==true) Close();
+            if(drawerMode)
+            {
+                float next=Mathf.MoveTowards(drawerProgress,opened?1:0,Time.unscaledDeltaTime/.24f);
+                if(next!=drawerProgress){drawerProgress=next;PlaceDrawer();}
+                if(!opened&&drawerProgress<=0)modal.gameObject.SetActive(false);
+            }
+            if(opened&&Keyboard.current?.escapeKey.wasPressedThisFrame==true) Close();
         }
         public void OpenFriends() { Open(false); }
         public void OpenLeaderboard() { Open(true); }
@@ -60,6 +80,7 @@ namespace PickleVerse.FrontEnd
             if(!opened)
             {
                 ui.Close();
+                if(!PickleVerse.Settings.FrontEndModalInput.TryAcquire(this))return;
                 priorSelection=EventSystem.current?.currentSelectedGameObject;
                 priorInteraction=menuInteraction.interactable;
                 menuInteraction.interactable=false;
@@ -67,13 +88,15 @@ namespace PickleVerse.FrontEnd
             }
             leaderboard=ranking; directory=false;
             search.SetTextWithoutNotify(""); feedback.text="";
-            modal.gameObject.SetActive(true); modal.SetAsLastSibling(); ConfigureOverlay(); ApplySafeArea(); Refresh();
+            modal.gameObject.SetActive(true); modal.SetAsLastSibling(); ConfigureOverlay(); ApplySafeArea();ConfigureDrawerLayout(); Refresh();
             EventSystem.current?.SetSelectedGameObject(closeButton.gameObject);
         }
         public void Close()
         {
             if(!opened) return;
-            opened=false; modal.gameObject.SetActive(false);
+            opened=false;
+            if(!drawerMode)modal.gameObject.SetActive(false);
+            PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction) menuInteraction.interactable=priorInteraction;
             if(EventSystem.current && priorSelection && priorSelection.activeInHierarchy)
                 EventSystem.current.SetSelectedGameObject(priorSelection);
@@ -82,9 +105,48 @@ namespace PickleVerse.FrontEnd
         {
             var area=Screen.safeArea;
             if(Screen.width<=0 || Screen.height<=0) return;
+            var size=new Vector2(Screen.width,Screen.height);
+            if(area==lastDrawerSafe&&size==lastDrawerScreen)return;
+            lastDrawerSafe=area;lastDrawerScreen=size;
             modalSafe.anchorMin=new Vector2(area.xMin/Screen.width,area.yMin/Screen.height);
             modalSafe.anchorMax=new Vector2(area.xMax/Screen.width,area.yMax/Screen.height);
             modalSafe.offsetMin=modalSafe.offsetMax=Vector2.zero;
+        }
+        public void ConfigureDrawerLayout()
+        {
+            if(!drawerMode||!window||!modalSafe)return;
+            var canvas=ui.GetComponent<Canvas>();
+            bool touch=Application.isMobilePlatform||Touchscreen.current!=null;
+            float dp=touch?HomeMenuShell.DpUnits(DeviceDpi,Mathf.Min(Screen.width,Screen.height),canvas.scaleFactor):1;
+            window.anchorMin=window.anchorMax=new Vector2(0,.5f);window.pivot=new Vector2(0,.5f);
+            window.sizeDelta=new Vector2(Mathf.Min(modalSafe.rect.width-24,Mathf.Max(540,270*dp)),modalSafe.rect.height-32);
+            float target=touch?Mathf.Max(44,44*dp):44;
+            float factor=touch?Mathf.Max(1,dp*.75f):1;
+            Top((RectTransform)friendsTab.transform,104,target);Top((RectTransform)leaderboardTab.transform,104,target);
+            var close=(RectTransform)closeButton.transform;close.anchorMin=close.anchorMax=Vector2.one;close.pivot=Vector2.one;
+            close.sizeDelta=Vector2.one*target;close.anchoredPosition=new Vector2(-12,-12);
+            Top((RectTransform)selfName.transform.parent,118+target,90);
+            float searchTop=220+target;
+            foreach(var r in new[]{(RectTransform)search.transform,(RectTransform)listButton.transform,(RectTransform)directoryButton.transform,(RectTransform)myPositionButton.transform})Top(r,searchTop,target);
+            var scrollRoot=(RectTransform)scroll.transform;float top=searchTop+target+14;
+            scrollRoot.anchorMin=new Vector2(.02f,0);scrollRoot.anchorMax=new Vector2(.98f,1);scrollRoot.offsetMin=new Vector2(0,42);scrollRoot.offsetMax=new Vector2(0,-top);
+            Top(count.rectTransform,75,22);count.rectTransform.anchorMin=new Vector2(.77f,1);count.rectTransform.anchorMax=new Vector2(.98f,1);
+            title.fontSizeMax=28*factor;selfName.fontSizeMax=22*factor;selfId.fontSizeMax=13*factor;selfElo.fontSizeMax=18*factor;selfPosition.fontSizeMax=16*factor;
+            foreach(var button in new[]{friendsTab,leaderboardTab,listButton,directoryButton,myPositionButton})button.GetComponentInChildren<TMP_Text>().fontSizeMax=16*factor;
+            search.textComponent.fontSizeMax=17*factor;
+            ((TMP_Text)search.placeholder).fontSizeMax=15*factor;
+            PlaceDrawer();
+        }
+        static void Top(RectTransform rect,float top,float height)
+        {
+            rect.anchorMin=new Vector2(rect.anchorMin.x,1);rect.anchorMax=new Vector2(rect.anchorMax.x,1);
+            rect.offsetMin=new Vector2(rect.offsetMin.x,-top-height);rect.offsetMax=new Vector2(rect.offsetMax.x,-top);
+        }
+        void PlaceDrawer()
+        {
+            float eased=Mathf.SmoothStep(0,1,drawerProgress);
+            window.anchoredPosition=new Vector2(12-(window.rect.width+24)*(1-eased),0);
+            if(drawerShade){var c=drawerShade.color;c.a=.36f*eased;drawerShade.color=c;}
         }
         void SetDirectory(bool value)
         { directory=value; search.SetTextWithoutNotify(""); feedback.text=""; Refresh(); }
@@ -105,7 +167,7 @@ namespace PickleVerse.FrontEnd
             if(leaderboard)
             {
                 var entries=Data.Leaderboard(player,search.text);
-                count.text=$"{entries.Count} / {all.Count} người chơi  ·  Elo giảm dần";
+                count.text=drawerMode?$"{entries.Count} người chơi":$"{entries.Count} / {all.Count} người chơi  ·  Elo giảm dần";
                 foreach(var entry in entries) AddPlayer(entry.Player,entry.Position,entry.Player.Id==player.id);
             }
             else
@@ -124,7 +186,9 @@ namespace PickleVerse.FrontEnd
         }
         void AddPlayer(SocialPlayer player,int position,bool self)
         {
-            var row=Row(player.Id,82,self?new Color(.10f,.25f,.27f):Card);
+            bool touch=Application.isMobilePlatform||Touchscreen.current!=null;
+            float dp=touch?HomeMenuShell.DpUnits(DeviceDpi,Mathf.Min(Screen.width,Screen.height),ui.GetComponent<Canvas>().scaleFactor):1;
+            var row=Row(player.Id,drawerMode?Mathf.Max(90,64*dp):82,self?new Color(.10f,.25f,.27f):Card);
             if(self) selfRow=row;
             Caption("Position",row,leaderboard?$"#{position}":"•",21,position<=3 && leaderboard?Lime:Mint,new Vector2(.01f,0),new Vector2(.08f,1));
             var face=ui.Panel("Avatar",row,self?Mint:Surface,new Vector2(.09f,.16f),new Vector2(.15f,.84f));
@@ -139,7 +203,7 @@ namespace PickleVerse.FrontEnd
             else
             {
                 bool added=Data.IsFriend(ProgressionRuntime.Instance.Player.id,player.Id);
-                var action=Button("FriendAction",row,added?(directory?"ĐÃ KẾT BẠN":"XÓA BẠN"):"THÊM BẠN",new Vector2(.80f,.23f),new Vector2(.975f,.77f),added?Surface:Mint,added?Muted:Ink,14);
+                var action=Button("FriendAction",row,added?(directory?"ĐÃ KẾT BẠN":"XÓA BẠN"):"THÊM BẠN",new Vector2(.80f,drawerMode?.15f:.23f),new Vector2(.975f,drawerMode?.85f:.77f),added?Surface:Mint,added?Muted:Ink,14);
                 action.interactable=!directory || !added;
                 action.onClick.AddListener(()=>ChangeFriend(player,!added));
             }
@@ -177,6 +241,7 @@ namespace PickleVerse.FrontEnd
         }
         TMP_Text Caption(string name,Transform parent,string value,int size,Color color,Vector2 min,Vector2 max,TextAlignmentOptions align=TextAlignmentOptions.Center)
         {
+            if(drawerMode&&(Application.isMobilePlatform||Touchscreen.current!=null))size=Mathf.RoundToInt(size*Mathf.Max(1,HomeMenuShell.DpUnits(DeviceDpi,Mathf.Min(Screen.width,Screen.height),ui.GetComponent<Canvas>().scaleFactor)*.75f));
             var text=ui.Text(name,parent,value,size,color,min,max,new Vector2(6,0),new Vector2(-6,0),align);
             text.enableAutoSizing=true; text.fontSizeMin=11; text.fontSizeMax=size;
             return text;

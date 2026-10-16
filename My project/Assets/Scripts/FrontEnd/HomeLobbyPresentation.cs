@@ -143,6 +143,7 @@ namespace PickleVerse.FrontEnd
             if (lobbyCamera) lobbyCamera.transform.SetPositionAndRotation(orbit * femaleCameraPosition, orbit * femaleCameraRotation);
             if (portraitLight) portraitLight.transform.SetPositionAndRotation(orbit * femaleLightPosition, orbit * femaleLightRotation);
         }
+        public void RefreshView(){ApplyView(viewAngle);}
 
         // One sampled rig per frame. The other holds a static idle pose, with no animation
         // evaluation or secondary simulation while the lobby is suspended on another page.
