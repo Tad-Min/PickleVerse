@@ -16,6 +16,8 @@ namespace PickleVerse.LocalMatch
         public StadiumEnvironment stadium;
         public bool selectedNight;
         public bool useLocalLaunchSettings = true;
+        [Tooltip("Minimum indoor court floodlight level, independent of the shared day/night sky.")]
+        [Range(0,1)] public float minimumCourtIllumination;
         public bool IsNight { get; private set; }
         public static readonly Color NightAmbientSky=new Color(.070f,.078f,.090f);
         public static readonly Color NightAmbientEquator=new Color(.050f,.057f,.065f);
@@ -41,7 +43,7 @@ namespace PickleVerse.LocalMatch
             if (floodlights != null) foreach (var light in floodlights) if (light) light.enabled = night;
             if (lampFaces != null) foreach (var face in lampFaces)
                 if (face && lampsOn && lampsOff) face.sharedMaterial = night ? lampsOn : lampsOff;
-            if(stadium)stadium.ApplyNight(night?1:0,true);
+            if(stadium)stadium.ApplyNight(night?1:0,true,minimumCourtIllumination);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = night ? NightAmbientSky : new Color(.52f, .63f, .76f);
