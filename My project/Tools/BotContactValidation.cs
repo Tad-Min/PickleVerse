@@ -74,8 +74,9 @@ public static class BotContactValidation
             var go=UnityEngine.Object.Instantiate(app.Settings.matchPrefab); match=go.GetComponent<NetworkMatch>();
             match.enabled=false; match.SetRoster(roster); go.GetComponent<NetworkObject>().Spawn();
             foreach(var player in NetworkPlayer.All) player.enabled=false;
-            double until=Time.realtimeSinceStartupAsDouble+5;
-            while(!match.Started.Value && Time.realtimeSinceStartupAsDouble<until) await Task.Delay(25);
+            // The fixture drives simulation manually, so its disabled match cannot advance
+            // the entrance timer in FixedUpdate. Enter the rally explicitly for contact tests.
+            Call(match,"BeginRally");match.Started.Value=true;
             Check("Named bot uses the normal multiplayer actors",match.Started.Value && NetworkPlayer.All.Count==2 && match.Roster.RankedBot);
             var human=NetworkPlayer.All.Single(p=>!p.Automated.Value); var bot=NetworkPlayer.All.Single(p=>p.Automated.Value);
 

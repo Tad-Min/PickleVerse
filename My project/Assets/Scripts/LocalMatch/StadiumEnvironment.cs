@@ -18,7 +18,7 @@ namespace PickleVerse.LocalMatch
         public MeshFilter competitionSurface,kitchenSurface,courtLines,netStructure;
         public Transform nearEntrance,farEntrance,nearResult,farResult;
         [Range(0,1)]public float nightWeight;
-        float applied=-1;bool previousRoof;
+        float applied=-1,appliedMinimum=-1;bool previousRoof;
         /// <summary>Authoring utility: retain the scanned anchors, group closely spaced lamp heads.</summary>
         public void ConfigureFixtureGroups()
         {
@@ -51,19 +51,22 @@ namespace PickleVerse.LocalMatch
             applied=-1;
             foreach(var light in poleLights.Concat(roofLights))if(light){light.color=Color.white;light.useColorTemperature=false;light.colorTemperature=6500;}
         }
-        public void ApplyNight(float night,bool force=false)
+        public void ApplyNight(float night,bool force=false,float minimumCourtIllumination=0)
         {
             if(force)applied=-1;
             night=Mathf.Clamp01(night);
-            if(applied>=0&&Mathf.Abs(applied-night)<.003f)return;
-            bool first=applied<0;nightWeight=night;applied=night;bool roof=night>.025f;
+            minimumCourtIllumination=Mathf.Clamp01(minimumCourtIllumination);
+            if(applied>=0&&Mathf.Abs(applied-night)<.003f&&Mathf.Abs(appliedMinimum-minimumCourtIllumination)<.003f)return;
+            bool first=applied<0;nightWeight=night;applied=night;appliedMinimum=minimumCourtIllumination;
+            float courtLight=Mathf.Max(night,minimumCourtIllumination);
+            bool roof=courtLight>.025f,nightStands=night>.025f;
             foreach(var l in poleLights)if(l)l.enabled=false;
             foreach(var l in roofLights)if(l)l.enabled=false;
             var poles=poleIllumination!=null&&poleIllumination.Length>0?poleIllumination:poleLights;
             var roofs=roofIllumination!=null&&roofIllumination.Length>0?roofIllumination:roofLights;
-            foreach(var l in poles)if(l){l.enabled=true;l.intensity=Mathf.Lerp(8f,poleNightIntensity,night);}
-            foreach(var l in roofs)if(l){l.enabled=roof;l.intensity=roofNightIntensity*night;}
-            if(standIllumination!=null)foreach(var l in standIllumination)if(l){l.enabled=roof;l.intensity=standNightIntensity*night;}
+            foreach(var l in poles)if(l){l.enabled=true;l.intensity=Mathf.Lerp(8f,poleNightIntensity,courtLight);}
+            foreach(var l in roofs)if(l){l.enabled=roof;l.intensity=roofNightIntensity*courtLight;}
+            if(standIllumination!=null)foreach(var l in standIllumination)if(l){l.enabled=nightStands;l.intensity=standNightIntensity*night;}
             if(lightsOn&&lightsOff)
             {
                 if(first)foreach(var r in poleEmitters)if(r)r.sharedMaterial=lightsOn;

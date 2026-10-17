@@ -34,7 +34,7 @@ public static class NightLightingValidation
                 check(name+" sky, sun and fixture emission agree",RenderSettings.skybox==l.nightSky&&!l.sun.enabled&&e.roofEmitters.All(r=>r.sharedMaterial==e.lightsOn)&&e.lightsOn.GetColor("_EmissionColor")==Color.white*1.2f);
                 string profile=JsonConvert.SerializeObject(new{roof=e.roofNightIntensity,pole=e.poleNightIntensity,stands=e.standNightIntensity,sky=RenderSettings.ambientSkyColor.ToString(),equator=RenderSettings.ambientEquatorColor.ToString(),ground=RenderSettings.ambientGroundColor.ToString(),colors=e.poleIllumination.Select(x=>x.color.ToString()).ToArray()});
                 if(signature==null)signature=profile;check(name+" uses the same night profile",profile==signature);
-                l.Apply(false);check(name+" daytime uses sun and Y only",l.sun.enabled&&e.poleIllumination.All(x=>x.enabled)&&e.standIllumination.All(x=>!x.enabled)&&e.roofIllumination.All(x=>!x.enabled));
+                l.Apply(false);check(name+" daytime follows indoor lighting floor",l.sun.enabled&&e.poleIllumination.All(x=>x.enabled)&&e.standIllumination.All(x=>!x.enabled)&&e.roofIllumination.All(x=>x.enabled==(l.minimumCourtIllumination>.025f)&&Mathf.Approximately(x.intensity,e.roofNightIntensity*l.minimumCourtIllumination)));
                 if(name=="MultiplayerCourt")
                 {
                     check("Multiplayer starts with the shared launch preference",l.useLocalLaunchSettings);

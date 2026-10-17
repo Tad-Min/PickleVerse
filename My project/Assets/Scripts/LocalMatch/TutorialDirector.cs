@@ -77,14 +77,14 @@ namespace PickleVerse.LocalMatch
             if(Lesson.kind==TutorialKind.Complete){player.Step(Vector2.zero,false,dt,false);coach.Step(Vector2.zero,false,dt,false);CameraStep();return;}
             if(Lesson.kind==TutorialKind.Movement)
             {
-                player.Step(movement,run,dt);coach.Step(Vector2.zero,false,dt,false);
+                player.Step(movement,run,dt,true);coach.Step(Vector2.zero,false,dt,false);
                 moved|=Vector3.Distance(player.transform.position,movementOrigin)>.55f;
                 if(movement.sqrMagnitude>.1f&&run)runTime+=dt;ran|=runTime>.18f;
                 Feedback=!moved?"Di chuyển một đoạn ngắn trong sân.":!ran?"Đúng rồi. Bây giờ thử chạy một đoạn.":"Đã biết di chuyển và chạy. Tiếp tục để tập đánh bóng.";
             }
             else
             {
-                Vector2 coachMove=Vector2.zero,playerMove=Vector2.zero;
+                Vector2 coachMove=Vector2.zero,playerMove=Lesson.kind==TutorialKind.Shot?movement:Vector2.zero;
                 if(Lesson.kind==TutorialKind.Serve&&launched&&receiver==0&&coach.transform.position.z>5.55f)coachMove=new Vector2(0,-1);
                 if(Lesson.kind==TutorialKind.KitchenVolley&&Elapsed>.65f&&player.transform.position.z<-1.25f)playerMove=new Vector2(0,1);
                 player.Step(playerMove,false,dt,playerMove!=Vector2.zero);coach.Step(coachMove,false,dt,coachMove!=Vector2.zero);
@@ -119,7 +119,7 @@ namespace PickleVerse.LocalMatch
                 if(Lesson.kind==TutorialKind.Serve)coach.Swing(new ShotIntent(ShotKind.Serve),player.transform.position);
                 else coach.Swing(new ShotIntent(ShotKind.Drive),player.transform.position);
             }
-            if(!launched&&coach.Swinging&&coach.ContactActive)
+            if(!launched&&coach.Swinging&&coach.ContactActive&&coach.SwingTime>=coach.ContactDelay)
             {
                 coach.ConsumeContact(false);launched=true;
                 Vector3 target=Contact(player,expected);
@@ -134,6 +134,7 @@ namespace PickleVerse.LocalMatch
             if(!launched&&coach.Swinging){ball.gameObject.SetActive(true);ballPosition=coach.HeldBallPosition;}
             if(flight)
             {
+                Vector3 previousBall=ballPosition;
                 flightTime+=dt;var actor=receiver==0?player:coach;
                 if(arc.hasBounce&&!bounced&&flightTime>=arc.bounceTime)
                 {bounced=true;rules.Bounce(Point(arc.bouncePoint));if(Lesson.kind==TutorialKind.Serve)Feedback=receiver==0?"NẢY 1 • Bên nhận đã chờ bóng nảy.":"NẢY 2 • Bên giao cũng phải chờ bóng nảy.";}
@@ -142,12 +143,13 @@ namespace PickleVerse.LocalMatch
                 ShotIntent intent=receiver==1?new ShotIntent(ShotKind.Drive):expected;
                 if((automatic||buffered)&&!actor.Swinging&&!hit&&arc.duration-flightTime<=intent.ContactDelay+.012f)
                     actor.Swing(intent,arc.At(arc.duration));
-                if(actor.ContactActive&&!hit&&Mathf.Abs(flightTime-arc.duration)<.13f&&Vector3.Distance(ballPosition,actor.paddleFace.position)<.65f)
+                if(!hit&&Mathf.Abs(flightTime-arc.duration)<.13f&&actor.CanContact(previousBall,ballPosition,PaddleContact.MaxAssist,out _))
                 {
                     bool volley=!bounced;
                     if((intent.AfterBounce&&bounced||intent.BeforeBounce&&!bounced)&& (automatic||buffered))
                     {
-                        var fault=rules.Hit(actor.playerId,Point(ballPosition),actor.InKitchen);actor.ConsumeContact(volley);hit=true;flight=false;
+                        ballPosition=actor.ContactPoint;
+                        var fault=rules.Hit(actor.playerId,Point(ballPosition),actor.InKitchen);actor.ConsumeContact(volley,ballPosition,fault==Fault.None);hit=true;flight=false;
                         if(fault!=Fault.None){FaultFeedback(fault);ballVelocity=Vector3.down;returning=true;}
                         else if(Lesson.kind==TutorialKind.Serve&&receiver==0)
                         {

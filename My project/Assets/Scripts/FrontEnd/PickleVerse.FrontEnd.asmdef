@@ -13,6 +13,7 @@
     "PickleVerse.Shop",
     "PickleVerse.Social",
     "PickleVerse.Entites",
-    "PickleVerse.Replays"
+    "PickleVerse.Replays",
+    "PickleVerse.Audio"
   ]
 }

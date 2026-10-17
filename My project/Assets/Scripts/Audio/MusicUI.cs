@@ -13,6 +13,7 @@ namespace PickleVerse.Audio
     [DefaultExecutionOrder(20000)]
     public sealed class MusicUI : MonoBehaviour
     {
+        public static event Action<MusicUI> MenuLayoutRequested;
         public Canvas canvas;
         public RectTransform safeArea,mini,miniViewport,miniCaption,discTransform,playlistContent;
         public GameObject panel,miniTextRoot;
@@ -63,6 +64,7 @@ namespace PickleVerse.Audio
             mini.pivot=new Vector2(0,.5f);
             mini.sizeDelta=new Vector2(310,58);mini.anchoredPosition=Vector2.zero;
             Visibility();BindCamera();
+            if(name=="Menu")MenuLayoutRequested?.Invoke(this);
         }
         public void Open()
         {

@@ -15,9 +15,10 @@ namespace PickleVerse.Multiplayer
     [Serializable] public struct BallFrame : INetworkSerializable,IEquatable<BallFrame>
     {
         public Vector3 position,velocity;
+        public double time;
         public bool live, released;
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T:IReaderWriter { serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity); serializer.SerializeValue(ref live); serializer.SerializeValue(ref released); }
-        public bool Equals(BallFrame o)=>position==o.position&&velocity==o.velocity&&live==o.live&&released==o.released;
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T:IReaderWriter { serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity); serializer.SerializeValue(ref live); serializer.SerializeValue(ref released); serializer.SerializeValue(ref time); }
+        public bool Equals(BallFrame o)=>position==o.position&&velocity==o.velocity&&live==o.live&&released==o.released&&time==o.time;
     }
     public sealed partial class NetworkMatch : NetworkBehaviour
     {
@@ -47,6 +48,7 @@ namespace PickleVerse.Multiplayer
         string shotLabel=""; double shotLabelUntil;
         readonly IGameplayShotService shots = new BotMatchGameplayService();
         Vector3 ballPosition, ballVelocity, serveOrigin;
+        BallFrame confirmedContact;
         TrailRenderer ballTrail;
         Transform landingMarker, aimMarker;
         float accumulator;
@@ -163,8 +165,8 @@ namespace PickleVerse.Multiplayer
             if (Rules.waitingServe && !serve || !Rules.live && !serve) return;
             if (serve) intent.kind = ShotKind.Serve;
             var local = BotMatchGameplayService.ToLocal(intent);
-            var predicted = ballPosition + ballVelocity * local.ContactDelay + Vector3.down * (.5f * BallFlight.Gravity * local.ContactDelay * local.ContactDelay);
-            player.BeginSwing(intent, predicted);
+            float delay = PaddleContact.Anticipation(player.Actor,local,ballPosition,ballVelocity,out var predicted);
+            player.BeginSwing(intent, predicted,delay);
             if (serve) releasedServe = false;
         }
         void BeginRally()
@@ -190,7 +192,7 @@ namespace PickleVerse.Multiplayer
                 { BeginRally(); Started.Value=true; }
                 return;
             }
-            if (!IsServer) { SetBallPosition(Vector3.Lerp(Body.transform.position, Ball.Value.position, 1 - Mathf.Exp(-22 * Time.fixedDeltaTime))); return; }
+            if (!IsServer) return; // Client ball presentation runs at render rate in LateUpdate.
             if (Paused.Value)
             {
                 foreach (var r in reservations.ToArray()) if (Time.realtimeSinceStartupAsDouble > r.Value)
@@ -201,7 +203,7 @@ namespace PickleVerse.Multiplayer
             const float tick = 1f / 120f;
             while (accumulator >= tick) { StepSimulation(tick); accumulator -= tick; }
             SetBallPosition(ballPosition);
-            Ball.Value = new BallFrame { position = ballPosition, velocity = ballVelocity, live = Rules.live, released = releasedServe };
+            Ball.Value = new BallFrame { position = ballPosition, velocity = ballVelocity, live = Rules.live, released = releasedServe, time = NetworkManager.ServerTime.Time };
             Publish();
         }
         void StepSimulation(float dt)
@@ -235,7 +237,7 @@ namespace PickleVerse.Multiplayer
                     if(ballPosition.y<=Court.BallRadius)
                     { ballPosition.y=Court.BallRadius; Rules.Fault(server.Team.Value,"Giao bóng hụt"); }
                 }
-                else ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity);
+                else ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity,dt);
                 if (Rules.waitingServe && actor.Swinging && actor.Intent.kind == PickleVerse.LocalMatch.ShotKind.Serve)
                 {
                     if (actor.SwingTime >= .8f && actor.ContactActive && Vector3.Distance(ballPosition, actor.paddleFace.position) <= MultiplayerApp.Instance.Settings.contactAssistRadius)
@@ -245,9 +247,9 @@ namespace PickleVerse.Multiplayer
                             new Vector3(0, actor.PaddleHeadTop, 0), actor.hand.position, actor.PaddleVelocity,
                             Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1)))
                         {
-                            server.ConsumeContact(false);
                             progressStrokes.Launch(server.Team.Value*2+server.Index.Value,true,Rules.strokeCount);
                             ballVelocity = LaunchBall(server,actor.Intent);
+                            server.ConsumeContact(false,ballPosition,true,ballVelocity);
                             ReplayEventRpc("Serve",server.Identity.Value.ToString());
                         }
                     }
@@ -273,19 +275,21 @@ namespace PickleVerse.Multiplayer
                     if (!Rules.live || player.Team.Value == Rules.lastHitTeam || !shots.CanContact(player.Actor, previous, ballPosition, Rules.bounceCount, MultiplayerApp.Instance.Settings.contactAssistRadius)) continue;
                     var actor = player.Actor; var shot = actor.Intent;
                     if(!TryBotContact(player)) continue;
+                    ballPosition=actor.ContactPoint;
                     bool volley = Rules.bounceCount == 0;
                     bool hit = Rules.Hit(player.Team.Value, player.Index.Value, actor.transform.position,
                         ballPosition, BotMatchGameplayService.FromLocal(shot).kind, actor.InKitchen);
-                    player.ConsumeContact(volley);
                     if (hit)
                     {
                         progressStrokes.AcceptFlight();
                         progressStrokes.Launch(player.Team.Value*2+player.Index.Value,false,Rules.strokeCount);
                         ballVelocity = LaunchBall(player,shot);
+                        player.ConsumeContact(volley,ballPosition,true,ballVelocity);
                         ReplayEventRpc("Hit",player.Identity.Value+":"+shot.kind);
                         foreach (var other in players.Values.Where(p => p.Team.Value != player.Team.Value)) other.SplitStep();
                         shotLabel = shot.ToString(); shotLabelUntil = Time.realtimeSinceStartupAsDouble + 1;
                     }
+                    else player.ConsumeContact(volley,ballPosition,false);
                 }
                 if (Rules.live && ballPosition.y <= Court.BallRadius)
                 {
@@ -345,6 +349,15 @@ namespace PickleVerse.Multiplayer
             EnsureReplay();
             if(!IsSpawned || !Body || !Started.Value)return;
             var frame=Ball.Value;
+            if (!IsServer && !Paused.Value && !Finished.Value)
+            {
+                // A reliable contact may arrive before the next ball snapshot. Never interpolate
+                // backwards through the paddle using a snapshot from before that contact.
+                if (confirmedContact.time > frame.time) frame=confirmedContact;
+                float age=frame.live||frame.released?(float)Math.Max(0,Math.Min(.08,NetworkManager.ServerTime.Time-frame.time)):0;
+                Vector3 p=frame.position,v=frame.velocity;BallFlight.Integrate(ref p,ref v,age);
+                p.y=Mathf.Max(Court.BallRadius,p.y);SetBallPosition(p);
+            }
             var server=NetworkPlayer.All.FirstOrDefault(p=>p.Team.Value==ServerTeam.Value && p.Index.Value==ServerIndex.Value);
             if(!IsServer && WaitingServe.Value && !frame.released && server && server.Actor)SetBallPosition(server.Actor.HeldBallPosition);
             bool flying=(frame.live || WaitingServe.Value && frame.released) && Body.position.y>Court.BallRadius+.02f && frame.velocity.sqrMagnitude>.04f;
@@ -363,6 +376,12 @@ namespace PickleVerse.Multiplayer
                 aimMarker.gameObject.SetActive(visible);
                 if(visible) {var p=shots.Target(local.Actor,local.Actor.Intent,frame.position,Mathf.Sign(server?server.transform.position.x:1));p.y=.022f;aimMarker.position=p;}
             }
+        }
+        public void PresentContact(Vector3 position, Vector3 velocity, double time)
+        {
+            if (IsServer) return;
+            confirmedContact=new BallFrame {position=position,velocity=velocity,time=time,live=true,released=true};
+            if(Body)SetBallPosition(position);
         }
         void SetBallPosition(Vector3 position)
         {

@@ -101,6 +101,7 @@ namespace PickleVerse.LocalMatch
             // WASD/touch forward always points into the court after an end change.
             move = Vector2.ClampMagnitude(move, 1); move *= -human.end;
             bool cancel=GameControls.Pressed(GameAction.CancelShot);
+            if(!autoPlayer)human.ObserveMovement(move,run);
             if(tapMask!=0)TickInput(mask|tapMask,cancel);
             TickInput(mask,cancel);
             accumulator += Mathf.Min(Time.deltaTime, .20f);
@@ -124,8 +125,8 @@ namespace PickleVerse.LocalMatch
             bool serving = Phase == MatchPhase.PreServe && id == Rules.Server;
             if ((Phase != MatchPhase.Rally && !serving) || Paused || Actor(id).Swinging) return false;
             if (serving != (intent.kind == ShotKind.Serve)) return false;
-            Vector3 predicted = BallPosition + BallVelocity * intent.ContactDelay + Vector3.down * (BallFlight.Gravity * intent.ContactDelay * intent.ContactDelay * .5f);
-            bool began = Actor(id).Swing(intent, predicted);
+            float contactDelay = PaddleContact.Anticipation(Actor(id), intent, BallPosition, BallVelocity, out var predicted);
+            bool began = Actor(id).Swing(intent, predicted, contactDelay);
             if (began && serving) { releasedServe = false; serveOrigin = Actor(id).transform.position + Actor(id).transform.right * .3f + Actor(id).transform.forward * .5f + Vector3.up * .94f; }
             if (began && id == 0)
             {
@@ -165,7 +166,7 @@ namespace PickleVerse.LocalMatch
                         BallPosition = new Vector3(serveOrigin.x, BallPosition.y, serveOrigin.z);
                         var f = Rules.Serve(Rules.Server, server.Feet(true), server.Feet(false), ToPoint(BallPosition), ServeElapsed,server.PaddleVelocity.y>0,server.PaddleHeadTop<=server.hand.position.y+.015f);
                         if (f != Fault.None) BeginFault();
-                        else { server.ConsumeContact(false); Launch(server, server.Intent); Phase = MatchPhase.Rally; phaseTime = 0; Message = "Nhận giao bóng: phải để bóng nảy"; }
+                        else { server.ConsumeContact(false, BallPosition); Launch(server, server.Intent); Phase = MatchPhase.Rally; phaseTime = 0; Message = "Nhận giao bóng: phải để bóng nảy"; }
                     }
                 }
                 if (ServeElapsed > 10f && Phase == MatchPhase.PreServe) { Rules.Fail(Rules.Server, Fault.ServeTimeout); BeginFault(); }
@@ -221,14 +222,13 @@ namespace PickleVerse.LocalMatch
             ShotIntent shot = actor.Intent;
             if (shot.AfterBounce && Rules.Bounces == 0 || shot.BeforeBounce && Rules.Bounces != 0) return;
             if (shot.kind == ShotKind.Smash && BallPosition.y < 1.65f) return;
-            Vector3 face = actor.paddleFace ? actor.paddleFace.position : actor.transform.position + actor.transform.forward * .5f + Vector3.up;
             // Small contact assist around the visible paddle; no ball teleport or guaranteed hit.
-            float distance = DistanceSegment(previous, BallPosition, face);
-            if (distance > contactAssistRadius || Vector3.Distance(BallPosition, actor.transform.position + Vector3.up * .9f) > 1.55f) return;
+            if (!actor.CanContact(previous, BallPosition, contactAssistRadius, out float distance)) return;
             if(!TryRankedBotContact(actor)) return;
+            BallPosition=actor.ContactPoint;
             bool volley = Rules.Bounces == 0;
             var result = Rules.Hit(actor.playerId, ToPoint(BallPosition), actor.InKitchen);
-            actor.ConsumeContact(volley);
+            actor.ConsumeContact(volley, BallPosition, result == Fault.None);
             if (result != Fault.None) { BeginFault(); return; }
             progressStrokes.AcceptFlight();
             Launch(actor, shot);

@@ -261,6 +261,9 @@ namespace PickleVerse.EditorTools
         {
             var canvas = scene.GetRootGameObjects().Single(g => g.name == "Canvas").transform;
             var p = canvas.GetComponent<PlayMultiplayerPresenter>() ?? canvas.gameObject.AddComponent<PlayMultiplayerPresenter>();
+            // The refreshed room keeps its serialized bindings under a safe-area root.
+            // Do not reapply the legacy root paths or recreate its removed Custom tab.
+            if(canvas.Find("Room Safe Area")&&p.joinCode&&p.roomType&&p.join&&p.customSlots?.Length==4)return;
             p.joinCode = Find<TMP_InputField>(canvas, "NavPanel/TxtJoinID");
             p.roomType = Find<TMP_Text>(canvas, "TxtRoomType"); p.matchTime = Find<TMP_Text>(canvas, "TxtMatchTime");
             p.roomCode = Find<TMP_Text>(canvas, "NavPanel/TxtRoomId");

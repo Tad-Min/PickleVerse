@@ -21,6 +21,7 @@ namespace PickleVerse.Shop
         public Image confirmIcon;
         PlayerEconomyState wallet;IPlayerEconomy economy;
         ShopCurrency pendingCurrency;string requestId;bool busy;
+        Rect lastSafeArea;Vector2 lastResolution;
         public int Selected {get;private set;}
         public PaddleOffer[] Items=>collectionMode?PlayerEconomy.Catalog.CollectionItems:PlayerEconomy.Catalog.paddles;
         public PaddleOffer Offer=>Items[Selected];
@@ -29,7 +30,8 @@ namespace PickleVerse.Shop
         void Start(){if(browser)browser.FocusTab();else if(EventSystem.current)EventSystem.current.SetSelectedGameObject(cardBorders[0].gameObject);}
         void Update()
         {
-            var a=Screen.safeArea;if(Screen.width>0&&Screen.height>0){safeArea.anchorMin=new Vector2(a.xMin/Screen.width,a.yMin/Screen.height);safeArea.anchorMax=new Vector2(a.xMax/Screen.width,a.yMax/Screen.height);safeArea.offsetMin=safeArea.offsetMax=Vector2.zero;}
+            var a=Screen.safeArea;var size=new Vector2(Screen.width,Screen.height);
+            if(size.x>0&&size.y>0&&(a!=lastSafeArea||size!=lastResolution)){lastSafeArea=a;lastResolution=size;safeArea.anchorMin=new Vector2(a.xMin/size.x,a.yMin/size.y);safeArea.anchorMax=new Vector2(a.xMax/size.x,a.yMax/size.y);safeArea.offsetMin=safeArea.offsetMax=Vector2.zero;}
             if(!PickleVerse.Settings.FrontEndModalInput.IsOpen&&Keyboard.current?.escapeKey.wasPressedThisFrame==true){if(confirmation.activeSelf)CancelPurchase();else Back();}
         }
         public void Select(int item)

@@ -183,7 +183,7 @@ namespace PickleVerse.Settings
             applyButton.interactable=Dirty;refreshing=false;
         }
         static void Tint(UnityEngine.UI.Button button,bool selected)
-        {button.GetComponent<UnityEngine.UI.Image>().color=selected?new Color(.10f,.32f,.33f):new Color(.06f,.14f,.19f);}
+        {if(ScreenUiTheme.Current)ScreenUiTheme.Selection(button,selected);else button.GetComponent<UnityEngine.UI.Image>().color=selected?new Color(.10f,.32f,.33f):new Color(.06f,.14f,.19f);}
         void ApplySafeArea()
         {
             var area=Screen.safeArea;var size=new Vector2(Screen.width,Screen.height);if(area==lastSafeArea&&size==lastResolution)return;

@@ -5,6 +5,8 @@ using PickleVerse.Multiplayer.Services;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 namespace PickleVerse.Multiplayer.UI
 {
@@ -28,6 +30,14 @@ namespace PickleVerse.Multiplayer.UI
         public RoomPlayerSlot singleSlot;
         public RoomPlayerSlot[] duoSlots, customSlots;
         public PlayMode customMode = PlayMode.Doubles;
+        public TMP_Text roomHint,memberCount,inviteCode;
+        public GameObject inviteDialog;
+        public UnityEngine.UI.Button invite,inviteCopy,inviteClose,retry;
+        RoomLaunchAction launchAction;
+        string launchCode;
+        bool initializing;
+        float nextClockUpdate;
+        int arrangedSeats;
         IRoomService rooms;
         IMatchmakingService matchmaking;
         IMultiplayerState state;
@@ -47,7 +57,20 @@ namespace PickleVerse.Multiplayer.UI
             Bind(copy, () => { GUIUtility.systemCopyBuffer = state.RoomCode; app.SetNotice("Đã sao chép mã phòng."); });
             Bind(swap, () => Run(rooms.SwapTeamAsync));
             Bind(play, () => Run(PlayAsync));
+            Bind(invite,ShowInvite);Bind(inviteClose,CloseInvite);
+            Bind(inviteCopy,()=>{GUIUtility.systemCopyBuffer=state.RoomCode;var label=inviteCopy.GetComponentInChildren<TMP_Text>();if(label)label.text="ĐÃ SAO CHÉP";});
+            Bind(retry,()=>Run(InitializeRoom));
             foreach (var slot in customSlots) Bind(slot.kick, () => { if (!string.IsNullOrEmpty(slot.playerId)) Run(() => rooms.KickAsync(slot.playerId)); });
+            foreach(var slot in customSlots){var button=slot.name?slot.name.transform.parent.Find("BtnInvite")?.GetComponent<UnityEngine.UI.Button>():null;Bind(button,ShowInvite);}
+            launchAction=RoomLaunchRequest.Consume(out launchCode);
+            if(!Environment.GetCommandLineArgs().Contains("-pkvCase"))await InitializeRoom();
+            if(this)Refresh();
+        }
+        async Task InitializeRoom()
+        {
+            if(initializing||returningToModes)return;initializing=true;Refresh();
+            try
+            {
             var localPlayer = PickleVerse.Progression.ProgressionRuntime.Instance.Player;
             string profile = localPlayer.id;
             var args = Environment.GetCommandLineArgs();
@@ -56,9 +79,19 @@ namespace PickleVerse.Multiplayer.UI
             MultiplayerApp.OpenDefaultRoomOnLoad = false;
             if (!args.Contains("-pkvCase") && (state.State == FlowState.Menu || openDefault))
                 await rooms.OpenAsync(profile, localPlayer.playerName);
-            if(!this)return;
-            Refresh();
+            if(!this||returningToModes||state.State!=FlowState.WaitingRoom)return;
+            if(launchAction==RoomLaunchAction.CreateSingles||launchAction==RoomLaunchAction.CreateDoubles)
+            {
+                var mode=launchAction==RoomLaunchAction.CreateSingles?PlayMode.Singles:PlayMode.Doubles;
+                await rooms.SelectCustomAsync(mode);
+                if(state.Custom&&state.Mode==mode&&!string.IsNullOrEmpty(state.RoomCode))launchAction=RoomLaunchAction.None;
+            }
+            else if(launchAction==RoomLaunchAction.Join){await rooms.JoinAsync(launchCode);if(!string.IsNullOrEmpty(state.RoomCode))launchAction=RoomLaunchAction.None;}
+            }
+            finally{initializing=false;if(this)Refresh();}
         }
+        public void ShowInvite(){if(!inviteDialog||string.IsNullOrEmpty(state?.RoomCode))return;inviteCode.text=state.RoomCode;if(inviteCopy){var label=inviteCopy.GetComponentInChildren<TMP_Text>();if(label)label.text="SAO CHÉP MÃ";}inviteDialog.SetActive(true);inviteDialog.transform.SetAsLastSibling();Refresh();if(EventSystem.current&&inviteCopy)EventSystem.current.SetSelectedGameObject(inviteCopy.gameObject);}
+        public void CloseInvite(){if(!inviteDialog)return;inviteDialog.SetActive(false);Refresh();if(EventSystem.current&&invite&&invite.gameObject.activeInHierarchy)EventSystem.current.SetSelectedGameObject(invite.gameObject);}
         void Bind(UnityEngine.UI.Button button, UnityAction action)
         {
             if (!button) return;
@@ -83,30 +116,42 @@ namespace PickleVerse.Multiplayer.UI
             if (!state.Custom) await matchmaking.FindAsync();
             else if (RoomViewModel.CanStartCustom(state)) await rooms.StartCustomAsync();
         }
-        void Update() { if (state != null) matchTime.text = state.Elapsed; }
+        void Update()
+        {
+            if(state!=null&&matchTime.gameObject.activeSelf&&Time.unscaledTime>=nextClockUpdate){nextClockUpdate=Time.unscaledTime+.2f;var elapsed=state.Elapsed;if(matchTime.text!=elapsed)matchTime.text=elapsed;}
+            if(inviteDialog&&inviteDialog.activeSelf&&Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame)CloseInvite();
+        }
         void Refresh()
         {
             if (state == null || !this) return;
-            bool idle = state.State == FlowState.WaitingRoom && !state.Busy;
+            bool modal=inviteDialog&&inviteDialog.activeSelf;
+            bool idle = state.State == FlowState.WaitingRoom && !state.Busy && !initializing && !modal;
             bool isDoubles = !state.Custom && state.Mode == PlayMode.Doubles;
             singlesPanel.SetActive(!state.Custom && state.Mode == PlayMode.Singles);
             doublesPanel.SetActive(isDoubles); customPanel.SetActive(state.Custom);
-            roomType.text = state.Custom ? "Custom" : isDoubles ? "2Vs2" : "1Vs1";
+            roomType.text = state.Custom ? "PHÒNG RIÊNG  /  "+(state.Mode==PlayMode.Singles?"1v1":"2v2") : isDoubles ? "ĐẤU ĐÔI  /  2v2" : "ĐẤU ĐƠN  /  1v1";
             SelectMode(singles, !state.Custom && !isDoubles);
             SelectMode(doubles, isDoubles);
             SelectMode(custom, state.Custom);
             bool showCode = isDoubles || state.Custom;
             roomCode.gameObject.SetActive(showCode); copy.gameObject.SetActive(showCode);
-            roomCode.text = "MÃ PHÒNG ID:\n" + state.RoomCode; copy.interactable = state.RoomCode.Length > 0;
+            roomCode.text = "MÃ PHÒNG ID:\n" + state.RoomCode; copy.interactable = !modal && state.RoomCode.Length > 0;
             idle=idle&&!returningToModes;
-            singles.interactable = doubles.interactable = custom.interactable = join.interactable = idle;
+            singles.interactable = doubles.interactable = join.interactable = idle;
+            singles.gameObject.SetActive(!state.Custom);doubles.gameObject.SetActive(!state.Custom);
+            if(custom)custom.gameObject.SetActive(false);
             joinCode.interactable = idle && !returningToModes;
-            if(back)back.interactable=!returningToModes;
+            if(back)back.interactable=!returningToModes&&!modal;
             if (swap) { swap.gameObject.SetActive(state.Custom); swap.interactable = idle; }
             play.GetComponentInChildren<TMP_Text>(true).text = RoomViewModel.PlayLabel(state);
-            play.interactable = !returningToModes && (state.Searching || (idle && (state.Custom ? RoomViewModel.CanStartCustom(state) : state.IsCaptain)));
+            play.interactable = !returningToModes && !modal && (state.Searching || (idle && (state.Custom ? RoomViewModel.CanStartCustom(state) : state.IsCaptain)));
             matchTime.gameObject.SetActive(state.Searching); matchTime.text = state.Elapsed;
             var members = state.Members();
+            if(roomHint)roomHint.text=initializing?"Đang kết nối dịch vụ phòng…":state.Notice;
+            if(memberCount)memberCount.text=state.Custom?members.Count+" / "+(2*(int)state.Mode)+" NGƯỜI CHƠI":"GHÉP TRẬN THEO ELO  •  "+(isDoubles?"TỔ ĐỘI 2 NGƯỜI":"ĐẤU ĐƠN");
+            if(invite){invite.gameObject.SetActive(showCode);invite.interactable=idle&&!string.IsNullOrEmpty(state.RoomCode);}
+            if(retry)retry.gameObject.SetActive(!modal&&!initializing&&!state.Busy&&(state.State==FlowState.Menu||launchAction!=RoomLaunchAction.None));
+            if(state.Custom)ArrangeCustom((int)state.Mode);
             Fill(singleSlot, members.FirstOrDefault(m => m.id == state.PlayerId));
             var duo = members.OrderBy(m => m.id == state.PlayerId ? 0 : 1).ToArray();
             for (int i = 0; i < duoSlots.Length; i++) Fill(duoSlots[i], i < duo.Length ? duo[i] : null);
@@ -114,6 +159,15 @@ namespace PickleVerse.Multiplayer.UI
             {
                 var teamMembers = members.Where(m => m.team == team).ToArray();
                 for (int seat = 0; seat < 2; seat++) Fill(customSlots[team * 2 + seat], seat < teamMembers.Length ? teamMembers[seat] : null);
+            }
+        }
+        void ArrangeCustom(int seats)
+        {
+            if(arrangedSeats==seats)return;arrangedSeats=seats;
+            for(int team=0;team<2;team++)for(int seat=0;seat<2;seat++)
+            {
+                var root=customSlots[team*2+seat].name.transform.parent as RectTransform;root.gameObject.SetActive(seat<seats);
+                root.anchorMin=new Vector2(seats==1?.16f:seat==0?.02f:.52f,.13f);root.anchorMax=new Vector2(seats==1?.84f:seat==0?.48f:.98f,.86f);root.offsetMin=root.offsetMax=Vector2.zero;
             }
         }
         void Fill(RoomPlayerSlot slot, RoomMember member)
@@ -132,8 +186,8 @@ namespace PickleVerse.Multiplayer.UI
             // The future Invite placeholder fills an empty custom seat. Hide it
             // when occupied so its white background cannot cover the player's name.
             var invite=slot.name ? slot.name.transform.parent.Find("BtnInvite") : null;
-            if(invite) invite.gameObject.SetActive(member==null);
-            if (slot.kick) { slot.kick.gameObject.SetActive(state.Custom && state.IsCaptain && member != null && member.id != state.PlayerId); slot.kick.interactable = !state.Busy && state.State == FlowState.WaitingRoom; }
+            if(invite){invite.gameObject.SetActive(member==null);var inviteButton=invite.GetComponent<UnityEngine.UI.Button>();if(inviteButton)inviteButton.interactable=!state.Busy&&state.State==FlowState.WaitingRoom&&!(inviteDialog&&inviteDialog.activeSelf);}
+            if (slot.kick) { slot.kick.gameObject.SetActive(state.Custom && state.IsCaptain && member != null && member.id != state.PlayerId); slot.kick.interactable = !state.Busy && state.State == FlowState.WaitingRoom && !(inviteDialog&&inviteDialog.activeSelf); }
         }
         static void SelectMode(UnityEngine.UI.Button button, bool selected)
         {

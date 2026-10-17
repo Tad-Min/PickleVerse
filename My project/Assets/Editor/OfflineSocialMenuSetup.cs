@@ -17,6 +17,8 @@ namespace PickleVerse.EditorTools
             if(scene.path!="Assets/Scenes/UI/Menu.unity") throw new InvalidOperationException("Mở Scene Menu trước khi cấu hình.");
             var ui=UnityEngine.Object.FindAnyObjectByType<PlayerProgressionMenu>();
             if(!ui) throw new InvalidOperationException("Menu cần PlayerProgressionMenu đã cấu hình.");
+            if(ui.GetComponent<HomeMenuShell>())
+            {Debug.Log("Menu uses the social drawer. Re-author with Tools/RefreshLobbyUi.cs; social bindings are retained.");return;}
             var social=ui.GetComponent<OfflineSocialMenu>();
             if(!social) social=ui.gameObject.AddComponent<OfflineSocialMenu>();
             social.ui=ui; social.ConfigureWelcomeCard();

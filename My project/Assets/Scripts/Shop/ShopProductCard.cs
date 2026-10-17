@@ -12,6 +12,19 @@ namespace PickleVerse.Shop
         public int Index {get;private set;}
         bool collectionMode;
         Color accentColor;
+        bool? compact;
+        void LateUpdate()
+        {
+            bool narrow=((RectTransform)transform).rect.height<230;
+            if(compact==narrow)return;compact=narrow;
+            Place(thumbnail.rectTransform,narrow?.025f:.05f,narrow?.06f:.41f,narrow?.33f:.95f,narrow?.96f:.98f);
+            Place(collection.rectTransform,narrow?.37f:.06f,narrow?.70f:.33f,.94f,narrow?.91f:.40f);
+            Place(title.rectTransform,narrow?.37f:.06f,narrow?.43f:.22f,.94f,narrow?.72f:.34f);
+            Place(price.rectTransform,narrow?.37f:.06f,narrow?.24f:.12f,.94f,narrow?.44f:.22f);
+            Place(action.rectTransform,narrow?.37f:.06f,narrow?.065f:.025f,.94f,narrow?.25f:.10f);
+            title.fontSize=24;collection.fontSize=11;price.fontSize=12;action.fontSize=11;
+        }
+        static void Place(RectTransform r,float x,float y,float right,float top){r.anchorMin=new Vector2(x,y);r.anchorMax=new Vector2(right,top);r.offsetMin=r.offsetMax=Vector2.zero;}
         public void Bind(ShopScreen screen,int index,bool owned)
         {
             Index=index;collectionMode=screen.collectionMode;var offer=screen.Items[index];thumbnail.sprite=offer.thumbnail;

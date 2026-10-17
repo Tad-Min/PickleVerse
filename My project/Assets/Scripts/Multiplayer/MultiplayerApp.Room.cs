@@ -54,7 +54,7 @@ namespace PickleVerse.Multiplayer
             Mode = mode; roomData = new RoomData { mode = mode, custom = custom };
             if (custom || mode == PlayMode.Doubles) await CreateRoomAsync(custom, mode);
             if (custom) await SetTeamAsync(PlayerId, 0);
-            SetState(FlowState.WaitingRoom, custom ? "Phòng custom đã tạo." : "Phòng " + (mode == PlayMode.Singles ? "1vs1" : "2vs2"));
+            SetState(FlowState.WaitingRoom, custom ? "Đã tạo phòng riêng. Chia sẻ mã để mời bạn bè." : "Phòng " + (mode == PlayMode.Singles ? "1vs1" : "2vs2"));
         }
         public async Task UpdateNameAsync(string name)
         {
@@ -78,7 +78,7 @@ namespace PickleVerse.Multiplayer
         {
             if (Searching) throw new InvalidOperationException("Hủy tìm trận trước.");
             await LeaveRoomAsync(); Mode = mode; await CreateRoomAsync(true, mode);
-            await SetTeamAsync(PlayerId, 0); SetState(FlowState.WaitingRoom, "Phòng custom đã tạo.");
+            await SetTeamAsync(PlayerId, 0); SetState(FlowState.WaitingRoom, "Đã tạo phòng riêng. Chia sẻ mã để mời bạn bè.");
         }
         async Task CreateRoomAsync(bool custom, PlayMode mode)
         {

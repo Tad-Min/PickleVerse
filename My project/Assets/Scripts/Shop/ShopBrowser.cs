@@ -40,8 +40,8 @@ namespace PickleVerse.Shop
             if(screen.confirmation.activeSelf)return;if(screen.collectionMode)tab=1;Tab=tab;detailRoot.SetActive(false);browseRoot.SetActive(true);if(detailPresentation)detailPresentation.Hide();else screen.preview.previewCamera.enabled=false;
             signaturePage.SetActive(tab==0);allPage.SetActive(tab==1);signatureLine.enabled=tab==0;allLine.enabled=tab==1;
             Canvas.ForceUpdateCanvases();LayoutCards();
-            signatureTab.GetComponent<Image>().color=tab==0?new Color(.10f,.24f,.28f):new Color(.04f,.07f,.10f);
-            allTab.GetComponent<Image>().color=tab==1?new Color(.10f,.24f,.28f):new Color(.04f,.07f,.10f);
+            PickleVerse.Settings.ScreenUiTheme.Selection(signatureTab,tab==0);
+            PickleVerse.Settings.ScreenUiTheme.Selection(allTab,tab==1);
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject((tab==0?signatureTab:allTab).gameObject);
         }
         public void OpenDetails()

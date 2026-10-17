@@ -6,8 +6,10 @@ namespace PickleVerse.LocalMatch
     public static class ServeBallMotion
     {
         public static void Step(MatchActor actor, ref bool released, ref Vector3 origin,
-            ref Vector3 position, ref Vector3 velocity)
+            ref Vector3 position, ref Vector3 velocity, float dt=1f/120f)
         {
+            if(released&&!actor.Swinging)
+            { BallFlight.Integrate(ref position,ref velocity,dt);return; }
             if (!actor.Swinging || actor.Intent.kind != ShotKind.Serve)
             { position = actor.HeldBallPosition; velocity = Vector3.zero; return; }
             if (actor.SwingTime >= .5f && !released)
