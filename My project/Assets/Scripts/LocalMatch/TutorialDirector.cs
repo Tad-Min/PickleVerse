@@ -59,7 +59,7 @@ namespace PickleVerse.LocalMatch
         }
         void Update()
         {
-            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused||resumeFrame==Time.frameCount)return;
+            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused||SceneLoading.IsBlocking||resumeFrame==Time.frameCount)return;
             if(GameControls.Pressed(GameAction.Settings)){SettingsOverlay.Open(this);return;}
             if(GameControls.Pressed(GameAction.Continue)&&CanContinue)Next();
             Vector2 movement=TouchMovement;

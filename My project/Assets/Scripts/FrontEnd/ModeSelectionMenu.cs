@@ -49,7 +49,7 @@ namespace PickleVerse.FrontEnd
         void Update()
         {
             ApplySafeArea();
-            if (!PickleVerse.Settings.FrontEndModalInput.IsOpen && !Loading && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
+            if (!PickleVerse.Settings.FrontEndModalInput.IsOpen && !Loading && !PickleVerse.Settings.SceneLoading.IsBlocking && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
         }
 
         void ApplySafeArea()
@@ -138,7 +138,6 @@ namespace PickleVerse.FrontEnd
             if(Loading||PickleVerse.Shop.LobbyNavigation.IsBusy)return;
             if(!Application.CanStreamedLevelBeLoaded("Training")){subtitle.text="Chưa tìm thấy sân luyện tập.";return;}
             Loading=true;
-            loadingOverlay.SetActive(true);loadingLabel.text="Đang mở học viện…";
             PickleVerse.Shop.LobbyNavigation.OpenTraining();
         }
 
@@ -232,7 +231,7 @@ namespace PickleVerse.FrontEnd
             }
             Loading = true;
             BotMatchLaunchSettings.Prepare(SelectedDifficulty, SelectedNight, SelectedVenue);
-            StartCoroutine(LoadScene("BotMatch", "Đang chuẩn bị sân…"));
+            PickleVerse.Settings.SceneLoading.Load("BotMatch");
         }
 
         IEnumerator LoadScene(string sceneName, string message)

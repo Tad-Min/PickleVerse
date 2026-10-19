@@ -31,7 +31,7 @@ namespace PickleVerse.Multiplayer
         public int TouchShotMask { get; set; }
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
-        public bool InputBlocked => cinematic && cinematic.OwnsPose || localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
+        public bool InputBlocked => PickleVerse.Settings.SceneLoading.IsBlocking || cinematic && cinematic.OwnsPose || localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
         public bool IsGameplay => true;
         public bool IsPaused => localInputPaused;
         public bool CanSignOut => false;
@@ -97,7 +97,7 @@ namespace PickleVerse.Multiplayer
         }
         void Update()
         {
-            bool readKeys=Keyboard.current!=null && (Application.isFocused || InputSystem.settings.backgroundBehavior==InputSettings.BackgroundBehavior.IgnoreFocus);
+            bool readKeys=!PickleVerse.Settings.SceneLoading.IsBlocking && Keyboard.current!=null && (Application.isFocused || InputSystem.settings.backgroundBehavior==InputSettings.BackgroundBehavior.IgnoreFocus);
             if(readKeys && (!resultScreen || !resultScreen.IsVisible) && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading)
             {
                 if(GameControls.Pressed(GameAction.Settings))OpenSettings();

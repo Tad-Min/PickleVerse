@@ -73,7 +73,7 @@ namespace PickleVerse.LocalMatch
         }
         void Update()
         {
-            if (SettingsOverlay.IsOpen || SettingsOverlay.Loading) return;
+            if (SettingsOverlay.IsOpen || SettingsOverlay.Loading || SceneLoading.IsBlocking) return;
             var keyboard = Keyboard.current;
             if (focused && GameControls.Pressed(GameAction.Settings)) { SettingsOverlay.Open(this); return; }
             if(Phase==MatchPhase.Cinematic)

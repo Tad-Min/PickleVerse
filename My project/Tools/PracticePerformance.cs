@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 public sealed class PracticeFrameProbe:MonoBehaviour
 {
-    public bool recording,moving;public TrainingDirector training;public TutorialDirector tutorial;
+    public bool recording,moving;public TrainingDirector training;public TutorialDirector tutorial;public int focusedFrames;
     public readonly List<float> frames=new List<float>(8192),sample=new List<float>(8192),scripts=new List<float>(8192),skin=new List<float>(8192),gc=new List<float>(8192);
     public ProfilerRecorder animation,behaviours,skinning,allocations;
     void Update()
@@ -21,9 +21,10 @@ public sealed class PracticeFrameProbe:MonoBehaviour
         if(training){training.TouchMovement=moving?new Vector2(Mathf.Sin(Time.time*1.2f),Mathf.Cos(Time.time*.8f)):Vector2.zero;training.TouchRun=moving;}
         if(tutorial){tutorial.TouchMovement=moving?Vector2.up:Vector2.zero;tutorial.TouchRun=moving;}
         if(!recording)return;
+        if(Application.isFocused)focusedFrames++;
         frames.Add(Time.unscaledDeltaTime*1000);sample.Add(animation.LastValue/1000000f);scripts.Add(behaviours.LastValue/1000000f);skin.Add(skinning.LastValue/1000000f);gc.Add(allocations.LastValue);
     }
-    public void Clear(){frames.Clear();sample.Clear();scripts.Clear();skin.Clear();gc.Clear();}
+    public void Clear(){focusedFrames=0;frames.Clear();sample.Clear();scripts.Clear();skin.Clear();gc.Clear();}
 }
 public static class PracticePerformance
 {
@@ -36,7 +37,7 @@ public static class PracticePerformance
     {
         await Task.Delay(warmup);p.Clear();p.recording=true;await Task.Delay(duration);p.recording=false;
         var f=p.frames.OrderBy(v=>v).ToArray();var a=p.training?p.training.player:p.tutorial?p.tutorial.player:null;
-        return new{stage,frames=f.Length,fps=1000/f.Average(),p95=f[(int)((f.Length-1)*.95)],max=f.Last(),animationMs=p.sample.Average(),scriptsMs=p.scripts.Average(),skinMs=p.skin.Average(),gcBytesPerFrame=p.gc.Average(),scale=(UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset).renderScale,actor=a?new{position=a.transform.position.ToString("F3"),velocity=a.Velocity.ToString("F3"),a.CurrentClip,a.LocomotionClip}:null};
+        return new{stage,frames=f.Length,p.focusedFrames,fps=1000/f.Average(),p95=f[(int)((f.Length-1)*.95)],max=f.Last(),animationMs=p.sample.Average(),scriptsMs=p.scripts.Average(),skinMs=p.skin.Average(),gcBytesPerFrame=p.gc.Average(),scale=(UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset).renderScale,actor=a?new{position=a.transform.position.ToString("F3"),velocity=a.Velocity.ToString("F3"),a.CurrentClip,a.LocomotionClip}:null};
     }
     sealed class Memory:ITutorialProgressStore
     {readonly Dictionary<string,int> values=new Dictionary<string,int>();public int Read(string key)=>values.TryGetValue(key,out var v)?v:0;public void Write(string key,int value){values[key]=value;}}
@@ -49,6 +50,7 @@ public static class PracticePerformance
             runtime.SwitchPlayer(qa,"Practice all QA");p=new GameObject("Practice lesson frame probe").AddComponent<PracticeFrameProbe>();UnityEngine.Object.DontDestroyOnLoad(p.gameObject);
             p.animation=ProfilerRecorder.StartNew(ProfilerCategory.Animation,"GameObject.SampleAnimation",1);p.behaviours=ProfilerRecorder.StartNew(ProfilerCategory.Scripts,"BehaviourUpdate",1);p.skinning=ProfilerRecorder.StartNew(ProfilerCategory.Render,"SkinnedMeshUpdateAllNeeded",1);p.allocations=ProfilerRecorder.StartNew(ProfilerCategory.Memory,"GC Allocated In Frame",1);
             await Load("Training");p.training=UnityEngine.Object.FindAnyObjectByType<TrainingDirector>();runtime.UpdateWallet(x=>{foreach(var lesson in TrainingCurriculum.Lessons)TrainingEngine.Record(TrainingEngine.Ensure(x),lesson.id).bestStars=1;});
+            var gameView=UnityEditor.EditorWindow.GetWindow(typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView"));gameView.Show();gameView.Focus();
             foreach(var lesson in TrainingCurriculum.Lessons)
             {
                 p.training.Select(lesson.id);p.training.StartLesson(true);p.moving=true;

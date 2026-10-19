@@ -70,6 +70,7 @@ namespace PickleVerse.Multiplayer
         }
         void LateUpdate()
         {
+            if(PickleVerse.Settings.SceneLoading.IsBlocking)return;
             var match=NetworkMatch.Instance;
             if(!match||!match.IsSpawned||!ui)return;
             if(match.IntroStart.Value>0 && !match.Started.Value && !finishedIntro)

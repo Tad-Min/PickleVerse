@@ -71,7 +71,7 @@ namespace PickleVerse.LocalMatch
         void Start(){if(!string.IsNullOrEmpty(TrainingLaunch.LessonId)){string id=TrainingLaunch.LessonId;TrainingLaunch.LessonId=null;Select(id);}}
         void Update()
         {
-            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused)return;
+            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused||SceneLoading.IsBlocking)return;
             if(GameControls.Pressed(GameAction.Settings)){SettingsOverlay.Open(this);return;}
             Vector2 movement=TouchMovement;
             if(GameControls.Held(GameAction.Left))movement.x--;if(GameControls.Held(GameAction.Right))movement.x++;

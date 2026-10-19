@@ -1,0 +1,93 @@
+#if PKV_LOADING_QA
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using UnityEngine;
+using Unity.Netcode.Transports.UTP;
+using PickleVerse.Multiplayer.Services;
+using PickleVerse.Progression;
+using PickleVerse.Settings;
+using Newtonsoft.Json;
+
+namespace PickleVerse.Multiplayer
+{
+    // Compiled only into the opt-in local QA build, never a normal player.
+    public sealed class LoadingNetworkSmoke:MonoBehaviour
+    {
+        const BindingFlags Hidden=BindingFlags.Instance|BindingFlags.NonPublic;
+        sealed class Identity:IPlayerIdentityService
+        {public string PlayerId{get;set;} public string Profile=>PlayerId;public string DisplayName{get;set;} public Task InitializeAsync(string p,string e)=>Task.CompletedTask;public string ResolveName(string n)=>n;}
+        MultiplayerApp app;string file,role,qa,original;bool seenCover,seenHundred,seenIntro,bad;float readyTime=-1,hundredTime=-1,revealTime=-1;int samples;
+        readonly List<object> rows=new List<object>();
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Install(){if(Environment.GetCommandLineArgs().Contains("-pkvLoadingRole")){var go=new GameObject("Loading network QA");DontDestroyOnLoad(go);go.AddComponent<LoadingNetworkSmoke>();}}
+        static string Arg(string key,string fallback=""){var a=Environment.GetCommandLineArgs();int n=Array.IndexOf(a,key);return n>=0&&n+1<a.Length?a[n+1]:fallback;}
+        static async Task Wait(Func<bool> ready,int seconds=70){double until=Time.realtimeSinceStartupAsDouble+seconds;while(!ready()&&Time.realtimeSinceStartupAsDouble<until)await Task.Delay(20);if(!ready())throw new Exception("Network loading QA timed out");}
+        static void Set(object o,string name,object value)=>o.GetType().GetProperty(name).GetSetMethod(true).Invoke(o,new[]{value});
+        async void Start()
+        {
+            role=Arg("-pkvLoadingRole");file=Arg("-pkvLoadingReport");bool host=role=="host",doubles=Arg("-pkvLoadingDoubles")=="1";
+            qa="LoadNetQA"+Guid.NewGuid().ToString("N").Substring(0,8);original=ProgressionRuntime.Instance.Player.id;
+            try
+            {
+                ProgressionRuntime.Instance.SwitchPlayer(qa,"Network loading QA");GameSettings.Current.fps=120;GameSettings.Current.vsync=false;SettingsRuntime.Apply(GameSettings.Current);
+                app=MultiplayerApp.Ensure();app.enabled=false;
+                typeof(MultiplayerApp).GetField("identity",Hidden).SetValue(app,new Identity{PlayerId=host?"LOAD-HOST":"LOAD-GUEST",DisplayName=role});
+                var roster=new MatchRoster{matchId="local-loading-qa",mode=doubles?PlayMode.Doubles:PlayMode.Singles,custom=true};
+                roster.members.Add(new RoomMember{id="LOAD-HOST",name="Host",gender="Female",team=0,group="local",ready=true});
+                if(doubles)roster.members.Add(new RoomMember{id="LOAD-BOT-A",name="Partner A",gender="Male",team=0,group="local",ready=true,bot=true});
+                roster.members.Add(new RoomMember{id="LOAD-GUEST",name="Guest",gender="Male",team=1,group="local",ready=true});
+                if(doubles)roster.members.Add(new RoomMember{id="LOAD-BOT-B",name="Partner B",gender="Female",team=1,group="local",ready=true,bot=true});
+                Set(app,"Roster",roster);typeof(MultiplayerApp).GetField("roomData",Hidden).SetValue(app,new RoomData{custom=true,mode=roster.mode});
+                typeof(MultiplayerApp).GetField("intentionalShutdown",Hidden).SetValue(app,true);
+                app.Network.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1",ushort.Parse(Arg("-pkvLoadingPort","19887")),"127.0.0.1");
+                app.Network.NetworkConfig.ConnectionData=Encoding.UTF8.GetBytes(app.PlayerId);
+                bool started=host?app.Network.StartHost():app.Network.StartClient();if(!started)throw new Exception("Local transport did not start");
+                typeof(MultiplayerApp).GetMethod("TrackLoadingSceneEvents",Hidden).Invoke(app,null);
+                if(host)
+                {
+                    await Wait(()=>app.Network.ConnectedClients.Count==2);
+                    app.StartCoroutine((System.Collections.IEnumerator)typeof(MultiplayerApp).GetMethod("LoadCourtWithCover",Hidden).Invoke(app,null));
+                }
+                await Wait(()=>NetworkMatch.Instance&&NetworkMatch.Instance.Started.Value&&!SceneLoading.IsBlocking);
+                await Wait(()=>MultiplayerCourtUI.Instance&&MultiplayerCourtUI.Instance.cinematic&&!MultiplayerCourtUI.Instance.cinematic.PlayingIntro);
+                // Let the final Started update reach the peer before QA teardown.
+                // A real host stays in the match; an immediate test-process exit
+                // can otherwise remove the last network tick from the guest.
+                await Task.Delay(host?1500:100);
+                var match=NetworkMatch.Instance;bool team=doubles?NetworkPlayer.All.Count(p=>p.Team.Value==(host?0:1))==2:true;
+                bool waitForSlow=!host||hundredTime-readyTime>1.5f;
+                bool passed=!bad&&seenCover&&seenHundred&&seenIntro&&readyTime>=0&&revealTime>hundredTime&&team&&waitForSlow&&NetworkPlayer.All.Count==roster.Count;
+                File.WriteAllText(file,JsonConvert.SerializeObject(new{passed,role,doubles,seenCover,seenHundred,seenIntro,bad,readyTime,hundredTime,revealTime,waitForSlow,players=NetworkPlayer.All.Count,scope="Two standalone processes on loopback; actual NGO scene events and a deliberately delayed guest; no cloud session",rows},Formatting.Indented));
+            }
+            catch(Exception e){File.WriteAllText(file,JsonConvert.SerializeObject(new{passed=false,role,error=e.ToString(),readyTime,hundredTime,revealTime,seenCover,seenHundred,seenIntro,rows},Formatting.Indented));Debug.LogException(e);}
+            finally
+            {
+                if(app){typeof(MultiplayerApp).GetField("intentionalShutdown",Hidden).SetValue(app,true);app.Network.Shutdown();}
+                SceneLoading.CancelExternal();ProgressionRuntime.Instance.SwitchPlayer(original,null);
+                string root=Path.Combine(Application.persistentDataPath,"LocalPlayers");foreach(var s in new[]{".json",".json.bak",".lock"}){var path=Path.Combine(root,qa+s);if(File.Exists(path))File.Delete(path);}
+                Application.Quit();
+            }
+        }
+        void Update()
+        {
+            if(!app)return;float now=Time.realtimeSinceStartup;var match=NetworkMatch.Instance;
+            if(SceneLoading.IsBlocking)
+            {
+                seenCover|=SceneLoading.View!=null;
+                if(SceneLoading.LocalRenderReady&&readyTime<0)readyTime=now;
+                if(SceneLoading.View&&SceneLoading.View.DisplayedProgress>=.9999f){seenHundred=true;if(hundredTime<0)hundredTime=now;}
+                if(SceneLoading.Progress>=1&&(!SceneLoading.LocalRenderReady||!match||!match.CourtPrepared.Value))bad=true;
+                if(MultiplayerCourtUI.Instance&&MultiplayerCourtUI.Instance.cinematic.PlayingIntro)bad=true;
+                if(++samples%20==0)rows.Add(new{time=now,progress=SceneLoading.Progress,ready=SceneLoading.LocalRenderReady,intro=match?match.IntroStart.Value:-1});
+            }
+            else if(seenCover&&revealTime<0)revealTime=now;
+            if(MultiplayerCourtUI.Instance&&MultiplayerCourtUI.Instance.cinematic.PlayingIntro)seenIntro=true;
+        }
+    }
+}
+#endif
