@@ -22,6 +22,10 @@ namespace PickleVerse.FrontEnd
         public TMP_Text[] difficultySelected, environmentSelected;
         public UnityEngine.UI.RawImage courtPreview;
         public Texture2D dayPreview, nightPreview;
+        public UnityEngine.UI.Button[] venueButtons;
+        public TMP_Text[] venueSelected;
+        public Texture2D[] venueDayPreviews, venueNightPreviews;
+        public CourtVenue SelectedVenue { get; private set; }
         public bool IsBotSetup { get; private set; }
         public int SelectedDifficulty { get; private set; }
         public bool SelectedNight { get; private set; }
@@ -36,6 +40,7 @@ namespace PickleVerse.FrontEnd
         {
             SelectedDifficulty = BotMatchLaunchSettings.Difficulty;
             SelectedNight = BotMatchLaunchSettings.Night;
+            SelectedVenue = BotMatchLaunchSettings.Venue;
             if(roomJoinCode)roomJoinCode.onSubmit.AddListener(_=>JoinPrivateRoom());
             ApplySafeArea();
             ShowModes();
@@ -164,6 +169,10 @@ namespace PickleVerse.FrontEnd
 
         public void SelectDay() { SetEnvironment(false); }
         public void SelectNight() { SetEnvironment(true); }
+        public void SelectProfessional() { SetVenue(CourtVenue.Professional); }
+        public void SelectLowPoly() { SetVenue(CourtVenue.LowPoly); }
+        void SetVenue(CourtVenue venue)
+        { if(Loading)return;SelectedVenue=CourtVenueSelection.Normalize(venue);RefreshChoices(); }
         void SetEnvironment(bool night)
         {
             if (Loading) return;
@@ -175,6 +184,12 @@ namespace PickleVerse.FrontEnd
         {
             for (int i = 0; i < difficultyButtons.Length; i++) MarkChoice(difficultyButtons[i], difficultySelected[i], i == SelectedDifficulty);
             for (int i = 0; i < environmentButtons.Length; i++) MarkChoice(environmentButtons[i], environmentSelected[i], i == (SelectedNight ? 1 : 0));
+            if(venueButtons!=null)for(int i=0;i<venueButtons.Length;i++)
+            {
+                bool selected=i==(int)SelectedVenue;
+                PickleVerse.Settings.ScreenUiTheme.Selection(venueButtons[i],selected);
+                if(venueSelected!=null&&i<venueSelected.Length&&venueSelected[i])venueSelected[i].gameObject.SetActive(selected);
+            }
             difficultyDescription.text = new[]
             {
                 "Dễ  ·  Bot phản ứng chậm hơn, phù hợp để làm quen.",
@@ -183,7 +198,9 @@ namespace PickleVerse.FrontEnd
                 "BhTree  ·  Behavior graph thử nghiệm, cấu hình theo Elo local."
             }[SelectedDifficulty];
             summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ", "BHTREE" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
-            courtPreview.texture = SelectedNight ? nightPreview : dayPreview;
+            summary.text += "   /   " + CourtVenueSelection.DisplayName(SelectedVenue);
+            var previews=SelectedNight?venueNightPreviews:venueDayPreviews;
+            courtPreview.texture = previews!=null&&previews.Length>(int)SelectedVenue?previews[(int)SelectedVenue]:(SelectedNight?nightPreview:dayPreview);
         }
 
         static void MarkChoice(UnityEngine.UI.Button button, TMP_Text marker, bool selected)
@@ -214,7 +231,7 @@ namespace PickleVerse.FrontEnd
                 return;
             }
             Loading = true;
-            BotMatchLaunchSettings.Prepare(SelectedDifficulty, SelectedNight);
+            BotMatchLaunchSettings.Prepare(SelectedDifficulty, SelectedNight, SelectedVenue);
             StartCoroutine(LoadScene("BotMatch", "Đang chuẩn bị sân…"));
         }
 

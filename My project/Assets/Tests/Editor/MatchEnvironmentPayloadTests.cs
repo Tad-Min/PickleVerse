@@ -23,6 +23,23 @@ namespace PickleVerse.Tests
         {
             var client=JsonConvert.DeserializeObject<MatchRoster>("{\"matchId\":\"old-match\",\"mode\":1,\"custom\":true,\"members\":[{\"id\":\"a\",\"team\":0},{\"id\":\"b\",\"team\":1}]}");
             Assert.That(client.night,Is.False);Assert.That(client.IsValid(),Is.True);
+            Assert.That(client.venue,Is.EqualTo(CourtVenue.Professional));
+        }
+        [TestCase(CourtVenue.Professional, false)]
+        [TestCase(CourtVenue.Professional, true)]
+        [TestCase(CourtVenue.LowPoly, false)]
+        [TestCase(CourtVenue.LowPoly, true)]
+        public void EveryClientReceivesTheHostVenue(CourtVenue venue,bool night)
+        {
+            var room=Roster();room.venue=venue==CourtVenue.LowPoly?CourtVenue.Professional:CourtVenue.LowPoly;
+            var selected=room.WithEnvironment(night,venue);
+            for(int i=0;i<4;i++)
+            {
+                var client=JsonConvert.DeserializeObject<MatchRoster>(JsonConvert.SerializeObject(selected));
+                Assert.That(client.venue,Is.EqualTo(venue));Assert.That(client.night,Is.EqualTo(night));Assert.That(client.IsValid(),Is.True);
+            }
+            Assert.That(room.venue,Is.Not.EqualTo(venue));
+            Assert.That(selected.WithEnvironment(!night).venue,Is.EqualTo(venue));
         }
     }
 }

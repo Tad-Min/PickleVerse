@@ -8,6 +8,12 @@ namespace PickleVerse.Replays
         public Light sun;
         public Light[] poles,roofs;
         public Renderer[] poleEmitters,roofEmitters;
+        void Awake()
+        {
+            // Replay uses the same presentation budget as a match; overlay controls stay sharp.
+            if(!GetComponent<PickleVerse.Settings.MatchRenderBudget>())
+                gameObject.AddComponent<PickleVerse.Settings.MatchRenderBudget>();
+        }
         public void Apply(bool night)
         {
             RenderSettings.skybox=night?nightSky:daySky;if(viewCamera)viewCamera.clearFlags=CameraClearFlags.Skybox;if(sun)sun.enabled=!night;RenderSettings.sun=night?null:sun;

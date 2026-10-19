@@ -42,12 +42,13 @@ namespace PickleVerse.LocalMatch
             display.lightProbeUsage=LightProbeUsage.Off;display.reflectionProbeUsage=ReflectionProbeUsage.Off;
             display.enabled=false;
         }
-        public void Play(Vector3 position, ShotIntent shot, Vector3 outgoing)
+        public void Play(Vector3 position, ShotIntent shot, Vector3 outgoing, HitGrade grade = HitGrade.Good)
         {
             if (!display) return;
             PlayCount++; age=0;duration=shot.power||shot.kind==ShotKind.Smash?.24f:.18f;
             size=shot.power||shot.kind==ShotKind.Smash?.40f:shot.kind==ShotKind.Dink||shot.kind==ShotKind.Reset?.20f:.28f;
             tint=shot.power||shot.kind==ShotKind.Smash?new Color(1,.81f,.37f):new Color(.64f,1,.94f);
+            if(grade==HitGrade.Perfect){tint=new Color(1,.69f,.18f);size*=1.12f;duration+=.025f;}
             direction=outgoing; contactPosition=position;view=Camera.main;display.enabled=true;Draw();
         }
         public void Clear(){if(display)display.enabled=false;}

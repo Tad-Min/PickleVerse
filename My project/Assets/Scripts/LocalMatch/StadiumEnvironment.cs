@@ -17,6 +17,13 @@ namespace PickleVerse.LocalMatch
         public Material lightsOn,lightsOff;
         public MeshFilter competitionSurface,kitchenSurface,courtLines,netStructure;
         public Transform nearEntrance,farEntrance,nearResult,farResult;
+        public Vector2 courtsideCameraLimits;
+        public Vector3 KeepCameraInside(Vector3 position)
+        {
+            if(position.y<4 && courtsideCameraLimits.x>0 && courtsideCameraLimits.y>0)
+            {position.x=Mathf.Clamp(position.x,-courtsideCameraLimits.x,courtsideCameraLimits.x);position.z=Mathf.Clamp(position.z,-courtsideCameraLimits.y,courtsideCameraLimits.y);}
+            return position;
+        }
         [Range(0,1)]public float nightWeight;
         float applied=-1,appliedMinimum=-1;bool previousRoof;
         /// <summary>Authoring utility: retain the scanned anchors, group closely spaced lamp heads.</summary>

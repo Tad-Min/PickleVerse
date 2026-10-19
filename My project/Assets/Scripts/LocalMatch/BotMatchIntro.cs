@@ -137,7 +137,9 @@ namespace PickleVerse.LocalMatch
         void EntranceCamera(MatchActor actor,float phase)
         {
             Vector3 offset=EntranceOffset(phase);
-            view.transform.position=actor.transform.TransformPoint(offset);
+            var stadium=match.GetComponent<MatchEnvironmentLighting>()?.stadium;
+            var position=actor.transform.TransformPoint(offset);
+            view.transform.position=stadium?stadium.KeepCameraInside(position):position;
             view.transform.LookAt(actor.transform.position+Vector3.up*.92f);view.fieldOfView=Mathf.Lerp(48,43,phase);
         }
         static Vector3 EntranceOffset(float phase)

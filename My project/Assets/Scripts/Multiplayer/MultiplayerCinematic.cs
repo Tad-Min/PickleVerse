@@ -112,7 +112,8 @@ namespace PickleVerse.Multiplayer
                 var facing=Quaternion.Euler(0,group[0].player.CourtEnd.Value<0?0:180,0);
                 float t=Mathf.Clamp01((time-(stage==1?.8f:4.6f))/3.8f);
                 // Wider framing keeps both doubles teammates visible throughout their walk.
-                view.transform.position=center+facing*new Vector3(Mathf.Lerp(2.2f,-.4f,t),2.3f,group.Length>1?7.2f:4.7f);
+                var position=center+facing*new Vector3(Mathf.Lerp(2.2f,-.4f,t),2.3f,group.Length>1?7.2f:4.7f);
+                view.transform.position=stadium?stadium.KeepCameraInside(position):position;
                 view.transform.LookAt(center+Vector3.up*.85f);view.fieldOfView=48;
             }
             else {if(follow)follow.SnapToPlayer();}
