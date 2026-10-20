@@ -14,10 +14,12 @@ namespace API.Controllers
     public class MissionsController : ControllerBase
     {
         private readonly IMissionService _missionService;
+        private readonly Services.Game.OnlineGameService _game;
 
-        public MissionsController(IMissionService missionService)
+        public MissionsController(IMissionService missionService,Services.Game.OnlineGameService game)
         {
             _missionService = missionService;
+            _game=game;
         }
 
         private Guid GetCurrentUserId()
@@ -30,6 +32,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetMyMissions()
         {
             var userId = GetCurrentUserId();
+            await _game.Read(userId);
             var missions = await _missionService.GetMyMissionsAsync(userId);
             return Ok(missions);
         }
@@ -38,9 +41,7 @@ namespace API.Controllers
         public async Task<IActionResult> ClaimReward(int missionId)
         {
             var userId = GetCurrentUserId();
-            var result = await _missionService.ClaimRewardAsync(userId, missionId);
-            if (!result.Success) return BadRequest(new { message = result.Message });
-            return Ok(new { message = result.Message, expGained = result.ExpGained });
+            return Ok(await _game.LegacyClaim(userId,missionId,false,Request.Headers["Idempotency-Key"].FirstOrDefault()??Guid.NewGuid().ToString("N")));
         }
     }
 }

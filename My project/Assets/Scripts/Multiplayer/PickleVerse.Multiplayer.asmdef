@@ -2,6 +2,9 @@
   "name": "PickleVerse.Multiplayer",
   "rootNamespace": "PickleVerse.Multiplayer",
   "references": [
+    "Fusion.Unity",
+    "Photon.Realtime",
+    "PickleVerse.Services",
     "Unity.Netcode.Runtime",
     "Unity.Networking.Transport",
     "Unity.Services.Core",

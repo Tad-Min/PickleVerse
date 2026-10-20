@@ -13,10 +13,12 @@ namespace API.Controllers
     public class TrainingController : ControllerBase
     {
         private readonly ITrainingService _trainingService;
+        private readonly Services.Game.OnlineGameService _game;
 
-        public TrainingController(ITrainingService trainingService)
+        public TrainingController(ITrainingService trainingService,Services.Game.OnlineGameService game)
         {
             _trainingService = trainingService;
+            _game=game;
         }
 
         private Guid GetCurrentUserId()
@@ -30,17 +32,16 @@ namespace API.Controllers
         public async Task<IActionResult> GetLessons()
         {
             var userId = GetCurrentUserId();
-            var lessons = await _trainingService.GetLessonsAsync(userId);
+            var lessons = await _game.LegacyLessons(userId);
             return Ok(lessons);
         }
 
         [Authorize]
         [HttpPost("submit-drill")]
-        public async Task<IActionResult> SubmitDrill([FromBody] SubmitDrillRequest request)
+        [Obsolete("Use api/Game/training/start, checkpoint and complete.")]
+        public IActionResult SubmitDrill([FromBody] SubmitDrillRequest request)
         {
-            var userId = GetCurrentUserId();
-            var result = await _trainingService.SubmitDrillResultAsync(userId, request);
-            return Ok(result);
+            return StatusCode(410,new{message="API gửi điểm tự do đã được thay bằng api/Game/training/start, checkpoint và complete."});
         }
     }
 }

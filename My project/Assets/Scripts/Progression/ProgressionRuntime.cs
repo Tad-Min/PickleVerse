@@ -1,16 +1,23 @@
 using System;
+using System.Threading.Tasks;
 using PickleVerse.Services;
 using UnityEngine;
 
 namespace PickleVerse.Progression
 {
-    /// <summary>Read-only compatibility view of the authenticated backend profile. No local save or guest account.</summary>
+    /// <summary>In-memory view of server-owned game state. No local player saves.</summary>
     public sealed class ProgressionRuntime : MonoBehaviour
     {
         static ProgressionRuntime instance;
         static bool shuttingDown;
         AccountService account;
         PlayerProfile player = Empty();
+        ProgressionConfig rules;
+        Task loading = Task.CompletedTask;
+        int loadedSession = -1;
+        public OnlineGameSnapshot Snapshot { get; private set; }
+        public bool Ready => account != null && account.IsSignedIn && loadedSession == account.SessionVersion && Snapshot != null;
+        public string Error { get; private set; }
         public static ProgressionRuntime Instance
         {
             get
@@ -23,7 +30,7 @@ namespace PickleVerse.Progression
         public static bool Exists => !shuttingDown && instance && instance.player != null;
         public PlayerProfile Player => player;
         public bool Online => true;
-        public bool IsAuthenticated => account != null && account.IsSignedIn;
+        public bool IsAuthenticated => Ready;
         public ProgressionEngine Engine { get; private set; }
         public IUtcClock UtcClock { get; set; } = new SystemUtcClock();
         public static bool DeveloperControls => false;
@@ -37,24 +44,78 @@ namespace PickleVerse.Progression
         {
             if (instance && instance != this) { Destroy(gameObject); return; }
             instance = this; DontDestroyOnLoad(gameObject);
-            Engine = new ProgressionEngine(Resources.Load<ProgressionConfig>("Progression Config") ?? ProgressionConfig.Defaults());
-            account = AccountRuntime.Ensure().Account; account.Changed += ReadServerProfile; ReadServerProfile();
+            rules = ScriptableObject.CreateInstance<ProgressionConfig>();
+            rules.definitions.Clear(); Engine = new ProgressionEngine(rules);
+            account = AccountRuntime.Ensure().Account; account.Changed += OnAccountChanged; OnAccountChanged();
         }
-        void ReadServerProfile()
+        void OnAccountChanged()
         {
-            var profile = account.Profile;
-            player = profile == null ? Empty() : new PlayerProfile
+            if (!account.IsSignedIn || loadedSession != account.SessionVersion)
             {
-                online = true, id = profile.UserId.ToString("N"), playerName = profile.PlayerName,
-                avatarId = profile.Avatar, elo = profile.Elo, level = profile.Level, levelXp = profile.Exp,
-                rankWinStreak = profile.WinStreak, wins = profile.WinCount, losses = profile.LoseCount,
-                activeSeconds = profile.TimePlayedSeconds
-            };
+                player = Empty(); Snapshot = null; loadedSession = -1; Error = null;
+            }
             Changed?.Invoke();
+            if (account.IsSignedIn) loading = LoadSafelyAsync();
         }
-        // Legacy consumers remain compilable while their backend integration is deferred.
-        // Their entry points are disabled by AccountScreen; these guards reject local rewards and writes too.
-        public void RefreshPeriods() { }
+        async Task LoadSafelyAsync()
+        {
+            int version = account.SessionVersion;
+            try { await ReloadAsync(); }
+            catch (OperationCanceledException) { }
+            catch (Exception error)
+            {
+                if (version != account.SessionVersion || !this) return;
+                Error = error.Message; Changed?.Invoke();
+            }
+        }
+        public async Task EnsureReadyAsync()
+        {
+            await loading;
+            if (!Ready) await ReloadAsync();
+        }
+        public async Task ReloadAsync()
+        {
+            var state = await account.SendAuthorizedAsync<OnlineGameSnapshot>("GET", "api/Game/state");
+            ApplySnapshot(state);
+        }
+        void ApplySnapshot(OnlineGameSnapshot state)
+        {
+            if (!this || !account.IsSignedIn) return;
+            if (state?.player == null || state.catalog?.definitions == null || state.catalog.lessons == null
+                || state.catalog.cosmetics == null || state.inventory?.owned == null || state.tutorial == null
+                || state.player.id != account.Profile.UserId.ToString("N"))
+                throw new InvalidOperationException("Dữ liệu trò chơi từ máy chủ chưa đầy đủ.");
+            if (Ready && state.revision < Snapshot.revision) return;
+            TrainingCurriculum.Configure(state.catalog.lessons);
+            rules.winXp = state.catalog.winXp; rules.lossXp = state.catalog.lossXp;
+            rules.dailyBonus = state.catalog.dailyBonus; rules.weeklyBonus = state.catalog.weeklyBonus;
+            rules.definitions = state.catalog.definitions;
+            state.player.online = true; player = state.player; Snapshot = state;
+            loadedSession = account.SessionVersion; Error = null; Changed?.Invoke();
+        }
+        public async Task<OnlineGameSnapshot> CommandAsync(string action, object request)
+        {
+            await EnsureReadyAsync();
+            var state = await account.SendAuthorizedAsync<OnlineGameSnapshot>("POST", "api/Game/" + action, request);
+            ApplySnapshot(state); return state;
+        }
+        public Task ClaimAsync(string id) => CommandAsync("claim", new { RequestId = Guid.NewGuid().ToString("N"), Code = id });
+        public Task<OnlineGameSnapshot> StartTrainingAsync(string id, bool retry) => CommandAsync("training/start",
+            new { RequestId = Guid.NewGuid().ToString("N"), LessonCode = id, Retry = retry });
+        public Task<OnlineGameSnapshot> SaveTrainingAsync(TrainingAttempt attempt, bool completed, string requestId) =>
+            CommandAsync(completed ? "training/complete" : "training/checkpoint", new { RequestId = requestId, Attempt = attempt });
+        public Task<OnlineGameSnapshot> StartBotAsync(MatchKind kind,string requestId) =>
+            CommandAsync("match/bot/start",new {RequestId=requestId,Kind=kind});
+        public Task<OnlineGameSnapshot> FinishBotAsync(MatchResult result,string requestId) =>
+            CommandAsync("match/bot/complete",new {RequestId=requestId,Result=result});
+        public Task<OnlineGameSnapshot> SetTutorialAsync(string key,string requestId) =>
+            CommandAsync("tutorial",new {RequestId=requestId,Key=key});
+        public async void RefreshPeriods()
+        {
+            try { if (Ready) await ReloadAsync(); }
+            catch (Exception error) { Error = error.Message; Changed?.Invoke(); }
+        }
+        // Unported callers cannot award or mutate server-owned state locally.
         public bool Claim(string id) => false;
         public bool Apply(MatchResult result) => false;
         public void BeginMatch(MatchResult match) { }
@@ -67,7 +128,8 @@ namespace PickleVerse.Progression
         void OnDestroy()
         {
             if (instance != this) return;
-            if (account != null) account.Changed -= ReadServerProfile;
+            if (account != null) account.Changed -= OnAccountChanged;
+            if (rules) Destroy(rules);
             instance = null; shuttingDown = true;
         }
         public static string FormatTime(double seconds)

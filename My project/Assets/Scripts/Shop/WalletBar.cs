@@ -10,7 +10,8 @@ namespace PickleVerse.Shop
         async void OnEnable()
         {
             economy=PlayerEconomy.Service;economy.Changed+=Refresh;
-            var state=await economy.ReadAsync();if(this&&isActiveAndEnabled)Refresh(state);
+            try { var state=await economy.ReadAsync();if(this&&isActiveAndEnabled)Refresh(state); }
+            catch(System.Exception error) { if(this&&isActiveAndEnabled)Debug.LogWarning("Không tải được ví: "+error.Message); }
         }
         void Refresh(PlayerEconomyState wallet){tokenpad.text=wallet.tokenpad.ToString("N0");elite.text=wallet.elite.ToString("N0");}
         void OnDisable(){if(economy!=null)economy.Changed-=Refresh;}

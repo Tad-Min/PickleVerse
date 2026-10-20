@@ -26,7 +26,7 @@ namespace PickleVerse.Multiplayer
         void Update()
         {
             var match=NetworkMatch.Instance;
-            if(!requested || !court || !match || !match.IsSpawned || !match.Finished.Value)
+            if(!requested || !court || !match || !match.IsSpawned || !match.Finished)
             { if(panel) panel.gameObject.SetActive(false); RenderedMatchId=null; return; }
             if(!IsVisible)
             {

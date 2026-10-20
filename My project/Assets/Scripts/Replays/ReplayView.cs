@@ -27,7 +27,8 @@ namespace PickleVerse.Replays
         int chunkIndex=-1;
         double playhead;
         float speed=1;
-        bool playing;
+        bool playing,loading;
+        int seekGeneration;
         TMP_Text label,playLabel;
         TMP_Text timeLabel;
         float nextLabelUpdate;
@@ -37,12 +38,13 @@ namespace PickleVerse.Replays
         public float PlaybackSpeed => speed;
         public bool IsPlaying => playing;
         public int CachedFrames => (current?.frames.Count??0)+(next?.frames.Count??0);
-        void Start()
+        async void Start()
         {
             BuildControls();repository=ReplayStorage.Repository;
             try
             {
-                metadata=repository.Read(ReplayLaunch.PlayerId,ReplayLaunch.MatchId);
+                metadata=repository is IOnlineReplayRepository online?await online.ReadAsync(ReplayLaunch.PlayerId,ReplayLaunch.MatchId):repository.Read(ReplayLaunch.PlayerId,ReplayLaunch.MatchId);
+                if(!this)return;
                 GetComponent<ReplayEnvironment>()?.Apply(metadata?.night??false);
                 if(metadata==null||metadata.chunks.Count==0)throw new InvalidDataException("Chưa có dữ liệu replay cho trận này.");
                 if(metadata.actors.Count<2||metadata.actors.Count>4)throw new InvalidDataException("Đội hình replay không hợp lệ.");
@@ -70,21 +72,30 @@ namespace PickleVerse.Replays
         }
         void Update()
         {
-            if(!playing||metadata==null)return;
+            if(!playing||metadata==null||loading)return;
             Seek(Math.Min(metadata.duration,playhead+Time.unscaledDeltaTime*speed));
             if(playhead>=metadata.duration){playing=false;playLabel.text="PHÁT";}
         }
-        public void Seek(double time)
+        public async void Seek(double time)
         {
             if(metadata==null)return;
+            int generation=++seekGeneration;
             try
             {
                 playhead=Math.Max(0,Math.Min(time,metadata.duration));int index=0;
                 for(int i=1;i<metadata.chunks.Count&&metadata.chunks[i].start<=playhead;i++)index=i;
                 if(index!=chunkIndex)
                 {
-                    current=index==chunkIndex+1&&next!=null?next:repository.ReadChunk(metadata,metadata.chunks[index]);
-                    next=index+1<metadata.chunks.Count?repository.ReadChunk(metadata,metadata.chunks[index+1]):null;chunkIndex=index;
+                    loading=true;
+                    ReplayChunk loaded,following;
+                    if(repository is IOnlineReplayRepository online)
+                    {
+                        loaded=index==chunkIndex+1&&next!=null?next:await online.ReadChunkAsync(metadata,metadata.chunks[index]);
+                        following=index+1<metadata.chunks.Count?await online.ReadChunkAsync(metadata,metadata.chunks[index+1]):null;
+                    }
+                    else{loaded=repository.ReadChunk(metadata,metadata.chunks[index]);following=index+1<metadata.chunks.Count?repository.ReadChunk(metadata,metadata.chunks[index+1]):null;}
+                    if(!this||generation!=seekGeneration)return;
+                    current=loaded;next=following;chunkIndex=index;
                 }
                 int lower=0;while(lower+1<current.frames.Count&&current.frames[lower+1].time<=playhead)lower++;
                 var a=current.frames[lower];var b=lower+1<current.frames.Count?current.frames[lower+1]:next?.frames[0]??a;
@@ -110,7 +121,8 @@ namespace PickleVerse.Replays
                 }
                 seek.SetValueWithoutNotify((float)playhead);
             }
-            catch(Exception e){Error(e);}
+            catch(Exception e){if(this&&generation==seekGeneration)Error(e);}
+            finally{if(generation==seekGeneration)loading=false;}
         }
         void Validate(ReplayFrame f)
         {

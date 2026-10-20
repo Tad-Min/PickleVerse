@@ -106,7 +106,9 @@ namespace PickleVerse.Replays
     }
     public static class ReplayStorage
     {
-        public static IReplayRepository Repository => new LocalReplayRepository(Path.Combine(Application.persistentDataPath,"Replays"));
+        static IReplayRepository repository;
+        public static IReplayRepository Repository => repository??(repository=new OnlineReplayRepository());
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void Reset(){repository=null;}
         public static string Availability(string player,string match)
         {
             try {var m=Repository.Read(player,match);return m==null||m.chunks.Count==0?"Chưa có replay":m.complete?"Xem replay":"Xem replay · chưa hoàn tất";}

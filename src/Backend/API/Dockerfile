@@ -1,18 +1,22 @@
 # Stage 1: Build & Restore
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
+WORKDIR /repo/src/Backend
 
 # Copy csproj files for layer caching
-COPY ["Entities/Entities.csproj", "Entities/"]
-COPY ["Repositories/Repositories.csproj", "Repositories/"]
-COPY ["Services/Services.csproj", "Services/"]
-COPY ["API/API.csproj", "API/"]
+COPY ["src/Backend/Entities/Entities.csproj", "Entities/"]
+COPY ["src/Backend/Repositories/Repositories.csproj", "Repositories/"]
+COPY ["src/Backend/Services/Services.csproj", "Services/"]
+COPY ["src/Backend/API/API.csproj", "API/"]
 
 RUN dotnet restore "API/API.csproj"
 
 # Copy all source files and publish
-COPY . .
-WORKDIR "/src/API"
+COPY src/Backend/ .
+COPY ["My project/Assets/Scripts/Entites/Progression/", "/repo/My project/Assets/Scripts/Entites/Progression/"]
+COPY ["My project/Assets/Scripts/Entites/Training/", "/repo/My project/Assets/Scripts/Entites/Training/"]
+COPY ["My project/Assets/Scripts/Entites/Replays/", "/repo/My project/Assets/Scripts/Entites/Replays/"]
+COPY ["My project/Assets/Scripts/Progression/", "/repo/My project/Assets/Scripts/Progression/"]
+WORKDIR "/repo/src/Backend/API"
 RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 2: Production Runtime

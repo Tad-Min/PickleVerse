@@ -2,6 +2,7 @@
   "name": "PickleVerse.Replays",
   "references": [
     "PickleVerse.Entites",
+    "PickleVerse.Services",
     "PickleVerse.Settings",
     "Unity.TextMeshPro",
     "Unity.ugui",

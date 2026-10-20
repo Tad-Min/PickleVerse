@@ -78,7 +78,7 @@ namespace PickleVerse.FrontEnd
         public void OpenTrainingProgress() { Open(View.Training); }
         public void OpenCareer() { Open(View.Career); }
         public void OpenEditor() { if(ProgressionRuntime.DeveloperControls) Open(View.Edit); }
-        void Open(View next)
+        async void Open(View next)
         {
             GetComponent<OfflineSocialMenu>()?.Close();
             if(!PickleVerse.Settings.FrontEndModalInput.TryAcquire(this))return;
@@ -89,6 +89,13 @@ namespace PickleVerse.FrontEnd
             }
             view=next; modal.gameObject.SetActive(true); modal.SetAsLastSibling(); ApplySafeArea(); Refresh();
             EventSystem.current?.SetSelectedGameObject(modal.Find("SafeArea/Window/Close").gameObject);
+            try
+            {
+                await ProgressionRuntime.Instance.ReloadAsync();
+                if(next==View.Career&&PickleVerse.Replays.ReplayStorage.Repository is PickleVerse.Replays.IOnlineReplayRepository replays)await replays.RefreshAsync();
+                if(this&&modal.gameObject.activeSelf)Refresh();
+            }
+            catch(Exception error){if(this&&modal.gameObject.activeSelf)feedback.text="Không tải được dữ liệu mới: "+error.Message;}
         }
         public void Close()
         {
@@ -197,11 +204,16 @@ namespace PickleVerse.FrontEnd
             var claim=MakeButton("Claim",row,claimed?"ĐÃ NHẬN":done?"NHẬN THƯỞNG":"CHƯA ĐẠT",()=>Claim(def.id),new Vector2(.69f,.15f),new Vector2(.97f,.51f),done&&!claimed?Lime:Surface,done&&!claimed?Ink:Muted,15);
             claim.interactable=done&&!claimed;
         }
-        void Claim(string id)
+        bool claiming;
+        async void Claim(string id)
         {
+            if(claiming)return;
+            claiming=true;
             float position=scroll.verticalNormalizedPosition;
-            try { ProgressionRuntime.Instance.Claim(id); }
-            catch(Exception e) { Debug.LogError("Nhận thưởng: "+e.Message); }
+            try { await ProgressionRuntime.Instance.ClaimAsync(id); }
+            catch(Exception e) { if(feedback)feedback.text="Nhận thưởng: "+e.Message; }
+            finally { claiming=false; }
+            if(!this)return;
             Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition=position;
         }
         void UpdateCountdown()

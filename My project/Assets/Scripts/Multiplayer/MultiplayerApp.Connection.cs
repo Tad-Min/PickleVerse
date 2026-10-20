@@ -1,3 +1,4 @@
+#if PICKLEVERSE_LEGACY_NGO
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,3 +51,5 @@ namespace PickleVerse.Multiplayer
         {if(session.Network!=null && networkStartFailed!=null)session.Network.StartFailed-=networkStartFailed;networkStartFailed=null;}
     }
 }
+
+#endif

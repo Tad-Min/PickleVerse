@@ -20,4 +20,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Compile the prototype's pure C# rules on the server as well. No Unity runtime dependency. -->
+  <ItemGroup>
+    <Compile Include="../../../My project/Assets/Scripts/Entites/Progression/ProgressionModels.cs" Link="GameRules/ProgressionModels.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Entites/Progression/DailyStreakData.cs" Link="GameRules/DailyStreakData.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Entites/Training/TrainingModels.cs" Link="GameRules/TrainingData.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Entites/Replays/ReplayModels.cs" Link="GameRules/ReplayData.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Progression/ProgressionEngine.cs" Link="GameRules/ProgressionEngine.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Progression/DailyStreakEngine.cs" Link="GameRules/DailyStreakEngine.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Progression/EloPolicy.cs" Link="GameRules/EloPolicy.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Progression/TrainingModels.cs" Link="GameRules/TrainingEngine.cs" />
+  </ItemGroup>
+
 </Project>

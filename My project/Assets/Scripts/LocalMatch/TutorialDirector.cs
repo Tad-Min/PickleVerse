@@ -235,7 +235,7 @@ namespace PickleVerse.LocalMatch
             cameraStart=view.transform.position;rotationStart=view.transform.rotation;startFov=view.fieldOfView;
             if(snap){view.transform.SetPositionAndRotation(cameraEnd,rotationEnd);view.fieldOfView=endFov;cameraStart=cameraEnd;rotationStart=rotationEnd;startFov=endFov;}
             if(Lesson.kind==TutorialKind.Complete)
-            {if(ShotsCompleted==TutorialCurriculum.ShotCount)TutorialProgress.Complete();player.Reaction(true,true);}
+            {if(ShotsCompleted==TutorialCurriculum.ShotCount)tutorialSave=SaveTutorialAsync(false);player.Reaction(true,true);}
             hud.ShowLesson();
         }
         void SetCameraTarget()
@@ -270,11 +270,26 @@ namespace PickleVerse.LocalMatch
         static Vector3 Contact(MatchActor actor,ShotIntent intent)=>actor.transform.TransformPoint(actor.ContactOffset(intent));
         static CourtPoint Point(Vector3 p)=>new CourtPoint(p.x,p.y,p.z);
         static void SetLineColor(LineRenderer line,Color color){line.startColor=line.endColor=color;}
-        public void Next(){if(!CanContinue)return;if(Lesson.kind==TutorialKind.Complete)SceneManager.LoadScene("ModeSelection");else Begin(LessonIndex+1);}
+        System.Threading.Tasks.Task tutorialSave=System.Threading.Tasks.Task.CompletedTask;
+        string tutorialSaveError;
+        async System.Threading.Tasks.Task SaveTutorialAsync(bool skip)
+        {
+            if(this)Feedback="Đang lưu tiến trình online…";
+            try{if(skip)await TutorialProgress.SkipAsync();else await TutorialProgress.CompleteAsync();tutorialSaveError=null;if(this)Feedback="Đã lưu tiến trình online.";}
+            catch(Exception error){tutorialSaveError=error.Message;if(this)Feedback="Chưa lưu được: "+error.Message+" • Bấm tiếp tục để thử lại.";Debug.LogWarning("Chưa lưu tiến trình hướng dẫn: "+error.Message);}
+        }
+        public async void Next()
+        {
+            if(!CanContinue)return;
+            if(Lesson.kind!=TutorialKind.Complete){Begin(LessonIndex+1);return;}
+            await tutorialSave;
+            if(tutorialSaveError!=null){tutorialSave=SaveTutorialAsync(false);await tutorialSave;}
+            if(this&&tutorialSaveError==null)SceneManager.LoadScene("ModeSelection");
+        }
         public void Replay(){Begin(LessonIndex);}
-        public void ConfirmSkip(){TutorialProgress.Skip();SceneManager.LoadScene("ModeSelection");}
+        public async void ConfirmSkip(){tutorialSave=SaveTutorialAsync(true);await tutorialSave;if(this&&tutorialSaveError==null)SceneManager.LoadScene("ModeSelection");}
         public void SetPaused(bool paused){if(Paused&&!paused)resumeFrame=Time.frameCount;Paused=paused;TouchShotMask=0;TouchMovement=Vector2.zero;TouchRun=false;input.Cancel();if(paused)SfxPlayer.StopAll();}
-        public void LeaveToMenu(){SceneManager.LoadScene("Menu");}
+        public async void LeaveToMenu(){await tutorialSave;if(this)SceneManager.LoadScene("Menu");}
         public System.Threading.Tasks.Task SignOutAsync()=>System.Threading.Tasks.Task.CompletedTask;
     }
 }

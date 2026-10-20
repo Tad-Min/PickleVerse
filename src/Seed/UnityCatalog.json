@@ -1,0 +1,607 @@
+{
+  "winXp": 10,
+  "lossXp": 5,
+  "dailyBonus": {
+    "coins": 200,
+    "gems": 0,
+    "xp": 20
+  },
+  "weeklyBonus": {
+    "coins": 1000,
+    "gems": 0,
+    "xp": 50
+  },
+  "definitions": [
+    {
+      "id": "A.Win5",
+      "title": "Thắng 5 trận",
+      "scope": "Achievement",
+      "metric": "Wins",
+      "target": 5,
+      "reward": {
+        "coins": 100,
+        "gems": 0,
+        "xp": 10
+      }
+    },
+    {
+      "id": "A.Win25",
+      "title": "Thắng 25 trận",
+      "scope": "Achievement",
+      "metric": "Wins",
+      "target": 25,
+      "reward": {
+        "coins": 300,
+        "gems": 0,
+        "xp": 25
+      }
+    },
+    {
+      "id": "A.Win100",
+      "title": "Thắng 100 trận",
+      "scope": "Achievement",
+      "metric": "Wins",
+      "target": 100,
+      "reward": {
+        "coins": 1000,
+        "gems": 0,
+        "xp": 50
+      }
+    },
+    {
+      "id": "A.Play10",
+      "title": "Hoàn tất 10 trận",
+      "scope": "Achievement",
+      "metric": "Matches",
+      "target": 10,
+      "reward": {
+        "coins": 100,
+        "gems": 0,
+        "xp": 10
+      }
+    },
+    {
+      "id": "A.Play50",
+      "title": "Hoàn tất 50 trận",
+      "scope": "Achievement",
+      "metric": "Matches",
+      "target": 50,
+      "reward": {
+        "coins": 400,
+        "gems": 0,
+        "xp": 25
+      }
+    },
+    {
+      "id": "A.Play200",
+      "title": "Hoàn tất 200 trận",
+      "scope": "Achievement",
+      "metric": "Matches",
+      "target": 200,
+      "reward": {
+        "coins": 1500,
+        "gems": 0,
+        "xp": 75
+      }
+    },
+    {
+      "id": "A.Point100",
+      "title": "Ghi 100 điểm cho đội",
+      "scope": "Achievement",
+      "metric": "Points",
+      "target": 100,
+      "reward": {
+        "coins": 200,
+        "gems": 0,
+        "xp": 15
+      }
+    },
+    {
+      "id": "A.Point500",
+      "title": "Ghi 500 điểm cho đội",
+      "scope": "Achievement",
+      "metric": "Points",
+      "target": 500,
+      "reward": {
+        "coins": 600,
+        "gems": 0,
+        "xp": 35
+      }
+    },
+    {
+      "id": "A.Streak5",
+      "title": "Đạt chuỗi thắng 5 trận",
+      "scope": "Achievement",
+      "metric": "BestStreak",
+      "target": 5,
+      "reward": {
+        "coins": 500,
+        "gems": 0,
+        "xp": 30
+      }
+    },
+    {
+      "id": "A.Higher5",
+      "title": "Thắng 5 đối thủ rank Elo cao hơn",
+      "scope": "Achievement",
+      "metric": "HigherRatedWins",
+      "target": 5,
+      "reward": {
+        "coins": 300,
+        "gems": 0,
+        "xp": 25
+      }
+    },
+    {
+      "id": "D.Play1",
+      "title": "Hoàn tất 1 trận",
+      "scope": "Daily",
+      "metric": "Matches",
+      "target": 1,
+      "reward": {
+        "coins": 50,
+        "gems": 0,
+        "xp": 5
+      }
+    },
+    {
+      "id": "D.Win1",
+      "title": "Thắng 1 trận",
+      "scope": "Daily",
+      "metric": "Wins",
+      "target": 1,
+      "reward": {
+        "coins": 75,
+        "gems": 0,
+        "xp": 5
+      }
+    },
+    {
+      "id": "D.Point20",
+      "title": "Ghi 20 điểm cho đội",
+      "scope": "Daily",
+      "metric": "Points",
+      "target": 20,
+      "reward": {
+        "coins": 75,
+        "gems": 0,
+        "xp": 5
+      }
+    },
+    {
+      "id": "D.Return30",
+      "title": "Trả bóng hợp lệ 30 lần",
+      "scope": "Daily",
+      "metric": "Returns",
+      "target": 30,
+      "reward": {
+        "coins": 75,
+        "gems": 0,
+        "xp": 5
+      }
+    },
+    {
+      "id": "D.Serve10",
+      "title": "Giao bóng hợp lệ 10 lần",
+      "scope": "Daily",
+      "metric": "Serves",
+      "target": 10,
+      "reward": {
+        "coins": 75,
+        "gems": 0,
+        "xp": 5
+      }
+    },
+    {
+      "id": "D.Bot1",
+      "title": "Hoàn tất 1 trận với bot",
+      "scope": "Daily",
+      "metric": "BotMatches",
+      "target": 1,
+      "reward": {
+        "coins": 75,
+        "gems": 0,
+        "xp": 5
+      }
+    },
+    {
+      "id": "D.HumanWin1",
+      "title": "Thắng 1 trận tìm đối thủ người thật",
+      "scope": "Daily",
+      "metric": "HumanWins",
+      "target": 1,
+      "reward": {
+        "coins": 125,
+        "gems": 0,
+        "xp": 10
+      }
+    },
+    {
+      "id": "W.Play10",
+      "title": "Hoàn tất 10 trận",
+      "scope": "Weekly",
+      "metric": "Matches",
+      "target": 10,
+      "reward": {
+        "coins": 300,
+        "gems": 0,
+        "xp": 20
+      }
+    },
+    {
+      "id": "W.Win5",
+      "title": "Thắng 5 trận",
+      "scope": "Weekly",
+      "metric": "Wins",
+      "target": 5,
+      "reward": {
+        "coins": 250,
+        "gems": 0,
+        "xp": 15
+      }
+    },
+    {
+      "id": "W.Point100",
+      "title": "Ghi 100 điểm cho đội",
+      "scope": "Weekly",
+      "metric": "Points",
+      "target": 100,
+      "reward": {
+        "coins": 250,
+        "gems": 0,
+        "xp": 15
+      }
+    },
+    {
+      "id": "W.Return200",
+      "title": "Trả bóng hợp lệ 200 lần",
+      "scope": "Weekly",
+      "metric": "Returns",
+      "target": 200,
+      "reward": {
+        "coins": 250,
+        "gems": 0,
+        "xp": 15
+      }
+    },
+    {
+      "id": "W.Serve50",
+      "title": "Giao bóng hợp lệ 50 lần",
+      "scope": "Weekly",
+      "metric": "Serves",
+      "target": 50,
+      "reward": {
+        "coins": 250,
+        "gems": 0,
+        "xp": 15
+      }
+    },
+    {
+      "id": "W.Bot5",
+      "title": "Hoàn tất 5 trận với bot",
+      "scope": "Weekly",
+      "metric": "BotMatches",
+      "target": 5,
+      "reward": {
+        "coins": 250,
+        "gems": 0,
+        "xp": 15
+      }
+    },
+    {
+      "id": "W.Human5",
+      "title": "Hoàn tất 5 trận tìm đối thủ người thật",
+      "scope": "Weekly",
+      "metric": "HumanMatches",
+      "target": 5,
+      "reward": {
+        "coins": 350,
+        "gems": 0,
+        "xp": 20
+      }
+    },
+    {
+      "id": "W.RankWin3",
+      "title": "Thắng 3 trận rank 1v1",
+      "scope": "Weekly",
+      "metric": "RankedWins",
+      "target": 3,
+      "reward": {
+        "coins": 350,
+        "gems": 0,
+        "xp": 20
+      }
+    },
+    {
+      "id": "W.DoubleWin2",
+      "title": "Thắng 2 trận tìm trận 2v2",
+      "scope": "Weekly",
+      "metric": "DoublesWins",
+      "target": 2,
+      "reward": {
+        "coins": 400,
+        "gems": 0,
+        "xp": 20
+      }
+    },
+    {
+      "id": "W.Streak3",
+      "title": "Đạt chuỗi thắng 3 trận trong tuần",
+      "scope": "Weekly",
+      "metric": "BestStreak",
+      "target": 3,
+      "reward": {
+        "coins": 350,
+        "gems": 0,
+        "xp": 20
+      }
+    }
+  ],
+  "cosmetics": [
+    {
+      "id": "paddle.default",
+      "title": "PICKLEVERSE",
+      "description": "Vợt mặc định của PickleVerse. Thiết kế gọn gàng, luôn sẵn sàng cho những trận đấu đầu tiên.",
+      "collection": "ORIGINAL COLLECTION",
+      "tokenpadPrice": 0,
+      "elitePrice": 0,
+      "gemstone": false,
+      "releaseOrder": 0
+    },
+    {
+      "id": "paddle.gemstone",
+      "title": "GEMSTONE",
+      "description": "Viền đá quý, sắc vàng và mặt carbon. Ánh lấp lánh tinh tế khi xoay dưới ánh sáng.",
+      "collection": "ELITE COLLECTION",
+      "tokenpadPrice": 0,
+      "elitePrice": 650,
+      "gemstone": true,
+      "releaseOrder": 2
+    },
+    {
+      "id": "paddle.thot",
+      "title": "THOT",
+      "description": "Hoa văn nổi bật cho phong cách thi đấu riêng. Chọn Tokenpad hoặc Elite để sở hữu.",
+      "collection": "SIGNATURE COLLECTION",
+      "tokenpadPrice": 900,
+      "elitePrice": 250,
+      "gemstone": false,
+      "releaseOrder": 1
+    }
+  ],
+  "lessons": [
+    {
+      "id": "serve",
+      "title": "Giao bóng đúng ô",
+      "explanation": "Giao dưới tay từ sau baseline. Bóng phải sang ô chéo và vượt cả vạch Kitchen.",
+      "coaching": "Đứng trong vùng sáng phía sau baseline. Giữ rồi thả Drive; không bước vào sân trước khi chạm bóng.",
+      "skill": "Serve",
+      "tier": 0,
+      "trials": 8,
+      "required": 6,
+      "reward": 150,
+      "xp": 5,
+      "masks": [
+        1
+      ],
+      "prerequisites": []
+    },
+    {
+      "id": "drive",
+      "title": "Drive về cuối sân",
+      "explanation": "Đón bóng sau một lần nảy, đánh Drive vào vùng sâu đã đánh dấu.",
+      "coaching": "Chuẩn bị vợt phía trước. Thả phím sớm hơn lúc bóng tới để animation đưa vợt đến điểm tiếp xúc.",
+      "skill": "Drive",
+      "tier": 0,
+      "trials": 8,
+      "required": 6,
+      "reward": 150,
+      "xp": 5,
+      "masks": [
+        1
+      ],
+      "prerequisites": []
+    },
+    {
+      "id": "dink",
+      "title": "Dink kiểm soát Kitchen",
+      "explanation": "Đánh nhẹ sau nảy, đưa bóng vào Kitchen đối phương. Được đứng trong Kitchen khi đánh bóng đã nảy.",
+      "coaching": "Đón bóng trước người. Không dùng lực mạnh; ưu tiên kiểm soát và cung bóng thấp.",
+      "skill": "Dink",
+      "tier": 0,
+      "trials": 8,
+      "required": 6,
+      "reward": 150,
+      "xp": 5,
+      "masks": [
+        2
+      ],
+      "prerequisites": []
+    },
+    {
+      "id": "volley",
+      "title": "Volley ngoài Kitchen",
+      "explanation": "Chặn bóng trước khi nảy. Cả hai chân và đà sau cú đánh phải ở ngoài Kitchen.",
+      "coaching": "Giữ vị trí sau vạch sáng. Chọn Volley khi bóng còn trên không; không lao vào Kitchen sau cú đánh.",
+      "skill": "Volley",
+      "tier": 0,
+      "trials": 8,
+      "required": 6,
+      "reward": 150,
+      "xp": 5,
+      "masks": [
+        4
+      ],
+      "prerequisites": []
+    },
+    {
+      "id": "modifiers",
+      "title": "Lực và hướng chéo",
+      "explanation": "Luân phiên Drive, Dink, Volley với tăng lực hoặc đánh chéo theo chỉ dẫn từng bóng.",
+      "coaching": "Giữ modifier cho đến khi thả nút đánh. Quan sát vùng đích đổi bên khi cần đánh chéo.",
+      "skill": "Modifiers",
+      "tier": 1,
+      "trials": 10,
+      "required": 7,
+      "reward": 225,
+      "xp": 7,
+      "masks": [
+        9,
+        17,
+        10,
+        18,
+        12,
+        20
+      ],
+      "prerequisites": [
+        "drive",
+        "dink",
+        "volley"
+      ]
+    },
+    {
+      "id": "drop",
+      "title": "Third-shot drop",
+      "explanation": "Sau giao và trả giao đã nảy, đánh cú thứ ba mềm vào Kitchen để lấy thời gian lên lưới.",
+      "coaching": "Ghép Drive + Dink. Đây là cú đánh sau nảy; bóng phải rơi trong vùng sáng gần lưới.",
+      "skill": "Drop",
+      "tier": 1,
+      "trials": 10,
+      "required": 7,
+      "reward": 225,
+      "xp": 7,
+      "masks": [
+        3
+      ],
+      "prerequisites": [
+        "drive",
+        "dink"
+      ]
+    },
+    {
+      "id": "reset",
+      "title": "Reset bóng nhanh",
+      "explanation": "Dùng Reset để giảm nhịp bóng nhanh, đưa bóng về Kitchen thay vì cố đánh mạnh.",
+      "coaching": "Ghép Dink + Volley, tiếp bóng trên không và giữ cả hai chân ngoài Kitchen.",
+      "skill": "Reset",
+      "tier": 1,
+      "trials": 10,
+      "required": 7,
+      "reward": 225,
+      "xp": 7,
+      "masks": [
+        6
+      ],
+      "prerequisites": [
+        "dink",
+        "volley"
+      ]
+    },
+    {
+      "id": "smash",
+      "title": "Smash bóng bổng",
+      "explanation": "Đợi bóng bổng đủ cao rồi đánh Smash vào vùng sâu. Không volley trong Kitchen.",
+      "coaching": "Ghép Drive + Volley. Quan sát vòng điểm tiếp bóng trên sân và thả khi chỉ báo timing vào vùng xanh.",
+      "skill": "Smash",
+      "tier": 2,
+      "trials": 12,
+      "required": 9,
+      "reward": 300,
+      "xp": 10,
+      "masks": [
+        5
+      ],
+      "prerequisites": [
+        "volley",
+        "modifiers"
+      ]
+    },
+    {
+      "id": "footwork",
+      "title": "Di chuyển và hồi vị",
+      "explanation": "Đón bóng luân phiên hai bên sân, đánh Drive rồi trở về vị trí hồi phục.",
+      "coaching": "Di chuyển A/D hoặc joystick tới vùng đón bóng. Có thể dùng chạy; sau cú đánh quay về vòng hồi vị.",
+      "skill": "Footwork",
+      "tier": 2,
+      "trials": 12,
+      "required": 9,
+      "reward": 300,
+      "xp": 10,
+      "masks": [
+        1,
+        17
+      ],
+      "prerequisites": [
+        "drive",
+        "modifiers"
+      ]
+    },
+    {
+      "id": "approach",
+      "title": "Drop rồi tiến lên",
+      "explanation": "Đánh drop từ cuối sân, tiến lên vùng sẵn sàng trước Kitchen. Dừng có kiểm soát trước lượt tiếp theo.",
+      "coaching": "Ghép Drive + Dink rồi di chuyển W lên vùng sáng. Đừng chạy qua vạch Kitchen để đón volley.",
+      "skill": "Approach",
+      "tier": 2,
+      "trials": 12,
+      "required": 9,
+      "reward": 300,
+      "xp": 10,
+      "masks": [
+        3
+      ],
+      "prerequisites": [
+        "drop",
+        "footwork"
+      ]
+    },
+    {
+      "id": "doubles-cover",
+      "title": "Đánh đôi: giữ khoảng cách",
+      "explanation": "Hai người giữ hàng ngang, dịch chuyển cùng phía bóng. Đánh bóng phần sân của bạn và giữ khe giữa đội nhỏ.",
+      "coaching": "Đồng đội AI đi cùng bạn. Dịch chuyển ngang, đánh Volley theo chỉ dẫn, rồi hồi vị để cả đội giữ hàng ngang.",
+      "skill": "DoublesCover",
+      "tier": 3,
+      "trials": 12,
+      "required": 9,
+      "reward": 450,
+      "xp": 15,
+      "masks": [
+        4,
+        20
+      ],
+      "prerequisites": [
+        "volley",
+        "footwork"
+      ]
+    },
+    {
+      "id": "doubles-transition",
+      "title": "Đánh đôi: drop và phối hợp",
+      "explanation": "Đội giao chờ trả giao nảy, dùng drop tiến lên cùng nhau rồi chuyển sang dink và volley. Có lượt bóng của đồng đội AI.",
+      "coaching": "Theo dấu vị trí của bạn. Sau drop tiến lên cùng đồng đội; khi hiện ‘Bóng của đồng đội’, giữ hàng ngang và để AI xử lý.",
+      "skill": "DoublesTransition",
+      "tier": 3,
+      "trials": 12,
+      "required": 9,
+      "reward": 450,
+      "xp": 15,
+      "masks": [
+        3,
+        2,
+        4
+      ],
+      "prerequisites": [
+        "approach",
+        "doubles-cover",
+        "reset"
+      ]
+    }
+  ],
+  "matchRewards": {
+    "botWinReward": 100,
+    "botLossReward": 50,
+    "onlineWinReward": 150,
+    "onlineLossReward": 75
+  }
+}

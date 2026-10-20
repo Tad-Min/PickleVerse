@@ -27,6 +27,7 @@ namespace PickleVerse.Replays
         bool stopped, discontinuity;
         Task writing;
         public bool BackgroundWrites { get; set; } = true;
+        public Task Completion {get;private set;}=Task.CompletedTask;
         public string MatchId => metadata?.matchId;
         public int BufferedFrames => buffer.frames.Count;
         public double Duration => Time.realtimeSinceStartupAsDouble-began;
@@ -37,7 +38,7 @@ namespace PickleVerse.Replays
             began=Time.realtimeSinceStartupAsDouble;nextSample=began;stopped=false;buffer=new ReplayChunk();
             bones=actors.Select(a=>a.root.GetComponentsInChildren<Transform>(true).Where(t=>t!=a.root).ToArray()).ToArray();
             metadata.actors=actors.Select((a,i)=>new ReplayActorInfo{id=a.id,name=a.name,team=a.team,visualId=a.visualId,paddleId=a.paddleId,paddlePath=a.paddle?Path(a.root,a.paddle):"",skinName=a.paddle?a.paddle.Cast<Transform>().FirstOrDefault(t=>t.name.StartsWith("Equipped Paddle",StringComparison.Ordinal))?.name:"",bones=bones[i].Select(t=>Path(a.root,t)).ToArray()}).ToList();
-            try{repository.Save(metadata);}catch(Exception e){Fail(e);}
+            try{if(repository is IOnlineReplayRepository online)writing=online.SaveAsync(metadata);else repository.Save(metadata);}catch(Exception e){Fail(e);}
         }
         public static string Path(Transform root,Transform child)
         {
@@ -85,20 +86,30 @@ namespace PickleVerse.Replays
         {
             if(buffer.frames.Count==0)return;
             // At most one immutable chunk is in flight and one is being collected.
-            // Stop if the disk cannot commit a chunk during the next two seconds.
-            if(writing!=null){if(!writing.IsCompleted)throw new IOException("Ổ lưu trữ chưa ghi kịp chunk replay.");writing.GetAwaiter().GetResult();writing=null;}
+            // Keep a bounded buffer when an upload is slower than the recording rate.
+            if(writing!=null){if(!writing.IsCompleted)throw new IOException("Máy chủ chưa lưu kịp chunk replay.");writing.GetAwaiter().GetResult();writing=null;}
             var chunk=buffer;buffer=new ReplayChunk();
-            if(BackgroundWrites)writing=Task.Run(()=>repository.WriteChunk(metadata,chunk));else repository.WriteChunk(metadata,chunk);
+            if(repository is IOnlineReplayRepository online)writing=online.WriteChunkAsync(metadata,chunk);
+            else if(BackgroundWrites)writing=Task.Run(()=>repository.WriteChunk(metadata,chunk));else repository.WriteChunk(metadata,chunk);
         }
         void CommitPending(){writing?.GetAwaiter().GetResult();writing=null;}
         public void Finish(bool complete)
         {
             if(stopped||metadata==null)return;
+            if(repository is IOnlineReplayRepository online)
+            {
+                stopped=true;var final=buffer;buffer=new ReplayChunk();Completion=FinishOnlineAsync(online,final,complete);return;
+            }
             try{CommitPending();Capture();CommitPending();Flush();CommitPending();metadata.complete=complete;repository.Save(metadata);stopped=true;}
             catch(Exception e){Fail(e);}
         }
+        async Task FinishOnlineAsync(IOnlineReplayRepository online,ReplayChunk final,bool complete)
+        {
+            try{if(writing!=null)await writing;if(final.frames.Count>0)await online.WriteChunkAsync(metadata,final);metadata.complete=complete;await online.SaveAsync(metadata);}
+            catch(Exception error){Fail(error);}
+        }
         void Fail(Exception e){stopped=true;Debug.LogWarning("Replay ngừng ghi: "+e.Message);}
-        void OnApplicationPause(bool pause){if(pause&&!stopped&&metadata!=null)try{CommitPending();Flush();CommitPending();}catch(Exception e){Fail(e);}}
+        void OnApplicationPause(bool pause){if(pause&&!stopped&&metadata!=null)try{if(repository is IOnlineReplayRepository){Flush();return;}CommitPending();Flush();CommitPending();}catch(Exception e){Fail(e);}}
         void OnApplicationQuit(){Finish(false);}
         void OnDestroy(){Finish(false);}
     }

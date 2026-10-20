@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PickleVerse.Services;
 using PickleVerse.Services.Api;
+using PickleVerse.Progression;
 using PickleVerse.Settings;
 using TMPro;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace PickleVerse.FrontEnd
     /// <summary>Persistent online sign-in gate, using the lobby's Vietnamese font and palette.</summary>
     public sealed class AccountScreen : MonoBehaviour
     {
-        enum Page { Login, Register, Verify, Profile }
+        enum Page { Login, Register, Verify, Profile, Sync }
         static AccountScreen instance;
         AccountService account;
         CancellationTokenSource lifetime;
@@ -49,38 +50,33 @@ namespace PickleVerse.FrontEnd
             if (instance && instance != this) { Destroy(this); return; }
             instance = this; account = AccountRuntime.Ensure().Account; lifetime = new CancellationTokenSource();
             font = ScreenUiTheme.Current ? ScreenUiTheme.Current.font : TMP_Settings.defaultFontAsset;
-            Build(); account.Changed += OnAccountChanged; SceneManager.sceneLoaded += SceneLoaded;
+            Build(); account.Changed += OnAccountChanged; ProgressionRuntime.Changed += OnGameChanged; SceneManager.sceneLoaded += SceneLoaded;
             Show(Page.Login); OnAccountChanged();
         }
         void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
             EnsureEventSystem(); RefreshVisibility();
-            // Until their server integration is complete, no local gameplay/social/shop scene is entered.
-            if (scene.name != "Menu" && scene.name != "Login" && scene.name != "Settings") SceneManager.LoadSceneAsync("Menu");
+            if (!account.IsSignedIn && scene.name != "Menu" && scene.name != "Login" && scene.name != "Settings" && scene.name != "PhotonLobby") SceneManager.LoadSceneAsync("Menu");
             else StartCoroutine(ApplyScopeAfterSceneReady());
         }
         IEnumerator ApplyScopeAfterSceneReady() { yield return null; ApplyOnlineScope(); }
         void ApplyOnlineScope()
         {
+            var runtime = ProgressionRuntime.Instance;
+            if (!runtime) return;
+            bool available = account.IsSignedIn && runtime.Ready;
             foreach (var home in FindObjectsByType<HomeMenuShell>(FindObjectsInactive.Include))
             {
-                if (home.playButton) home.playButton.interactable = false;
-                if (home.playTitle) home.playTitle.text = "SẮP MỞ";
-                if (home.playHint) home.playHint.text = "Các chế độ chơi sẽ sớm sẵn sàng";
-                if (home.wallet) home.wallet.gameObject.SetActive(false);
+                if (home.playButton) home.playButton.interactable = available;
+                if (home.wallet) home.wallet.gameObject.SetActive(available);
                 if (home.nav) foreach (var button in home.nav.GetComponentsInChildren<UnityEngine.UI.Button>(true))
-                    if (!button.name.Contains("Setting") && !button.name.Contains("Music")) button.interactable = false;
+                    if (!button.name.Contains("Setting") && !button.name.Contains("Music")) button.interactable = available;
             }
             foreach (var menu in FindObjectsByType<PlayerProgressionMenu>(FindObjectsInactive.Include))
             {
-                menu.Close(); menu.enabled = false;
-                foreach (var button in new[] { menu.missionsButton, menu.careerButton, menu.editButton, menu.progressionButton }) if (button) button.interactable = false;
-                if (menu.profileButton)
-                {
-                    menu.profileButton.onClick.RemoveAllListeners();
-                    for (int i = 0; i < menu.profileButton.onClick.GetPersistentEventCount(); i++) menu.profileButton.onClick.SetPersistentListenerState(i, UnityEngine.Events.UnityEventCallState.Off);
-                    menu.profileButton.onClick.AddListener(OpenAccount); menu.profileButton.interactable = account.IsSignedIn;
-                }
+                if (!available) menu.Close(); menu.enabled = available;
+                foreach (var button in new[] { menu.profileButton, menu.missionsButton, menu.careerButton, menu.progressionButton }) if (button) button.interactable = available;
+                if (menu.editButton) menu.editButton.gameObject.SetActive(false);
             }
             foreach (var social in FindObjectsByType<OfflineSocialMenu>(FindObjectsInactive.Include))
             {
@@ -94,6 +90,13 @@ namespace PickleVerse.FrontEnd
                 if (home.maleButton) home.maleButton.interactable = false;
                 if (home.femaleButton) home.femaleButton.interactable = false;
             }
+        }
+        void OnGameChanged()
+        {
+            if (!root || !ProgressionRuntime.Exists) return;
+            if (ProgressionRuntime.Instance.Ready && page == Page.Sync) page = Page.Login;
+            RefreshVisibility(); ApplyOnlineScope();
+            if (page == Page.Sync && !string.IsNullOrEmpty(ProgressionRuntime.Instance.Error)) feedback.text = ProgressionRuntime.Instance.Error;
         }
         public void OpenAccount()
         {
@@ -127,6 +130,7 @@ namespace PickleVerse.FrontEnd
         }
         void OnAccountChanged()
         {
+            if (!root || !ProgressionRuntime.Instance) return;
             if (account.IsSignedIn)
             {
                 var p = account.Profile; playerName.SetTextWithoutNotify(p.PlayerName); male = p.IsMale;
@@ -138,12 +142,14 @@ namespace PickleVerse.FrontEnd
         }
         void RefreshVisibility()
         {
-            bool required = !account.IsSignedIn;
+            var runtime = ProgressionRuntime.Instance;
+            if (!root || !runtime) return;
+            bool required = !account.IsSignedIn || !runtime.Ready;
             if (required)
             {
                 FrontEndModalInput.TryAcquire(this);
                 if (!pausedByGate) { priorTimeScale = Time.timeScale; Time.timeScale = 0; pausedByGate = true; }
-                cover.SetActive(true); Show(page == Page.Profile ? Page.Login : page);
+                cover.SetActive(true); Show(account.IsSignedIn ? Page.Sync : page == Page.Profile || page == Page.Sync ? Page.Login : page);
             }
             else
             {
@@ -151,17 +157,18 @@ namespace PickleVerse.FrontEnd
                 cover.SetActive(page == Page.Profile);
                 if (page != Page.Profile) FrontEndModalInput.Release(this);
             }
-            accountButton.gameObject.SetActive(account.IsSignedIn && page != Page.Profile && SceneManager.GetActiveScene().name == "Menu");
+            accountButton.gameObject.SetActive(!required && page != Page.Profile && SceneManager.GetActiveScene().name == "Menu");
         }
         void Show(Page next)
         {
             page = next;
-            title.text = next == Page.Login ? "CHÀO MỪNG TRỞ LẠI" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC EMAIL" : "TÀI KHOẢN CỦA BẠN";
+            bool syncing = next == Page.Sync;
+            title.text = syncing ? "TẢI DỮ LIỆU TRÒ CHƠI" : next == Page.Login ? "CHÀO MỪNG TRỞ LẠI" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC EMAIL" : "TÀI KHOẢN CỦA BẠN";
             subtitle.text = next == Page.Verify ? "Nhập mã 6 chữ số trong email. Mã có hiệu lực 10 phút."
-                : next == Page.Profile ? $"LV {account.Profile.Level}  ·  {account.Profile.Elo} ELO  ·  {account.Profile.WinCount} thắng / {account.Profile.LoseCount} thua" : "Đăng nhập để tiếp tục hành trình PickleVerse.";
-            loginTab.gameObject.SetActive(next != Page.Profile); registerTab.gameObject.SetActive(next != Page.Profile);
-            loginTab.transform.parent.gameObject.SetActive(next != Page.Profile);
-            email.transform.parent.gameObject.SetActive(next != Page.Profile);
+                : syncing ? "Đang tải hồ sơ, cửa hàng và bài học trực tuyến. Nếu mất kết nối, hãy thử lại." : next == Page.Profile ? $"LV {account.Profile.Level}  ·  {account.Profile.Elo} ELO  ·  {account.Profile.WinCount} thắng / {account.Profile.LoseCount} thua" : "Đăng nhập để tiếp tục hành trình PickleVerse.";
+            loginTab.gameObject.SetActive(next != Page.Profile && !syncing); registerTab.gameObject.SetActive(next != Page.Profile && !syncing);
+            loginTab.transform.parent.gameObject.SetActive(next != Page.Profile && !syncing);
+            email.transform.parent.gameObject.SetActive(next != Page.Profile && !syncing);
             password.transform.parent.gameObject.SetActive(next == Page.Login || next == Page.Register);
             confirmPassword.transform.parent.gameObject.SetActive(next == Page.Register);
             playerName.transform.parent.gameObject.SetActive(next == Page.Profile);
@@ -169,8 +176,8 @@ namespace PickleVerse.FrontEnd
             maleButton.transform.parent.gameObject.SetActive(next == Page.Register || next == Page.Profile);
             verifyLink.gameObject.SetActive(next == Page.Login || next == Page.Register);
             resend.gameObject.SetActive(next == Page.Verify);
-            logout.gameObject.SetActive(next == Page.Profile); close.gameObject.SetActive(next == Page.Profile);
-            submitLabel.text = next == Page.Login ? "ĐĂNG NHẬP" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC" : "LƯU HỒ SƠ";
+            logout.gameObject.SetActive(next == Page.Profile || syncing); close.gameObject.SetActive(next == Page.Profile);
+            submitLabel.text = syncing ? "THỬ TẢI LẠI" : next == Page.Login ? "ĐĂNG NHẬP" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC" : "LƯU HỒ SƠ";
             SetGender(male); feedback.text = "";
         }
         void SetGender(bool value)
@@ -180,12 +187,14 @@ namespace PickleVerse.FrontEnd
         async void Submit() => await Run(async () =>
         {
             var cancellation = lifetime.Token;
+            if (page == Page.Sync) { await ProgressionRuntime.Instance.ReloadAsync(); RefreshVisibility(); return; }
             string mail = email.text.Trim();
             if (page != Page.Profile && (mail.Length == 0 || !mail.Contains("@"))) throw new ArgumentException("Vui lòng nhập địa chỉ email hợp lệ.");
             if (page == Page.Login)
             {
                 if (password.text.Length == 0) throw new ArgumentException("Vui lòng nhập mật khẩu.");
                 await account.LoginAsync(mail, password.text, cancellation);
+                await ProgressionRuntime.Instance.EnsureReadyAsync();
                 if (SceneManager.GetActiveScene().name != "Menu") await LoadMenu();
             }
             else if (page == Page.Register)
@@ -217,7 +226,7 @@ namespace PickleVerse.FrontEnd
         async Task Run(Func<Task> action)
         {
             if (busy) return; busy = true; formGroup.interactable = false; feedback.text = "Đang xử lý…";
-            try { await action(); if (account.IsSignedIn && page != Page.Profile) cover.SetActive(false); }
+            try { await action(); RefreshVisibility(); }
             catch (OperationCanceledException) { }
             catch (ApiException error)
             {
@@ -238,7 +247,7 @@ namespace PickleVerse.FrontEnd
         void OnDestroy()
         {
             if (instance != this) return;
-            lifetime?.Cancel(); lifetime?.Dispose(); account.Changed -= OnAccountChanged; SceneManager.sceneLoaded -= SceneLoaded;
+            lifetime?.Cancel(); lifetime?.Dispose(); account.Changed -= OnAccountChanged; ProgressionRuntime.Changed -= OnGameChanged; SceneManager.sceneLoaded -= SceneLoaded;
             FrontEndModalInput.Release(this);
             if (pausedByGate) Time.timeScale = priorTimeScale;
             if (root) Destroy(root.gameObject); instance = null;

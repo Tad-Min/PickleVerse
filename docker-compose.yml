@@ -64,8 +64,8 @@ services:
   # 4. Backend Web API (.NET 10)
   backend-api:
     build:
-      context: ./src/Backend
-      dockerfile: API/Dockerfile
+      context: .
+      dockerfile: src/Backend/API/Dockerfile
     container_name: pickleverse_api
     restart: unless-stopped
     environment:

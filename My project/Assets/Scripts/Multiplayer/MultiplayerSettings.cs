@@ -4,6 +4,7 @@ namespace PickleVerse.Multiplayer
     [CreateAssetMenu(menuName = "PickleVerse/Multiplayer Settings")]
     public sealed class MultiplayerSettings : ScriptableObject
     {
+        public string photonRegion = "asia";
         public string environment = "pickleverse-test";
         public string singlesQueue = "PickleVerse-1v1", doublesQueue = "PickleVerse-2v2";
         public float reconnectSeconds = 30;

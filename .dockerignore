@@ -1,0 +1,21 @@
+**
+!src/
+!src/Backend/
+!src/Backend/**
+!My project/
+!My project/Assets/
+!My project/Assets/Scripts/
+!My project/Assets/Scripts/Entites/
+!My project/Assets/Scripts/Entites/Progression/
+!My project/Assets/Scripts/Entites/Progression/*.cs
+!My project/Assets/Scripts/Entites/Training/
+!My project/Assets/Scripts/Entites/Training/*.cs
+!My project/Assets/Scripts/Entites/Replays/
+!My project/Assets/Scripts/Entites/Replays/*.cs
+!My project/Assets/Scripts/Progression/
+!My project/Assets/Scripts/Progression/*.cs
+**/bin/
+**/obj/
+**/.env
+**/.env.*
+**/TestResults/

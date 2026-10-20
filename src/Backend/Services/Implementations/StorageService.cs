@@ -76,6 +76,7 @@ public class StorageService : IStorageService
             Key = key,
             InputStream = fileStream,
             ContentType = contentType
+            ,UseChunkEncoding = false
         };
 
         await _s3Client.PutObjectAsync(putRequest);
@@ -92,7 +93,7 @@ public class StorageService : IStorageService
                 Key = fileName
             };
 
-            var response = await _s3Client.GetObjectAsync(getRequest);
+            using var response = await _s3Client.GetObjectAsync(getRequest);
             var memoryStream = new MemoryStream();
             await response.ResponseStream.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
@@ -102,6 +103,11 @@ public class StorageService : IStorageService
         {
             return null;
         }
+    }
+    public async Task PutFileAsync(Stream fileStream,string objectKey,string contentType)
+    {
+        await EnsureBucketExistsAsync();
+        await _s3Client.PutObjectAsync(new PutObjectRequest{BucketName=_bucketName,Key=objectKey,InputStream=fileStream,ContentType=contentType,UseChunkEncoding=false});
     }
 
     public async Task<bool> DeleteFileAsync(string fileName)

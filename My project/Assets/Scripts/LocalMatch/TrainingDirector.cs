@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using PickleVerse.Audio;
 using PickleVerse.Progression;
 using PickleVerse.Rules;
@@ -44,7 +45,7 @@ namespace PickleVerse.LocalMatch
         public bool IsGameplay=>true;
         public bool IsPaused=>Paused;
         public bool CanSignOut=>false;
-        public string LeaveConfirmation=>"Tiến trình đã đạt trong bài được lưu. Bạn có thể tiếp tục bài từ Tiến trình.";
+        public string LeaveConfirmation=>"Tiến trình được lưu trực tuyến trước khi rời bài. Bạn có thể tiếp tục từ Tiến trình.";
         public int TouchShotMask {get;set;}
         public Vector2 TouchMovement {get;set;}
         public bool TouchRun {get;set;}
@@ -56,6 +57,9 @@ namespace PickleVerse.LocalMatch
         Quaternion cameraRotation;
         float cameraFov,elapsed,flightTime,wait,recoveryTime,serveTime,lastSave,renderTime,partnerSide=-1;
         bool incoming,outgoing,bounced,coachLaunched,hit,releasedServe,candidate,recovering,needsRecovery,outcomeAnnounced,leaving;
+        bool loadingAttempt, completing;
+        Task saves=Task.CompletedTask;
+        string completionRequest;
         TrainingError lastError;
         Vector3 trialPlayerOrigin;
         MatchActor receiver,feeder;
@@ -86,6 +90,7 @@ namespace PickleVerse.LocalMatch
         }
         public void Select(string id)
         {
+            if(loadingAttempt||completing)return;
             var lesson=TrainingCurriculum.Find(id);if(lesson==null)return;
             var data=TrainingEngine.Ensure(ProgressionRuntime.Instance.Player);if(!TrainingEngine.Unlocked(data,lesson)){Feedback="Hoàn thành bài yêu cầu để mở khóa.";hud.ShowCatalogue();return;}
             MusicPlayer.SetTrainingExercise(false);SfxPlayer.StopAll();hud.announcements.Clear();
@@ -93,17 +98,25 @@ namespace PickleVerse.LocalMatch
             player.ResetAt(new Vector3(1.2f,0,-5.2f),-1);coach.ResetAt(new Vector3(-1.2f,0,4.4f),1);partner.ResetAt(new Vector3(-1.3f,0,-5.2f),-1);opponent.ResetAt(new Vector3(1.3f,0,4.4f),1);
             TargetPosition=new Vector3(-1.35f,.035f,lesson.skill==TrainingSkill.Serve?4.75f:1.45f);DrawRing(targetRing,TargetPosition,.9f);hud.ShowBriefing();
         }
-        public void StartLesson(bool retry=false)
+        public async void StartLesson(bool retry=false)
         {
-            if(Lesson==null)return;var runtime=ProgressionRuntime.Instance;
-            MusicPlayer.SetTrainingExercise(true);SfxPlayer.StopAll();hud.announcements.Clear();
-            var active=TrainingEngine.Ensure(runtime.Player).active;
-            if(!retry&&active!=null&&!active.completed&&active.lessonId==Lesson.id)Session=Clone(active);
-            else{runtime.UpdateWallet(p=>TrainingEngine.Start(p,Lesson.id,retry));Session=Clone(runtime.Player.training.active);}
-            Phase=TrainingPhase.Practice;elapsed=lastSave=renderTime=0;PartnerTurn=false;Feedback="Theo vùng sáng và chỉ báo timing.";PrepareTrial(true);SetTouch(Application.isMobilePlatform);hud.ShowPractice();CaptureCamera();
+            if(Lesson==null||loadingAttempt||completing)return;
+            loadingAttempt=true;Feedback="Đang tải lượt tập từ máy chủ…";
+            try
+            {
+                await saves;
+                var state=await ProgressionRuntime.Instance.StartTrainingAsync(Lesson.id,retry);
+                if(!this)return;
+                Session=Clone(state.player.training.active);
+                completionRequest=null;
+                MusicPlayer.SetTrainingExercise(true);SfxPlayer.StopAll();hud.announcements.Clear();
+                Phase=TrainingPhase.Practice;elapsed=lastSave=renderTime=0;PartnerTurn=false;Feedback="Theo vùng sáng và chỉ báo timing.";PrepareTrial(true);SetTouch(Application.isMobilePlatform);hud.ShowPractice();CaptureCamera();
+            }
+            catch(Exception error){if(this)Feedback="Chưa bắt đầu được bài: "+error.Message;}
+            finally{loadingAttempt=false;}
         }
-        public void Retry(){StartLesson(true);}
-        public void NextLesson(){var id=TrainingEngine.Recommended(TrainingEngine.Ensure(ProgressionRuntime.Instance.Player));Select(id);}
+        public void Retry(){if(Phase==TrainingPhase.Finished&&Session!=null&&!Session.completed)Finish();else StartLesson(true);}
+        public void NextLesson(){if(Session!=null&&Phase==TrainingPhase.Finished&&!Session.completed){Feedback="Hãy gửi lại kết quả trước khi chuyển bài.";return;}var id=TrainingEngine.Recommended(TrainingEngine.Ensure(ProgressionRuntime.Instance.Player));Select(id);}
         public void Advance(float dt,int mask=0,Vector2 movement=default,bool run=false,int tap=0)
         {
             if(Paused||dt<=0)return;elapsed+=dt;hud.announcements.Advance(dt);
@@ -282,15 +295,39 @@ namespace PickleVerse.LocalMatch
             PartnerTurn=Lesson.skill==TrainingSkill.DoublesTransition&&Session.trials%3==0;
             PrepareTrial();
         }
-        void Finish()
+        async void Finish()
         {
-            var runtime=ProgressionRuntime.Instance;runtime.UpdateWallet(p=>TrainingEngine.Complete(p,Session));Phase=TrainingPhase.Finished;ResetFlight();SetTouch(false);CaptureCamera();
-            Feedback=Session.passed?(Session.review?"Ôn lại hoàn thành • tiến bộ đã được lưu, không có phần thưởng.":"Hoàn thành • "+Session.rewardTokenpad+" Tokenpad và "+Session.rewardXp+" XP đã vào ví."):"Chưa đạt • cần "+Lesson.required+" cú thành công. Xem lỗi và luyện lại.";hud.ShowResults();
+            if(completing||Session==null||Session.completed)return;
+            completing=true;Phase=TrainingPhase.Finished;ResetFlight();SetTouch(false);CaptureCamera();Feedback="Đang xác nhận kết quả trên máy chủ…";
+            try
+            {
+                var state=await QueueSave(Clone(Session),true);
+                if(!this)return;
+                Session=Clone(state.player.training.active);
+                Feedback=Session.passed?(Session.review?"Ôn lại hoàn thành • tiến bộ đã được lưu, không có phần thưởng.":"Hoàn thành • "+Session.rewardTokenpad+" Tokenpad và "+Session.rewardXp+" XP đã vào ví."):"Chưa đạt • cần "+Lesson.required+" cú thành công. Xem lỗi và luyện lại.";
+            }
+            catch(Exception error){if(this)Feedback="Chưa lưu được kết quả: "+error.Message+" Bấm làm lại để gửi lại kết quả.";}
+            finally{completing=false;if(this)hud.ShowResults();}
         }
-        public void SaveActive()
+        public async void SaveActive()
         {
-            if(Session==null||Session.completed||!ProgressionRuntime.Exists)return;
-            var copy=Clone(Session);ProgressionRuntime.Instance.UpdateWallet(p=>TrainingEngine.Ensure(p).active=copy);
+            try{await SaveActiveAsync();}
+            catch(Exception error){if(this)Feedback="Chưa đồng bộ tiến trình: "+error.Message;}
+        }
+        Task SaveActiveAsync()
+        {
+            if(Session==null||Session.completed||Phase==TrainingPhase.Finished||!ProgressionRuntime.Exists)return saves;
+            return QueueSave(Clone(Session),false);
+        }
+        Task<OnlineGameSnapshot> QueueSave(TrainingAttempt copy,bool complete)
+        {
+            string request=complete?(completionRequest??(completionRequest=Guid.NewGuid().ToString("N"))):Guid.NewGuid().ToString("N");
+            var pending=SaveAfter(saves,copy,complete,request);saves=pending;return pending;
+        }
+        async Task<OnlineGameSnapshot> SaveAfter(Task previous,TrainingAttempt copy,bool complete,string request)
+        {
+            try{await previous;}catch{ /* A later cumulative checkpoint can retry the failed write. */ }
+            return await ProgressionRuntime.Instance.SaveTrainingAsync(copy,complete,request);
         }
         void MovePartner(float dt)
         {
@@ -322,8 +359,15 @@ namespace PickleVerse.LocalMatch
         void SetTouch(bool show){if(touchRoot)touchRoot.SetActive(show);TouchShotMask=0;TouchMovement=Vector2.zero;TouchRun=false;}
         public void ToggleTouch(){if(Phase==TrainingPhase.Practice||Phase==TrainingPhase.Recovery)SetTouch(!touchRoot.activeSelf);}
         public void SetPaused(bool value){Paused=value;TouchShotMask=0;TouchMovement=Vector2.zero;TouchRun=false;input.Cancel();hud.announcements.Suspended=value;if(value){SaveActive();SfxPlayer.StopAll();hud.announcements.panel.gameObject.SetActive(false);}else hud.announcements.Advance(0);}
-        public void LeaveToMenu(){if(leaving||PickleVerse.Shop.LobbyNavigation.IsBusy)return;SaveActive();leaving=true;Paused=true;PickleVerse.Shop.LobbyNavigation.ReturnToLobby();}
-        public void BackToModes(){if(leaving||PickleVerse.Shop.LobbyNavigation.IsBusy)return;SaveActive();leaving=true;Paused=true;PickleVerse.Shop.LobbyNavigation.OpenModes();}
+        public async void LeaveToMenu(){await LeaveAsync(false);}
+        public async void BackToModes(){await LeaveAsync(true);}
+        async Task LeaveAsync(bool modes)
+        {
+            if(leaving||completing||loadingAttempt||PickleVerse.Shop.LobbyNavigation.IsBusy)return;
+            leaving=true;SetPaused(true);
+            try{await SaveActiveAsync();if(!this)return;if(modes)PickleVerse.Shop.LobbyNavigation.OpenModes();else PickleVerse.Shop.LobbyNavigation.ReturnToLobby();}
+            catch(Exception error){if(this){leaving=false;Feedback="Chưa lưu được tiến trình: "+error.Message;}}
+        }
         public System.Threading.Tasks.Task SignOutAsync()=>System.Threading.Tasks.Task.CompletedTask;
         void OnApplicationFocus(bool focused){if(!focused){SaveActive();SetPaused(true);}}
         void OnApplicationPause(bool paused){if(paused){SaveActive();SetPaused(true);}}

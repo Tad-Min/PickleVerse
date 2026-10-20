@@ -8,7 +8,7 @@ namespace PickleVerse.Progression
     {
         static TrainingDrill D(string id,string title,TrainingSkill skill,int tier,int[] masks,string explanation,string coaching,params string[] prerequisites)
         {return new TrainingDrill{id=id,title=title,skill=skill,tier=tier,masks=masks,explanation=explanation,coaching=coaching,prerequisites=prerequisites,trials=tier<1?8:tier==1?10:12,required=tier<1?6:tier==1?7:9,reward=new[]{150,225,300,450}[tier],xp=new[]{5,7,10,15}[tier]};}
-        public static readonly TrainingDrill[] Lessons = {
+        public static TrainingDrill[] Lessons { get; private set; } = new TrainingDrill[] {
             D("serve","Giao bóng đúng ô",TrainingSkill.Serve,0,new[]{1},"Giao dưới tay từ sau baseline. Bóng phải sang ô chéo và vượt cả vạch Kitchen.","Đứng trong vùng sáng phía sau baseline. Giữ rồi thả Drive; không bước vào sân trước khi chạm bóng."),
             D("drive","Drive về cuối sân",TrainingSkill.Drive,0,new[]{1},"Đón bóng sau một lần nảy, đánh Drive vào vùng sâu đã đánh dấu.","Chuẩn bị vợt phía trước. Thả phím sớm hơn lúc bóng tới để animation đưa vợt đến điểm tiếp xúc."),
             D("dink","Dink kiểm soát Kitchen",TrainingSkill.Dink,0,new[]{2},"Đánh nhẹ sau nảy, đưa bóng vào Kitchen đối phương. Được đứng trong Kitchen khi đánh bóng đã nảy.","Đón bóng trước người. Không dùng lực mạnh; ưu tiên kiểm soát và cung bóng thấp."),
@@ -22,6 +22,13 @@ namespace PickleVerse.Progression
             D("doubles-cover","Đánh đôi: giữ khoảng cách",TrainingSkill.DoublesCover,3,new[]{4,20},"Hai người giữ hàng ngang, dịch chuyển cùng phía bóng. Đánh bóng phần sân của bạn và giữ khe giữa đội nhỏ.","Đồng đội AI đi cùng bạn. Dịch chuyển ngang, đánh Volley theo chỉ dẫn, rồi hồi vị để cả đội giữ hàng ngang.","volley","footwork"),
             D("doubles-transition","Đánh đôi: drop và phối hợp",TrainingSkill.DoublesTransition,3,new[]{3,2,4},"Đội giao chờ trả giao nảy, dùng drop tiến lên cùng nhau rồi chuyển sang dink và volley. Có lượt bóng của đồng đội AI.","Theo dấu vị trí của bạn. Sau drop tiến lên cùng đồng đội; khi hiện ‘Bóng của đồng đội’, giữ hàng ngang và để AI xử lý.","approach","doubles-cover","reset")
         };
+        public static void Configure(TrainingDrill[] lessons)
+        {
+            if(lessons==null||lessons.Length==0||lessons.Any(d=>d==null||string.IsNullOrWhiteSpace(d.id)||d.masks==null||d.masks.Length==0||d.trials<1||d.required<1||d.required>d.trials||d.tier<0||d.tier>3)||lessons.Select(d=>d.id).Distinct().Count()!=lessons.Length)
+                throw new ArgumentException("Danh mục bài học máy chủ không hợp lệ.");
+            if(lessons.Any(d=>(d.prerequisites??Array.Empty<string>()).Any(id=>!lessons.Any(other=>other.id==id)))) throw new ArgumentException("Thiếu bài học điều kiện.");
+            Lessons=lessons;
+        }
         public static TrainingDrill Find(string id)=>Lessons.FirstOrDefault(d=>d.id==id);
         public static string ErrorName(TrainingError e)=>new[]{"Sai phím hoặc kỹ thuật","Đánh quá sớm","Đánh hụt / quá muộn","Volley trong Kitchen","Đà volley vào Kitchen","Bóng chạm lưới","Bóng ngoài sân","Chưa trúng vùng đích","Chân giao bóng sai","Chưa hồi vị / tiến lên","Khoảng cách đội hình"}[(int)e];
         public static string Tip(TrainingError e)=>new[]{"Giữ đúng tổ hợp trên HUD; giữ modifier đến lúc thả nút đánh.","Đợi bóng nảy nếu bài yêu cầu. Thả nút khi vợt có đủ thời gian tới bóng.","Di chuyển vào vòng đón bóng và thả sớm hơn thời điểm tiếp xúc.","Lùi cả hai chân ra ngoài vạch Kitchen trước khi volley.","Dừng lại sau volley; đừng để đà chạy đưa chân vào Kitchen.","Tiếp bóng phía trước người và đúng độ cao của kỹ thuật.","Giữ bóng trong đường biên; ưu tiên kiểm soát hơn lực.","Đón bóng đúng vị trí và chọn đúng hướng thẳng / chéo của vùng sáng.","Giữ chân sau baseline, giữa đường giữa sân và biên dọc khi giao.","Sau cú đánh, di chuyển về vùng hồi vị được đánh dấu.","Giữ cùng hàng với đồng đội, khoảng cách 1–3 mét và không để khe giữa quá lớn."}[(int)e];

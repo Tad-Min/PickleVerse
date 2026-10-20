@@ -28,7 +28,7 @@ namespace PickleVerse.Progression
         public List<TrainingErrorCount> errors=new List<TrainingErrorCount>();
         public double Accuracy=>trials==0?0:(double)successes/trials;
         public double Timing=>contacts==0?1:timingTotal/contacts;
-        public int Errors=>errors.Sum(e=>e.count);
+        public int ErrorCount=>errors.Sum(e=>e.count);
         public void Error(TrainingError error){var row=errors.Find(e=>e.error==error);if(row==null){row=new TrainingErrorCount{error=error};errors.Add(row);}row.count++;}
     }
     [Serializable] public sealed class TrainingLessonRecord

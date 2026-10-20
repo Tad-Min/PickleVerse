@@ -3,15 +3,13 @@ namespace PickleVerse.Multiplayer
 {
     public sealed class CourtBootstrap : MonoBehaviour
     {
-        void Start()
+        async void Start()
         {
             var app = MultiplayerApp.Instance;
-            if(app==null || !app.Network.IsListening) { UnityEngine.SceneManagement.SceneManager.LoadScene(app?.RoomSceneName ?? "PlayMultiplayer"); return; }
-            if(app.Network.IsServer)
+            if(app==null || !app.Network||!app.Network.IsRunning) { UnityEngine.SceneManagement.SceneManager.LoadScene(app?.RoomSceneName ?? "PlayMultiplayer"); return; }
+            if(app.Network.IsSharedModeMasterClient)
             {
-                var go=Instantiate(app.Settings.matchPrefab);
-                var match=go.GetComponent<NetworkMatch>(); match.SetRoster(app.Roster);
-                go.GetComponent<Unity.Netcode.NetworkObject>().Spawn();
+                await app.Network.SpawnAsync(app.Settings.matchPrefab,onBeforeSpawned:(runner,obj)=>obj.GetComponent<NetworkMatch>().SetRoster(app.Roster));
             }
         }
     }

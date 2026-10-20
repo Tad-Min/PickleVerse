@@ -22,20 +22,20 @@ namespace PickleVerse.Multiplayer
             if(!IsServer || !Debug.isDebugBuild || (!Application.isEditor && !System.Environment.GetCommandLineArgs().Contains("-pkvCase")))
                 throw new System.InvalidOperationException("Chỉ cho phép điều khiển thử trong phiên smoke development.");
             foreach(var player in players.Values)
-                if(player.IsLocalHuman) bots[player.Identity.Value.ToString()]=new MultiplayerBot(197);
+                if(player.IsLocalHuman) bots[player.Identity.ToString()]=new MultiplayerBot(197);
         }
         Vector3 LaunchBall(NetworkPlayer player,PickleVerse.LocalMatch.ShotIntent shot)
         {
-            if(player.Automated.Value)
+            if(player.Automated)
             { BotShots++; if(shot.kind!=PickleVerse.LocalMatch.ShotKind.Serve) BotReturns++; }
             return shots.Launch(player.Actor,shot,ballPosition,Rules.serverWorldX);
         }
-        bool BotMissedContact(NetworkPlayer player) => player.Automated.Value &&
-            bots.TryGetValue(player.Identity.Value.ToString(),out var brain) && brain.Contact.Missed(Rules.strokeCount);
+        bool BotMissedContact(NetworkPlayer player) => player.Automated &&
+            bots.TryGetValue(player.Identity.ToString(),out var brain) && brain.Contact.Missed(Rules.strokeCount);
         bool TryBotContact(NetworkPlayer player)
         {
-            if(!player.Automated.Value) return true;
-            var id=player.Identity.Value.ToString(); var chance=bots[id].Contact;
+            if(!player.Automated) return true;
+            var id=player.Identity.ToString(); var chance=bots[id].Contact;
             bool decided=chance.HasDecision(Rules.strokeCount);
             bool hit=chance.Resolve(botAccuracy,Roster.Find(id).elo,Rules.strokeCount);
             if(!decided)
@@ -72,19 +72,19 @@ namespace PickleVerse.Multiplayer
         public void Step(NetworkMatch match,NetworkPlayer player,float dt,out Vector2 move,out bool run)
         {
             move=Vector2.zero; run=false; cooldown=Mathf.Max(0,cooldown-dt);
-            if(match.Paused.Value || match.Finished.Value || match.BetweenGames.Value || match.BetweenPoints.Value || match.TimedOut.Value) return;
+            if(match.Paused || match.Finished || match.BetweenGames || match.BetweenPoints || match.TimedOut) return;
             var rules=match.Rules; var actor=player.Actor;
             if(rules.waitingServe)
             {
-                if(!Contact.Missed(rules.strokeCount) && rules.servingTeam==player.Team.Value && rules.serverIndex==player.Index.Value && match.ServeElapsed.Value>1.1f && !actor.Swinging)
+                if(!Contact.Missed(rules.strokeCount) && rules.servingTeam==player.Team && rules.serverIndex==player.Index && match.ServeElapsed>1.1f && !actor.Swinging)
                     match.TrySwing(player,new ShotIntent {kind=ShotKind.Groundstroke,crossCourt=true});
                 return;
             }
             if(!rules.live) return;
-            bool incoming=rules.lastHitTeam!=player.Team.Value;
+            bool incoming=rules.lastHitTeam!=player.Team;
             if(seenStroke!=rules.strokeCount) { seenStroke=rules.strokeCount; reaction=.12f; }
             reaction-=dt;
-            var target=new Vector3(0,0,actor.end*(rules.strokeCount<=2 && rules.servingTeam==player.Team.Value?6.4f:3.05f));
+            var target=new Vector3(0,0,actor.end*(rules.strokeCount<=2 && rules.servingTeam==player.Team?6.4f:3.05f));
             if(incoming)
             {
                 bool volley=rules.strokeCount>2 && Mathf.Abs(actor.transform.position.z)<3.7f && match.BallPosition.y>.6f;

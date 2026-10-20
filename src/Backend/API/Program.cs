@@ -10,11 +10,18 @@ using Services.Implementations;
 using Services.Interfaces;
 using API.Middlewares;
 using System.Threading.RateLimiting;
+using Services.Game;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Add Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    // The shared Unity game models use serializable fields and named enums.
+    options.JsonSerializerOptions.IncludeFields = true;
+    options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
+    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 
 // 2. Configure PostgreSQL DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -83,6 +90,10 @@ builder.Services.AddScoped<IMissionService, MissionService>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IReplayService, ReplayService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<GameSql>();
+builder.Services.AddScoped<GameCatalogService>();
+builder.Services.AddScoped<OnlineGameService>();
+builder.Services.AddScoped<OnlineReplayService>();
 
 // 5. OpenAPI
 builder.Services.AddOpenApi();

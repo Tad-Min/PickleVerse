@@ -1,0 +1,6 @@
+{
+  "name": "PickleVerse.PhotonSetup.Editor",
+  "references": ["Fusion.Unity", "Fusion.Unity.Editor", "Photon.Realtime", "PickleVerse.Multiplayer", "PickleVerse.Entites"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

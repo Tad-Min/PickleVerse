@@ -7,23 +7,22 @@ namespace PickleVerse.Multiplayer
     public sealed partial class NetworkMatch
     {
         ReplayRecorder replay;
-        [Unity.Netcode.Rpc(Unity.Netcode.SendTo.ClientsAndHost)]
-        void ReplayEventRpc(string kind,string detail)
+        void ReplayEventEffect(string kind,string detail)
         {
             if(kind=="Miss" && !IsServer)
-                NetworkPlayer.All.FirstOrDefault(p=>p.Identity.Value.ToString()==detail)?.Actor?.MissContact();
+                NetworkPlayer.All.FirstOrDefault(p=>p.Identity.ToString()==detail)?.Actor?.MissContact();
             replay?.Event(kind,detail);
         }
         void EnsureReplay()
         {
-            if(replay||!Started.Value||Finished.Value||Roster==null||!PickleVerse.Progression.ProgressionRuntime.Exists)return;
-            var actors=NetworkPlayer.All.Where(p=>p&&p.IsSpawned&&p.Actor).OrderBy(p=>p.Identity.Value.ToString()).ToArray();
+            if(replay||!Started||Finished||Roster==null||!PickleVerse.Progression.ProgressionRuntime.Exists)return;
+            var actors=NetworkPlayer.All.Where(p=>p&&p.IsSpawned&&p.Actor).OrderBy(p=>p.Identity.ToString()).ToArray();
             if(actors.Length!=Roster.Count)return;
             replay=gameObject.AddComponent<ReplayRecorder>();
-            replay.Begin(new ReplayMetadata{playerId=PickleVerse.Progression.ProgressionRuntime.Instance.Player.id,matchId=Roster.matchId,startedUtcTicks=StartedUtc.Value},
-                actors.Select(p=>new ReplayActorSource{root=p.Actor.transform,paddle=p.Actor.paddle?p.Actor.paddle.transform:null,id=p.Identity.Value.ToString(),name=Roster.Find(p.Identity.Value.ToString())?.name,team=p.Team.Value,visualId=p.Female.Value?"Female":"Male",paddleId=p.PaddleSkin.Value.ToString()}).ToArray(),
+            replay.Begin(new ReplayMetadata{playerId=PickleVerse.Progression.ProgressionRuntime.Instance.Player.id,matchId=Roster.matchId,startedUtcTicks=StartedUtc},
+                actors.Select(p=>new ReplayActorSource{root=p.Actor.transform,paddle=p.Actor.paddle?p.Actor.paddle.transform:null,id=p.Identity.ToString(),name=Roster.Find(p.Identity.ToString())?.name,team=p.Team,visualId=p.Female?"Female":"Male",paddleId=p.PaddleSkin.ToString()}).ToArray(),
                 ()=>Body?Body.transform.position:BallPosition,
-                ()=>new ReplayFrame{scoreA=ScoreA.Value,scoreB=ScoreB.Value,gamesA=GamesA.Value,gamesB=GamesB.Value,status=Status.Value.ToString()},visualBall:Body?Body.transform:null);
+                ()=>new ReplayFrame{scoreA=ScoreA,scoreB=ScoreB,gamesA=GamesA,gamesB=GamesB,status=Status.ToString()},visualBall:Body?Body.transform:null);
         }
     }
 }

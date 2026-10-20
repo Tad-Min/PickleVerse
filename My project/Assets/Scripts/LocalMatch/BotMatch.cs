@@ -44,7 +44,6 @@ namespace PickleVerse.LocalMatch
         int initialServer;
         bool releasedServe, focused = true;
         readonly ServeCountdownCue countdown=new ServeCountdownCue();
-        string rewardMatchId=System.Guid.NewGuid().ToString("N");
         Vector3 serveOrigin;
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
@@ -52,8 +51,10 @@ namespace PickleVerse.LocalMatch
         public MatchActor Actor(int id) => id == 0 ? human : bot;
 
         void Awake() { InitializeMatch(); }
-        void Start()
+        async void Start()
         {
+            try{await beginningProgression;}catch{return;}
+            if(!this)return;
             if (BotMatchLaunchSettings.ConsumeLaunch() || !GetComponent<MatchEnvironmentLighting>())
                 if (!opening || !opening.Play()) PreparePoint();
         }
@@ -74,6 +75,7 @@ namespace PickleVerse.LocalMatch
         }
         void Update()
         {
+            if(Application.isPlaying&&(startingProgression||progressionResult==null))return;
             if (SettingsOverlay.IsOpen || SettingsOverlay.Loading || SceneLoading.IsBlocking) return;
             var keyboard = Keyboard.current;
             if (focused && GameControls.Pressed(GameAction.Settings)) { SettingsOverlay.Open(this); return; }
@@ -314,7 +316,6 @@ namespace PickleVerse.LocalMatch
                 SfxPlayer.Play(GameSfx.GameWhistle);
                 Phase = MatchPhase.MatchOver; Message = Rules.Winner == 0 ? "Bạn thắng trận!" : "Bot thắng trận";
                 CompleteProgressionMatch(false);
-                if(!autoPlayer)PickleVerse.Shop.PlayerEconomy.Reward("bot:"+rewardMatchId,false,Rules.Winner==0);
                 Announcements?.Enqueue("GAME, MATCH!", (Rules.Winner == 0 ? "BẠN THẮNG TRẬN" : "BOT THẮNG TRẬN") + " • " + Rules.Games[0] + " - " + Rules.Games[1] + "\nGame " + endedGame + ": " + Rules.Points[0] + " - " + Rules.Points[1], Rules.Winner == 0 ? AnnouncementTone.Success : AnnouncementTone.Fault, 2.1f);
                 if (victory) victory.Begin();
             }
@@ -378,17 +379,28 @@ namespace PickleVerse.LocalMatch
             else if (Phase == MatchPhase.BetweenGames && !Announcements) { StageEndChange(true); FinishEndChange(); }
             else if (Phase == MatchPhase.Timeout) { Phase = MatchPhase.PreServe; ServeElapsed = phaseTime = 0; Message=(Rules.Server==0?"Bạn giao • giữ rồi thả "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Drive)):"Bot giao • chờ bóng nảy rồi trả")+" • Điểm gọi "+Rules.Points[Rules.Server]+"–"+Rules.Points[1-Rules.Server]; }
         }
-        public void Restart()
+        public async void Restart()
         {
+            if(startingProgression||progressionNavigation)return;
+            progressionNavigation=true;
+            try
+            {
             CompleteProgressionMatch(true);
+            try{await FlushProgressionAsync();}catch{return;}
+            if(!this)return;
             if (victory) victory.Cancel();
-            rewardMatchId=System.Guid.NewGuid().ToString("N");
             Announcements?.Clear();
             if(opening && opening.IsPlaying)opening.Cancel();
             Paused = false; Rules = new SinglesRules(initialServer); human.end = -1; bot.end = 1;
-            TotalHits = TotalRallies = LongestRally = 0; RallyLog.Clear(); BeginProgressionMatch(); PreparePoint();
+            TotalHits = TotalRallies = LongestRally = 0; RallyLog.Clear(); BeginProgressionMatch();
+            try{await beginningProgression;}catch{return;}
+            if(!this)return;PreparePoint();
+            if(restartIntro){restartIntro=false;Phase=MatchPhase.Intro;if(!opening||!opening.Play())PreparePoint();}
+            }
+            finally{progressionNavigation=false;}
         }
-        public void RestartWithIntro() {Restart();Phase=MatchPhase.Intro;if(!opening || !opening.Play())PreparePoint();}
+        bool restartIntro,progressionNavigation;
+        public void RestartWithIntro() {restartIntro=true;Restart();}
         public void BeginCinematic()
         {Announcements?.Clear();Phase=MatchPhase.Cinematic;Paused=false;accumulator=0;input.Cancel();TouchShotMask=0;TouchMovement=Vector2.zero;}
         public void EndCinematic() {PreparePoint();UpdateVisuals();}
@@ -399,7 +411,17 @@ namespace PickleVerse.LocalMatch
         public bool IsPaused => Paused;
         public bool CanSignOut => false;
         public void SetPaused(bool paused) { if (Paused != paused) TogglePause(); }
-        public void LeaveToMenu() { CompleteProgressionMatch(true); PickleVerse.Progression.RankedBotLaunch.Clear(); UnityEngine.SceneManagement.SceneManager.LoadScene("Menu"); }
+        public async void LeaveToMenu()
+        {
+            if(progressionNavigation)return;progressionNavigation=true;
+            try
+            {
+            CompleteProgressionMatch(true);
+            try{await FlushProgressionAsync();}catch{return;}
+            if(!this)return;PickleVerse.Progression.RankedBotLaunch.Clear();UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+            }
+            finally{progressionNavigation=false;}
+        }
         public System.Threading.Tasks.Task SignOutAsync() => System.Threading.Tasks.Task.CompletedTask;
         void OnApplicationFocus(bool focus) { focused = focus; input.Cancel(); TouchShotMask = 0; TouchMovement = Vector2.zero; }
         void UpdateVisuals()

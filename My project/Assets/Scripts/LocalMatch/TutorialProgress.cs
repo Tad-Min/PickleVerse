@@ -1,4 +1,7 @@
 using UnityEngine;
+using System;
+using System.Threading.Tasks;
+using PickleVerse.Progression;
 
 namespace PickleVerse.LocalMatch
 {
@@ -9,11 +12,25 @@ namespace PickleVerse.LocalMatch
     {
         public const string CompletedKey="PKV.Tutorial.Basic.Completed.v1",SkippedKey="PKV.Tutorial.Basic.Skipped.v1";
         static ITutorialProgressStore storage;
-        static ITutorialProgressStore Store=>storage??(storage=new LocalTutorialProgressStore());
-        public static bool NeedsIntroduction=>Store.Read(CompletedKey)==0&&Store.Read(SkippedKey)==0;
-        public static bool Completed=>Store.Read(CompletedKey)!=0;
-        public static void Complete(){Store.Write(CompletedKey,1);}
-        public static void Skip(){Store.Write(SkippedKey,1);}
+        static bool Read(bool completed)
+        {
+            if(storage!=null)return storage.Read(completed?CompletedKey:SkippedKey)!=0;
+            var runtime=ProgressionRuntime.Instance;
+            if(!runtime||!runtime.Ready)throw new InvalidOperationException("Vui lòng tải hồ sơ online trước.");
+            return completed?runtime.Snapshot.tutorial.completed:runtime.Snapshot.tutorial.skipped;
+        }
+        public static bool NeedsIntroduction=>!Read(true)&&!Read(false);
+        public static bool Completed=>Read(true);
+        static Task WriteAsync(bool completed)
+        {
+            if(storage!=null){storage.Write(completed?CompletedKey:SkippedKey,1);return Task.CompletedTask;}
+            return ProgressionRuntime.Instance.SetTutorialAsync(completed?"completed":"skipped",Guid.NewGuid().ToString("N"));
+        }
+        public static Task CompleteAsync()=>WriteAsync(true);
+        public static Task SkipAsync()=>WriteAsync(false);
+        // Kept for explicitly configured test adapters; runtime callers await the online command.
+        public static void Complete(){if(storage==null)throw new InvalidOperationException("Use CompleteAsync for online progress.");storage.Write(CompletedKey,1);}
+        public static void Skip(){if(storage==null)throw new InvalidOperationException("Use SkipAsync for online progress.");storage.Write(SkippedKey,1);}
         public static void Configure(ITutorialProgressStore adapter){storage=adapter;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void Reset(){storage=null;}
     }

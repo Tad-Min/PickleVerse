@@ -27,10 +27,10 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost("finish")]
-        public async Task<IActionResult> FinishMatch([FromBody] FinishMatchRequest request)
+        [Obsolete("Use a server-created match and its validated completion endpoint.")]
+        public IActionResult FinishMatch([FromBody] FinishMatchRequest request)
         {
-            var matchId = await _matchService.FinishMatchAsync(request);
-            return Ok(new { matchId, message = "Lưu kết quả trận đấu và cập nhật Elo thành công!" });
+            return StatusCode(410,new{message="API cho client tự ghi Elo đã ngừng sử dụng. Hãy hoàn tất trận đã được cấp mã qua api/Game."});
         }
 
         [Authorize]

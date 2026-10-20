@@ -1,9 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Unity.Services.Authentication;
-using Unity.Services.Core;
-using Unity.Services.Core.Environments;
+using PickleVerse.Services;
+using PickleVerse.Progression;
 
 namespace PickleVerse.Multiplayer.Services
 {
@@ -14,23 +13,14 @@ namespace PickleVerse.Multiplayer.Services
         public string DisplayName
         {
             get => displayName;
-            set { displayName = string.IsNullOrWhiteSpace(value)?"":ResolveName(value); if (PickleVerse.Progression.ProgressionRuntime.Exists && !PickleVerse.Progression.ProgressionRuntime.Instance.Online && displayName.Length>0) PickleVerse.Progression.ProgressionRuntime.Instance.SetName(displayName); }
+            set { displayName = string.IsNullOrWhiteSpace(value)?"":ResolveName(value); }
         }
-        public string PlayerId => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn ? AuthenticationService.Instance.PlayerId : "";
+        public string PlayerId => AccountRuntime.Instance&&AccountRuntime.Instance.Account.IsSignedIn?AccountRuntime.Instance.Account.Profile.UserId.ToString("N"):"";
 
         public async Task InitializeAsync(string profile, string environment)
         {
-            profile = new string((profile ?? "").Where(char.IsLetterOrDigit).Take(24).ToArray());
-            if (profile.Length == 0) throw new InvalidOperationException("Thiếu hồ sơ người chơi.");
-            if (UnityServices.State != ServicesInitializationState.Initialized)
-                await UnityServices.InitializeAsync(new InitializationOptions().SetProfile(profile).SetEnvironmentName(environment));
-            if (AuthenticationService.Instance.Profile != profile)
-            {
-                if (AuthenticationService.Instance.IsSignedIn) AuthenticationService.Instance.SignOut();
-                AuthenticationService.Instance.SwitchProfile(profile);
-            }
-            Profile = profile;
-            if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            await ProgressionRuntime.Instance.EnsureReadyAsync();
+            Profile=PlayerId;displayName=ProgressionRuntime.Instance.Player.playerName;
         }
 
         public string ResolveName(string name)

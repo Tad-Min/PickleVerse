@@ -20,19 +20,17 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost("save")]
-        public async Task<IActionResult> SaveReplay([FromBody] SaveReplayRequest request)
+        [Obsolete("Use authenticated, chunked api/Game/replays endpoints.")]
+        public IActionResult SaveReplay([FromBody] SaveReplayRequest request)
         {
-            var result = await _replayService.SaveReplayAsync(request.MatchId, request.ReplayData);
-            if (!result.Success) return BadRequest(new { message = result.Message });
-            return Ok(new { message = result.Message, replayUrl = result.ReplayUrl });
+            return StatusCode(410,new{message="Hãy dùng api/Game/replays để lưu replay theo tài khoản và từng chunk."});
         }
 
         [HttpGet("{matchId}")]
-        public async Task<IActionResult> GetReplay(Guid matchId)
+        [Authorize,Obsolete("Use authenticated api/Game/replays/{matchId}.")]
+        public IActionResult GetReplay(Guid matchId)
         {
-            var result = await _replayService.GetReplayAsync(matchId);
-            if (result == null) return NotFound(new { message = "Không tìm thấy dữ liệu Replay cho trận đấu này." });
-            return Ok(result);
+            return StatusCode(410,new{message="Hãy dùng api/Game/replays/{matchId} để đọc replay thuộc tài khoản."});
         }
     }
 }

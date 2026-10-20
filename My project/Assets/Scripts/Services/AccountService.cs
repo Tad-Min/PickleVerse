@@ -14,6 +14,7 @@ namespace PickleVerse.Services
         Task refreshTask;
         public BackendPlayerProfile Profile { get; private set; }
         public bool IsSignedIn => !string.IsNullOrEmpty(accessToken) && Profile != null;
+        public int SessionVersion => generation;
         public event Action Changed;
         public AccountService(ApiClient api) { this.api = api; }
 
@@ -60,6 +61,13 @@ namespace PickleVerse.Services
         public void Clear()
         {
             generation++; accessToken = refreshToken = null; Profile = null; refreshTask = null; Changed?.Invoke();
+        }
+        public async Task<T> SendAuthorizedAsync<T>(string method, string path, object body = null, CancellationToken cancellation = default)
+        {
+            int version = generation;
+            var result = await AuthorizedAsync<T>(method, path, body, cancellation);
+            CheckGeneration(version);
+            return result;
         }
         async Task<T> AuthorizedAsync<T>(string method, string path, object body, CancellationToken cancellation)
         {

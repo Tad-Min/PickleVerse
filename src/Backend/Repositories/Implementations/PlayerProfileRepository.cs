@@ -40,7 +40,7 @@ namespace Repositories.Implementations
 
         public Task UpdateProfileAsync(Playerprofile profile)
         {
-            _context.Playerprofiles.Update(profile);
+            if (_context.Entry(profile).State == EntityState.Detached) _context.Playerprofiles.Update(profile);
             return Task.CompletedTask;
         }
     }

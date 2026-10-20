@@ -24,8 +24,8 @@ public static class PlayMultiplayerNetworkProbe
             var match=NetworkMatch.Instance;
             if(!match || !match.IsServer) throw new Exception("Requires Editor host in court");
             var owner=NetworkPlayer.All.Single(p=>p.IsOwner);
-            while((!match.Rules.waitingServe || owner.Team.Value!=match.Rules.servingTeam) && Time.realtimeSinceStartupAsDouble<deadline)await Task.Delay(50);
-            if(!match.Rules.waitingServe || owner.Team.Value!=match.Rules.servingTeam)throw new Exception("Owner was not current server");
+            while((!match.Rules.waitingServe || owner.Team!=match.Rules.servingTeam) && Time.realtimeSinceStartupAsDouble<deadline)await Task.Delay(50);
+            if(!match.Rules.waitingServe || owner.Team!=match.Rules.servingTeam)throw new Exception("Owner was not current server");
             keyboard=InputSystem.AddDevice<Keyboard>("PlayMultiplayerProbe"); keyboard.MakeCurrent();
             InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
             InputSystem.QueueStateEvent(keyboard,new KeyboardState()); await Task.Delay(80);

@@ -39,7 +39,7 @@ namespace PickleVerse.Multiplayer
             {if(celebration)actor.SampleCelebration(clip,time);else actor.SampleEntrance(clip,time);actor.visual.SetLocalPositionAndRotation(visualPosition,visualRotation);actor.visual.localScale=visualScale;}
             public AnimationClip Clip(string name)=>actor.clips.FirstOrDefault(c=>c.name==name).clip;
             public void Restore()
-            {if(!actor)return;actor.ResetAt(destination,player.CourtEnd.Value);actor.transform.rotation=rotation;actor.visual.SetLocalPositionAndRotation(visualPosition,visualRotation);actor.visual.localScale=visualScale;if(actor.paddle)actor.paddle.SetActive(paddleActive);actor.RefreshPose();}
+            {if(!actor)return;actor.ResetAt(destination,player.CourtEnd);actor.transform.rotation=rotation;actor.visual.SetLocalPositionAndRotation(visualPosition,visualRotation);actor.visual.localScale=visualScale;if(actor.paddle)actor.paddle.SetActive(paddleActive);actor.RefreshPose();}
         }
         void Awake(){ui=GetComponent<MultiplayerCourtUI>();Build();}
         void Build()
@@ -73,17 +73,17 @@ namespace PickleVerse.Multiplayer
             if(PickleVerse.Settings.SceneLoading.IsBlocking)return;
             var match=NetworkMatch.Instance;
             if(!match||!match.IsSpawned||!ui)return;
-            if(match.IntroStart.Value>0 && !match.Started.Value && !finishedIntro)
+            if(match.IntroStart>0 && !match.Started && !finishedIntro)
             {
                 if(!PlayingIntro)
                 {
                     if(NetworkPlayer.All.Count<match.Roster.Count||NetworkPlayer.All.Any(p=>!p.Actor))return;
-                    actors=NetworkPlayer.All.Select(p=>new ActorPose(p,p.Female.Value?femaleWalk:maleWalk)).ToArray();Capture();int localTeam=actors.First(p=>p.player.IsLocalHuman).player.Team.Value;ourTeam=actors.Where(p=>p.player.Team.Value==localTeam).ToArray();theirTeam=actors.Where(p=>p.player.Team.Value!=localTeam).ToArray();if(match.Body)match.Body.gameObject.SetActive(false);PlayingIntro=true;title.gameObject.SetActive(false);next.gameObject.SetActive(false);shade.gameObject.SetActive(false);
+                    actors=NetworkPlayer.All.Select(p=>new ActorPose(p,p.Female?femaleWalk:maleWalk)).ToArray();Capture();int localTeam=actors.First(p=>p.player.IsLocalHuman).player.Team;ourTeam=actors.Where(p=>p.player.Team==localTeam).ToArray();theirTeam=actors.Where(p=>p.player.Team!=localTeam).ToArray();if(match.Body)match.Body.gameObject.SetActive(false);PlayingIntro=true;title.gameObject.SetActive(false);next.gameObject.SetActive(false);shade.gameObject.SetActive(false);
                 }
-                EvaluateIntro(Mathf.Max(0,(float)(match.NetworkManager.ServerTime.Time-match.IntroStart.Value)));
+                EvaluateIntro(Mathf.Max(0,(float)(match.Runner.SimulationTime-match.IntroStart)));
             }
             else if(PlayingIntro)EndIntro();
-            if(match.Finished.Value && !ShowingOutcome && ui.EndAnnouncementFinished && (!ui.announcements||!ui.announcements.Busy))BeginOutcome(match);
+            if(match.Finished && !ShowingOutcome && ui.EndAnnouncementFinished && (!ui.announcements||!ui.announcements.Busy))BeginOutcome(match);
             if(ShowingOutcome)EvaluateOutcome(Mathf.Min(Time.unscaledDeltaTime,.1f));
             if(overlay.gameObject.activeSelf)MatchPresentationUi.SafeArea(safeArea);
         }
@@ -91,26 +91,26 @@ namespace PickleVerse.Multiplayer
         {
             if(!view)return;
             if(time>=IntroDuration){EndIntro();return;}
-            var local=actors.First(p=>p.player.IsLocalHuman);int team=local.player.Team.Value;
+            var local=actors.First(p=>p.player.IsLocalHuman);int team=local.player.Team;
             float stage=time<.8f?0:time<4.6f?1:time<8.4f?2:3;
             caption.text=stage==0?"PICKLEVERSE / "+(actors.Length==4?"ĐẤU ĐÔI 2v2":"ĐẤU ĐƠN 1v1"):stage==1?"ĐỘI CỦA BẠN":stage==2?"ĐỘI ĐỐI THỦ":"SẴN SÀNG VÀO TRẬN";
             foreach(var p in actors)
             {
-                bool ours=p.player.Team.Value==team;float elapsed=time-(ours?.8f:4.6f);float t=Mathf.Clamp01(elapsed/3.8f);
-                var anchor=p.player.CourtEnd.Value<0?stadium?.nearEntrance:stadium?.farEntrance;
-                var start=anchor?anchor.position:new Vector3(0,0,p.player.CourtEnd.Value*10.8f);
+                bool ours=p.player.Team==team;float elapsed=time-(ours?.8f:4.6f);float t=Mathf.Clamp01(elapsed/3.8f);
+                var anchor=p.player.CourtEnd<0?stadium?.nearEntrance:stadium?.farEntrance;
+                var start=anchor?anchor.position:new Vector3(0,0,p.player.CourtEnd*10.8f);
                 start.x=p.destination.x;
                 p.actor.transform.position=Vector3.Lerp(start,p.destination,t);
                 p.actor.transform.rotation=p.rotation;
                 p.Sample(elapsed>0&&t<1?p.walk:p.Clip("PKV_Idle_Ready"),elapsed>0&&t<1?elapsed*.85f:0);
                 if(t>0&&t<1)p.actor.EntranceFootsteps(Time.unscaledDeltaTime);
             }
-            if(stage==0){view.transform.position=new Vector3(-5,9.8f,local.player.CourtEnd.Value*12.2f);view.transform.LookAt(Vector3.up*.7f);view.fieldOfView=55;}
+            if(stage==0){view.transform.position=new Vector3(-5,9.8f,local.player.CourtEnd*12.2f);view.transform.LookAt(Vector3.up*.7f);view.fieldOfView=55;}
             else if(stage<3)
             {
                 var group=stage==1?ourTeam:theirTeam;
                 Vector3 center=group.Aggregate(Vector3.zero,(s,p)=>s+p.actor.transform.position)/group.Length;
-                var facing=Quaternion.Euler(0,group[0].player.CourtEnd.Value<0?0:180,0);
+                var facing=Quaternion.Euler(0,group[0].player.CourtEnd<0?0:180,0);
                 float t=Mathf.Clamp01((time-(stage==1?.8f:4.6f))/3.8f);
                 // Wider framing keeps both doubles teammates visible throughout their walk.
                 var position=center+facing*new Vector3(Mathf.Lerp(2.2f,-.4f,t),2.3f,group.Length>1?7.2f:4.7f);
@@ -129,8 +129,8 @@ namespace PickleVerse.Multiplayer
         void BeginOutcome(NetworkMatch match)
         {
             var local=NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman);if(!local||!local.Actor)return;
-            presented=NetworkPlayer.All.Where(p=>p.Team.Value==local.Team.Value&&p.Actor).OrderBy(p=>p.Index.Value).Select(p=>new ActorPose(p,null)).ToArray();
-            PlayerWon=match.WinningTeam.Value==local.Team.Value;
+            presented=NetworkPlayer.All.Where(p=>p.Team==local.Team&&p.Actor).OrderBy(p=>p.Index).Select(p=>new ActorPose(p,null)).ToArray();
+            PlayerWon=match.WinningTeam==local.Team;
             Capture();if(!view)return;
             originCamera=view.transform.position;originRotation=view.transform.rotation;originFov=view.fieldOfView;
             ShowingOutcome=true;outcomeTime=0;OutcomeReady=false;
@@ -144,7 +144,7 @@ namespace PickleVerse.Multiplayer
         void EvaluateOutcome(float delta)
         {
             outcomeTime+=delta;float blend=Mathf.SmoothStep(0,1,Mathf.Clamp01(outcomeTime/1.25f));
-            int end=presented[0].player.CourtEnd.Value;var facing=Quaternion.Euler(0,end<0?0:180,0);
+            int end=presented[0].player.CourtEnd;var facing=Quaternion.Euler(0,end<0?0:180,0);
             var anchor=end<0?stadium?.nearResult:stadium?.farResult;
             var center=anchor?anchor.position:new Vector3(0,0,end*4.8f);
             for(int i=0;i<presented.Length;i++)
@@ -154,7 +154,7 @@ namespace PickleVerse.Multiplayer
                 float dance=Mathf.Max(0,outcomeTime-1.25f);AnimationClip clip;
                 if(blend<1)clip=p.Clip("PKV_Idle_Ready");
                 else if(!PlayerWon){clip=p.Clip("PKV_Fault_Reaction");dance=clip?Mathf.Min(dance,clip.length):0;}
-                else if(p.player.Female.Value){clip=femaleWin;dance=clip?Mathf.Repeat(dance,clip.length):0;}
+                else if(p.player.Female){clip=femaleWin;dance=clip?Mathf.Repeat(dance,clip.length):0;}
                 else if(maleSuperSaiyan&&dance<maleSuperSaiyan.length)clip=maleSuperSaiyan;
                 else{clip=maleClap;dance=clip?Mathf.Repeat(dance-(maleSuperSaiyan?maleSuperSaiyan.length:0),clip.length):0;}
                 p.Sample(clip,dance,true);

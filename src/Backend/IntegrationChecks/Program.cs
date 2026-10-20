@@ -73,6 +73,20 @@ try
             await command.ExecuteNonQueryAsync();
         }
     }
+    if (args.Contains("--check-online-game"))
+    {
+        await using var fixture = new NpgsqlConnection(testBuilder.ConnectionString);
+        await fixture.OpenAsync();
+        await using var command = new NpgsqlCommand("""
+            WITH inserted AS (INSERT INTO users(email,passwordhash,roleid)
+                SELECT 'race-check@example.invalid','test-account-cannot-login',roleid FROM roles WHERE rolename='Player' RETURNING userid)
+            INSERT INTO playerprofiles(userid,playername) SELECT userid,'GameCheck' FROM inserted;
+            """,fixture);
+        await command.ExecuteNonQueryAsync();
+        await GameChecks.RunAsync(options, time, Check, root);
+        Console.WriteLine($"SUCCESS: {checks} online game checks; disposable PostgreSQL database removed.");
+        return;
+    }
     bool ValidRegistration(RegisterRequest request) => System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
         request, new System.ComponentModel.DataAnnotations.ValidationContext(request), new List<System.ComponentModel.DataAnnotations.ValidationResult>(), validateAllProperties: true);
     Check(ValidRegistration(new RegisterRequest { Email = "validation@example.invalid", Password = "IntegrationPass!23", ConfirmPassword = "IntegrationPass!23", IsMale = false }), "registration accepts the four-field contract without a player name");
@@ -168,6 +182,7 @@ try
         Check(await Verify(mail.Recipient, mail.Codes[mail.Recipient]), "real Gmail SMTP accepted OTP; verification succeeds");
         Check((await Login(mail.Recipient)).Success, "real-email flow permits login after OTP");
     }
+    await GameChecks.RunAsync(options, time, Check, root);
     Console.WriteLine($"SUCCESS: {checks} checks; real PostgreSQL; captured email adapter; temporary database removed.");
 }
 finally

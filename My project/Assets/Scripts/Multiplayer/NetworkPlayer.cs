@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Unity.Collections;
-using Unity.Netcode;
+using Fusion;
+using Newtonsoft.Json.Linq;
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using PickleVerse.LocalMatch;
@@ -10,43 +11,45 @@ using LocalShotInput = PickleVerse.LocalMatch.ShotInput;
 
 namespace PickleVerse.Multiplayer
 {
-    [Serializable] public struct PlayerFrame : INetworkSerializable, IEquatable<PlayerFrame>
+    [Serializable] public struct PlayerFrame : INetworkStruct, IEquatable<PlayerFrame>
     {
         public Vector3 position, velocity;
         public uint sequence;
         public Vector2 movement;
-        public bool running;
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref position); serializer.SerializeValue(ref velocity);
-            serializer.SerializeValue(ref sequence); serializer.SerializeValue(ref movement);
-            serializer.SerializeValue(ref running);
-        }
+        public NetworkBool running;
         public bool Equals(PlayerFrame other) => position == other.position && velocity == other.velocity &&
-            sequence == other.sequence && movement == other.movement && running == other.running;
+            sequence == other.sequence && movement == other.movement && (bool)running == (bool)other.running;
     }
 
-    public sealed class NetworkPlayer : NetworkBehaviour
+    public sealed partial class NetworkPlayer : NetworkBehaviour,IPhotonMessageTarget
     {
         public static readonly List<NetworkPlayer> All = new List<NetworkPlayer>();
-        public NetworkVariable<FixedString64Bytes> Identity = new NetworkVariable<FixedString64Bytes>();
-        public NetworkVariable<int> Team = new NetworkVariable<int>(), Index = new NetworkVariable<int>();
-        // Replicate the physical end independently of the match object's spawn order.
-        public NetworkVariable<int> CourtEnd = new NetworkVariable<int>(-1);
-        public NetworkVariable<bool> Female = new NetworkVariable<bool>();
-        public NetworkVariable<bool> Automated = new NetworkVariable<bool>();
-        public NetworkVariable<FixedString64Bytes> PaddleSkin = new NetworkVariable<FixedString64Bytes>(new FixedString64Bytes(PickleVerse.Shop.ShopCatalog.DefaultPaddleId));
-        public NetworkVariable<PlayerFrame> Frame = new NetworkVariable<PlayerFrame>();
+        [Networked,Capacity(64)]public string Identity{get;set;}
+        [Networked]public int Team{get;set;}
+        [Networked]public int Index{get;set;}
+        [Networked]public int CourtEnd{get;set;}=-1;
+        [Networked]public bool Female{get;set;}
+        [Networked]public bool Automated{get;set;}
+        [Networked,Capacity(64)]public string PaddleSkin{get;set;}="paddle.default";
+        [Networked]public PlayerFrame Frame{get;set;}
+        [Networked]public PlayerRef ControllerPeer{get;set;}
+        public bool IsServer=>HasStateAuthority;
+        public bool IsSpawned=>Object&&Object.IsValid;
+        public bool IsOwner=>IsSpawned&&ControllerPeer==Runner.LocalPlayer;
+        PlayerFrame renderedFrame;
+        int renderedEnd;
+        string renderedSkin;
+        bool renderedOwner;
         public MatchActor Actor { get; private set; }
         public Transform RightHand => Actor ? Actor.hand : null;
         public Transform LeftHand => Actor ? Actor.leftHand : null;
         public Transform PaddleContact => Actor ? Actor.paddleFace : null;
-        public Vector3 Velocity => IsServer && Actor ? Actor.Velocity : IsOwner ? predictedVelocity : Frame.Value.velocity;
+        public Vector3 Velocity => IsServer && Actor ? Actor.Velocity : IsOwner ? predictedVelocity : Frame.velocity;
         public Vector3 ContactPosition => PaddleContact ? PaddleContact.position : transform.position + transform.forward * .7f + Vector3.up * .9f;
         public Vector3 WristPosition => RightHand ? RightHand.position : ContactPosition;
-        public string Gender => Female.Value ? "Female" : "Male";
+        public string Gender => Female ? "Female" : "Male";
         public bool Connected = true;
-        public bool IsLocalHuman => IsOwner && !Automated.Value;
+        public bool IsLocalHuman => IsOwner && !Automated;
 
         struct Move { public uint sequence; public Vector2 axes; public bool run, swinging; public float dt; }
         readonly List<Move> predicted = new List<Move>();
@@ -70,50 +73,43 @@ namespace PickleVerse.Multiplayer
         public void Initialize(RoomMember member, int index, Vector3 position)
         { initialMember = member; initialIndex = index; transform.position = position; }
 
-        public override void OnNetworkSpawn()
+        public override void Spawned()
         {
             if (IsServer && initialMember != null)
             {
-                Identity.Value = new FixedString64Bytes(initialMember.id);
-                Team.Value = initialMember.team; Index.Value = initialIndex;
-                Female.Value = initialMember.gender == "Female";
-                Automated.Value = initialMember.bot;
-                CourtEnd.Value = transform.position.z < 0 ? -1 : 1;
-                Frame.Value = new PlayerFrame { position = transform.position };
+                Identity = initialMember.id;PaddleSkin=initialMember.paddleId;
+                Team = initialMember.team; Index = initialIndex;
+                Female = initialMember.gender == "Female";
+                Automated = initialMember.bot;
+                CourtEnd = transform.position.z < 0 ? -1 : 1;
+                Frame = new PlayerFrame { position = transform.position };
             }
-            All.Add(this); sequence = Frame.Value.sequence;
+            All.Add(this); sequence = Frame.sequence;
             BuildVisual();
-            Frame.OnValueChanged += Reconcile;
-            CourtEnd.OnValueChanged += EndChanged;
-            PaddleSkin.OnValueChanged += SkinChanged;
-            ApplyPaddleSkin();if(IsLocalHuman)PublishPaddleSkin();
-        }
-        public override void OnNetworkDespawn()
-        {
-            All.Remove(this); Frame.OnValueChanged -= Reconcile;
-            CourtEnd.OnValueChanged -= EndChanged;
-            PaddleSkin.OnValueChanged -= SkinChanged;
-        }
-        public override void OnGainedOwnership()
-        { sequence = Frame.Value.sequence; ResetInput();if(Actor)Actor.LocalHitFeedback=IsLocalHuman;if(IsSpawned&&IsLocalHuman)PublishPaddleSkin(); }
 
-        async void PublishPaddleSkin()
-        {
-            try{var state=await PickleVerse.Shop.PlayerEconomy.Service.ReadAsync();if(this&&IsSpawned&&IsLocalHuman)SelectPaddleServerRpc(new FixedString64Bytes(state.equippedPaddle));}
-            catch(Exception e){Debug.LogWarning("Paddle selection unavailable: "+e.Message);}
+
+
+            ApplyPaddleSkin();
         }
-        [ServerRpc] void SelectPaddleServerRpc(FixedString64Bytes skinId)
+        public override void Despawned(NetworkRunner runner,bool hasState)
         {
-            // Prototype inventory is local. A server economy can validate ownership here later.
-            if(PickleVerse.Shop.PlayerEconomy.Catalog.Find(skinId.ToString())!=null)PaddleSkin.Value=skinId;
+            All.Remove(this);
+
+
         }
-        void SkinChanged(FixedString64Bytes previous,FixedString64Bytes current){ApplyPaddleSkin();}
-        void ApplyPaddleSkin(){if(Actor&&Actor.paddle)PickleVerse.Shop.PaddleAppearance.Attach(Actor.paddle).Apply(PaddleSkin.Value.ToString());}
+        public override void Render()
+        {
+            if(!renderedFrame.Equals(Frame)){Reconcile(renderedFrame,Frame);renderedFrame=Frame;}
+            if(renderedEnd!=CourtEnd){EndChanged(renderedEnd,CourtEnd);renderedEnd=CourtEnd;}
+            if(renderedSkin!=PaddleSkin){renderedSkin=PaddleSkin;ApplyPaddleSkin();}
+            if(renderedOwner!=IsOwner){renderedOwner=IsOwner;sequence=Frame.sequence;ResetInput();if(Actor)Actor.LocalHitFeedback=IsLocalHuman;}
+        }
+        void ApplyPaddleSkin(){if(Actor&&Actor.paddle)PickleVerse.Shop.PaddleAppearance.Attach(Actor.paddle).Apply(PaddleSkin);}
 
         void BuildVisual()
         {
             var settings = MultiplayerApp.Instance.Settings;
-            var prefab = Female.Value ? settings.femaleActorPrefab : settings.maleActorPrefab;
+            var prefab = Female ? settings.femaleActorPrefab : settings.maleActorPrefab;
             if (!prefab) throw new InvalidOperationException("Missing BotMatch actor prefab in MultiplayerSettings.");
             var instance = Instantiate(prefab, transform, false);
             instance.name = "CharacterVisual";
@@ -124,18 +120,18 @@ namespace PickleVerse.Multiplayer
             foreach (var collider in instance.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
             foreach (var body in instance.GetComponentsInChildren<Rigidbody>(true)) Destroy(body);
             foreach (var animator in instance.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
-            Actor.playerId = Female.Value ? 0 : 1;
+            Actor.playerId = Female ? 0 : 1;
             Actor.Initialize();
             Actor.LocalHitFeedback=IsLocalHuman;
-            ResetActor(transform.position, CourtEnd.Value);
+            ResetActor(transform.position, CourtEnd);
             Actor.RefreshPose();
 
         }
         bool CanMove()
         {
             var match = NetworkMatch.Instance;
-            return match && match.Started.Value && !match.Paused.Value && !match.Finished.Value &&
-                !match.BetweenGames.Value && !match.BetweenPoints.Value && !match.TimedOut.Value && Connected;
+            return match && match.Started && !match.Paused && !match.Finished &&
+                !match.BetweenGames && !match.BetweenPoints && !match.TimedOut && Connected;
         }
         void Update()
         {
@@ -144,29 +140,29 @@ namespace PickleVerse.Multiplayer
             if(MultiplayerCourtUI.Instance && MultiplayerCourtUI.Instance.cinematic && MultiplayerCourtUI.Instance.cinematic.OwnsPose) return;
             if(IsLocalHuman&&CanMove()&&!InputBlocked())
             {
-                var local=LocalAxes();var axes=local*-CourtEnd.Value;bool run=LocalRun();
+                var local=LocalAxes();var axes=local*-CourtEnd;bool run=LocalRun();
                 if(IsServer){serverAxes=local;serverRun=run;}
                 Actor.ObserveMovement(axes,run);
             }
             if (!IsServer)
             {
                 if (!IsOwner)
-                    transform.position = Vector3.Lerp(transform.position, Frame.Value.position, 1 - Mathf.Exp(-18 * Time.deltaTime));
-                if (match && !match.Paused.Value)
-                    Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.Value.running, Time.deltaTime, CanMove(),(IsLocalHuman?LocalAxes():Frame.Value.movement)*-CourtEnd.Value);
+                    transform.position = Vector3.Lerp(transform.position, Frame.position, 1 - Mathf.Exp(-18 * Time.deltaTime));
+                if (match && !match.Paused)
+                    Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.running, Time.deltaTime, CanMove(),(IsLocalHuman?LocalAxes():Frame.movement)*-CourtEnd);
             }
             if (!IsLocalHuman) return;
             var keyboard = Keyboard.current;
             if (keyboard != null && CanReadKeyboard() && !InputBlocked())
             {
                 if (GameControls.Pressed(GameAction.Timeout)) TimeoutServerRpc();
-                if (match && match.TimedOut.Value && GameControls.Pressed(GameAction.Continue)) ResumeTimeoutServerRpc();
+                if (match && match.TimedOut && GameControls.Pressed(GameAction.Continue)) ResumeTimeoutServerRpc();
             }
             if (!CanMove() || InputBlocked())
             { shotInput = new LocalShotInput(); return; }
             bool readKeys=keyboard!=null && CanReadKeyboard();
             int mask = (readKeys?GameControls.ShotMask:0) | (MultiplayerCourtUI.Instance?MultiplayerCourtUI.Instance.TouchShotMask:0), tap = readKeys?GameControls.TapMask:0;
-            bool serve = match.WaitingServe.Value && match.ServerTeam.Value == Team.Value && match.ServerIndex.Value == Index.Value;
+            bool serve = match.WaitingServe && match.ServerTeam == Team && match.ServerIndex == Index;
             bool cancel = readKeys && GameControls.Pressed(GameAction.CancelShot);
             if (tap != 0) TickShot(mask | tap, cancel, serve);
             TickShot(mask, cancel, serve);
@@ -205,11 +201,11 @@ namespace PickleVerse.Multiplayer
                 (GameControls.Held(GameAction.Right) ? 1 : 0) - (GameControls.Held(GameAction.Left) ? 1 : 0),
                 (GameControls.Held(GameAction.Forward) ? 1 : 0) - (GameControls.Held(GameAction.Backward) ? 1 : 0)), 1);
         }
-        void FixedUpdate()
+        public override void FixedUpdateNetwork()
         {
             if (!IsSpawned || !IsLocalHuman || !Actor) return;
             if (!CanMove()) { predicted.Clear(); predictedVelocity = Vector3.zero; return; }
-            var move = new Move { sequence = ++sequence, axes = LocalAxes(), run = LocalRun(), swinging=Actor.Swinging, dt = Time.fixedDeltaTime };
+            var move = new Move { sequence = ++sequence, axes = LocalAxes(), run = LocalRun(), swinging=Actor.Swinging, dt = Runner.DeltaTime };
             if (!IsServer)
             {
                 var position = transform.position;
@@ -217,14 +213,14 @@ namespace PickleVerse.Multiplayer
                 transform.position = position;
                 predicted.Add(move); if (predicted.Count > 150) predicted.RemoveAt(0);
             }
-            MoveServerRpc(move.sequence, move.axes, move.run);
+            PhotonSession.Find(Runner)?.Channel.Input(move.sequence,move.axes,move.run);
         }
         void Predict(ref Vector3 position, ref Vector3 velocity, Move move)
         {
-            MatchMovement.Step(ref position, ref velocity, move.axes * -CourtEnd.Value, move.run,
-                move.swinging, CourtEnd.Value, move.dt, Actor.walkSpeed, Actor.runSpeed);
+            MatchMovement.Step(ref position, ref velocity, move.axes * -CourtEnd, move.run,
+                move.swinging, CourtEnd, move.dt, Actor.walkSpeed, Actor.runSpeed);
         }
-        [ServerRpc] void MoveServerRpc(uint seq, Vector2 axes, bool run)
+        void MoveFrom(uint seq, Vector2 axes, bool run)
         {
             if (float.IsNaN(axes.x) || float.IsNaN(axes.y) || float.IsInfinity(axes.x) || float.IsInfinity(axes.y) || seq <= lastReceived) return;
             if (Time.realtimeSinceStartupAsDouble - rateWindow >= 1) { rateWindow = Time.realtimeSinceStartupAsDouble; receivedThisWindow = 0; }
@@ -236,31 +232,32 @@ namespace PickleVerse.Multiplayer
         public void Simulate(float dt, bool canMove)
         {
             if (!IsServer || !Actor) return;
+            var channel=PhotonCommandChannel.For(Runner,ControllerPeer);if(channel)MoveFrom(channel.InputSequence,channel.Movement,channel.Running);
             bool moving = canMove && Connected;
-            var axes=moving?serverAxes*-CourtEnd.Value:Vector2.zero;
+            var axes=moving?serverAxes*-CourtEnd:Vector2.zero;
             Actor.Step(axes, moving && serverRun, dt, moving);
             // MatchActor owns its child root; publish its position on the NetworkObject root.
             var position = Actor.transform.position;
             transform.position = position; Actor.transform.localPosition = Vector3.zero;
-            Frame.Value = new PlayerFrame { position = position, velocity = Actor.Velocity, sequence = lastReceived,
+            Frame = new PlayerFrame { position = position, velocity = Actor.Velocity, sequence = lastReceived,
                 movement = moving ? serverAxes : Vector2.zero, running = moving && serverRun };
         }
         public void SetAutomatedInput(Vector2 worldMovement,bool run)
         {
             if(!IsServer) return;
-            serverAxes=Vector2.ClampMagnitude(worldMovement,1)*-CourtEnd.Value; serverRun=run;
+            serverAxes=Vector2.ClampMagnitude(worldMovement,1)*-CourtEnd; serverRun=run;
         }
-        [ServerRpc] void ShotServerRpc(int kind, bool attack, bool crossCourt,Vector2 axes,bool run)
+        void ShotFrom(int kind, bool attack, bool crossCourt,Vector2 axes,bool run)
         {
             if (kind < 1 || kind > (int)ShotKind.Punch || !CanMove() || !Actor || float.IsNaN(axes.x)||float.IsNaN(axes.y)||float.IsInfinity(axes.x)||float.IsInfinity(axes.y)) return;
             // Select the contact pose against the same movement snapshot as the shot.
             // Later movement packets update locomotion without cancelling this strike.
             serverAxes=Vector2.ClampMagnitude(axes,1);serverRun=run;
-            Actor.ObserveMovement(serverAxes*-CourtEnd.Value,run);
+            Actor.ObserveMovement(serverAxes*-CourtEnd,run);
             NetworkMatch.Instance?.TrySwing(this, new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt });
         }
-        [ServerRpc] void TimeoutServerRpc() { NetworkMatch.Instance?.RequestTimeout(this); }
-        [ServerRpc] void ResumeTimeoutServerRpc() { NetworkMatch.Instance?.ResumeTimeout(this); }
+        void TimeoutFrom() { NetworkMatch.Instance?.RequestTimeout(this); }
+        void ResumeTimeoutFrom() { NetworkMatch.Instance?.ResumeTimeout(this); }
         public void RequestTimeout() { if(IsOwner && IsSpawned)TimeoutServerRpc(); }
         public void ResumeTimeout() { if(IsOwner && IsSpawned)ResumeTimeoutServerRpc(); }
         void Reconcile(PlayerFrame old, PlayerFrame frame)
@@ -289,12 +286,12 @@ namespace PickleVerse.Multiplayer
         {
             if (!IsServer) return;
             int end = position.z < 0 ? -1 : 1;
-            CourtEnd.Value = end; ResetInput(); ResetActor(position, end);
+            CourtEnd = end; ResetInput(); ResetActor(position, end);
             Actor.RefreshPose();
-            Frame.Value = new PlayerFrame { position = position, sequence = lastReceived };
+            Frame = new PlayerFrame { position = position, sequence = lastReceived };
             TeleportClientRpc(position, lastReceived, end);
         }
-        [ClientRpc] void TeleportClientRpc(Vector3 position, uint acknowledged, int end)
+        void TeleportEffect(Vector3 position, uint acknowledged, int end)
         {
             if (IsServer) return;
             ResetInput(); sequence = Math.Max(sequence, acknowledged);
@@ -304,13 +301,13 @@ namespace PickleVerse.Multiplayer
         {
             if (!IsServer || !Actor || !Actor.Swing(BotMatchGameplayService.ToLocal(intent), predictedBall, contactDelay)) return;
             SetActiveShotKeys();
-            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall, Actor.ContactDelay, NetworkManager.ServerTime.Time);
+            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall, Actor.ContactDelay, Runner.SimulationTime);
         }
-        [ClientRpc] void SwingClientRpc(int kind, bool attack, bool crossCourt, Vector3 predictedBall, float delay, double started)
+        void SwingEffect(int kind, bool attack, bool crossCourt, Vector3 predictedBall, float delay, double started)
         {
             if (IsServer || !Actor) return;
             if(Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall, delay))
-            { Actor.SynchronizeSwing((float)System.Math.Max(0,NetworkManager.ServerTime.Time-started)); SetActiveShotKeys(); }
+            { Actor.SynchronizeSwing((float)System.Math.Max(0,Runner.SimulationTime-started)); SetActiveShotKeys(); }
         }
         void SetActiveShotKeys()
         {
@@ -324,9 +321,9 @@ namespace PickleVerse.Multiplayer
             if (!IsServer || !Actor) return;
             Vector3 contact = position ?? Actor.paddleFace.position;
             Actor.ConsumeContact(volley,contact,successful);
-            ContactClientRpc(volley,contact,successful,velocity,NetworkManager.ServerTime.Time,(byte)Actor.LastContactGrade);
+            ContactClientRpc(volley,contact,successful,velocity,Runner.SimulationTime,(byte)Actor.LastContactGrade);
         }
-        [ClientRpc] void ContactClientRpc(bool volley, Vector3 position, bool successful, Vector3 velocity, double time, byte grade)
+        void ContactEffect(bool volley, Vector3 position, bool successful, Vector3 velocity, double time, byte grade)
         {
             if (!IsServer && Actor)
             {
@@ -336,11 +333,11 @@ namespace PickleVerse.Multiplayer
         }
         public void SplitStep()
         { if (!IsServer || !Actor) return; Actor.SplitStep(); SplitStepClientRpc(); }
-        [ClientRpc] void SplitStepClientRpc()
+        void SplitStepEffect()
         { if (!IsServer && Actor) Actor.SplitStep(); }
         public void React(bool won, bool matchOver = false)
         { if (!IsServer || !Actor) return; Actor.Reaction(won, matchOver); ReactClientRpc(won, matchOver); }
-        [ClientRpc] void ReactClientRpc(bool won, bool matchOver)
+        void ReactEffect(bool won, bool matchOver)
         { if (!IsServer && Actor) Actor.Reaction(won, matchOver); }
         void OnApplicationFocus(bool focused) { if (!focused) shotInput = new LocalShotInput(); }
         public void ResetInput()

@@ -78,8 +78,8 @@ namespace PickleVerse.Shop
     public static class PlayerEconomy
     {
         static IPlayerEconomy service;static ShopCatalog catalog;
-        public static ShopCatalog Catalog=>catalog?catalog:catalog=Resources.Load<ShopCatalog>("Shop/Shop Catalog");
-        public static IPlayerEconomy Service=>service??(service=new UnavailableOnlineEconomy());
+        public static ShopCatalog Catalog=>catalog?catalog:catalog=UnityEngine.Object.Instantiate(Resources.Load<ShopCatalog>("Shop/Shop Catalog"));
+        public static IPlayerEconomy Service=>service??(service=new OnlinePlayerEconomy());
         public static void Configure(IPlayerEconomy provider){service=provider;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Reset(){(service as IDisposable)?.Dispose();service=null;catalog=null;}
         public static async void Reward(string matchId,bool online,bool won)

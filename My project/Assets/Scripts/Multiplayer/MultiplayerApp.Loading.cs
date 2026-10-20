@@ -1,3 +1,4 @@
+#if PICKLEVERSE_LEGACY_NGO
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
@@ -45,3 +46,5 @@ namespace PickleVerse.Multiplayer
         {if(observedSceneManager!=null)observedSceneManager.OnSceneEvent-=LoadingSceneEvent;if(Instance==this)SceneLoading.CancelExternal();}
     }
 }
+
+#endif

@@ -11,6 +11,7 @@ namespace PickleVerse.Multiplayer
     [Serializable] public class RoomMember
     {
         public string id, name, gender, group;
+        public string paddleId="paddle.default";
         public int team;
         public int elo = 100;
         public bool ready;
