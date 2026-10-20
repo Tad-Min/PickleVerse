@@ -164,7 +164,7 @@ namespace PickleVerse.FrontEnd
             email.transform.parent.gameObject.SetActive(next != Page.Profile);
             password.transform.parent.gameObject.SetActive(next == Page.Login || next == Page.Register);
             confirmPassword.transform.parent.gameObject.SetActive(next == Page.Register);
-            playerName.transform.parent.gameObject.SetActive(next == Page.Register || next == Page.Profile);
+            playerName.transform.parent.gameObject.SetActive(next == Page.Profile);
             otp.transform.parent.gameObject.SetActive(next == Page.Verify);
             maleButton.transform.parent.gameObject.SetActive(next == Page.Register || next == Page.Profile);
             verifyLink.gameObject.SetActive(next == Page.Login || next == Page.Register);
@@ -190,10 +190,9 @@ namespace PickleVerse.FrontEnd
             }
             else if (page == Page.Register)
             {
-                if (playerName.text.Trim().Length < 3) throw new ArgumentException("Tên người chơi cần từ 3 đến 18 ký tự.");
                 if (password.text.Length < 6) throw new ArgumentException("Mật khẩu cần ít nhất 6 ký tự.");
                 if (password.text != confirmPassword.text) throw new ArgumentException("Mật khẩu xác nhận chưa khớp.");
-                await account.RegisterAsync(new RegisterRequest { Email = mail, Password = password.text, PlayerName = playerName.text.Trim(), IsMale = male }, cancellation);
+                await account.RegisterAsync(new RegisterRequest { Email = mail, Password = password.text, ConfirmPassword = confirmPassword.text, IsMale = male }, cancellation);
                 password.text = confirmPassword.text = ""; resendAt = Time.realtimeSinceStartupAsDouble + 60;
                 Show(Page.Verify); feedback.text = "Mã xác thực đã được gửi. Hãy kiểm tra cả thư rác.";
             }

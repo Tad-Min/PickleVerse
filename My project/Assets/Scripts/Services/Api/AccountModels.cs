@@ -6,7 +6,7 @@ namespace PickleVerse.Services.Api
     {
         public string Email { get; set; }
         public string Password { get; set; }
-        public string PlayerName { get; set; }
+        public string ConfirmPassword { get; set; }
         public bool IsMale { get; set; } = true;
     }
     [Serializable] public sealed class LoginRequest { public string Email { get; set; } public string Password { get; set; } }

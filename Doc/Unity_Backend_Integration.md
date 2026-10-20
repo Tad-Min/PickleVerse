@@ -95,6 +95,21 @@ await account.LogoutAsync(cancellationToken);
 | GET | `/api/Profiles/me` |
 | PUT | `/api/Profiles/me` |
 
+Đăng ký chỉ gửi bốn trường sau; không gửi `playerName`:
+
+```json
+{
+  "email": "ban@example.com",
+  "password": "ExamplePass!23",
+  "confirmPassword": "ExamplePass!23",
+  "isMale": true
+}
+```
+
+Backend bắt buộc xác nhận mật khẩu khớp, tự sinh tên mặc định `player` + 12 ký tự hex ngẫu nhiên, ví dụ `playera4f8b2c9d103` (18 ký tự). Database giữ ràng buộc tên duy nhất; server thử sinh lại nếu gặp trùng tên. Form Unity không yêu cầu nhập tên khi đăng ký; sau đăng nhập vẫn đổi tên ở hồ sơ như trước. Tên và hồ sơ của tài khoản đã có được giữ nguyên.
+
+Xác nhận mật khẩu dùng [CompareAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations.compareattribute?view=net-10.0); hậu tố tên dùng [RandomNumberGenerator.GetHexString](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.randomnumbergenerator.gethexstring?view=net-10.0) của .NET.
+
 OTP có 6 chữ số, hạn 10 phút, tối đa 5 lần nhập sai cho một mã, chờ 60 giây trước khi gửi lại. Mã được gắn với tài khoản và lưu dưới dạng HMAC; token refresh được lưu dưới dạng hash và xoay khi sử dụng. Access token hạn 2 giờ, refresh token hạn 14 ngày. API auth có giới hạn 20 yêu cầu/phút/IP trong một cửa sổ cố định.
 
 ## Đối chiếu hai tài liệu đề tài
@@ -113,9 +128,11 @@ Source thực tế dùng .NET và uGUI; proposal còn nêu lựa chọn backend 
 ## Xác minh
 
 - Build backend thành công, không lỗi/cảnh báo ở lượt build xác minh.
-- 32 kiểm tra auth với PostgreSQL thật: email chưa xác thực, OTP sai/hết hạn/dùng lại, cooldown, khóa mã, gửi lại, refresh xoay/vô hiệu hóa, logout, tài khoản tạm khóa và request đồng thời. Database test riêng được xóa sau kiểm tra.
+- 43 kiểm tra auth với PostgreSQL thật: hợp đồng đăng ký bốn trường, xác nhận mật khẩu, tên mặc định ngẫu nhiên (kể cả thử lại khi trùng tên), giới tính, email chưa xác thực, OTP sai/hết hạn/dùng lại, cooldown, khóa mã, gửi lại, refresh xoay/vô hiệu hóa, logout, tài khoản tạm khóa và request đồng thời. Database test riêng được xóa sau kiểm tra.
 - Một luồng kiểm tra có gửi OTP thật qua Gmail SMTP, xác thực và đăng nhập trong DB test riêng. Ngoài ra, đã gọi `POST /api/Auth/register` tới chính API trong Docker: nhận HTTP 200 sau khi Gmail SMTP chấp nhận email OTP; tài khoản test vừa tạo được xóa ngay sau đó. Các case còn lại dùng mail adapter thu mã trong bộ nhớ, không gửi hàng loạt thư.
 - 14 NUnit test Unity service đã qua: refresh đồng thời, clear phiên khi login đang chờ, request/logout của phiên cũ không xóa phiên mới, logout sau refresh và URL/ProblemDetails.
+- Lượt kiểm tra đăng ký mới: Swagger có đúng `email`, `password`, `confirmPassword`, `isMale`; Docker API trả 400 cho xác nhận sai/thiếu và mật khẩu quá ngắn. Editor xác nhận ô tên được ẩn khi đăng ký, nút đăng ký báo mật khẩu không khớp và lựa chọn giới tính hoạt động. Báo cáo service mới: `artifacts/verification/unity-registration-tests.json`.
+- Bản Windows đã cập nhật theo hợp đồng đăng ký mới, build 0 lỗi và 1 cảnh báo Pipeline như mô tả bên dưới. Smoke-test đăng nhập/hồ sơ/đăng xuất thành công: `artifacts/verification/windows-registration-smoke.json`; tài khoản fixture đã xóa. Ảnh form mới: `artifacts/verification/unity-registration-contract.png`.
 - Editor Play Mode: chứng minh frame đang tăng; nhập vào input/bấm button thật để login và lưu tên/giới tính. Đọc lại từ REST xác nhận thay đổi đã lưu server. Không tạo lại thư mục LocalPlayers/Replays.
 - HTTP: `/health/ready` -> 200, hồ sơ chưa đăng nhập -> 401, gọi auth lặp lại -> 429.
 - Swagger UI: Docker API đã rebuild; `/swagger`, HTML, CSS/JavaScript và `/openapi/v1.json` đều trả 200. Trình duyệt đã hiển thị danh sách endpoint và schema; ảnh tại `artifacts/verification/swagger-ui.png`.

@@ -11,8 +11,9 @@ namespace Services.DTOs
         [Required, MinLength(6)]
         public string Password { get; set; } = string.Empty;
 
-        [Required, MinLength(3), MaxLength(18)]
-        public string PlayerName { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
+        [Compare(nameof(Password), ErrorMessage = "Mật khẩu xác nhận chưa khớp.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
 
         public bool IsMale { get; set; } = true;
     }

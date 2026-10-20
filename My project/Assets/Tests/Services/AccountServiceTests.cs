@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -39,9 +40,14 @@ namespace PickleVerse.Tests.Services
             string body = null;
             var fake = new FakeTransport { Handler = (m, p, j, t, c) => { body = j; return Task.FromResult(Ok(Tokens())); } };
             var account = new AccountService(new ApiClient(fake));
-            await account.RegisterAsync(new RegisterRequest { Email = "test@example.invalid", Password = "example-only", PlayerName = "Player" });
+            await account.RegisterAsync(new RegisterRequest { Email = "test@example.invalid", Password = "example-only", ConfirmPassword = "example-only", IsMale = false });
             Assert.That(account.IsSignedIn, Is.False);
-            Assert.That(JObject.Parse(body)["email"].Value<string>(), Is.EqualTo("test@example.invalid"));
+            var payload = JObject.Parse(body);
+            Assert.That(payload["email"].Value<string>(), Is.EqualTo("test@example.invalid"));
+            Assert.That(payload["password"].Value<string>(), Is.EqualTo("example-only"));
+            Assert.That(payload["confirmPassword"].Value<string>(), Is.EqualTo("example-only"));
+            Assert.That(payload["isMale"].Value<bool>(), Is.False);
+            Assert.That(payload.Properties().Select(p => p.Name), Is.EquivalentTo(new[] { "email", "password", "confirmPassword", "isMale" }));
         }
 
         [Test]

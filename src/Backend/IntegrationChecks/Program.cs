@@ -47,10 +47,16 @@ async Task<T> Call<T>(Func<AuthService, Task<T>> action)
     using var context = new PickleVerseContext(options); using var uow = new UnitOfWork(context);
     return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, time));
 }
-async Task Register(string email, string name)
+var generatedNames = new HashSet<string>(StringComparer.Ordinal);
+async Task<string> Register(string email, string label, bool isMale = true)
 {
-    var result = await Call(s => s.RegisterAsync(new RegisterRequest { Email = email, PlayerName = name, Password = "IntegrationPass!23" }));
-    Check(result.Success && result.AccessToken == null, "register requires verification: " + name);
+    var result = await Call(s => s.RegisterAsync(new RegisterRequest { Email = email, Password = "IntegrationPass!23", ConfirmPassword = "IntegrationPass!23", IsMale = isMale }));
+    Check(result.Success && result.AccessToken == null, "register requires verification: " + label);
+    using var context = new PickleVerseContext(options);
+    var profile = await context.Playerprofiles.Include(p => p.User).SingleAsync(p => p.User.Email == email);
+    Check(System.Text.RegularExpressions.Regex.IsMatch(profile.Playername, "^player[0-9a-f]{12}$") && generatedNames.Add(profile.Playername), "server generates a distinct default player name: " + label);
+    Check(profile.Ismale == isMale, "registration preserves selected gender: " + label);
+    return profile.Playername;
 }
 Task<bool> Verify(string email, string code) => Call(s => s.VerifyEmailAsync(new VerifyEmailRequest { Email = email, Token = code }));
 Task<AuthResponse> Login(string email) => Call(s => s.LoginAsync(new LoginRequest { Email = email, Password = "IntegrationPass!23" }));
@@ -67,15 +73,24 @@ try
             await command.ExecuteNonQueryAsync();
         }
     }
+    bool ValidRegistration(RegisterRequest request) => System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
+        request, new System.ComponentModel.DataAnnotations.ValidationContext(request), new List<System.ComponentModel.DataAnnotations.ValidationResult>(), validateAllProperties: true);
+    Check(ValidRegistration(new RegisterRequest { Email = "validation@example.invalid", Password = "IntegrationPass!23", ConfirmPassword = "IntegrationPass!23", IsMale = false }), "registration accepts the four-field contract without a player name");
+    Check(!ValidRegistration(new RegisterRequest { Email = "validation@example.invalid", Password = "IntegrationPass!23", ConfirmPassword = "DifferentPass!23" }), "registration validation rejects mismatched confirmation");
+    Check(!ValidRegistration(new RegisterRequest { Email = "validation@example.invalid", Password = "IntegrationPass!23" }), "registration validation requires confirmation");
+    var invalidRegistration = await Call(s => s.RegisterAsync(new RegisterRequest { Email = "invalid@example.invalid", Password = "IntegrationPass!23", ConfirmPassword = "DifferentPass!23" }));
+    Check(!invalidRegistration.Success && invalidRegistration.Code == "password_confirmation_mismatch", "service rejects mismatched confirmation");
+    using (var context = new PickleVerseContext(options))
+        Check(!await context.Users.AnyAsync() && mail.Codes.Count == 0, "invalid confirmation creates no account or OTP");
     const string email = "online-check@example.invalid";
-    await Register(email, "AuthCheck"); string code = mail.Codes[email];
+    string defaultName = await Register(email, "AuthCheck", isMale: false); string code = mail.Codes[email];
     Check((await Login(email)).Code == "email_not_verified", "unverified login rejected");
     Check(!await Verify("other@example.invalid", code), "OTP bound to email");
     Check(!await Verify(email, "not-six-digits"), "malformed OTP rejected");
     Check(await Verify(email, code), "valid OTP accepted");
     Check(!await Verify(email, code), "OTP replay rejected");
     var login = await Login(email);
-    Check(login.Success && login.Profile?.PlayerName == "AuthCheck", "login returns server profile");
+    Check(login.Success && login.Profile?.PlayerName == defaultName && !login.Profile.IsMale, "login returns generated name and selected gender from server profile");
     using (var context = new PickleVerseContext(options))
     {
         Check(context.Database.GetDbConnection().Database == database, "DbContext preserves injected Docker/test connection");
@@ -97,8 +112,31 @@ try
     Check((await Login(email)).Code == "account_inactive", "suspended login rejected");
     Check((await Refresh(beforeBan.RefreshToken!)).Code == "account_inactive", "suspended refresh rejected");
 
+    // Force one real unique-key collision; PostgreSQL sequence increments survive a rollback.
+    using (var context = new PickleVerseContext(options))
+        await context.Database.ExecuteSqlRawAsync("""
+            CREATE SEQUENCE registration_name_collision;
+            CREATE FUNCTION collide_default_name_once() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN
+                IF nextval('registration_name_collision') = 1 THEN
+                    SELECT playername INTO NEW.playername FROM playerprofiles LIMIT 1;
+                END IF;
+                RETURN NEW;
+            END;
+            $$;
+            CREATE TRIGGER registration_name_collision BEFORE INSERT ON playerprofiles
+                FOR EACH ROW EXECUTE FUNCTION collide_default_name_once();
+            """);
     const string lockedEmail = "locked-check@example.invalid";
     await Register(lockedEmail, "LockCheck"); var lockedCode = mail.Codes[lockedEmail];
+    await using (var collision = new NpgsqlConnection(testBuilder.ConnectionString))
+    {
+        await collision.OpenAsync();
+        await using var attempts = new NpgsqlCommand("SELECT last_value FROM registration_name_collision", collision);
+        Check((long)(await attempts.ExecuteScalarAsync())! == 2L, "default-name collision rolls back and retries with a new name");
+        await using var cleanup = new NpgsqlCommand("DROP TRIGGER registration_name_collision ON playerprofiles; DROP FUNCTION collide_default_name_once(); DROP SEQUENCE registration_name_collision;", collision);
+        await cleanup.ExecuteNonQueryAsync();
+    }
     for (int i = 0; i < EmailOtpPolicy.MaxAttempts; i++) Check(!await Verify(lockedEmail, lockedCode == "000000" ? "111111" : "000000"), "incorrect OTP attempt " + (i + 1));
     Check(!await Verify(lockedEmail, lockedCode), "five failures lock the OTP");
     bool cooldown = false;
@@ -166,14 +204,14 @@ static class UnityFixture
         var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(connection).Options;
         using var context = new PickleVerseContext(options);
         if (await context.Users.AnyAsync(u => u.Email == email)) throw new InvalidOperationException("The SMTP recipient already has an account; refusing to modify it.");
-        string name = "DockerOtp" + Guid.NewGuid().ToString("N")[..8];
+        var createdAfter = DateTime.UtcNow.AddSeconds(-2);
+        var password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));
         try
         {
             using var http = new HttpClient { BaseAddress = new Uri("http://localhost:8080"), Timeout = TimeSpan.FromSeconds(35) };
             using var body = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
             {
-                email, password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24)),
-                playerName = name, isMale = true
+                email, password, confirmPassword = password, isMale = true
             }), System.Text.Encoding.UTF8, "application/json");
             using var response = await http.PostAsync("/api/Auth/register", body);
             response.EnsureSuccessStatusCode();
@@ -183,7 +221,7 @@ static class UnityFixture
         }
         finally
         {
-            var created = await context.Users.Include(u => u.Playerprofile).SingleOrDefaultAsync(u => u.Email == email && u.Playerprofile != null && u.Playerprofile.Playername == name);
+            var created = await context.Users.Include(u => u.Playerprofile).SingleOrDefaultAsync(u => u.Email == email && u.Createdat >= createdAfter && u.Playerprofile != null && u.Playerprofile.Playername.StartsWith("player"));
             if (created != null) { context.Users.Remove(created); await context.SaveChangesAsync(); }
             Console.WriteLine("Temporary Docker SMTP test account removed; no existing account was modified.");
         }
@@ -238,12 +276,12 @@ static class UnityFixture
         var suffix = Guid.NewGuid().ToString("N");
         var email = "unity-smoke-" + suffix + "@example.invalid";
         var password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));
-        var result = await auth.RegisterAsync(new RegisterRequest { Email = email, Password = password, PlayerName = "Unity" + suffix[..10], IsMale = false });
+        var result = await auth.RegisterAsync(new RegisterRequest { Email = email, Password = password, ConfirmPassword = password, IsMale = false });
         if (!result.Success || !await auth.VerifyEmailAsync(new VerifyEmailRequest { Email = email, Token = mail.Codes[email] })) throw new Exception("Fixture registration failed.");
-        var user = await context.Users.SingleAsync(u => u.Email == email);
+        var user = await context.Users.Include(u => u.Playerprofile).SingleAsync(u => u.Email == email);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-        { ["email"] = email, ["password"] = password, ["userId"] = user.Userid.ToString(), ["playerName"] = "Unity" + suffix[..10] }));
+        { ["email"] = email, ["password"] = password, ["userId"] = user.Userid.ToString(), ["playerName"] = user.Playerprofile!.Playername }));
         Console.WriteLine("Temporary Unity smoke-test account created; credentials stored only in ignored artifacts file.");
     }
 }

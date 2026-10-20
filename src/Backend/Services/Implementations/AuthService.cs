@@ -4,8 +4,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Entities.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Repositories.UnitOfWork;
 using Services.DTOs;
 using Services.Exceptions;
@@ -23,9 +25,13 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
     static bool Active(User user) => string.Equals(user.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase);
     static string HashRefreshToken(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     static AuthResponse Failure(string message, string code) => new() { Message = message, Code = code };
+    static string DefaultPlayerName() => "player" + RandomNumberGenerator.GetHexString(12, lowercase: true);
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.ConfirmPassword) ||
+            !string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+            return Failure("Mật khẩu xác nhận chưa khớp.", "password_confirmation_mismatch");
         var email = NormalizeEmail(request.Email);
         if (await unitOfWork.Users.GetByEmailAsync(email) != null)
             return Failure("Email đã được đăng ký. Nếu chưa xác thực, hãy dùng chức năng gửi lại mã.", "email_exists");
@@ -39,19 +45,29 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         };
         var profile = new Playerprofile
         {
-            Userid = user.Userid, Playername = request.PlayerName.Trim(), Avatar = "initial",
+            Userid = user.Userid, Playername = DefaultPlayerName(), Avatar = "initial",
             Elo = 100, Ismale = request.IsMale, Level = 1, Daystreak = 1
         };
         var code = EmailOtpPolicy.Generate();
-        await unitOfWork.BeginTransactionAsync();
-        try
+        unitOfWork.Users.PrepareCreate(user);
+        await unitOfWork.Profiles.AddProfileAsync(profile);
+        await unitOfWork.Users.AddVerificationEmailAsync(NewVerification(user, code));
+        for (int attempt = 0; ; attempt++)
         {
-            unitOfWork.Users.PrepareCreate(user);
-            await unitOfWork.Profiles.AddProfileAsync(profile);
-            await unitOfWork.Users.AddVerificationEmailAsync(NewVerification(user, code));
-            await unitOfWork.CommitTransactionAsync();
+            await unitOfWork.BeginTransactionAsync();
+            try
+            {
+                await unitOfWork.CommitTransactionAsync();
+                break;
+            }
+            catch (DbUpdateException ex) when (attempt < 2 && ex.InnerException is PostgresException
+                { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "playerprofiles_playername_key" })
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                profile.Playername = DefaultPlayerName();
+            }
+            catch { await unitOfWork.RollbackTransactionAsync(); throw; }
         }
-        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
         // Failed delivery leaves an unverified account that resend-otp can recover.
         await emailSender.SendVerificationCodeAsync(email, code);
         return new AuthResponse { Success = true, Code = "verification_required", Message = "Đã đăng ký. Hãy nhập mã được gửi tới email để kích hoạt tài khoản." };
