@@ -11,7 +11,7 @@ namespace PickleVerse.LocalMatch
         Vector2 TouchMovement { get; set; }
         bool TouchRun { get; set; }
     }
-    public sealed class TouchControl : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IEndDragHandler
+    public sealed class TouchControl : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IEndDragHandler, IInitializePotentialDragHandler, ICanvasRaycastFilter
     {
         public BotMatch match;
         public IMatchTouchInput Input { get; set; }
@@ -19,12 +19,14 @@ namespace PickleVerse.LocalMatch
         public int shotMask;
         public bool joystick, modifier;
         public RectTransform knob;
+        public MobileTouchPad Pad { get; set; }
         int pointer = int.MinValue;
         bool active;
         Vector2 baseSize;
         void OnEnable() { if(Application.isPlaying) { GameSettings.Changed+=ApplySettings; ApplySettings(); } }
         public void ApplySettings()
         {
+            if(Pad)return;
             var rect=(RectTransform)transform;
             if(baseSize==Vector2.zero)baseSize=rect.sizeDelta;
             int index=joystick?0:shotMask==1?1:shotMask==2?2:shotMask==4?3:shotMask==3?4:shotMask==5?5:shotMask==6?6:shotMask==8?7:8;
@@ -39,6 +41,7 @@ namespace PickleVerse.LocalMatch
         void Update() { if(modifier && active && (Target==null || (Target.TouchShotMask&shotMask)==0)) {active=false;GetComponent<Image>().color=new Color(.07f,.16f,.21f,.9f);} }
         public void OnPointerDown(PointerEventData e)
         {
+            if(Pad){Pad.Down(this,e);return;}
             if (pointer != int.MinValue) return;
             if (Target == null) return;
             if (modifier) { active = !active; if (active) Target.TouchShotMask |= shotMask; else Target.TouchShotMask &= ~shotMask; var image = GetComponent<Image>(); if (image) image.color = active ? new Color(.1f,.65f,.5f,.95f) : new Color(.07f,.16f,.21f,.9f); return; }
@@ -47,6 +50,7 @@ namespace PickleVerse.LocalMatch
         }
         public void OnDrag(PointerEventData e)
         {
+            if(Pad){Pad.Drag(this,e);return;}
             if (!joystick || e.pointerId != pointer || Target == null) return;
             var rect = (RectTransform)transform;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, e.position, e.pressEventCamera, out var point);
@@ -60,10 +64,13 @@ namespace PickleVerse.LocalMatch
         }
         public void OnPointerUp(PointerEventData e)
         {
+            if(Pad){Pad.Up(this,e);return;}
             if (e.pointerId != pointer) return;
             Clear();
         }
-        public void OnEndDrag(PointerEventData e) { if (e.pointerId == pointer) Clear(); }
+        public void OnEndDrag(PointerEventData e) { if(Pad){Pad.Up(this,e,true);return;} if (e.pointerId == pointer) Clear(); }
+        public void OnInitializePotentialDrag(PointerEventData e){if(Pad)e.useDragThreshold=false;}
+        public bool IsRaycastLocationValid(Vector2 point,Camera camera)=>!Pad||Pad.Hit(this,point,camera);
         void Clear()
         {
             pointer = int.MinValue;
@@ -71,6 +78,6 @@ namespace PickleVerse.LocalMatch
             if (joystick) { Target.TouchMovement = Vector2.zero; Target.TouchRun = false; if (knob) knob.anchoredPosition = Vector2.zero; }
             else Target.TouchShotMask &= ~shotMask;
         }
-        void OnDisable() { GameSettings.Changed-=ApplySettings; Clear(); if (modifier && Target!=null) { Target.TouchShotMask &= ~shotMask; active = false; } }
+        void OnDisable() { GameSettings.Changed-=ApplySettings; if(Pad)Pad.CancelAll(); Clear(); if (modifier && Target!=null) { Target.TouchShotMask &= ~shotMask; active = false; } }
     }
 }

@@ -9,7 +9,7 @@ using PickleVerse.LocalMatch;
 using PickleVerse.Settings;
 namespace PickleVerse.Multiplayer
 {
-    public sealed class MultiplayerCourtUI : MonoBehaviour, ISettingsHost, ISettingsLeaveConfirmation, IMatchTouchInput
+    public sealed class MultiplayerCourtUI : MonoBehaviour, ISettingsHost, ISettingsLeaveConfirmation, IMatchTouchShotReceiver
     {
         public static MultiplayerCourtUI Instance { get; private set; }
         public TMP_Text score,status,server;
@@ -39,6 +39,9 @@ namespace PickleVerse.Multiplayer
         float announcementUntil;
         bool localInputPaused;
         public int TouchShotMask { get; set; }
+        public bool TouchShotsEnabled => !InputBlocked && localOwner && localOwner.TouchShotsEnabled;
+        public bool TouchServing => localOwner && localOwner.TouchServing;
+        public void CommitTouchShot(int mask) { if(TouchShotsEnabled)localOwner.CommitTouchShot(mask); }
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
         public bool InputBlocked => PickleVerse.Settings.SceneLoading.IsBlocking || cinematic && cinematic.OwnsPose || localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
@@ -64,7 +67,7 @@ namespace PickleVerse.Multiplayer
             GameSettings.Changed+=RefreshBindings;
             RefreshBindings();
             foreach(var control in GetComponentsInChildren<TouchControl>(true)) {control.match=null;control.Input=this;}
-            if(touchControls)touchControls.SetActive(Application.isMobilePlatform);
+            if(touchControls){MobileTouchPad.Install(touchControls,this);touchControls.SetActive(Application.isMobilePlatform);}
             if(help)help.SetActive(false);
             if(modal)modal.SetActive(false);
             if(resultActions)resultActions.SetActive(false);
@@ -166,7 +169,7 @@ namespace PickleVerse.Multiplayer
             bool choosing=owner && !string.IsNullOrEmpty(owner.SelectionKeys),swinging=owner && owner.Actor && owner.Actor.Swinging && !string.IsNullOrEmpty(owner.ActiveShotKeys);
             string keys=choosing?owner.SelectionKeys:swinging?owner.ActiveShotKeys:"",description=choosing?owner.Selection:swinging?owner.Actor.Intent.ToString():"";
             if(selection && (keys!=shownKeys||description!=shownSelection)){shownKeys=keys;shownSelection=description;selection.text=keys.Length>0?"<b>"+keys+"</b>\n<size=14>"+description+"</size>":"";}
-            if(shotPanel)shotPanel.SetActive(!InputBlocked && !SettingsOverlay.IsOpen && hasMatch && !match.Paused.Value && !match.Finished.Value && (choosing || swinging));
+            if(shotPanel)shotPanel.SetActive(!(touchControls&&touchControls.activeInHierarchy) && !InputBlocked && !SettingsOverlay.IsOpen && hasMatch && !match.Paused.Value && !match.Finished.Value && (choosing || swinging));
             if(timing)timing.gameObject.SetActive(false);
             if(modeLabel && !broadcast)modeLabel.text=hasMatch?matchType:"Multiplayer";
             if(timeoutButton)timeoutButton.interactable=hasMatch && owner && match.WaitingServe.Value && !match.TimedOut.Value && !match.Paused.Value && !match.BetweenPoints.Value && !match.Finished.Value;
@@ -214,7 +217,7 @@ namespace PickleVerse.Multiplayer
         public void OpenSettings(){ClearTouch();SettingsOverlay.Open(this);}
         public void ToggleHelp()
         {if(!help)return;ClearTouch();help.SetActive(!help.activeSelf);if(help.activeSelf)help.transform.SetAsLastSibling();}
-        public void ToggleTouch(){if(touchControls)touchControls.SetActive(!touchControls.activeSelf);ClearTouch();}
+        public void ToggleTouch(){if(touchControls)touchControls.SetActive(!touchControls.activeSelf);ClearTouch();RefreshBindings();}
         public void Timeout(){NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman)?.RequestTimeout();}
         public void Continue(){NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman)?.ResumeTimeout();}
         public void ReturnToRoom(){ReturnClicked();}
@@ -243,6 +246,7 @@ namespace PickleVerse.Multiplayer
                 K(GameAction.Drive)+"+"+K(GameAction.Dink)+" Drop | "+K(GameAction.Drive)+"+"+K(GameAction.Volley)+" Smash | "+K(GameAction.Dink)+"+"+K(GameAction.Volley)+" Reset\n"+
                 K(GameAction.Power)+" tăng lực • "+K(GameAction.Cross)+" đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\n11 điểm, cách biệt 2 • Chỉ đội giao ghi điểm • Thắng 2/3 game\n"+
                 K(GameAction.Timeout)+" time-out • Esc cài đặt • "+K(GameAction.Help)+" hướng dẫn\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận online tiếp tục.";
+            if(text&&(Application.isMobilePlatform||touchControls&&touchControls.activeSelf))text.text=TouchShotGesture.HelpText+"\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận online tiếp tục.";
             if(layout)layout.RefreshKeys();
             else{var helpButton=transform.Find("Help")?.GetComponentInChildren<TMP_Text>();if(helpButton)helpButton.text=K(GameAction.Help)+" / Hướng dẫn";var timeoutLabel=timeoutButton?timeoutButton.GetComponentInChildren<TMP_Text>():null;if(timeoutLabel)timeoutLabel.text=K(GameAction.Timeout)+" / Time-out";}
         }

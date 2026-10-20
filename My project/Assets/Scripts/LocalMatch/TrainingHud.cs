@@ -127,7 +127,7 @@ namespace PickleVerse.LocalMatch
         {
             if(training==null||training.Lesson==null||training.Session==null)return;
             var s=training.Session;trial.text=training.Lesson.title+"  •  "+s.successes+" đạt / "+s.trials+" đã thử  •  "+training.Lesson.trials+" lượt";
-            keys.text=training.PartnerTurn?"BÓNG CỦA ĐỒNG ĐỘI":GameControls.ShotKeys(training.ExpectedMask);
+            keys.text=training.PartnerTurn?"BÓNG CỦA ĐỒNG ĐỘI":training.touchRoot&&training.touchRoot.activeSelf?TouchShotGesture.Hint(training.ExpectedMask):GameControls.ShotKeys(training.ExpectedMask);
             timing.text=training.Phase==TrainingPhase.Recovery?"HỒI VỊ / THEO VÙNG SÁNG":training.PartnerTurn?"GIỮ CÙNG HÀNG VỚI AI":training.Returning?"THEO DÕI VÙNG ĐÍCH":training.Lesson.skill==TrainingSkill.Serve?"GIỮ RỒI THẢ ĐỂ GIAO BÓNG":!training.Receiving?"CHỜ HLV CẤP BÓNG":training.ReleaseIn>.20f?"Thả sau "+training.ReleaseIn.ToString("0.00")+" s":"THẢ NÚT ĐÁNH";
             coachText.text=Controls(training.Lesson.coaching)+"\n\n"+training.Feedback;
             status.text=training.Phase==TrainingPhase.Recovery?training.Feedback:"";
@@ -175,8 +175,12 @@ namespace PickleVerse.LocalMatch
             var back=practice.Find("Course");if(back)back.gameObject.SetActive(true);
             trial.rectTransform.anchorMin=new Vector2(.18f,.18f);trial.rectTransform.anchorMax=new Vector2(.75f,.87f);trial.rectTransform.offsetMin=trial.rectTransform.offsetMax=Vector2.zero;
         }
-        static string Controls(string text)
-        {return text.Replace("A/D",GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Left))+"/"+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Right))).Replace("di chuyển W","di chuyển "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Forward)));}
+        string Controls(string text)
+        {
+            if(Application.isMobilePlatform||training&&training.touchRoot&&training.touchRoot.activeSelf)
+                return text.Replace("A/D","cần di chuyển ngang").Replace("di chuyển W","kéo cần lên");
+            return text.Replace("A/D",GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Left))+"/"+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Right))).Replace("di chuyển W","di chuyển "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Forward)));
+        }
         RectTransform Rect(string name,Transform parent,float x,float y,float right,float top)
         {var r=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();r.SetParent(parent,false);r.gameObject.layer=5;r.anchorMin=new Vector2(x,y);r.anchorMax=new Vector2(right,top);r.offsetMin=r.offsetMax=Vector2.zero;return r;}
         RectTransform Block(string name,Transform parent,float x,float y,float right,float top,Material material)

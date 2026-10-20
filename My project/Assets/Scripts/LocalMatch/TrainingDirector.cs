@@ -18,7 +18,7 @@ namespace PickleVerse.LocalMatch
         public static void Open(string id){LessonId=id;PickleVerse.Shop.LobbyNavigation.OpenTraining();}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void Reset(){LessonId=null;}
     }
-    public sealed class TrainingDirector : MonoBehaviour,ISettingsHost,IMatchTouchInput,ISettingsLeaveConfirmation
+    public sealed class TrainingDirector : MonoBehaviour,ISettingsHost,IMatchTouchShotReceiver,ISettingsLeaveConfirmation
     {
         public MatchActor player,coach,partner,opponent;
         public Transform ball;
@@ -46,6 +46,15 @@ namespace PickleVerse.LocalMatch
         public bool CanSignOut=>false;
         public string LeaveConfirmation=>"Tiến trình đã đạt trong bài được lưu. Bạn có thể tiếp tục bài từ Tiến trình.";
         public int TouchShotMask {get;set;}
+        public bool TouchServing => Lesson != null && Lesson.skill == TrainingSkill.Serve;
+        public bool TouchShotsEnabled => Phase == TrainingPhase.Practice && !Paused && !PartnerTurn && !hit && !outgoing &&
+            !SettingsOverlay.IsOpen && !SettingsOverlay.Loading && !SceneLoading.IsBlocking;
+        public void CommitTouchShot(int mask)
+        {
+            if(!TouchShotsEnabled)return;
+            input.Cancel(); input.Tick(0,false,TouchServing,out _);
+            Input(mask); Input(mask & 24);
+        }
         public Vector2 TouchMovement {get;set;}
         public bool TouchRun {get;set;}
         readonly ShotInput input=new ShotInput();
@@ -66,6 +75,7 @@ namespace PickleVerse.LocalMatch
             player.LocalHitFeedback=true;
             PickleVerse.Shop.EquippedPaddle.Attach(player.paddle);
             foreach(var control in touchControls)if(control)control.Input=this;
+            MobileTouchPad.Install(touchRoot,this);
             hud.Bind(this);Catalogue();
         }
         void Start(){if(!string.IsNullOrEmpty(TrainingLaunch.LessonId)){string id=TrainingLaunch.LessonId;TrainingLaunch.LessonId=null;Select(id);}}
@@ -157,7 +167,7 @@ namespace PickleVerse.LocalMatch
             rules=Lesson.skill==TrainingSkill.Serve?new SinglesRules(0):Lesson.skill==TrainingSkill.Drop||Lesson.skill==TrainingSkill.Approach||Lesson.skill==TrainingSkill.DoublesTransition&&expected.kind==ShotKind.Drop?ThirdShot():TutorialCurriculum.RallyReady();
             if(Lesson.skill==TrainingSkill.Serve)rules.PrepareServe(-1);
             ballPosition=Lesson.skill==TrainingSkill.Serve?player.HeldBallPosition:feeder.HeldBallPosition;ball.position=ballPosition;ball.gameObject.SetActive(true);
-            Feedback=PartnerTurn?"Bóng của đồng đội AI • giữ cùng hàng, không tranh bóng.":"Bóng "+(Session.trials+1)+" / "+Lesson.trials+" • "+GameControls.ShotKeys(ExpectedMask);
+            Feedback=PartnerTurn?"Bóng của đồng đội AI • giữ cùng hàng, không tranh bóng.":"Bóng "+(Session.trials+1)+" / "+Lesson.trials+" • "+(Application.isMobilePlatform||touchRoot&&touchRoot.activeSelf?TouchShotGesture.Hint(ExpectedMask):GameControls.ShotKeys(ExpectedMask));
         }
         static SinglesRules ThirdShot()
         {var r=new SinglesRules(0);r.PrepareServe(-1);r.Serve(0,new CourtPoint(1.2f,0,-7.3f),new CourtPoint(1.4f,0,-7.3f),new CourtPoint(1.3f,.7f,-7.1f),1);r.Bounce(new CourtPoint(-1.3f,Court.BallRadius,4));r.Hit(1,new CourtPoint(-1.3f,.9f,4),false);return r;}

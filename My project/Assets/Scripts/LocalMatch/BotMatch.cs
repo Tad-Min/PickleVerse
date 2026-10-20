@@ -9,7 +9,7 @@ using PickleVerse.Audio;
 namespace PickleVerse.LocalMatch
 {
     public enum MatchPhase { Intro, PreServe, Rally, Settling, BetweenPoints, BetweenGames, Timeout, MatchOver, Cinematic }
-    public sealed partial class BotMatch : MonoBehaviour, ISettingsHost, IMatchTouchInput
+    public sealed partial class BotMatch : MonoBehaviour, ISettingsHost, IMatchTouchShotReceiver
     {
         public MatchActor human, bot;
         public Transform ball, ballShadow, landingMarker, aimMarker;
@@ -49,6 +49,15 @@ namespace PickleVerse.LocalMatch
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
         public int TouchShotMask { get; set; }
+        public bool TouchServing => Phase == MatchPhase.PreServe && Rules != null && Rules.Server == 0;
+        public bool TouchShotsEnabled => !Paused && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading && !SceneLoading.IsBlocking &&
+            (Phase == MatchPhase.Rally || TouchServing);
+        public void CommitTouchShot(int mask)
+        {
+            if(!TouchShotsEnabled)return;
+            input.Cancel(); input.Tick(0,false,TouchServing,out _);
+            TickInput(mask); TickInput(mask & 24);
+        }
         public MatchActor Actor(int id) => id == 0 ? human : bot;
 
         void Awake() { InitializeMatch(); }

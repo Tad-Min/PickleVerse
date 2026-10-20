@@ -8,7 +8,7 @@ using PickleVerse.Audio;
 
 namespace PickleVerse.LocalMatch
 {
-    public sealed class TutorialDirector : MonoBehaviour,ISettingsHost,IMatchTouchInput
+    public sealed class TutorialDirector : MonoBehaviour,ISettingsHost,IMatchTouchShotReceiver
     {
         public MatchActor player,coach;
         public Transform ball;
@@ -28,9 +28,19 @@ namespace PickleVerse.LocalMatch
         public bool IsPaused=>Paused;
         public bool CanSignOut=>false;
         public int TouchShotMask {get;set;}
+        public bool TouchServing => false;
+        public bool TouchShotsEnabled => Lesson.kind == TutorialKind.Shot && !Paused && successTimer <= 0 &&
+            !SettingsOverlay.IsOpen && !SettingsOverlay.Loading && !SceneLoading.IsBlocking;
+        public void CommitTouchShot(int mask)
+        {
+            if(!TouchShotsEnabled)return;
+            input.Cancel(); input.Tick(0,false,false,out _);
+            Input(mask); Input(mask & 24);
+        }
         public Vector2 TouchMovement {get;set;}
         public bool TouchRun {get;set;}
         public string Feedback {get;private set;}="";
+        string LessonKeys=>hud&&hud.touchRoot&&hud.touchRoot.activeSelf?TouchShotGesture.Hint(Lesson.mask):GameControls.ShotKeys(Lesson.mask);
         public Fault DemonstratedFault {get;private set;}
         public bool CanContinue=>Lesson.kind==TutorialKind.Complete||Lesson.kind==TutorialKind.Court||Lesson.kind==TutorialKind.Kitchen?Elapsed>=Lesson.minimum:
             Lesson.kind==TutorialKind.Movement?moved&&ran:Lesson.kind==TutorialKind.Shot?false:demoDone&&Elapsed>=Lesson.minimum;
@@ -55,6 +65,7 @@ namespace PickleVerse.LocalMatch
             perimeter=new Vector3[5];courtLine.GetPositions(perimeter);
             player.Initialize();coach.Initialize();player.LocalHitFeedback=true;PickleVerse.Shop.EquippedPaddle.Attach(player.paddle);
             foreach(var control in touchControls)if(control)control.Input=this;
+            MobileTouchPad.Install(hud.touchRoot,this);
             hud.Bind(this);Begin(0,true);
         }
         void Update()
@@ -124,7 +135,7 @@ namespace PickleVerse.LocalMatch
         {
             if(successTimer>0||!input.Tick(mask,GameControls.Pressed(GameAction.CancelShot),false,out var shot))return;
             if(!TutorialCurriculum.Matches(Lesson.mask,input.CommittedMask,shot))
-            {Feedback="Bài này cần "+GameControls.ShotKeys(Lesson.mask)+". Giữ nút bổ trợ khi thả nút đánh.";return;}
+            {Feedback="Bài này cần "+LessonKeys+". Giữ lựa chọn đến khi thả nút đánh.";return;}
             buffered=true;Feedback="Đã chọn đúng cú đánh. Đón bóng đang tới.";
         }
         void Simulation(float dt)
@@ -176,7 +187,7 @@ namespace PickleVerse.LocalMatch
                         {demoDone=true;Feedback="HAI LẦN NẢY ĐÃ XONG • Từ đây có thể volley ngoài kitchen.";returning=true;ballVelocity=ShotTrajectory.Launch(intent,ballPosition,new Vector3(1.2f,Court.BallRadius,-4));}
                         else if(Lesson.kind==TutorialKind.Shot)
                         {
-                            Feedback="ĐÚNG RỒI • "+GameControls.ShotKeys(Lesson.mask);successTimer=1.8f;returning=true;
+                            Feedback="ĐÚNG RỒI • "+LessonKeys;successTimer=1.8f;returning=true;
                             ballVelocity=ShotTrajectory.Launch(intent,ballPosition,ShotTrajectory.Target(actor,intent,ballPosition,actor.transform.position.x));
                         }
                         else
@@ -189,7 +200,7 @@ namespace PickleVerse.LocalMatch
                     }
                 }
                 if(flight&&flightTime>arc.duration+.32f&&Lesson.kind==TutorialKind.Shot)
-                {flight=false;returning=true;ballVelocity=arc.rebound;Feedback="Chưa trúng bóng. Thử lại với "+GameControls.ShotKeys(Lesson.mask)+"; có thể bấm sớm khi bóng đang tới.";}
+                {flight=false;returning=true;ballVelocity=arc.rebound;Feedback="Chưa trúng bóng. Thử lại với "+LessonKeys+"; có thể bấm sớm khi bóng đang tới.";}
                 if(flight&&ballPosition.y<=Court.BallRadius&&bounced&&flightTime>arc.bounceTime+.1f)
                 {
                     ballPosition.y=Court.BallRadius;var fault=rules.Bounce(Point(ballPosition));flight=false;returning=false;SetTrail(false);
