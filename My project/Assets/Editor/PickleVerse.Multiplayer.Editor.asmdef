@@ -3,6 +3,7 @@
   "references": [
     "PickleVerse.Multiplayer",
     "PickleVerse.LocalMatch",
+    "PickleVerse.Settings",
     "PickleVerse.FrontEnd",
     "PickleVerse.Progression",
     "PickleVerse.Shop",

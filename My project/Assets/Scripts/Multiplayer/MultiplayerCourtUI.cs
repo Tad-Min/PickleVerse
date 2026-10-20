@@ -22,7 +22,17 @@ namespace PickleVerse.Multiplayer
         public UnityEngine.UI.Button continueButton,restartButton,modeButton,timeoutButton;
         public UnityEngine.UI.Button leave,returnToRoom;
         public MultiplayerResultScreen resultScreen;
+        public MatchScoreboard broadcast;
+        public MatchHudLayout layout;
         TMP_Text leaveLabel,returnLabel;
+        NetworkPlayer localOwner;
+        NetworkMatch displayedMatch;
+        int displayedTeam=-1,serviceTeam=-1,serviceIndex=-1,serviceNumber=-1,resultA=-1,resultB=-1;
+        string serviceText="",matchType="Multiplayer",shownKeys,shownSelection,matchStatus="";
+        Unity.Collections.FixedString512Bytes statusValue;
+        bool modalVisible,modalTimeout;
+        int modalSecond=-1;
+        string modalReason;
         struct Notice { public string text;public float duration; }
         readonly System.Collections.Generic.Queue<Notice> notices=new System.Collections.Generic.Queue<Notice>();
         string announcement;
@@ -114,39 +124,60 @@ namespace PickleVerse.Multiplayer
             {if(intro)intro.SetActive(false);if(modal)modal.SetActive(false);if(shotPanel)shotPanel.SetActive(false);return;}
 
             bool nextGame=hasMatch && match.BetweenGames.Value && !match.Finished.Value && match.IsServer;
+            if(!localOwner||!localOwner.IsSpawned) {localOwner=null;foreach(var player in NetworkPlayer.All)if(player.IsLocalHuman){localOwner=player;break;}}
+            if(hasMatch && (displayedMatch!=match||displayedTeam!=(localOwner?localOwner.Team.Value:0)))
+            {
+                displayedMatch=match;displayedTeam=localOwner?localOwner.Team.Value:0;matchType=MatchType(match);serviceTeam=serviceIndex=serviceNumber=-1;statusValue=default;matchStatus="";
+                if(broadcast)broadcast.SetTeams(BroadcastName(match,displayedTeam,localOwner),BroadcastName(match,1-displayedTeam,null),matchType);
+            }
+            if(hasMatch&&!statusValue.Equals(match.Status.Value)){statusValue=match.Status.Value;matchStatus=statusValue.ToString();}
             // NGO can despawn the match before the court UI is unloaded.
             bool ended=hasMatch?match.Finished.Value:!app || (!app.Searching && app.State!=FlowState.Reconnecting);
-            if(score && hasMatch)
+            if(broadcast && hasMatch)
+            {
+                int game=Mathf.Clamp(match.GamesA.Value+match.GamesB.Value+(match.BetweenGames.Value||match.Finished.Value?0:1),1,3);
+                bool first=displayedTeam==0;
+                broadcast.SetScores(first?match.ScoreA.Value:match.ScoreB.Value,first?match.ScoreB.Value:match.ScoreA.Value,first?match.GamesA.Value:match.GamesB.Value,first?match.GamesB.Value:match.GamesA.Value,game,match.ServerTeam.Value==displayedTeam?0:1);
+                if(serviceTeam!=match.ServerTeam.Value||serviceIndex!=match.ServerIndex.Value||serviceNumber!=match.ServerNumber.Value)
+                {serviceTeam=match.ServerTeam.Value;serviceIndex=match.ServerIndex.Value;serviceNumber=match.ServerNumber.Value;serviceText=(serviceTeam==displayedTeam?"ĐỘI BẠN":"ĐỐI THỦ")+" · NGƯỜI "+(serviceIndex+1)+" · LƯỢT "+serviceNumber;}
+                broadcast.SetClock(match.TimedOut.Value?CourtClockMode.Timeout:match.Finished.Value?CourtClockMode.Finished:match.BetweenGames.Value?CourtClockMode.Break:match.WaitingServe.Value?CourtClockMode.Serve:match.Ball.Value.live?CourtClockMode.Rally:CourtClockMode.Waiting,match.TimedOut.Value?match.TimeoutRemaining.Value:10-match.ServeElapsed.Value,match.Bounces.Value>0,match.WaitingServe.Value?serviceText:"");
+            }
+            else if(score && hasMatch)
             {
                 int game=Mathf.Clamp(match.GamesA.Value+match.GamesB.Value+(match.BetweenGames.Value || match.Finished.Value?0:1),1,3);
                 score.text=$"<color=#83E6CD>{TeamName(match,0)}</color>  {match.ScoreA.Value}   :   {match.ScoreB.Value}  <color=#F9BC7A>{TeamName(match,1)}</color>\n<size=17>GAME {game}    •    Số game thắng {match.GamesA.Value}–{match.GamesB.Value}    •    {MatchType(match)}</size>";
             }
             if(status) status.text=!app?"Chưa có phiên thi đấu.":app.Searching?app.Notice+"  "+app.Elapsed:
-                !hasMatch || app.State==FlowState.Reconnecting?app.Notice:Time.unscaledTime<announcementUntil?announcement:match.Status.Value.ToString();
+                !hasMatch || app.State==FlowState.Reconnecting?app.Notice:Time.unscaledTime<announcementUntil?announcement:matchStatus;
             if(status && announcements)status.transform.parent.gameObject.SetActive(!hasMatch || match.Paused.Value || !(announcements.Busy || match.BetweenPoints.Value || match.BetweenGames.Value || match.Finished.Value));
             if(leaveLabel) leaveLabel.text=app && app.Searching?"Hủy":"Rời trận";
-            if(server) server.text=!hasMatch?"":match.TimedOut.Value?$"TIME-OUT  {match.TimeoutRemaining.Value:0}s":match.WaitingServe.Value?$"GIAO BÓNG  {Mathf.Max(0,10-match.ServeElapsed.Value):0.0}s\n<size=16>Đội {(match.ServerTeam.Value==0?"A":"B")} • Người {match.ServerIndex.Value+1} • Lượt {match.ServerNumber.Value}</size>":match.Ball.Value.live?match.Bounces.Value==0?"BÓNG CHƯA NẢY":"BÓNG ĐÃ NẢY":"";
+            if(server && !broadcast) server.text=!hasMatch?"":match.TimedOut.Value?$"TIME-OUT  {match.TimeoutRemaining.Value:0}s":match.WaitingServe.Value?$"GIAO BÓNG  {Mathf.Max(0,10-match.ServeElapsed.Value):0.0}s\n<size=16>Đội {(match.ServerTeam.Value==0?"A":"B")} • Người {match.ServerIndex.Value+1} • Lượt {match.ServerNumber.Value}</size>":match.Ball.Value.live?match.Bounces.Value==0?"BÓNG CHƯA NẢY":"BÓNG ĐÃ NẢY":"";
             if(returnLabel) returnLabel.text=nextGame?"Game tiếp":"Về phòng";
             bool results=hasMatch && match.Finished.Value && (!announcements || !announcements.Busy) && !SettingsOverlay.IsOpen;
             if(resultActions)resultActions.SetActive(results && !resultScreen);
-            if(resultSummary && results)resultSummary.text=$"SỐ GAME THẮNG  {match.GamesA.Value} - {match.GamesB.Value}";
+            if(resultSummary && results && (resultA!=match.GamesA.Value||resultB!=match.GamesB.Value)){resultA=match.GamesA.Value;resultB=match.GamesB.Value;resultSummary.text=$"SỐ GAME THẮNG  {resultA} - {resultB}";}
             if(returnToRoom)
             {
                 returnToRoom.gameObject.SetActive(nextGame || ended && !resultActions);
                 returnToRoom.interactable=!app || !app.Busy;
             }
             if(leave) leave.gameObject.SetActive(!ended && !nextGame);
-            var owner=NetworkPlayer.All.FirstOrDefault(p=>p.IsLocalHuman);
+            var owner=localOwner;
             bool choosing=owner && !string.IsNullOrEmpty(owner.SelectionKeys),swinging=owner && owner.Actor && owner.Actor.Swinging && !string.IsNullOrEmpty(owner.ActiveShotKeys);
-            if(selection)selection.text=choosing?$"<b>{owner.SelectionKeys}</b>\n<size=14>{owner.Selection}</size>":swinging?$"<b>{owner.ActiveShotKeys}</b>\n<size=14>{owner.Actor.Intent}</size>":"";
+            string keys=choosing?owner.SelectionKeys:swinging?owner.ActiveShotKeys:"",description=choosing?owner.Selection:swinging?owner.Actor.Intent.ToString():"";
+            if(selection && (keys!=shownKeys||description!=shownSelection)){shownKeys=keys;shownSelection=description;selection.text=keys.Length>0?"<b>"+keys+"</b>\n<size=14>"+description+"</size>":"";}
             if(shotPanel)shotPanel.SetActive(!InputBlocked && !SettingsOverlay.IsOpen && hasMatch && !match.Paused.Value && !match.Finished.Value && (choosing || swinging));
             if(timing)timing.gameObject.SetActive(false);
-            if(modeLabel)modeLabel.text=hasMatch?MatchType(match):"Multiplayer";
+            if(modeLabel && !broadcast)modeLabel.text=hasMatch?matchType:"Multiplayer";
             if(timeoutButton)timeoutButton.interactable=hasMatch && owner && match.WaitingServe.Value && !match.TimedOut.Value && !match.Paused.Value && !match.BetweenPoints.Value && !match.Finished.Value;
             bool showModal=hasMatch && !SettingsOverlay.IsOpen && (match.TimedOut.Value || match.Paused.Value);
             if(modal)modal.SetActive(showModal);
-            if(showModal)
+            int second=hasMatch?Mathf.CeilToInt(match.TimeoutRemaining.Value):0;
+            bool refreshModal=showModal&&(!modalVisible||modalTimeout!=match.TimedOut.Value||modalSecond!=second||modalReason!=matchStatus);
+            modalVisible=showModal;
+            if(refreshModal)
             {
+                modalTimeout=match.TimedOut.Value;modalSecond=second;modalReason=matchStatus;
                 ((RectTransform)modal.transform).sizeDelta=new Vector2(760,370);
                 if(modalBody){modalBody.rectTransform.anchoredPosition=new Vector2(0,6);modalBody.rectTransform.sizeDelta=new Vector2(710,235);modalBody.fontSize=19;}
                 if(continueButton)((RectTransform)continueButton.transform).anchoredPosition=new Vector2(-245,20);
@@ -158,6 +189,11 @@ namespace PickleVerse.Multiplayer
             }
             if(intro)intro.SetActive(!hasMatch || !match.Started.Value);
             if(introCaption)introCaption.text=hasMatch?"PICKLEVERSE / "+MatchType(match):"ĐANG KẾT NỐI VÀO SÂN";
+        }
+        static string BroadcastName(NetworkMatch match,int team,NetworkPlayer local)
+        {
+            var members=match.Roster?.members.Where(m=>m.team==team).ToArray();if(members==null||members.Length==0)return team==0?"ĐỘI A":"ĐỘI B";
+            return string.Join("\n",members.Select(m=>(local&&m.id==local.Identity.Value.ToString()?"BẠN · ":"")+(m.name??"Người chơi")));
         }
         static string TeamName(NetworkMatch match,int team)
         {
@@ -171,7 +207,7 @@ namespace PickleVerse.Multiplayer
         {
             var roster=match.Roster;if(roster==null)return "Multiplayer";
             int a=roster.members.Count(m=>m.team==0),b=roster.members.Count(m=>m.team==1);
-            return roster.custom?$"Custom {a}v{b}":roster.mode==PlayMode.Doubles?"Đấu đôi 2v2":"Đấu đơn 1v1";
+            return roster.custom?$"PHÒNG RIÊNG · {a}V{b}":roster.mode==PlayMode.Doubles?"TRỰC TUYẾN · 2V2":"TRỰC TUYẾN · 1V1";
         }
         public void ClearTouch(){TouchShotMask=0;TouchMovement=Vector2.zero;TouchRun=false;}
         public void SetPaused(bool paused){localInputPaused=paused;ClearTouch();}
@@ -207,8 +243,8 @@ namespace PickleVerse.Multiplayer
                 K(GameAction.Drive)+"+"+K(GameAction.Dink)+" Drop | "+K(GameAction.Drive)+"+"+K(GameAction.Volley)+" Smash | "+K(GameAction.Dink)+"+"+K(GameAction.Volley)+" Reset\n"+
                 K(GameAction.Power)+" tăng lực • "+K(GameAction.Cross)+" đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\n11 điểm, cách biệt 2 • Chỉ đội giao ghi điểm • Thắng 2/3 game\n"+
                 K(GameAction.Timeout)+" time-out • Esc cài đặt • "+K(GameAction.Help)+" hướng dẫn\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận online tiếp tục.";
-            var helpButton=transform.Find("Help")?.GetComponentInChildren<TMP_Text>();if(helpButton)helpButton.text=K(GameAction.Help)+" / Hướng dẫn";
-            var timeoutLabel=timeoutButton?timeoutButton.GetComponentInChildren<TMP_Text>():null;if(timeoutLabel)timeoutLabel.text=K(GameAction.Timeout)+" / Time-out";
+            if(layout)layout.RefreshKeys();
+            else{var helpButton=transform.Find("Help")?.GetComponentInChildren<TMP_Text>();if(helpButton)helpButton.text=K(GameAction.Help)+" / Hướng dẫn";var timeoutLabel=timeoutButton?timeoutButton.GetComponentInChildren<TMP_Text>():null;if(timeoutLabel)timeoutLabel.text=K(GameAction.Timeout)+" / Time-out";}
         }
     }
 }

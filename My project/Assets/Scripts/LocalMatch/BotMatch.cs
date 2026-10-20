@@ -27,6 +27,7 @@ namespace PickleVerse.LocalMatch
         public Vector3 BallPosition { get; private set; }
         public Vector3 BallVelocity { get; private set; }
         public float ServeElapsed { get; private set; }
+        public float TimeoutRemaining => Phase==MatchPhase.Timeout?Mathf.Max(0,60-phaseTime):0;
         public string Message { get; private set; } = "Đấu đơn • Thắng 2/3 game • 11 điểm, cách 2";
         public string ShotFeedback { get; private set; } = "";
         public string Selection => input.Selection;

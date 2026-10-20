@@ -34,6 +34,6 @@ public static class LoadingVisualValidation
             File.WriteAllText("../UnityWork/Loading20261019/responsive.json",JsonConvert.SerializeObject(new{passed=results.All(r=>(bool)r.GetType().GetProperty("passed").GetValue(r)),results},Formatting.Indented));
         }
         catch(Exception e){File.WriteAllText("../UnityWork/Loading20261019/responsive.json",JsonConvert.SerializeObject(new{passed=false,error=e.ToString(),results}));Debug.LogException(e);}
-        finally{SceneLoading.CancelExternal();selection.SetValue(view,prior);while((int)gt.GetMethod("GetCustomCount").Invoke(group,null)>count)gt.GetMethod("RemoveCustomSize").Invoke(group,new object[]{count});view.Repaint();}
+        finally{SceneLoading.CancelExternal();selection.SetValue(view,prior);int added=(int)gt.GetMethod("GetCustomCount").Invoke(group,null)-count;for(int i=0;i<added;i++)gt.GetMethod("RemoveCustomSize").Invoke(group,new object[]{(int)gt.GetMethod("GetTotalCount").Invoke(group,null)-1});view.Repaint();}
     }
 }
