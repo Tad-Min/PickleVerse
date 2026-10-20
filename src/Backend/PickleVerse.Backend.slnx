@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="PickleVerse.Api/PickleVerse.Api.csproj" />
-  <Project Path="PickleVerse.Core.Tests/PickleVerse.Core.Tests.csproj" />
-  <Project Path="PickleVerse.Core/PickleVerse.Core.csproj" />
-</Solution>

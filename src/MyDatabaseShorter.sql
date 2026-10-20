@@ -1,4 +1,4 @@
--- Kích hoạt extension pgcrypto để sinh UUID ngẫu nhiên (PostgreSQL)
+-- Kích hoạt extension pgcrypto để sinh UUID ngẫu nhiên
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================================
@@ -15,8 +15,19 @@ CREATE TABLE Users (
     Email VARCHAR(254) NOT NULL UNIQUE,
     PasswordHash VARCHAR(254) NOT NULL,
     RoleId INT NOT NULL,
+    Status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (Status IN ('ACTIVE', 'BANNED', 'SUSPENDED')),
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_Users_Roles FOREIGN KEY (RoleId) REFERENCES Roles(RoleId)
+);
+
+CREATE TABLE RefreshTokens (
+    TokenId SERIAL PRIMARY KEY,
+    UserId UUID NOT NULL,
+    TokenHash VARCHAR(254) NOT NULL UNIQUE,
+    ExpiresAt TIMESTAMPTZ NOT NULL,
+    IsRevoked BOOLEAN NOT NULL DEFAULT FALSE,
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT FK_RefreshTokens_Users FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
 
 CREATE TABLE VerificationEmail (
@@ -46,9 +57,42 @@ CREATE TABLE PlayerProfiles (
     CONSTRAINT FK_PlayerProfiles_Users FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
 
--- ============================================================================
--- 2. MATCH & HISTORY
--- ============================================================================
+--#region Social-Friendships
+CREATE TABLE FriendRequests (
+    RequestId SERIAL PRIMARY KEY,
+    SenderId UUID NOT NULL,
+    ReceiverId UUID NOT NULL,
+    Status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (Status IN ('PENDING', 'ACCEPTED', 'DECLINED')),
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    RespondedAt TIMESTAMPTZ NULL,
+    CONSTRAINT CHK_FriendRequests_Self CHECK (SenderId != ReceiverId),
+    CONSTRAINT UQ_Sender_Receiver UNIQUE (SenderId, ReceiverId),
+    CONSTRAINT FK_FriendRequests_Sender FOREIGN KEY (SenderId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_FriendRequests_Receiver FOREIGN KEY (ReceiverId) REFERENCES Users(UserId) ON DELETE CASCADE
+);
+
+CREATE TABLE Friendships (
+    UserId1 UUID NOT NULL,
+    UserId2 UUID NOT NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (UserId1, UserId2),
+    CONSTRAINT CHK_Friendship_Order CHECK (UserId1 < UserId2),
+    CONSTRAINT FK_Friendships_User1 FOREIGN KEY (UserId1) REFERENCES Users(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_Friendships_User2 FOREIGN KEY (UserId2) REFERENCES Users(UserId) ON DELETE CASCADE
+);
+
+CREATE TABLE BlockedUsers (
+    UserId UUID NOT NULL,
+    BlockedUserId UUID NOT NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (UserId, BlockedUserId),
+    CONSTRAINT CHK_Block_Self CHECK (UserId != BlockedUserId),
+    CONSTRAINT FK_BlockedUsers_User FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_BlockedUsers_Blocked FOREIGN KEY (BlockedUserId) REFERENCES Users(UserId) ON DELETE CASCADE
+);
+--#endregion
+
+--#region Match-History
 CREATE TABLE MatchHistory (
     MatchId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -68,15 +112,29 @@ CREATE TABLE PlayerMatchHistory (
     CONSTRAINT FK_PlayerMatchHistory_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
 );
 
-CREATE TABLE MatchHistoryReplay (
-    MatchId UUID PRIMARY KEY,
-    ReplayData TEXT NOT NULL,
-    CONSTRAINT FK_MatchHistoryReplay_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
+CREATE TABLE ReportPlayerInMatch (
+    ReporterId UUID NOT NULL,       
+    ReportedPlayerId UUID NOT NULL,  
+    MatchId UUID NOT NULL,      
+    Reason VARCHAR(254) NOT NULL,
+    Status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (Status IN ('PENDING', 'CHECKING', 'ACCEPTED', 'DECLINED')),
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (ReporterId, ReportedPlayerId, MatchId),
+    CONSTRAINT CHK_CannotReportSelf CHECK (ReporterId != ReportedPlayerId),
+    CONSTRAINT FK_Report_Reporter FOREIGN KEY (ReporterId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_Report_ReportedPlayer FOREIGN KEY (ReportedPlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_Report_Match FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
 );
 
--- ============================================================================
--- 3. ECONOMY & COSMETICS
--- ============================================================================
+CREATE TABLE MatchHistoryReplay (
+    MatchId UUID PRIMARY KEY,
+    ReplayUrl VARCHAR(1000) NOT NULL,
+    CONSTRAINT FK_MatchHistoryReplay_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
+);
+--#endregion
+
+--#region Economy-Cosmetics
 CREATE TABLE Currencies (
     CurrencyId SERIAL PRIMARY KEY,
     CurrencyName VARCHAR(254) NOT NULL UNIQUE,
@@ -111,10 +169,9 @@ CREATE TABLE PlayerCosmetics (
     CONSTRAINT FK_PlayerCosmetics_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CONSTRAINT FK_PlayerCosmetics_Cosmetics FOREIGN KEY (CosmeticId) REFERENCES Cosmetics(CosmeticId)
 );
+--#endregion
 
--- ============================================================================
--- 4. ACHIEVEMENTS & MISSIONS
--- ============================================================================
+--#region Achievements-Missions
 CREATE TABLE Achievements (
     AchievementId SERIAL PRIMARY KEY,
     AchievementCode VARCHAR(50) NOT NULL UNIQUE,
@@ -155,10 +212,15 @@ CREATE TABLE PlayerMissions (
     CONSTRAINT FK_PlayerMissions_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CONSTRAINT FK_PlayerMissions_Missions FOREIGN KEY (MissionId) REFERENCES Missions(MissionId)
 );
+--#endregion
 
--- ============================================================================
--- 5. TRAINING SYSTEM (LESSONS & DRILLS)
--- ============================================================================
+--#region Training & AI Coaching
+CREATE TABLE Techniques (
+    TechniqueId SERIAL PRIMARY KEY,
+    TechniqueName VARCHAR(254) NOT NULL UNIQUE,
+    Description VARCHAR(254) NOT NULL
+);
+
 CREATE TABLE Lessons (
     LessonId SERIAL PRIMARY KEY,
     LessonName VARCHAR(254) NOT NULL,
@@ -170,27 +232,62 @@ CREATE TABLE Lessons (
 
 CREATE TABLE Drills (
     DrillId SERIAL PRIMARY KEY,
+    TechniqueId INT NOT NULL,
     DrillName VARCHAR(254) NOT NULL,
-    Description VARCHAR(254) NOT NULL
+    Description VARCHAR(254) NOT NULL,
+    CONSTRAINT FK_Drills_Techniques FOREIGN KEY (TechniqueId) REFERENCES Techniques(TechniqueId) ON DELETE CASCADE
 );
 
 CREATE TABLE LessonDrills (
     LessonId INT NOT NULL,
     DrillId INT NOT NULL,
-    [Target] INT NOT NULL,
+    Target INT NOT NULL,
     PRIMARY KEY (LessonId, DrillId),
     CONSTRAINT FK_LessonDrills_Lessons FOREIGN KEY (LessonId) REFERENCES Lessons(LessonId) ON DELETE CASCADE,
     CONSTRAINT FK_LessonDrills_Drills FOREIGN KEY (DrillId) REFERENCES Drills(DrillId) ON DELETE CASCADE
+);
+
+CREATE TABLE PlayerTechniqueMastery (
+    PlayerId UUID NOT NULL,
+    TechniqueId INT NOT NULL,
+    TotalAttempts INT NOT NULL DEFAULT 0,
+    TotalErrors INT NOT NULL DEFAULT 0,
+    MasteryScore SMALLINT GENERATED ALWAYS AS (
+        CASE 
+            WHEN TotalAttempts = 0 THEN 0 
+            ELSE CAST(((TotalAttempts - TotalErrors) * 100) / TotalAttempts AS SMALLINT)
+        END
+    ) STORED,
+    LastUpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (PlayerId, TechniqueId),
+    CONSTRAINT FK_PlayerTechniqueMastery_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_PlayerTechniqueMastery_Techniques FOREIGN KEY (TechniqueId) REFERENCES Techniques(TechniqueId) ON DELETE CASCADE
+);
+
+CREATE TABLE PlayerTechniquesErrors (
+    ErrorLogId SERIAL PRIMARY KEY,
+    PlayerId UUID NOT NULL,
+    TechniqueId INT NOT NULL,
+    MatchId UUID NULL,
+    LessonId INT NULL,
+    ErrorType VARCHAR(50) NOT NULL,
+    CoachingTip TEXT NOT NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT FK_PlayerTechniquesErrors_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_PlayerTechniquesErrors_Techniques FOREIGN KEY (TechniqueId) REFERENCES Techniques(TechniqueId) ON DELETE CASCADE,
+    CONSTRAINT FK_PlayerTechniquesErrors_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE SET NULL,
+    CONSTRAINT FK_PlayerTechniquesErrors_Lessons FOREIGN KEY (LessonId) REFERENCES Lessons(LessonId) ON DELETE SET NULL
 );
 
 CREATE TABLE PlayerLessonDrills (
     PlayerId UUID NOT NULL,
     LessonId INT NOT NULL,
     DrillId INT NOT NULL,
-    Score INT NOT NULL DEFAULT 0 CHECK (Score >= 0), 
-    IsClaimed BOOLEAN NOT NULL DEFAULT FALSE,
-    ClaimedAt TIMESTAMPTZ NULL,
-    PRIMARY KEY (PlayerId, DrillId),
-    CONSTRAINT FK_PlayerLessons_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
-    CONSTRAINT FK_PlayerLessons_Drills FOREIGN KEY (DrillId) REFERENCES Drills(DrillId)
+    Score INT NOT NULL DEFAULT 0,
+    IsClaimedReward BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (PlayerId, LessonId, DrillId),
+    CONSTRAINT FK_PlayerLessonDrills_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_PlayerLessonDrills_Lessons FOREIGN KEY (LessonId) REFERENCES Lessons(LessonId) ON DELETE CASCADE,
+    CONSTRAINT FK_PlayerLessonDrills_Drills FOREIGN KEY (DrillId) REFERENCES Drills(DrillId) ON DELETE CASCADE
 );
+--#endregion
