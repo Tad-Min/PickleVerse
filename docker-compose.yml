@@ -1,0 +1,83 @@
+services:
+  # 1. Cơ sở dữ liệu PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: pickleverse_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: pickleverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/MyDatabaseShorter.sql:/docker-entrypoint-initdb.d/01_init.sql
+    networks:
+      - pickleverse_network
+
+  # 2. Giao diện Quản trị CSDL (pgAdmin 4)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pickleverse_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pickleverse.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - pickleverse_network
+
+  # 3. Lưu trữ Object Storage S3 (Replays, Avatars, Videos)
+  s3-storage:
+    image: ghcr.io/shyim/local-s3:latest
+    container_name: pickleverse_s3
+    restart: unless-stopped
+    environment:
+      S3_ACCOUNT_ADMIN: "minioadmin:minioadmin"
+    ports:
+      - "9000:9000"
+    volumes:
+      - s3_data:/data
+    networks:
+      - pickleverse_network
+
+  # 4. Backend Web API (.NET 10)
+  backend-api:
+    build:
+      context: ./src/Backend
+      dockerfile: API/Dockerfile
+    container_name: pickleverse_api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=pickleverse;Username=sa;Password=12345;"
+      Storage__ServiceUrl: "http://s3-storage:9000"
+      Storage__AccessKey: "minioadmin"
+      Storage__SecretKey: "minioadmin"
+      Storage__BucketName: "pickleverse"
+      Storage__ForcePathStyle: "true"
+      Jwt__Key: "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!"
+      Jwt__Issuer: "PickleVerseAPI"
+      Jwt__Audience: "PickleVerseClient"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - s3-storage
+    networks:
+      - pickleverse_network
+
+volumes:
+  postgres_data:
+    driver: local
+  s3_data:
+    driver: local
+
+networks:
+  pickleverse_network:
+    driver: bridge

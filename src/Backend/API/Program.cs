@@ -1,0 +1,102 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Repositories.Context;
+using Repositories.Implementations;
+using Repositories.Interfaces;
+using Repositories.UnitOfWork;
+using Services.Implementations;
+using Services.Interfaces;
+using API.Middlewares;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. Add Controllers
+builder.Services.AddControllers();
+
+// 2. Configure PostgreSQL DbContext
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<PickleVerseContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// 3. Configure JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PickleVerseAPI";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PickleVerseClient";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// 4. Register Repositories & Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPlayerProfileRepository, PlayerProfileRepository>();
+builder.Services.AddScoped<IEconomyRepository, EconomyRepository>();
+builder.Services.AddScoped<ITrainingRepository, TrainingRepository>();
+builder.Services.AddScoped<IAiCoachingRepository, AiCoachingRepository>();
+builder.Services.AddScoped<IMatchRepository, MatchRepository>();
+builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+builder.Services.AddScoped<IMissionRepository, MissionRepository>();
+builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
+
+// 5. Register Application Services
+builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ITrainingService, TrainingService>();
+builder.Services.AddScoped<IAiCoachingService, AiCoachingService>();
+builder.Services.AddScoped<IMatchService, MatchService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IEconomyService, EconomyService>();
+builder.Services.AddScoped<IMissionService, MissionService>();
+builder.Services.AddScoped<IAchievementService, AchievementService>();
+builder.Services.AddScoped<IReplayService, ReplayService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+// 5. OpenAPI
+builder.Services.AddOpenApi();
+
+// 6. Global Error Handling
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+var app = builder.Build();
+
+// 6. Auto-create S3 Bucket on Startup
+using (var scope = app.Services.CreateScope())
+{
+    var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+    await storageService.EnsureBucketExistsAsync();
+}
+
+// 7. Global Exception Handler Pipeline
+app.UseExceptionHandler();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
