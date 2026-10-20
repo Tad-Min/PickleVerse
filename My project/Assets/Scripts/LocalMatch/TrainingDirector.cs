@@ -54,14 +54,16 @@ namespace PickleVerse.LocalMatch
         TutorialFeed feed;
         Vector3 ballPosition,ballVelocity,serveOrigin,cameraStart;
         Quaternion cameraRotation;
-        float cameraFov,elapsed,flightTime,wait,recoveryTime,serveTime,lastSave,renderTime;
+        float cameraFov,elapsed,flightTime,wait,recoveryTime,serveTime,lastSave,renderTime,partnerSide=-1;
         bool incoming,outgoing,bounced,coachLaunched,hit,releasedServe,candidate,recovering,needsRecovery,outcomeAnnounced,leaving;
         TrainingError lastError;
         Vector3 trialPlayerOrigin;
         MatchActor receiver,feeder;
         void Awake()
         {
+            MatchRenderBudget.ConfigurePractice(gameObject);
             player.Initialize();coach.Initialize();partner.Initialize();opponent.Initialize();
+            player.LocalHitFeedback=true;
             PickleVerse.Shop.EquippedPaddle.Attach(player.paddle);
             foreach(var control in touchControls)if(control)control.Input=this;
             hud.Bind(this);Catalogue();
@@ -69,7 +71,7 @@ namespace PickleVerse.LocalMatch
         void Start(){if(!string.IsNullOrEmpty(TrainingLaunch.LessonId)){string id=TrainingLaunch.LessonId;TrainingLaunch.LessonId=null;Select(id);}}
         void Update()
         {
-            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused)return;
+            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused||SceneLoading.IsBlocking)return;
             if(GameControls.Pressed(GameAction.Settings)){SettingsOverlay.Open(this);return;}
             Vector2 movement=TouchMovement;
             if(GameControls.Held(GameAction.Left))movement.x--;if(GameControls.Held(GameAction.Right))movement.x++;
@@ -105,15 +107,28 @@ namespace PickleVerse.LocalMatch
         public void Advance(float dt,int mask=0,Vector2 movement=default,bool run=false,int tap=0)
         {
             if(Paused||dt<=0)return;elapsed+=dt;hud.announcements.Advance(dt);
-            if(Phase==TrainingPhase.Practice||Phase==TrainingPhase.Recovery)
+            // Bound acceleration, pose blending and contact steps on a slow frame.
+            // The camera and HUD still update only once per displayed frame.
+            int steps=Mathf.Max(1,Mathf.CeilToInt(dt*60));float step=dt/steps;
+            for(int i=0;i<steps;i++)
             {
-                Session.seconds+=dt;player.Step(movement,run,dt,true);Clamp(player);
-                coach.Step(Vector2.zero,false,dt,false);opponent.Step(Vector2.zero,false,dt,false);MovePartner(dt);
-                if(Phase==TrainingPhase.Practice){if(tap!=0)Input(mask|tap);Input(mask);Simulation(dt);}
-                else Recovery(dt);
-                if(elapsed-lastSave>10){lastSave=elapsed;SaveActive();}
+                if(Phase==TrainingPhase.Practice||Phase==TrainingPhase.Recovery)
+                {
+                    Session.seconds+=step;player.Step(movement,run,step,true,MatchMovement.PracticeBounds(player.end));
+                    coach.Step(Vector2.zero,false,step,false);
+                    if(opponent.gameObject.activeSelf)opponent.Step(Vector2.zero,false,step,false);
+                    MovePartner(step);
+                    if(Phase==TrainingPhase.Practice){if(i==0&&tap!=0)Input(mask|tap);Input(mask);Simulation(step);}
+                    else Recovery(step);
+                }
+                else
+                {
+                    player.Step(Vector2.zero,false,step,false);coach.Step(Vector2.zero,false,step,false);
+                    if(partner.gameObject.activeSelf)partner.Step(Vector2.zero,false,step,false);
+                    if(opponent.gameObject.activeSelf)opponent.Step(Vector2.zero,false,step,false);
+                }
             }
-            else{player.Step(Vector2.zero,false,dt,false);coach.Step(Vector2.zero,false,dt,false);if(partner.gameObject.activeSelf)partner.Step(Vector2.zero,false,dt,false);if(opponent.gameObject.activeSelf)opponent.Step(Vector2.zero,false,dt,false);}
+            if((Phase==TrainingPhase.Practice||Phase==TrainingPhase.Recovery)&&elapsed-lastSave>10){lastSave=elapsed;SaveActive();}
             CameraStep(dt);if(elapsed-renderTime>.08f){renderTime=elapsed;hud.Refresh();}
             if(teamLink.gameObject.activeSelf){teamLink.SetPosition(0,player.transform.position+Vector3.up*.06f);teamLink.SetPosition(1,partner.transform.position+Vector3.up*.06f);}
         }
@@ -131,7 +146,7 @@ namespace PickleVerse.LocalMatch
             ReceivePosition=new Vector3(x,0,depth);RecoveryPosition=new Vector3(Lesson.Doubles?x:side?0:1.15f,0,Lesson.skill==TrainingSkill.Approach||Lesson.skill==TrainingSkill.DoublesTransition?-2.8f:depth);
             if(initial||!side)player.ResetAt(ReceivePosition,-1);else player.ResetAt(new Vector3(0,0,depth),-1);
             coach.ResetAt(new Vector3(-1.2f,0,4.5f),1);opponent.ResetAt(new Vector3(1.4f,0,4.2f),1);
-            if(initial)partner.ResetAt(new Vector3(-1.3f,0,depth),-1);
+            if(initial){partnerSide=-1;partner.ResetAt(new Vector3(-1.3f,0,depth),-1);}
             player.RefreshPose();coach.RefreshPose();receiver=PartnerTurn?partner:player;feeder=Lesson.Doubles&&Session.trials%2==1?opponent:coach;
             var idealContact=ReceivePosition+Quaternion.Euler(0,0,0)*player.ContactOffset(expected);
             if(PartnerTurn)idealContact=partner.transform.TransformPoint(partner.ContactOffset(expected));
@@ -164,8 +179,9 @@ namespace PickleVerse.LocalMatch
             if(Phase!=TrainingPhase.Practice)return;
             if(Lesson.skill==TrainingSkill.Serve&&!outgoing)
             {
+                Vector3 previousServePosition=ballPosition;
                 serveTime+=dt;ServeBallMotion.Step(player,ref releasedServe,ref serveOrigin,ref ballPosition,ref ballVelocity,dt);
-                if(player.Swinging&&player.SwingTime>=.8f&&player.ContactActive&&Vector3.Distance(ballPosition,player.paddleFace.position)<.5f)
+                if(player.Swinging&&player.SwingTime>=.8f&&player.CanContact(previousServePosition,ballPosition,.45f,out _))
                 {
                     ballPosition=new Vector3(serveOrigin.x,ballPosition.y,serveOrigin.z);
                     var fault=rules.Serve(0,player.Feet(true),player.Feet(false),Point(ballPosition),serveTime,player.PaddleVelocity.y>0,player.PaddleHeadTop<=player.hand.position.y+.015f);
@@ -279,10 +295,14 @@ namespace PickleVerse.LocalMatch
         void MovePartner(float dt)
         {
             if(!partner.gameObject.activeSelf)return;
-            float x=Mathf.Clamp(player.transform.position.x-2.4f,-2.8f,2.8f);Vector3 goal=new Vector3(x,0,Mathf.Min(-2.7f,player.transform.position.z));
-            Vector3 d=goal-partner.transform.position;partner.Step(new Vector2(d.x,d.z).normalized*Mathf.Clamp01(d.magnitude*2),false,dt,d.magnitude>.08f);Clamp(partner);
+            float playerX=player.transform.position.x;
+            float x=Mathf.Clamp(playerX+partnerSide*2.4f,-2.8f,2.8f);
+            // Keep the current lane until the sideline leaves too little room.
+            // Switching only at the edge avoids oscillation around centre court.
+            if(Mathf.Abs(x-playerX)<1.1f){partnerSide=-partnerSide;x=Mathf.Clamp(playerX+partnerSide*2.4f,-2.8f,2.8f);}
+            Vector3 goal=new Vector3(x,0,Mathf.Min(-2.7f,player.transform.position.z));
+            Vector3 d=goal-partner.transform.position;partner.Step(new Vector2(d.x,d.z).normalized*Mathf.Clamp01(d.magnitude*2),false,dt,true,MatchMovement.PracticeBounds(partner.end));
         }
-        static void Clamp(MatchActor actor){var p=actor.transform.position;p.x=Mathf.Clamp(p.x,-3.1f,3.1f);p.z=Mathf.Clamp(p.z,-8.1f,-.35f);actor.transform.position=p;}
         void ShowDoubles(bool show){partner.gameObject.SetActive(show);opponent.gameObject.SetActive(show);teamLink.gameObject.SetActive(show);}
         void ResetFlight(){incoming=outgoing=coachLaunched=hit=bounced=releasedServe=false;input.Cancel();Trail(false);ball.gameObject.SetActive(false);targetRing.gameObject.SetActive(false);receiveRing.gameObject.SetActive(false);recoveryRing.gameObject.SetActive(false);}
         void Trail(bool emitting){if(trail){trail.emitting=emitting;if(!emitting)trail.Clear();}}

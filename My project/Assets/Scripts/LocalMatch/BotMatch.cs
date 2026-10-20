@@ -27,6 +27,7 @@ namespace PickleVerse.LocalMatch
         public Vector3 BallPosition { get; private set; }
         public Vector3 BallVelocity { get; private set; }
         public float ServeElapsed { get; private set; }
+        public float TimeoutRemaining => Phase==MatchPhase.Timeout?Mathf.Max(0,60-phaseTime):0;
         public string Message { get; private set; } = "Đấu đơn • Thắng 2/3 game • 11 điểm, cách 2";
         public string ShotFeedback { get; private set; } = "";
         public string Selection => input.Selection;
@@ -64,6 +65,7 @@ namespace PickleVerse.LocalMatch
             TotalHits=TotalRallies=LongestRally=0;RallyLog.Clear();Paused=false;
             human.end=-1;bot.end=1;
             human.Initialize(); bot.Initialize();
+            human.LocalHitFeedback=true;
             if(human.paddle)PickleVerse.Shop.EquippedPaddle.Attach(human.paddle);
             initialServer = UnityEngine.Random.Range(0, 2);
             Rules = new SinglesRules(initialServer); PreparePoint(); Phase = MatchPhase.Intro;
@@ -72,7 +74,7 @@ namespace PickleVerse.LocalMatch
         }
         void Update()
         {
-            if (SettingsOverlay.IsOpen || SettingsOverlay.Loading) return;
+            if (SettingsOverlay.IsOpen || SettingsOverlay.Loading || SceneLoading.IsBlocking) return;
             var keyboard = Keyboard.current;
             if (focused && GameControls.Pressed(GameAction.Settings)) { SettingsOverlay.Open(this); return; }
             if(Phase==MatchPhase.Cinematic)
@@ -152,6 +154,7 @@ namespace PickleVerse.LocalMatch
                 ServeElapsed += dt;
                 countdown.Step(ServeElapsed);
                 var server = Actor(Rules.Server);
+                var previousServePosition=BallPosition;
                 var servePosition = BallPosition; var serveVelocity = BallVelocity;
                 if(BotMissedContact(server)) BallFlight.Integrate(ref servePosition,ref serveVelocity,dt);
                 else ServeBallMotion.Step(server, ref releasedServe, ref serveOrigin, ref servePosition, ref serveVelocity);
@@ -160,7 +163,7 @@ namespace PickleVerse.LocalMatch
                 { Rules.Fail(Rules.Server,Fault.ServeMiss); BeginFault(); }
                 if (Phase == MatchPhase.PreServe && server.Swinging && server.Intent.kind == ShotKind.Serve)
                 {
-                    if (server.SwingTime >= .8f && server.ContactActive && Vector3.Distance(BallPosition,server.paddleFace.position)<=contactAssistRadius && TryRankedBotContact(server))
+                    if (server.SwingTime >= .8f && server.CanContact(previousServePosition,BallPosition,contactAssistRadius,out _) && TryRankedBotContact(server))
                     {
                         // This is the authored underhand motion: no spin/toss imparted on release.
                         BallPosition = new Vector3(serveOrigin.x, BallPosition.y, serveOrigin.z);
@@ -222,7 +225,7 @@ namespace PickleVerse.LocalMatch
             ShotIntent shot = actor.Intent;
             if (shot.AfterBounce && Rules.Bounces == 0 || shot.BeforeBounce && Rules.Bounces != 0) return;
             if (shot.kind == ShotKind.Smash && BallPosition.y < 1.65f) return;
-            // Small contact assist around the visible paddle; no ball teleport or guaranteed hit.
+            // Swept paddle and front assist hitboxes share the same swing clock.
             if (!actor.CanContact(previous, BallPosition, contactAssistRadius, out float distance)) return;
             if(!TryRankedBotContact(actor)) return;
             BallPosition=actor.ContactPoint;
@@ -235,7 +238,7 @@ namespace PickleVerse.LocalMatch
             TotalHits++; LongestRally = Mathf.Max(LongestRally, Rules.Stroke);
             Actor(1 - actor.playerId).SplitStep();
             Message = Rules.Stroke <= 2 ? "Cú thứ ba phải nảy bên giao" : "Rally • Volley ngoài Kitchen / đánh sau nảy trong Kitchen";
-            if (actor.playerId == 0) ShotFeedback = shot + " • " + (distance < .24f ? "Chạm tốt" : "Chạm lệch");
+            if (actor.playerId == 0) ShotFeedback = shot + " • " + (actor.LastContactGrade==HitGrade.Perfect ? "Hoàn hảo" : "Tốt");
         }
         public Vector3 ShotTarget(MatchActor actor, ShotIntent shot)
         {

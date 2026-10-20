@@ -48,7 +48,7 @@ namespace PickleVerse.Shop
         public static void OpenShop(){Ensure().Open("Shop");}
         public static void OpenCollection(){Ensure().Open("Collection");}
         public static void OpenModes(){Ensure().Open("ModeSelection");}
-        public static void OpenTraining(){Ensure().Open("Training");}
+        public static void OpenTraining(){PickleVerse.Settings.SceneLoading.Load("Training",()=>Ensure().Open("Training"),()=>!IsBusy);}
         public static void OpenReplay(){Ensure().Open("Replay");}
         public static void ReturnToLobby(){var navigation=Ensure();if(!navigation.Busy)navigation.StartCoroutine(navigation.Return());}
         void Open(string destination)
@@ -71,7 +71,7 @@ namespace PickleVerse.Shop
                     yield return ReplacePage(current,destination);
                     completed=true;yield break;
                 }
-                yield return SceneManager.LoadSceneAsync(destination);completed=true;yield break;
+                var single=SceneManager.LoadSceneAsync(destination);PickleVerse.Settings.SceneLoading.Track(single);yield return single;completed=true;yield break;
             }
             lobby=current;roots=lobby.GetRootGameObjects();
             previousSelection=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
@@ -80,7 +80,7 @@ namespace PickleVerse.Shop
             foreach(var component in behaviours)if(component is MonoBehaviour&&component is not GraphicRaycaster)component.enabled=false;
             // Stream assets while the existing lobby still renders. Pause its components
             // before activating the new scene, so cameras and EventSystems never overlap.
-            var load=SceneManager.LoadSceneAsync(destination,LoadSceneMode.Additive);load.allowSceneActivation=false;
+            var load=SceneManager.LoadSceneAsync(destination,LoadSceneMode.Additive);PickleVerse.Settings.SceneLoading.Track(load);load.allowSceneActivation=false;
             while(load.progress<.9f)yield return null;
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
             SuspendComponents();
@@ -99,6 +99,7 @@ namespace PickleVerse.Shop
             // Keep the already initialized lobby suspended while moving between modes
             // and Training. Only the outgoing page is unloaded, never the lobby.
             var load=SceneManager.LoadSceneAsync(destination,LoadSceneMode.Additive);
+            PickleVerse.Settings.SceneLoading.Track(load);
             load.allowSceneActivation=false;
             while(load.progress<.9f)yield return null;
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);

@@ -6,7 +6,8 @@
     "Unity.Services.Core",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner",
-    "PickleVerse.Entites"
+    "PickleVerse.Entites",
+    "PickleVerse.Settings"
   ],
   "includePlatforms": [
     "Editor"

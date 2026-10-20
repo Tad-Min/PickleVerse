@@ -7,7 +7,7 @@ namespace PickleVerse.LocalMatch
     {
         public void Replay()
         {
-            SceneManager.LoadScene("Tutorial");
+            PickleVerse.Settings.SceneLoading.Load("Tutorial");
         }
     }
 }

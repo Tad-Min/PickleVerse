@@ -5372,7 +5372,7 @@ MonoBehaviour:
   lampFaces: []
   lampsOff: {fileID: 2100000, guid: 9aef5159c13582047973077939165382, type: 2}
   lampsOn: {fileID: 2100000, guid: e32a228d140087848aeed839f58942c6, type: 2}
-  stadium: {fileID: 1695310598}
+  stadium: {fileID: 1555705561}
   safeArea: {fileID: 1959066823}
   timeLabel: {fileID: 927255689}
   playButton: {fileID: 865234180}
@@ -7066,7 +7066,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 0
-  m_Color: {r: 0.91, g: 0.96, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2.5
   m_Range: 5
   m_SpotAngle: 65
@@ -28330,6 +28330,74 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1552480784}
   m_CullTransparentMesh: 1
+--- !u!1001 &1555705560
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434933312812463972, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      propertyPath: m_Name
+      value: Professional
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+--- !u!114 &1555705561 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2992514304427605284, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+  m_PrefabInstance: {fileID: 1555705560}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36740688037119c4f8c9646de31597b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PickleVerse.LocalMatch::PickleVerse.LocalMatch.StadiumEnvironment
 --- !u!1 &1560225807
 GameObject:
   m_ObjectHideFlags: 0
@@ -30831,74 +30899,6 @@ Transform:
   - {fileID: 76132677}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1695310597
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4303730984032157849, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_Name
-      value: Stadium Enhanced
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4912065280467263988, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
---- !u!114 &1695310598 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2265018001243536931, guid: 3f8ba69f387ffb94cb932c90e4c7c4a5, type: 3}
-  m_PrefabInstance: {fileID: 1695310597}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36740688037119c4f8c9646de31597b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PickleVerse.LocalMatch::PickleVerse.LocalMatch.StadiumEnvironment
 --- !u!1 &1710557163
 GameObject:
   m_ObjectHideFlags: 0
@@ -39521,4 +39521,4 @@ SceneRoots:
   - {fileID: 384763286}
   - {fileID: 1694663071}
   - {fileID: 93016434}
-  - {fileID: 1695310597}
+  - {fileID: 1555705560}

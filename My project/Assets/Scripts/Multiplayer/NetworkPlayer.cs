@@ -95,7 +95,7 @@ namespace PickleVerse.Multiplayer
             PaddleSkin.OnValueChanged -= SkinChanged;
         }
         public override void OnGainedOwnership()
-        { sequence = Frame.Value.sequence; ResetInput();if(IsSpawned&&IsLocalHuman)PublishPaddleSkin(); }
+        { sequence = Frame.Value.sequence; ResetInput();if(Actor)Actor.LocalHitFeedback=IsLocalHuman;if(IsSpawned&&IsLocalHuman)PublishPaddleSkin(); }
 
         async void PublishPaddleSkin()
         {
@@ -126,6 +126,7 @@ namespace PickleVerse.Multiplayer
             foreach (var animator in instance.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
             Actor.playerId = Female.Value ? 0 : 1;
             Actor.Initialize();
+            Actor.LocalHitFeedback=IsLocalHuman;
             ResetActor(transform.position, CourtEnd.Value);
             Actor.RefreshPose();
 
@@ -323,13 +324,13 @@ namespace PickleVerse.Multiplayer
             if (!IsServer || !Actor) return;
             Vector3 contact = position ?? Actor.paddleFace.position;
             Actor.ConsumeContact(volley,contact,successful);
-            ContactClientRpc(volley,contact,successful,velocity,NetworkManager.ServerTime.Time);
+            ContactClientRpc(volley,contact,successful,velocity,NetworkManager.ServerTime.Time,(byte)Actor.LastContactGrade);
         }
-        [ClientRpc] void ContactClientRpc(bool volley, Vector3 position, bool successful, Vector3 velocity, double time)
+        [ClientRpc] void ContactClientRpc(bool volley, Vector3 position, bool successful, Vector3 velocity, double time, byte grade)
         {
             if (!IsServer && Actor)
             {
-                Actor.ConsumeContact(volley,position,successful);
+                Actor.ConsumeContact(volley,position,successful,(HitGrade)grade);
                 if(successful)NetworkMatch.Instance?.PresentContact(position,velocity,time);
             }
         }

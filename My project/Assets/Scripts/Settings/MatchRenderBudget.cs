@@ -8,6 +8,15 @@ namespace PickleVerse.Settings
     public sealed class MatchRenderBudget:MonoBehaviour
     {
         public float minimumScale=.6f;
+        // Zero preserves the match budget. Guided practice can prefer a higher
+        // presentation rate without changing the user's saved graphics settings.
+        public int preferredFrameRate;
+        public static void ConfigurePractice(GameObject host)
+        {
+            var budget=host.GetComponent<MatchRenderBudget>();
+            if(!budget)budget=host.AddComponent<MatchRenderBudget>();
+            budget.minimumScale=.5f;budget.preferredFrameRate=120;
+        }
         public float Scale {get;private set;}
         public float FrameP95 {get;private set;}
         readonly float[] samples=new float[90],sorted=new float[90];
@@ -39,6 +48,11 @@ namespace PickleVerse.Settings
             // A user-selected 30 FPS cap is intentional. Keep headroom below 16.67 ms otherwise.
             float slow=GameSettings.Current.fps<=60?1000f/GameSettings.Current.fps+1.5f:14.5f;
             float fast=GameSettings.Current.fps==30?30:10.5f;
+            if(preferredFrameRate>0)
+            {
+                int target=Mathf.Max(30,Mathf.Min(GameSettings.Current.fps,preferredFrameRate));
+                slow=1000f/target+1.2f;fast=1000f/target*.82f;
+            }
             if(FrameP95>slow){next=Mathf.Max(minimum,next-.075f);fastChecks=0;}
             else if(FrameP95<fast){if(++fastChecks>=3){next=Mathf.Min(maximum,next+.025f);fastChecks=0;}}
             else fastChecks=0;

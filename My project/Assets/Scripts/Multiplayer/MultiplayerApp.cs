@@ -100,6 +100,7 @@ namespace PickleVerse.Multiplayer
         }
         async void Update()
         {
+            TrackLoadingSceneEvents();
             if (Settings==null || quitting || leavingModePage) return;
             double now=Time.realtimeSinceStartupAsDouble;
             if (Mode==PlayMode.Singles && !Custom && (State==FlowState.Delay || State==FlowState.Searching) && rankedSearch.ClaimBot(now))
@@ -162,7 +163,7 @@ namespace PickleVerse.Multiplayer
                 {
                     if(Match.Players.Any(p=>Prop(p,"cancelled")=="1")) { await RetryMatchAsync("Có người hủy; đang ghép lại."); return; }
                     courtLoading=true; connectionDeadline=now+60; SetNotice("Đang tải sân cho tất cả người chơi…");
-                    Network.SceneManager.LoadScene("MultiplayerCourt",LoadSceneMode.Single);
+                    StartCoroutine(LoadCourtWithCover());
                 }
                 else if(now>connectionDeadline)
                 {
@@ -348,6 +349,7 @@ namespace PickleVerse.Multiplayer
         }
         async Task LeaveMatchAsync()
         {
+            PickleVerse.Settings.SceneLoading.CancelExternal();
             intentionalShutdown=true;
             var old=Match;
             if(old!=null && leavingModePage)

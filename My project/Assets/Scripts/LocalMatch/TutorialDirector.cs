@@ -51,14 +51,15 @@ namespace PickleVerse.LocalMatch
 
         void Awake()
         {
+            MatchRenderBudget.ConfigurePractice(gameObject);
             perimeter=new Vector3[5];courtLine.GetPositions(perimeter);
-            player.Initialize();coach.Initialize();PickleVerse.Shop.EquippedPaddle.Attach(player.paddle);
+            player.Initialize();coach.Initialize();player.LocalHitFeedback=true;PickleVerse.Shop.EquippedPaddle.Attach(player.paddle);
             foreach(var control in touchControls)if(control)control.Input=this;
             hud.Bind(this);Begin(0,true);
         }
         void Update()
         {
-            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused||resumeFrame==Time.frameCount)return;
+            if(SettingsOverlay.IsOpen||SettingsOverlay.Loading||Paused||SceneLoading.IsBlocking||resumeFrame==Time.frameCount)return;
             if(GameControls.Pressed(GameAction.Settings)){SettingsOverlay.Open(this);return;}
             if(GameControls.Pressed(GameAction.Continue)&&CanContinue)Next();
             Vector2 movement=TouchMovement;
@@ -73,21 +74,35 @@ namespace PickleVerse.LocalMatch
         }
         public void Advance(float dt,int mask=0,Vector2 movement=default,bool run=false,int tap=0)
         {
+            if(Paused||dt<=0)return;
+            int steps=Mathf.Max(1,Mathf.CeilToInt(dt*60));float step=dt/steps;int lesson=LessonIndex;
+            for(int i=0;i<steps;i++)
+            {
+                StepLesson(step,mask,movement,run,i==0?tap:0);
+                if(LessonIndex!=lesson)break;
+            }
+            RenderLesson();hud.Refresh();CameraStep();
+        }
+        void StepLesson(float dt,int mask,Vector2 movement,bool run,int tap)
+        {
             if(Paused||dt<=0)return;Elapsed+=dt;
-            if(Lesson.kind==TutorialKind.Complete){player.Step(Vector2.zero,false,dt,false);coach.Step(Vector2.zero,false,dt,false);CameraStep();return;}
+            if(Lesson.kind==TutorialKind.Complete){player.Step(Vector2.zero,false,dt,false);coach.Step(Vector2.zero,false,dt,false);return;}
             if(Lesson.kind==TutorialKind.Movement)
             {
-                player.Step(movement,run,dt,true);coach.Step(Vector2.zero,false,dt,false);
+                player.Step(movement,run,dt,true,MatchMovement.PracticeBounds(player.end));coach.Step(Vector2.zero,false,dt,false);
                 moved|=Vector3.Distance(player.transform.position,movementOrigin)>.55f;
-                if(movement.sqrMagnitude>.1f&&run)runTime+=dt;ran|=runTime>.18f;
+                if(player.Velocity.sqrMagnitude>.25f&&run)runTime+=dt;ran|=runTime>.18f;
                 Feedback=!moved?"Di chuyển một đoạn ngắn trong sân.":!ran?"Đúng rồi. Bây giờ thử chạy một đoạn.":"Đã biết di chuyển và chạy. Tiếp tục để tập đánh bóng.";
+                if(movement.sqrMagnitude>.1f&&player.Velocity.sqrMagnitude<.01f)
+                    Feedback=moved&&ran?"Đã tới giới hạn sân. Thả phím hoặc đổi hướng; bạn có thể tiếp tục.":"Đã tới giới hạn sân. Đổi hướng để tiếp tục thử di chuyển và chạy.";
             }
             else
             {
                 Vector2 coachMove=Vector2.zero,playerMove=Lesson.kind==TutorialKind.Shot?movement:Vector2.zero;
-                if(Lesson.kind==TutorialKind.Serve&&launched&&receiver==0&&coach.transform.position.z>5.55f)coachMove=new Vector2(0,-1);
-                if(Lesson.kind==TutorialKind.KitchenVolley&&Elapsed>.65f&&player.transform.position.z<-1.25f)playerMove=new Vector2(0,1);
-                player.Step(playerMove,false,dt,playerMove!=Vector2.zero);coach.Step(coachMove,false,dt,coachMove!=Vector2.zero);
+                if(Lesson.kind==TutorialKind.Serve&&launched&&receiver==0&&!demoDone)coachMove=new Vector2(0,-Mathf.Clamp01((coach.transform.position.z-5.55f)*4));
+                if(Lesson.kind==TutorialKind.KitchenVolley&&Elapsed>.65f&&!demoDone)playerMove=new Vector2(0,Mathf.Clamp01((-1.25f-player.transform.position.z)*4));
+                player.Step(playerMove,Lesson.kind==TutorialKind.Shot&&run,dt,Lesson.kind==TutorialKind.Shot||playerMove!=Vector2.zero,MatchMovement.PracticeBounds(player.end));
+                coach.Step(coachMove,false,dt,coachMove!=Vector2.zero,MatchMovement.PracticeBounds(coach.end));
                 if(Lesson.kind==TutorialKind.Shot)
                 {
                     if(tap!=0)Input(mask|tap);Input(mask);
@@ -95,13 +110,15 @@ namespace PickleVerse.LocalMatch
                 }
                 if(Lesson.kind!=TutorialKind.Court&&Lesson.kind!=TutorialKind.Kitchen)Simulation(dt);
             }
+        }
+        void RenderLesson()
+        {
             if(courtLine.gameObject.activeSelf)
             {
                 float pulse=.055f+Mathf.Sin(Elapsed*2)*.008f;courtLine.widthMultiplier=pulse;
                 float drawing=Lesson.kind==TutorialKind.Court?Mathf.Clamp01(Elapsed/2.7f)*4:4;
                 for(int i=0;i<5;i++){int corner=Mathf.Min(i,Mathf.FloorToInt(drawing));courtLine.SetPosition(i,corner<4&&i>corner?Vector3.Lerp(perimeter[corner],perimeter[corner+1],drawing-corner):perimeter[corner]);}
             }
-            hud.Refresh();CameraStep();
         }
         void Input(int mask)
         {

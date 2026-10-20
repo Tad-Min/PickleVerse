@@ -75,6 +75,7 @@ namespace PickleVerse.EditorTools
             }
             canvas.GetComponent<Canvas>().worldCamera=camera;announcements.match=null;
             ui.score=Find<TMP_Text>(canvas.transform,"Scoreboard/Score");ui.status=Find<TMP_Text>(canvas.transform,"RefereeNotice/RefereeText");ui.server=Find<TMP_Text>(canvas.transform,"ServeClock");
+            ui.broadcast=canvas.transform.Find("Scoreboard").GetComponent<PickleVerse.Settings.MatchScoreboard>();ui.layout=canvas.GetComponent<PickleVerse.Settings.MatchHudLayout>();
             ui.selection=Find<TMP_Text>(canvas.transform,"TechniqueBar/Selection");ui.timing=Find<TMP_Text>(canvas.transform,"TechniqueBar/ContactFeedback");ui.modeLabel=Find<TMP_Text>(canvas.transform,"Difficulty");
             ui.shotPanel=canvas.transform.Find("TechniqueBar").gameObject;ui.help=canvas.transform.Find("ControlsHelp").gameObject;ui.touchControls=canvas.transform.Find("TouchControls").gameObject;
             ui.modal=canvas.transform.Find("MatchDialog").gameObject;ui.modalTitle=Find<TMP_Text>(canvas.transform,"MatchDialog/Title");ui.modalBody=Find<TMP_Text>(canvas.transform,"MatchDialog/Body");
@@ -100,7 +101,10 @@ namespace PickleVerse.EditorTools
             {
                 var rect=(RectTransform)button.transform;rect.anchorMin=rect.anchorMax=Vector2.one;rect.pivot=Vector2.one;rect.anchoredPosition=new Vector2(-15,-188);
                 button.GetComponentInChildren<TMP_Text>().text=button==ui.leave?"Rời trận":"Về phòng";
+                var cap=button.transform.Find("ShortcutCap");if(cap)cap.gameObject.SetActive(false);
+                var symbol=button.GetComponentInChildren<PickleVerse.Settings.UiLineIcon>();if(symbol)symbol.SetGlyph(button==ui.leave?PickleVerse.Settings.ArenaGlyph.Close:PickleVerse.Settings.ArenaGlyph.Arrow);
             }
+            if(ui.layout){ui.layout.leave=(RectTransform)ui.leave.transform;ui.layout.returnToRoom=(RectTransform)ui.returnToRoom.transform;ui.layout.ApplyInsets(0,0,0,0);}
             ui.leave.gameObject.SetActive(true);ui.returnToRoom.gameObject.SetActive(false);
             ui.resultScreen=canvas.GetComponent<MultiplayerResultScreen>(); if(!ui.resultScreen) ui.resultScreen=canvas.AddComponent<MultiplayerResultScreen>();
             ui.resultScreen.Configure(ui); EditorUtility.SetDirty(ui.resultScreen);

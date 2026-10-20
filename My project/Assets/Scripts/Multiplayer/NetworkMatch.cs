@@ -34,6 +34,7 @@ namespace PickleVerse.Multiplayer
         public NetworkVariable<bool> Paused=new NetworkVariable<bool>(),Finished=new NetworkVariable<bool>(),WaitingServe=new NetworkVariable<bool>(),Started=new NetworkVariable<bool>();
         public NetworkVariable<BallFrame> Ball=new NetworkVariable<BallFrame>();
         public NetworkVariable<double> IntroStart=new NetworkVariable<double>(-1);
+        public NetworkVariable<bool> CourtPrepared=new NetworkVariable<bool>();
         public NetworkVariable<int> WinningTeam=new NetworkVariable<int>(-1);
         public PickleballRules Rules { get; private set; }
         public Rigidbody Body { get; private set; }
@@ -41,6 +42,7 @@ namespace PickleVerse.Multiplayer
         readonly Dictionary<string,double> reservations=new Dictionary<string,double>();
         readonly Dictionary<string,NetworkPlayer> players=new Dictionary<string,NetworkPlayer>();
         readonly HashSet<ulong> courtReady=new HashSet<ulong>();
+        readonly HashSet<ulong> courtRevealed=new HashSet<ulong>();
         double serveDeadline,rallyDeadline;
         Vector3 savedVelocity;
         bool rallyEnding, rallyCommitted;
@@ -64,7 +66,7 @@ namespace PickleVerse.Multiplayer
         public override void OnNetworkSpawn()
         {
             Instance=this;
-            if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject((initialRoster??MultiplayerApp.Instance.Roster).WithEnvironment(BotMatchLaunchSettings.Night)));
+            if(IsServer) RosterJson.Value=new FixedString4096Bytes(JsonConvert.SerializeObject((initialRoster??MultiplayerApp.Instance.Roster).WithEnvironment(BotMatchLaunchSettings.Night,(CourtVenue)UnityEngine.Random.Range(0,2))));
             Roster=JsonConvert.DeserializeObject<MatchRoster>(RosterJson.Value.ToString());
             ApplyEnvironment();
             BuildBall(); MultiplayerApp.Instance.CourtLoaded();
@@ -93,6 +95,9 @@ namespace PickleVerse.Multiplayer
         public void SetRoster(MatchRoster roster) { initialRoster=roster; }
         void ApplyEnvironment()
         {
+            if(Roster==null)return;
+            var venue=UnityEngine.Object.FindAnyObjectByType<CourtVenueSelection>();
+            if(venue)venue.Select(Roster.venue);
             var environment=UnityEngine.Object.FindAnyObjectByType<MatchEnvironmentLighting>();
             if(environment&&Roster!=null)environment.SelectForMatch(Roster.night);
         }
@@ -146,7 +151,14 @@ namespace PickleVerse.Multiplayer
             var camera=Camera.main;
             if(camera) { var follow=camera.GetComponent<CourtCamera>(); if(!follow) follow=camera.gameObject.AddComponent<CourtCamera>(); follow.target=player.transform; follow.SnapToPlayer(); }
             if(Environment.GetCommandLineArgs().Contains("-pkvSlowCourt")) yield return new WaitForSecondsRealtime(3);
+            yield return PickleVerse.Settings.SceneLoading.PrepareNetworkCourt(()=>MultiplayerApp.Instance&&MultiplayerApp.Instance.CourtSceneSynchronized);
+            if(!IsSpawned||!PickleVerse.Settings.SceneLoading.IsExternal)yield break;
             CourtReadyRpc();
+            while(IsSpawned&&!CourtPrepared.Value&&!Started.Value)yield return null;
+            if(IsSpawned)PickleVerse.Settings.SceneLoading.CompleteExternal();
+            while(IsSpawned&&PickleVerse.Settings.SceneLoading.IsBlocking)yield return null;
+            if(!IsSpawned)yield break;
+            CourtRevealedRpc();
             if(Started.Value) StartChanged(false,true);
             if(Finished.Value) ResultChanged(false,true);
         }
@@ -154,7 +166,14 @@ namespace PickleVerse.Multiplayer
         {
             if(Started.Value || !MultiplayerApp.Instance.ClientIdentities.ContainsKey(rpc.Receive.SenderClientId)) return;
             courtReady.Add(rpc.Receive.SenderClientId);
-            if(courtReady.Count==Roster.HumanCount && IntroStart.Value<0) { IntroStart.Value=NetworkManager.ServerTime.Time+.35; }
+            if(courtReady.Count==Roster.HumanCount)CourtPrepared.Value=true;
+        }
+        [Rpc(SendTo.Server,InvokePermission=RpcInvokePermission.Everyone)] void CourtRevealedRpc(RpcParams rpc=default)
+        {
+            if(Started.Value||!CourtPrepared.Value||!MultiplayerApp.Instance.ClientIdentities.ContainsKey(rpc.Receive.SenderClientId))return;
+            courtRevealed.Add(rpc.Receive.SenderClientId);
+            // Every machine has finished its 100% frame/fade before the shared clock begins.
+            if(courtRevealed.Count==Roster.HumanCount&&IntroStart.Value<0)IntroStart.Value=NetworkManager.ServerTime.Time+.25;
         }
         void StartChanged(bool old,bool started) { if(started) { BeginLocalProgression(); MultiplayerApp.Instance.MatchStarted(); } }
         public void TrySwing(NetworkPlayer player, ShotIntent intent)
@@ -230,6 +249,7 @@ namespace PickleVerse.Multiplayer
                 if(second>=0&&second<10&&second!=countdownSecond){countdownSecond=second;MatchSoundRpc((int)GameSfx.Countdown);}
                 var server = players.Values.First(p => p.Team.Value == Rules.servingTeam && p.Index.Value == Rules.serverIndex);
                 var actor = server.Actor;
+                var previousServePosition=ballPosition;
                 if(BotMissedContact(server))
                 {
                     // The released ball keeps falling after a whiff; never reattach it for a retry.
@@ -240,7 +260,7 @@ namespace PickleVerse.Multiplayer
                 else ServeBallMotion.Step(actor, ref releasedServe, ref serveOrigin, ref ballPosition, ref ballVelocity,dt);
                 if (Rules.waitingServe && actor.Swinging && actor.Intent.kind == PickleVerse.LocalMatch.ShotKind.Serve)
                 {
-                    if (actor.SwingTime >= .8f && actor.ContactActive && Vector3.Distance(ballPosition, actor.paddleFace.position) <= MultiplayerApp.Instance.Settings.contactAssistRadius)
+                    if (actor.SwingTime >= .8f && actor.CanContact(previousServePosition,ballPosition,MultiplayerApp.Instance.Settings.contactAssistRadius,out _))
                     {
                         var left = actor.Feet(true); var right = actor.Feet(false);
                         if (TryBotContact(server) && Rules.Serve(server.Team.Value, server.Index.Value, server.transform.position, ballPosition,
