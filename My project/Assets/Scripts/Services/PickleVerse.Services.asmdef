@@ -1,0 +1,6 @@
+{
+  "name": "PickleVerse.Services",
+  "rootNamespace": "PickleVerse.Services",
+  "references": [],
+  "autoReferenced": true
+}

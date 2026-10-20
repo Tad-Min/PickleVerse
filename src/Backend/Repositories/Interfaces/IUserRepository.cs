@@ -20,6 +20,7 @@ namespace Repositories.Interfaces
         Task<List<Role>> GetAllRolesAsync();
         Task AssignRoleAsync(Guid userId, int roleId);
         Task AddVerificationEmailAsync(Verificationemail ve);
-        Task<Verificationemail?> GetValidVerificationTokenAsync(Guid userId, string token);
+        Task<Verificationemail?> GetLatestVerificationEmailAsync(Guid userId);
+        Task LockUserAsync(Guid userId);
     }
 }

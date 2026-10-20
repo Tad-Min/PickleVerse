@@ -19,5 +19,7 @@ public partial class Verificationemail
 
     public bool Isverified { get; set; }
 
+    public int Failedattempts { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

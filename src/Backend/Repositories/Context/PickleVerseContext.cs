@@ -71,8 +71,14 @@ public partial class PickleVerseContext : DbContext
     public virtual DbSet<Verificationemail> Verificationemails { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=pickleverse;Username=sa;Password=12345;");
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connection = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Configure the PostgreSQL connection through dependency injection or ConnectionStrings__DefaultConnection.");
+            optionsBuilder.UseNpgsql(connection);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -729,8 +735,9 @@ public partial class PickleVerseContext : DbContext
                 .HasColumnName("email");
             entity.Property(e => e.Expiresat).HasColumnName("expiresat");
             entity.Property(e => e.Isverified).HasColumnName("isverified");
+            entity.Property(e => e.Failedattempts).HasColumnName("failedattempts");
             entity.Property(e => e.Token)
-                .HasMaxLength(10)
+                .HasMaxLength(128)
                 .HasColumnName("token");
             entity.Property(e => e.Userid).HasColumnName("userid");
 

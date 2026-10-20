@@ -7,7 +7,7 @@ using Services.Interfaces;
 
 namespace API.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class AdminController : ControllerBase

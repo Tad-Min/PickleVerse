@@ -79,10 +79,18 @@ namespace PickleVerse.Shop
     {
         static IPlayerEconomy service;static ShopCatalog catalog;
         public static ShopCatalog Catalog=>catalog?catalog:catalog=Resources.Load<ShopCatalog>("Shop/Shop Catalog");
-        public static IPlayerEconomy Service=>service??(service=new ProfilePlayerEconomy(Catalog,PickleVerse.Progression.ProgressionRuntime.Instance));
+        public static IPlayerEconomy Service=>service??(service=new UnavailableOnlineEconomy());
         public static void Configure(IPlayerEconomy provider){service=provider;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Reset(){(service as IDisposable)?.Dispose();service=null;catalog=null;}
         public static async void Reward(string matchId,bool online,bool won)
         {try{await Service.GrantMatchRewardAsync(matchId,online,won);}catch(Exception e){Debug.LogWarning("Match reward pending: "+e.Message);}}
+    }
+    public sealed class UnavailableOnlineEconomy : IPlayerEconomy
+    {
+        public event Action<PlayerEconomyState> Changed { add { } remove { } }
+        public Task<PlayerEconomyState> ReadAsync()=>Task.FromResult(new PlayerEconomyState());
+        public Task<PurchaseResult> PurchaseAsync(string itemId,ShopCurrency currency,string requestId)=>Task.FromException<PurchaseResult>(new InvalidOperationException("Cửa hàng chưa sẵn sàng."));
+        public Task<EquipStatus> EquipPaddleAsync(string itemId)=>Task.FromException<EquipStatus>(new InvalidOperationException("Bộ sưu tập chưa sẵn sàng."));
+        public Task<bool> GrantMatchRewardAsync(string matchId,bool online,bool won)=>Task.FromResult(false);
     }
 }

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Services.DTOs;
 using Services.Interfaces;
 
@@ -10,6 +11,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -55,6 +57,13 @@ namespace API.Controllers
             var result = await _authService.RefreshTokenAsync(request);
             if (!result.Success) return Unauthorized(result);
             return Ok(result);
+        }
+
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequest request)
+        {
+            await _authService.ResendOtpAsync(request);
+            return Ok(new { message = "Nếu email thuộc tài khoản chưa xác thực, mã mới sẽ được gửi. Hãy kiểm tra cả mục thư rác." });
         }
 
         [Authorize]

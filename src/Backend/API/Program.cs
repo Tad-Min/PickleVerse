@@ -9,6 +9,7 @@ using Repositories.UnitOfWork;
 using Services.Implementations;
 using Services.Interfaces;
 using API.Middlewares;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddDbContext<PickleVerseContext>(options =>
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PickleVerseAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PickleVerseClient";
+if (jwtKey.Length < 32) throw new InvalidOperationException("Jwt:Key must contain at least 32 characters.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -41,6 +43,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.Headers.RetryAfter = "60";
+        await context.HttpContext.Response.WriteAsJsonAsync(new { message = "Quá nhiều yêu cầu. Vui lòng thử lại sau 60 giây." }, cancellationToken);
+    };
+});
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 // 4. Register Repositories & Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -90,13 +106,22 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "PickleVerse API v1");
+        options.DocumentTitle = "PickleVerse API";
+    });
 }
 
-app.UseHttpsRedirection();
+// Docker dev exposes HTTP; deployed environments must terminate TLS.
+if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health/ready", async (PickleVerseContext db, CancellationToken ct) =>
+    await db.Database.CanConnectAsync(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
 
 app.Run();

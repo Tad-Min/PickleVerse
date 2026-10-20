@@ -1,265 +1,190 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Entities.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.UnitOfWork;
 using Services.DTOs;
 using Services.Exceptions;
 using Services.Interfaces;
+using Services.Security;
 
-namespace Services.Implementations
+namespace Services.Implementations;
+
+public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles,
+    IConfiguration configuration, IEmailSender emailSender, TimeProvider clock) : IAuthService
 {
-    public class AuthService : IAuthService
+    string SigningKey => configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
+    DateTime UtcNow => clock.GetUtcNow().UtcDateTime;
+    static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
+    static bool Active(User user) => string.Equals(user.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase);
+    static string HashRefreshToken(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+    static AuthResponse Failure(string message, string code) => new() { Message = message, Code = code };
+
+    public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IProfileService _profileService;
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<AuthService> _logger;
-
-        public AuthService(
-            IUnitOfWork unitOfWork,
-            IProfileService profileService,
-            IConfiguration configuration,
-            ILogger<AuthService> logger)
+        var email = NormalizeEmail(request.Email);
+        if (await unitOfWork.Users.GetByEmailAsync(email) != null)
+            return Failure("Email đã được đăng ký. Nếu chưa xác thực, hãy dùng chức năng gửi lại mã.", "email_exists");
+        emailSender.EnsureConfigured();
+        var role = await unitOfWork.Users.GetRoleByNameAsync("Player")
+            ?? throw new AppException("Máy chủ chưa khởi tạo vai trò Player.", HttpStatusCode.ServiceUnavailable);
+        var user = new User
         {
-            _unitOfWork = unitOfWork;
-            _profileService = profileService;
-            _configuration = configuration;
-            _logger = logger;
-        }
-
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
+            Userid = Guid.NewGuid(), Email = email, Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Roleid = role.Roleid, Status = "ACTIVE", Createdat = UtcNow
+        };
+        var profile = new Playerprofile
         {
-            try
-            {
-                // 1. Kiểm tra Email
-                var existingUser = await _unitOfWork.Users.GetByEmailAsync(request.Email);
-                if (existingUser != null)
-                {
-                    return new AuthResponse { Success = false, Message = "Email này đã được đăng ký!" };
-                }
-
-                // 2. Lấy Role mặc định là Player
-                var playerRole = await _unitOfWork.Users.GetRoleByNameAsync("Player");
-                var roleId = playerRole?.Roleid ?? 1;
-
-                // 3. Băm mật khẩu
-                var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-                var newUser = new User
-                {
-                    Userid = Guid.NewGuid(),
-                    Email = request.Email,
-                    Passwordhash = passwordHash,
-                    Roleid = roleId,
-                    Status = "ACTIVE",
-                    Createdat = DateTime.UtcNow
-                };
-
-                var newProfile = new Playerprofile
-                {
-                    Userid = newUser.Userid,
-                    Playername = request.PlayerName,
-                    Avatar = "initial",
-                    Elo = 100,
-                    Ismale = request.IsMale,
-                    Timeplayedseconds = 0,
-                    Level = 1,
-                    Exp = 0,
-                    Winstreak = 0,
-                    Daystreak = 1,
-                    Wincount = 0,
-                    Losecount = 0
-                };
-
-                // 4. Sinh mã OTP kích hoạt 6 số
-                var otpToken = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
-                var verification = new Verificationemail
-                {
-                    Userid = newUser.Userid,
-                    Email = request.Email,
-                    Token = otpToken,
-                    Createdat = DateTime.UtcNow,
-                    Expiresat = DateTime.UtcNow.AddMinutes(10),
-                    Isverified = true
-                };
-
-                await _unitOfWork.Users.CreateAsync(newUser);
-                await _unitOfWork.Profiles.AddProfileAsync(newProfile);
-                await _unitOfWork.Users.AddVerificationEmailAsync(verification);
-                await _unitOfWork.SaveChangesAsync();
-
-                return new AuthResponse
-                {
-                    Success = true,
-                    Message = "Đăng ký tài khoản thành công!",
-                    Profile = await _profileService.GetMyProfileAsync(newUser.Userid)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi đăng ký tài khoản cho email {Email}", request.Email);
-                throw new AppException("Đăng ký tài khoản thất bại do lỗi hệ thống.", ex);
-            }
-        }
-
-        public async Task<bool> VerifyEmailAsync(VerifyEmailRequest request)
+            Userid = user.Userid, Playername = request.PlayerName.Trim(), Avatar = "initial",
+            Elo = 100, Ismale = request.IsMale, Level = 1, Daystreak = 1
+        };
+        var code = EmailOtpPolicy.Generate();
+        await unitOfWork.BeginTransactionAsync();
+        try
         {
-            try
-            {
-                var record = await _unitOfWork.Users.GetValidVerificationTokenAsync(Guid.Empty, request.Token);
-                if (record == null)
-                    return false;
-
-                record.Isverified = true;
-                await _unitOfWork.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi xác thực email");
-                throw new AppException("Xác thực email thất bại.", ex);
-            }
+            unitOfWork.Users.PrepareCreate(user);
+            await unitOfWork.Profiles.AddProfileAsync(profile);
+            await unitOfWork.Users.AddVerificationEmailAsync(NewVerification(user, code));
+            await unitOfWork.CommitTransactionAsync();
         }
+        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+        // Failed delivery leaves an unverified account that resend-otp can recover.
+        await emailSender.SendVerificationCodeAsync(email, code);
+        return new AuthResponse { Success = true, Code = "verification_required", Message = "Đã đăng ký. Hãy nhập mã được gửi tới email để kích hoạt tài khoản." };
+    }
 
-        public async Task<AuthResponse> LoginAsync(LoginRequest request)
+    Verificationemail NewVerification(User user, string code) => new()
+    {
+        Userid = user.Userid, Email = user.Email, Token = EmailOtpPolicy.Hash(user.Userid, code, SigningKey),
+        Createdat = UtcNow, Expiresat = UtcNow.AddMinutes(EmailOtpPolicy.LifetimeMinutes), Isverified = false
+    };
+
+    public async Task<bool> VerifyEmailAsync(VerifyEmailRequest request)
+    {
+        var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
+        if (user == null || !Active(user)) return false;
+        await unitOfWork.BeginTransactionAsync();
+        try
         {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
-
-                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
-                {
-                    return new AuthResponse { Success = false, Message = "Email hoặc mật khẩu không chính xác!" };
-                }
-
-                if (user.Status == "BANNED")
-                {
-                    return new AuthResponse { Success = false, Message = "Tài khoản của bạn đã bị cấm do vi phạm quy định!" };
-                }
-
-                // Sinh AccessToken & RefreshToken
-                var accessToken = GenerateJwtToken(user);
-                var refreshToken = GenerateRefreshTokenString();
-
-                var rtEntity = new Refreshtoken
-                {
-                    Userid = user.Userid,
-                    Tokenhash = refreshToken,
-                    Createdat = DateTime.UtcNow,
-                    Expiresat = DateTime.UtcNow.AddDays(14),
-                    Isrevoked = false
-                };
-
-                await _unitOfWork.Users.AddRefreshTokenAsync(rtEntity);
-                await _unitOfWork.SaveChangesAsync();
-
-                return new AuthResponse
-                {
-                    Success = true,
-                    Message = "Đăng nhập thành công!",
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken,
-                    Profile = await _profileService.GetMyProfileAsync(user.Userid)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi đăng nhập cho email {Email}", request.Email);
-                throw new AppException("Đăng nhập thất bại.", ex);
-            }
+            await unitOfWork.Users.LockUserAsync(user.Userid);
+            var record = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
+            if (record == null || !EmailOtpPolicy.CanVerify(record.Expiresat, record.Isverified, record.Failedattempts, UtcNow))
+            { await unitOfWork.RollbackTransactionAsync(); return false; }
+            bool matches = EmailOtpPolicy.Matches(user.Userid, request.Token, record.Token, SigningKey);
+            if (matches) record.Isverified = true;
+            else record.Failedattempts++;
+            await unitOfWork.CommitTransactionAsync();
+            return matches;
         }
+        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+    }
 
-        public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request)
+    public async Task ResendOtpAsync(ResendOtpRequest request)
+    {
+        var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
+        if (user == null || !Active(user)) return;
+        await unitOfWork.BeginTransactionAsync();
+        string code;
+        try
         {
-            try
-            {
-                var rt = await _unitOfWork.Users.GetRefreshTokenAsync(request.RefreshToken);
-
-                if (rt == null || rt.Isrevoked || rt.Expiresat < DateTime.UtcNow)
-                {
-                    return new AuthResponse { Success = false, Message = "Refresh Token không hợp lệ hoặc đã hết hạn!" };
-                }
-
-                var user = await _unitOfWork.Users.GetByIdWithRoleAndProfileAsync(rt.Userid);
-                if (user == null)
-                {
-                    return new AuthResponse { Success = false, Message = "Không tìm thấy thông tin tài khoản!" };
-                }
-
-                var newAccessToken = GenerateJwtToken(user);
-
-                return new AuthResponse
-                {
-                    Success = true,
-                    Message = "Gia hạn phiên thành công!",
-                    AccessToken = newAccessToken,
-                    RefreshToken = rt.Tokenhash,
-                    Profile = await _profileService.GetMyProfileAsync(user.Userid)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi làm mới token");
-                throw new AppException("Gia hạn phiên thất bại.", ex);
-            }
+            await unitOfWork.Users.LockUserAsync(user.Userid);
+            var latest = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
+            if (latest?.Isverified == true) { await unitOfWork.RollbackTransactionAsync(); return; }
+            if (latest != null && latest.Createdat.AddSeconds(EmailOtpPolicy.ResendCooldownSeconds) > UtcNow)
+                throw new AppException("Vui lòng chờ ít nhất 60 giây trước khi gửi lại mã.", HttpStatusCode.TooManyRequests);
+            emailSender.EnsureConfigured();
+            code = EmailOtpPolicy.Generate();
+            await unitOfWork.Users.AddVerificationEmailAsync(NewVerification(user, code));
+            await unitOfWork.CommitTransactionAsync();
         }
+        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+        await emailSender.SendVerificationCodeAsync(user.Email, code);
+    }
 
-        public async Task<bool> LogoutAsync(Guid userId, string refreshToken)
+    public async Task<AuthResponse> LoginAsync(LoginRequest request)
+    {
+        var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
+        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
+            return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials");
+        var rejected = await RejectIneligibleUserAsync(user);
+        if (rejected != null) return rejected;
+        var refresh = NewRefreshToken(user.Userid);
+        await unitOfWork.Users.AddRefreshTokenAsync(refresh.Entity);
+        await unitOfWork.SaveChangesAsync();
+        return await SignedInAsync(user, refresh.Raw);
+    }
+
+    async Task<AuthResponse?> RejectIneligibleUserAsync(User user)
+    {
+        if (!Active(user)) return Failure("Tài khoản đang bị khóa hoặc tạm ngưng.", "account_inactive");
+        var verification = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
+        return verification?.Isverified != true
+            ? Failure("Email chưa được xác thực. Hãy nhập OTP hoặc yêu cầu gửi lại mã.", "email_not_verified") : null;
+    }
+
+    public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request)
+    {
+        var hash = HashRefreshToken(request.RefreshToken);
+        var snapshot = await unitOfWork.Users.GetRefreshTokenAsync(hash);
+        if (snapshot == null) return Failure("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "invalid_session");
+        await unitOfWork.BeginTransactionAsync();
+        try
         {
-            try
-            {
-                var rt = await _unitOfWork.Users.GetRefreshTokenAsync(refreshToken);
-                if (rt != null && rt.Userid == userId)
-                {
-                    await _unitOfWork.Users.RevokeRefreshTokenAsync(rt);
-                    await _unitOfWork.SaveChangesAsync();
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi đăng xuất cho UserId {UserId}", userId);
-                throw new AppException("Đăng xuất thất bại.", ex);
-            }
+            await unitOfWork.Users.LockUserAsync(snapshot.Userid);
+            var token = await unitOfWork.Users.GetRefreshTokenAsync(hash);
+            if (token == null || token.Isrevoked || token.Expiresat <= UtcNow)
+            { await unitOfWork.RollbackTransactionAsync(); return Failure("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "invalid_session"); }
+            var user = await unitOfWork.Users.GetByIdWithRoleAndProfileAsync(token.Userid);
+            var rejected = user == null ? Failure("Không tìm thấy tài khoản.", "invalid_session") : await RejectIneligibleUserAsync(user);
+            if (rejected != null) { await unitOfWork.RollbackTransactionAsync(); return rejected; }
+            var next = NewRefreshToken(token.Userid);
+            await unitOfWork.Users.RevokeRefreshTokenAsync(token);
+            await unitOfWork.Users.AddRefreshTokenAsync(next.Entity);
+            await unitOfWork.CommitTransactionAsync();
+            return await SignedInAsync(user!, next.Raw);
         }
+        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+    }
 
-        private string GenerateJwtToken(User user)
+    public async Task<bool> LogoutAsync(Guid userId, string refreshToken)
+    {
+        var token = await unitOfWork.Users.GetRefreshTokenAsync(HashRefreshToken(refreshToken));
+        if (token != null && token.Userid == userId)
         {
-            var secretKey = _configuration["Jwt:Key"] ?? _configuration["Jwt:SecretKey"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role?.Rolename ?? "Player")
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"] ?? "PickleVerseAPI",
-                audience: _configuration["Jwt:Audience"] ?? "PickleVerseClient",
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            await unitOfWork.Users.RevokeRefreshTokenAsync(token);
+            await unitOfWork.SaveChangesAsync();
         }
+        return true;
+    }
 
-        private static string GenerateRefreshTokenString()
+    (string Raw, Refreshtoken Entity) NewRefreshToken(Guid userId)
+    {
+        string raw = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        return (raw, new Refreshtoken
+        { Userid = userId, Tokenhash = HashRefreshToken(raw), Createdat = UtcNow, Expiresat = UtcNow.AddDays(14) });
+    }
+
+    async Task<AuthResponse> SignedInAsync(User user, string refreshToken) => new()
+    {
+        Success = true, Message = "Đăng nhập thành công.", AccessToken = GenerateJwtToken(user),
+        RefreshToken = refreshToken, Profile = await profiles.GetMyProfileAsync(user.Userid)
+    };
+
+    string GenerateJwtToken(User user)
+    {
+        var claims = new[]
         {
-            var randomBytes = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            return Convert.ToBase64String(randomBytes);
-        }
+            new Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()), new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role?.Rolename ?? "Player")
+        };
+        var token = new JwtSecurityToken(configuration["Jwt:Issuer"] ?? "PickleVerseAPI",
+            configuration["Jwt:Audience"] ?? "PickleVerseClient", claims,
+            expires: UtcNow.AddHours(2), signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)), SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

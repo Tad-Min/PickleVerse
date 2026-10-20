@@ -60,7 +60,7 @@ namespace PickleVerse.FrontEnd
             if (lobbyCamera) { femaleCameraPosition = lobbyCamera.transform.position; femaleCameraRotation = lobbyCamera.transform.rotation; }
             if (portraitLight) { femaleLightPosition = portraitLight.transform.position; femaleLightRotation = portraitLight.transform.rotation; }
             if (courtProps) propsRotation = courtProps.rotation;
-            SetCharacter(maleRig != null && PlayerPrefs.GetInt(CharacterPreferenceKey, 0) == 1, false);
+            SetCharacter(maleRig != null && PickleVerse.Services.AccountRuntime.Ensure().Account.Profile?.IsMale == true, false);
             viewAngle = IsMaleSelected ? 180 : 0;
             ApplyView(viewAngle);
             EvaluateCycle(0);
@@ -109,6 +109,7 @@ namespace PickleVerse.FrontEnd
 
         public void SelectFemale() { SetCharacter(false, true); }
         public void SelectMale() { if (maleRig != null) SetCharacter(true, true); }
+        public void ApplyAccountCharacter(bool male) { SetCharacter(male && maleRig != null, false); }
 
         void SetCharacter(bool male, bool save)
         {
@@ -125,7 +126,7 @@ namespace PickleVerse.FrontEnd
             SetButtonState(maleButton, male);
             // Both actors stay on their own half; the floor props follow the selected view.
             if (courtProps) courtProps.rotation = Quaternion.Euler(0, male ? 180 : 0, 0) * propsRotation;
-            if (save) { PlayerPrefs.SetInt(CharacterPreferenceKey, male ? 1 : 0); PlayerPrefs.Save(); }
+            // AccountScreen persists character selection through the backend profile API.
         }
 
         static void SetButtonState(UnityEngine.UI.Button button, bool selected)

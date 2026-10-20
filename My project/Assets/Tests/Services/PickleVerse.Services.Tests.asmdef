@@ -1,0 +1,8 @@
+{
+  "name": "PickleVerse.Services.Tests",
+  "references": ["PickleVerse.Services", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll", "Newtonsoft.Json.dll"],
+  "autoReferenced": false
+}

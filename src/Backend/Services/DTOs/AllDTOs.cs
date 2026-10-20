@@ -31,8 +31,14 @@ namespace Services.DTOs
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
+        [Required, RegularExpression(@"^\d{6}$")]
         public string Token { get; set; } = string.Empty;
+    }
+
+    public class ResendOtpRequest
+    {
+        [Required, EmailAddress, MaxLength(254)]
+        public string Email { get; set; } = string.Empty;
     }
 
     public class RefreshTokenRequest
@@ -43,6 +49,7 @@ namespace Services.DTOs
 
     public class AuthResponse
     {
+        public string Code { get; set; } = string.Empty;
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
         public string? AccessToken { get; set; }

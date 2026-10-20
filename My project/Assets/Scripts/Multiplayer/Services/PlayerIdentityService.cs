@@ -14,7 +14,7 @@ namespace PickleVerse.Multiplayer.Services
         public string DisplayName
         {
             get => displayName;
-            set { displayName = string.IsNullOrWhiteSpace(value)?"":ResolveName(value); if (PickleVerse.Progression.ProgressionRuntime.Exists && displayName.Length>0) PickleVerse.Progression.ProgressionRuntime.Instance.SetName(displayName); }
+            set { displayName = string.IsNullOrWhiteSpace(value)?"":ResolveName(value); if (PickleVerse.Progression.ProgressionRuntime.Exists && !PickleVerse.Progression.ProgressionRuntime.Instance.Online && displayName.Length>0) PickleVerse.Progression.ProgressionRuntime.Instance.SetName(displayName); }
         }
         public string PlayerId => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn ? AuthenticationService.Instance.PlayerId : "";
 

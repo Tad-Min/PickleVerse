@@ -1,151 +1,74 @@
 using System;
-using System.IO;
+using PickleVerse.Services;
 using UnityEngine;
 
 namespace PickleVerse.Progression
 {
+    /// <summary>Read-only compatibility view of the authenticated backend profile. No local save or guest account.</summary>
     public sealed class ProgressionRuntime : MonoBehaviour
     {
         static ProgressionRuntime instance;
         static bool shuttingDown;
+        AccountService account;
+        PlayerProfile player = Empty();
         public static ProgressionRuntime Instance
         {
             get
             {
                 if (!Application.isPlaying || shuttingDown) return null;
-                if (!instance) new GameObject("Player Progression").AddComponent<ProgressionRuntime>();
+                if (!instance) new GameObject("Online Player Profile").AddComponent<ProgressionRuntime>();
                 return instance;
             }
         }
-        public static bool Exists => !shuttingDown && instance && instance.store?.Current != null;
-        public PlayerProfile Player => store.Current;
+        public static bool Exists => !shuttingDown && instance && instance.player != null;
+        public PlayerProfile Player => player;
+        public bool Online => true;
+        public bool IsAuthenticated => account != null && account.IsSignedIn;
         public ProgressionEngine Engine { get; private set; }
+        public IUtcClock UtcClock { get; set; } = new SystemUtcClock();
+        public static bool DeveloperControls => false;
         public static event Action Changed;
         public static event Action Quitting;
-        LocalPlayerStore store;
-        public IUtcClock UtcClock { get; set; } = new SystemUtcClock();
-        double lastTime, nextSave, nextPeriodCheck;
-        bool focused, paused;
-        public static bool DeveloperControls => Application.isEditor || Debug.isDebugBuild;
-
+        static PlayerProfile Empty() => new PlayerProfile { id = "", playerName = "Chưa đăng nhập", online = true };
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Reset()
-        {
-            if (instance && instance.store != null) instance.store.Dispose();
-            instance = null; shuttingDown = false; Changed = null; Quitting = null;
-        }
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Boot() { var runtime = Instance; }
+        static void Reset() { instance = null; shuttingDown = false; Changed = null; Quitting = null; }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] static void Boot() { var runtime = Instance; }
         void Awake()
         {
             if (instance && instance != this) { Destroy(gameObject); return; }
             instance = this; DontDestroyOnLoad(gameObject);
-            var config = Resources.Load<ProgressionConfig>("Progression Config") ?? ProgressionConfig.Defaults();
-            Engine = new ProgressionEngine(config);
-            store = new LocalPlayerStore(Path.Combine(Application.persistentDataPath, "LocalPlayers"));
-            string requested = null;
-            var args = Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length - 1; i++) if (args[i] == "-pkvProfile") requested = args[i + 1];
-            store.Open(requested);
-            if (Player.currencyVersion < 1) store.Transaction(p => CurrencyPolicy.Migrate(p));
-            RecoverPending(); RefreshPeriods();
-            PruneReplays();
-            focused = Application.isFocused; lastTime = Time.realtimeSinceStartupAsDouble; nextSave = lastTime + 30;
+            Engine = new ProgressionEngine(Resources.Load<ProgressionConfig>("Progression Config") ?? ProgressionConfig.Defaults());
+            account = AccountRuntime.Ensure().Account; account.Changed += ReadServerProfile; ReadServerProfile();
         }
-        void RecoverPending()
+        void ReadServerProfile()
         {
-            store.Transaction(p => DailyStreakEngine.Ensure(p, UtcClock.UtcNow));
-            if (Player.pendingMatch == null) return;
-            store.Transaction(p =>
+            var profile = account.Profile;
+            player = profile == null ? Empty() : new PlayerProfile
             {
-                var abandoned = p.pendingMatch; abandoned.outcome = MatchOutcome.Interrupted;
-                abandoned.reason = "Phiên trước bị gián đoạn"; abandoned.endedUtcTicks = DateTime.UtcNow.Ticks;
-                Engine.Apply(p, abandoned);
-            });
+                online = true, id = profile.UserId.ToString("N"), playerName = profile.PlayerName,
+                avatarId = profile.Avatar, elo = profile.Elo, level = profile.Level, levelXp = profile.Exp,
+                rankWinStreak = profile.WinStreak, wins = profile.WinCount, losses = profile.LoseCount,
+                activeSeconds = profile.TimePlayedSeconds
+            };
+            Changed?.Invoke();
         }
-        void TickTime()
-        {
-            double now = Time.realtimeSinceStartupAsDouble;
-            if (store?.Current != null && focused && !paused) Player.activeSeconds += Math.Max(0, now - lastTime);
-            lastTime = now;
-        }
-        void Update()
-        {
-            if(store?.Current==null) return;
-            TickTime(); double now = Time.realtimeSinceStartupAsDouble;
-            if (now >= nextSave) { store.Save(); nextSave = now + 30; }
-            if (now >= nextPeriodCheck) { RefreshPeriods(); nextPeriodCheck = now + 1; }
-        }
-        void OnApplicationFocus(bool focus) { TickTime(); focused = focus; store?.Save(); }
-        void OnApplicationPause(bool pause) { TickTime(); paused = pause; store?.Save(); }
-        void OnApplicationQuit()
-        {
-            TickTime();
-            try { Quitting?.Invoke(); store?.Save(); }
-            finally { shuttingDown = true; }
-        }
+        // Legacy consumers remain compilable while their backend integration is deferred.
+        // Their entry points are disabled by AccountScreen; these guards reject local rewards and writes too.
+        public void RefreshPeriods() { }
+        public bool Claim(string id) => false;
+        public bool Apply(MatchResult result) => false;
+        public void BeginMatch(MatchResult match) { }
+        public void SetName(string name) => throw new InvalidOperationException("Hãy cập nhật tên trong mục Tài khoản.");
+        public void EditLocalPlayer(string name, int elo, long tokenpad, long eliteToken) => throw new InvalidOperationException("Hồ sơ chỉ được cập nhật qua máy chủ.");
+        public void SwitchPlayer(string id, string name) => throw new InvalidOperationException("Hãy đăng xuất và đăng nhập tài khoản khác.");
+        public void UpdateWallet(Action<PlayerProfile> mutation) => throw new InvalidOperationException("Cửa hàng chưa sẵn sàng.");
+        public void Save() { }
+        void OnApplicationQuit() { Quitting?.Invoke(); shuttingDown = true; }
         void OnDestroy()
         {
             if (instance != this) return;
-            shuttingDown = true;
-            store?.Dispose(); store = null; instance = null;
-        }
-        public void RefreshPeriods()
-        {
-            var utc = UtcClock.UtcNow;
-            bool streakExpired = Player.dailyStreak != null && Player.dailyStreak.current > 0 && string.CompareOrdinal(Player.dailyStreak.lastDay, ProgressionEngine.DayKey(utc.AddDays(-1))) < 0;
-            if (!streakExpired && Player.daily.key == ProgressionEngine.DayKey(utc) && Player.weekly.key == ProgressionEngine.WeekKey(utc)) return;
-            store.Transaction(p => { Engine.RefreshPeriods(p, utc); DailyStreakEngine.Refresh(p, utc); }); Changed?.Invoke();
-        }
-        public bool Claim(string id)
-        {
-            bool accepted = false;
-            store.Transaction(p => accepted = Engine.Claim(p, id, DateTime.UtcNow)); Changed?.Invoke(); return accepted;
-        }
-        public bool Apply(MatchResult result)
-        {
-            bool applied = false;
-            store.Transaction(p => {applied = Engine.Apply(p, result);DailyStreakEngine.Refresh(p,UtcClock.UtcNow);}); if(applied) PruneReplays(); Changed?.Invoke(); return applied;
-        }
-        public void BeginMatch(MatchResult match)
-        {
-            if (Player.processedMatches.Contains(match.id)) return;
-            store.Transaction(p => p.pendingMatch = match);
-        }
-        public void SetName(string name)
-        {
-            name = LocalPlayerStore.CleanName(name);
-            if (name.Length == 0) throw new ArgumentException("Tên player không được để trống.");
-            if (name == Player.playerName) return;
-            store.Transaction(p => p.playerName = name); Changed?.Invoke();
-        }
-        public void EditLocalPlayer(string name, int elo, long tokenpad, long eliteToken)
-        {
-            if (!DeveloperControls) throw new InvalidOperationException("Chỉ chỉnh player trong Editor hoặc Development Build.");
-            if (Player.pendingMatch != null) throw new InvalidOperationException("Kết thúc trận và trở về Menu trước khi chỉnh player.");
-            name = LocalPlayerStore.CleanName(name);
-            if (name.Length == 0) throw new ArgumentException("Tên player không được để trống.");
-            if (elo < EloPolicy.Minimum) throw new ArgumentException("Elo phải từ 100 trở lên.");
-            if (tokenpad < 0 || eliteToken < 0) throw new ArgumentException("Số dư tiền không được âm.");
-            store.Transaction(p =>
-            {
-                p.playerName = name; p.elo = elo; p.coins = tokenpad; p.gems = eliteToken;
-            });
-            Changed?.Invoke();
-        }
-        public void SwitchPlayer(string id, string name)
-        {
-            TickTime(); store.Switch(id, name);
-            if (Player.currencyVersion < 1) store.Transaction(p => CurrencyPolicy.Migrate(p));
-            RecoverPending(); RefreshPeriods(); PruneReplays(); Changed?.Invoke();
-        }
-        public void UpdateWallet(Action<PlayerProfile> mutation)
-        { store.Transaction(mutation); Changed?.Invoke(); }
-        public void Save() { TickTime(); store.Save(); }
-        void PruneReplays()
-        {
-            try { var ids=Player.history.ConvertAll(r=>r.id); if(Player.pendingMatch!=null)ids.Add(Player.pendingMatch.id); PickleVerse.Replays.ReplayStorage.Repository.RecoverAndPrune(Player.id,ids); }
-            catch(Exception e){Debug.LogWarning("Replay cleanup: "+e.Message);}
+            if (account != null) account.Changed -= ReadServerProfile;
+            instance = null; shuttingDown = true;
         }
         public static string FormatTime(double seconds)
         {

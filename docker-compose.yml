@@ -9,10 +9,26 @@ services:
       POSTGRES_PASSWORD: "12345"
       POSTGRES_DB: pickleverse
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/MyDatabaseShorter.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - type: bind
+        source: ./src/Database.sql
+        target: /docker-entrypoint-initdb.d/01_init.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./src/DevAuthSetup.sql
+        target: /docker-entrypoint-initdb.d/02_dev_auth.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sa -d pickleverse"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
     networks:
       - pickleverse_network
 
@@ -25,7 +41,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@pickleverse.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80"
+      - "127.0.0.1:${PGADMIN_PORT:-15050}:80"
     depends_on:
       - postgres
     networks:
@@ -39,7 +55,7 @@ services:
     environment:
       S3_ACCOUNT_ADMIN: "minioadmin:minioadmin"
     ports:
-      - "9000:9000"
+      - "127.0.0.1:${S3_PORT:-19000}:9000"
     volumes:
       - s3_data:/data
     networks:
@@ -61,14 +77,22 @@ services:
       Storage__SecretKey: "minioadmin"
       Storage__BucketName: "pickleverse"
       Storage__ForcePathStyle: "true"
-      Jwt__Key: "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!"
+      Jwt__Key: "${JWT_KEY:?Set JWT_KEY in the ignored .env file}"
       Jwt__Issuer: "PickleVerseAPI"
       Jwt__Audience: "PickleVerseClient"
+      Smtp__Host: "smtp.gmail.com"
+      Smtp__Port: "587"
+      Smtp__Username: "${SMTP_USERNAME:-}"
+      Smtp__Password: "${SMTP_APP_PASSWORD:-}"
+      Smtp__FromEmail: "${SMTP_FROM_EMAIL:-}"
+      Smtp__FromName: "PickleVerse"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
-      - postgres
-      - s3-storage
+      postgres:
+        condition: service_healthy
+      s3-storage:
+        condition: service_started
     networks:
       - pickleverse_network
 
@@ -76,6 +100,7 @@ volumes:
   postgres_data:
     driver: local
   s3_data:
+    name: pickleverse_dev_s3_data
     driver: local
 
 networks:

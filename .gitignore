@@ -5,3 +5,7 @@ UnityWork/
 [Ll]og/
 [Oo]bj/
 DesignPrototypes/
+.env
+.env.*
+!.env.example
+artifacts/

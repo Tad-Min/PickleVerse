@@ -2,6 +2,7 @@
   "name": "PickleVerse.Progression",
   "rootNamespace": "PickleVerse.Progression",
   "references": [
+    "PickleVerse.Services",
     "PickleVerse.Entites",
     "PickleVerse.Replays"
   ],

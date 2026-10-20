@@ -82,6 +82,7 @@ namespace Repositories.Implementations
         public async Task<Refreshtoken?> GetRefreshTokenAsync(string tokenHash)
         {
             return await _context.Refreshtokens
+                .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Tokenhash == tokenHash);
         }
 
@@ -128,10 +129,19 @@ namespace Repositories.Implementations
             await _context.Verificationemails.AddAsync(ve);
         }
 
-        public async Task<Verificationemail?> GetValidVerificationTokenAsync(Guid userId, string token)
+        public async Task<Verificationemail?> GetLatestVerificationEmailAsync(Guid userId)
         {
             return await _context.Verificationemails
-                .FirstOrDefaultAsync(v => v.Userid == userId && v.Token == token && !v.Isverified && v.Expiresat > DateTime.UtcNow);
+                .Where(v => v.Userid == userId)
+                .OrderByDescending(v => v.Createdat)
+                .ThenByDescending(v => v.Verificationemailid)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task LockUserAsync(Guid userId)
+        {
+            // All OTP attempts/resends for an account share this transaction lock.
+            await _context.Users.FromSqlInterpolated($"SELECT * FROM users WHERE userid = {userId} FOR UPDATE").ToListAsync();
         }
     }
 }

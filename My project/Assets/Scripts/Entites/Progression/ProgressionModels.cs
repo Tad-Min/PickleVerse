@@ -84,6 +84,7 @@ namespace PickleVerse.Progression
     }
     [Serializable] public sealed class PlayerProfile
     {
+        [NonSerialized] public bool online;
         public int version = 1;
         public string id, playerName, avatarId = "initial";
         public long createdUtcTicks, totalXp, coins, gems, wins, losses;
@@ -100,7 +101,7 @@ namespace PickleVerse.Progression
         public MatchResult pendingMatch;
         public TrainingProfile training = new TrainingProfile();
         public DailyStreakData dailyStreak;
-        public long NextLevelXp => (long)level * 10;
+        public long NextLevelXp => (long)level * (online ? 200 : 10);
         public double WinRate => wins + losses == 0 ? 0 : 100d * wins / (wins + losses);
     }
 }
