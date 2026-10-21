@@ -44,6 +44,7 @@ namespace PickleVerse.Replays
         {
             Guard(metadata.playerId);
             var saved=await Retry(()=>Account.SendAuthorizedAsync<ReplayMetadata>("PUT",Route(metadata.matchId),metadata));headers[metadata.matchId]=saved;
+            metadata.chunks=saved.chunks;metadata.duration=saved.duration;metadata.startedUtcTicks=saved.startedUtcTicks;metadata.complete=saved.complete;
         }
         sealed class ChunkData {public string data;}
         public async Task WriteChunkAsync(ReplayMetadata metadata,ReplayChunk chunk)

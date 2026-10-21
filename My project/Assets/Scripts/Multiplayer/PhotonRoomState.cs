@@ -96,7 +96,7 @@ namespace PickleVerse.Multiplayer
             if(json==null||json.Length>4096)return;
             var requested=JsonConvert.DeserializeObject<List<RoomMember>>(json);
             string identity=Runner.GetPlayerUserId(source);
-            if(requested==null||requested.Count<1||requested.Count>(data.party?1:2)
+            if(requested==null||requested.Count<1||requested.Count>(data.party?1:data.custom?2*(int)data.mode:2)
                 ||requested.All(m=>m.id!=identity)||requested.Select(m=>m.id).Distinct().Count()!=requested.Count
                 ||requested.Any(m=>!Guid.TryParse(m.id,out _)||string.IsNullOrWhiteSpace(m.name)||m.name.Length>18))
             {Reject(source,"Thông tin người chơi không hợp lệ.");return;}
@@ -107,10 +107,13 @@ namespace PickleVerse.Multiplayer
                 existing.peer=source.RawEncoded;Save(data);return;
             }
             if(data.phase!="idle"&&data.phase!="searching"){Reject(source,"Phòng đã bắt đầu xác nhận trận.");return;}
-            int capacity=data.party?(data.custom?2*(int)data.mode:2):2*(int)data.mode;
+            int capacity=data.party?(data.custom?2*(int)data.mode:2):data.expectedPlayers>0?data.expectedPlayers:2*(int)data.mode;
             if(data.seats.Count+requested.Count>capacity){Reject(source,"Phòng đã đủ người.");return;}
             int team=-1;
-            if(!data.party||data.custom)
+            bool preserveTeams=!data.party&&data.custom;
+            if(preserveTeams&&(requested.Any(m=>m.team<0||m.team>1)||requested.Count(m=>m.team==0)>(int)data.mode||requested.Count(m=>m.team==1)>(int)data.mode))
+            {Reject(source,"Đội hình phòng riêng không hợp lệ.");return;}
+            if(!preserveTeams&&(!data.party||data.custom))
             {
                 int a=data.seats.Count(s=>s.member.team==0),b=data.seats.Count(s=>s.member.team==1),cap=(int)data.mode;
                 team=a+requested.Count<=cap&&(a<=b||b+requested.Count>cap)?0:b+requested.Count<=cap?1:-1;
@@ -120,7 +123,7 @@ namespace PickleVerse.Multiplayer
             if(requested.Any(member=>data.seats.Any(s=>s.member.id==member.id))){Reject(source,"Nhóm có thành viên đã ở trong trận.");return;}
             foreach(var member in requested)
             {
-                member.group=group;member.team=team;member.bot=false;member.ready=false;
+                member.group=group;if(!preserveTeams)member.team=team;member.bot=false;member.ready=false;
                 data.seats.Add(new PhotonSeat{member=member,peer=member.id==identity?source.RawEncoded:0});
             }
             if(!data.party&&data.seats.Count==capacity&&data.seats.All(s=>s.peer!=0))BeginReady(data);
@@ -130,7 +133,7 @@ namespace PickleVerse.Multiplayer
         {
             if(!HasStateAuthority)return;
             var data=Data;
-            if(!data.party&&data.phase=="searching"&&data.seats.Count==2*(int)data.mode&&data.seats.All(s=>s.peer!=0))
+            if(!data.party&&data.phase=="searching"&&data.seats.Count==(data.expectedPlayers>0?data.expectedPlayers:2*(int)data.mode)&&data.seats.All(s=>s.peer!=0))
             {BeginReady(data);Save(data);}
         }
         void BeginReady(PhotonRoomData data)

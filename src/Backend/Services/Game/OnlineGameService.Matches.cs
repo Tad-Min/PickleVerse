@@ -15,6 +15,7 @@ public sealed partial class OnlineGameService
         if(request.Kind!=MatchKind.BotPractice && request.Kind!=MatchKind.RankedBot) throw Bad("Chế độ đấu bot không hợp lệ.");
         if(s.Player.pendingMatch is { } pending)
         {
+            if(!pending.Bot)throw Conflict("Bạn cần hoàn tất hoặc rời trận online hiện tại trước.");
             var old=await sql.One("SELECT data::text FROM gamematches WHERE matchid=@match AND ownerid=@player AND status='STARTED'",r=>r.GetString(0),P("match",Guid.Parse(pending.id)),P("player",id));
             if(old!=null)
             {
@@ -38,7 +39,7 @@ public sealed partial class OnlineGameService
         var input=request.Result;
         if(!Guid.TryParse(input.id,out var matchId))throw Bad("Mã trận không hợp lệ.");
         var row=await sql.One("SELECT data::text,status FROM gamematches WHERE matchid=@match AND ownerid=@player",r=>new{data=r.GetString(0),status=r.GetString(1)},P("match",matchId),P("player",id)) ?? throw Bad("Trận chưa được tạo cho tài khoản này.");
-        string fingerprint=GameJson.Write(new{input.outcome,input.localForfeit,input.gamesWon,input.gamesLost,input.points,input.validReturns,input.validServes,input.scores});
+        string fingerprint=GameJson.Payload(new{input.outcome,input.localForfeit,input.gamesWon,input.gamesLost,input.points,input.validReturns,input.validServes,input.scores});
         var stored=GameJson.Read<StoredMatch>(row.data);
         if(row.status=="FINISHED")
         {

@@ -14,7 +14,7 @@ namespace PickleVerse.EditorTools
         {
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             if (!scenes.Contains(MultiplayerSceneConfiguration.RoomPath) && !scenes.Contains(MultiplayerSceneConfiguration.CourtPath)) return;
-            foreach (var path in new[] { MultiplayerSceneConfiguration.RoomPath, MultiplayerSceneConfiguration.CourtPath })
+            foreach (var path in new[] { MultiplayerSceneConfiguration.RoomPath, MultiplayerSceneConfiguration.CourtPath,"Assets/Scenes/PhotonLobby.unity" })
                 if (!scenes.Contains(path)) throw new BuildFailedException("Multiplayer scene missing from active build profile: " + path);
             var settings = UnityEngine.Resources.Load<MultiplayerSettings>("MultiplayerSettings");
             if (!settings || !settings.maleActorPrefab || !settings.femaleActorPrefab || !settings.ballVisualPrefab)

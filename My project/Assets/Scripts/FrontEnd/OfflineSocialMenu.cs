@@ -1,5 +1,8 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using PickleVerse.Services;
 using PickleVerse.Progression;
 using PickleVerse.Social;
 using TMPro;
@@ -29,7 +32,12 @@ namespace PickleVerse.FrontEnd
         CanvasGroup menuInteraction;
         GameObject priorSelection;
         static readonly Color Ink=new Color(.025f,.065f,.095f), Surface=new Color(.045f,.115f,.15f), Card=new Color(.075f,.16f,.20f), Mint=new Color(.45f,.86f,.77f), Lime=new Color(.79f,.96f,.45f), White=new Color(.94f,.97f,.96f), Muted=new Color(.63f,.75f,.79f);
-        OfflineSocialDirectory Data => OfflineSocialSession.Directory;
+        [Serializable] sealed class OnlinePlayer {public string id,name,relationship;public int elo,position,requestId;}
+        [Serializable] sealed class OnlinePage {public List<OnlinePlayer> players=new List<OnlinePlayer>();public int total,myPosition,playerCount,friendCount,offset;public bool hasMore;}
+        OnlinePage page=new OnlinePage();
+        bool loading,mutating;
+        int fetchGeneration;
+        float searchAt=-1;
         float DeviceDpi=>GetComponent<HomeMenuShell>()?.Dpi??Screen.dpi;
 
         void Awake()
@@ -37,6 +45,8 @@ namespace PickleVerse.FrontEnd
             ui=GetComponent<PlayerProgressionMenu>();
             if(!friendsButton || !leaderboardButton) ConfigureWelcomeCard();
             if(!modal) BuildShell();
+            var subtitle=window.Find("Subtitle")?.GetComponent<TMP_Text>();
+            if(subtitle)subtitle.text="BẠN BÈ / XẾP HẠNG ELO · ONLINE";
             ConfigureOverlay();
             var safe=transform.Find("HomeSafeArea");
             menuInteraction=safe.GetComponent<CanvasGroup>();
@@ -49,13 +59,14 @@ namespace PickleVerse.FrontEnd
             directoryButton.onClick.AddListener(()=>SetDirectory(true));
             myPositionButton.onClick.AddListener(ShowMyPosition);
             closeButton.onClick.AddListener(Close);
-            search.onValueChanged.AddListener(_=> { feedback.text=""; Refresh(); });
+            search.onValueChanged.AddListener(_=> { feedback.text="";searchAt=Time.unscaledTime+.3f; });
             ProgressionRuntime.Changed+=Refresh;
             modal.gameObject.SetActive(false);
         }
         void OnDestroy() { ProgressionRuntime.Changed-=Refresh;PickleVerse.Settings.FrontEndModalInput.Release(this); }
         void OnDisable()
         {
+            fetchGeneration++;page=new OnlinePage();
             if(!opened)return;
             opened=false;drawerProgress=0;PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction)menuInteraction.interactable=priorInteraction;
@@ -72,6 +83,7 @@ namespace PickleVerse.FrontEnd
                 if(!opened&&drawerProgress<=0)modal.gameObject.SetActive(false);
             }
             if(opened&&Keyboard.current?.escapeKey.wasPressedThisFrame==true) Close();
+            if(opened&&searchAt>=0&&Time.unscaledTime>=searchAt){searchAt=-1;_=FetchAsync(0);}
         }
         public void OpenFriends() { Open(false); }
         public void OpenLeaderboard() { Open(true); }
@@ -90,11 +102,13 @@ namespace PickleVerse.FrontEnd
             search.SetTextWithoutNotify(""); feedback.text="";
             modal.gameObject.SetActive(true); modal.SetAsLastSibling(); ConfigureOverlay(); ApplySafeArea();ConfigureDrawerLayout(); Refresh();
             EventSystem.current?.SetSelectedGameObject(closeButton.gameObject);
+            _=FetchAsync(0);
         }
         public void Close()
         {
             if(!opened) return;
             opened=false;
+            fetchGeneration++;loading=false;
             if(!drawerMode)modal.gameObject.SetActive(false);
             PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction) menuInteraction.interactable=priorInteraction;
@@ -149,16 +163,31 @@ namespace PickleVerse.FrontEnd
             if(drawerShade){var c=drawerShade.color;c.a=.36f*eased;drawerShade.color=c;}
         }
         void SetDirectory(bool value)
-        { directory=value; search.SetTextWithoutNotify(""); feedback.text=""; Refresh(); }
+        { directory=value; search.SetTextWithoutNotify(""); feedback.text="";_=FetchAsync(0); }
+        async Task FetchAsync(int offset,bool focusSelf=false)
+        {
+            int generation=++fetchGeneration;loading=true;
+            if(offset==0)page=new OnlinePage();Refresh();
+            try
+            {
+                string view=leaderboard?"leaderboard":directory?"directory":"friends";
+                var result=await AccountRuntime.Ensure().Account.SendAuthorizedAsync<OnlinePage>("GET","api/Game/social?view="+view+"&q="+Uri.EscapeDataString(search.text)+"&offset="+offset);
+                if(!this||!opened||generation!=fetchGeneration)return;
+                foreach(var player in result.players)player.id=Guid.Parse(player.id).ToString("N");
+                if(offset>0&&!focusSelf)result.players=page.players.Concat(result.players).GroupBy(p=>p.id).Select(g=>g.Last()).ToList();
+                page=result;loading=false;Refresh();
+                if(focusSelf)FocusSelf();
+            }
+            catch(Exception error){if(this&&opened&&generation==fetchGeneration){loading=false;Refresh();feedback.text=error.Message;feedback.richText=false;}}
+        }
         public void Refresh()
         {
             if(!opened || !ProgressionRuntime.Exists) return;
             var player=ProgressionRuntime.Instance.Player;
-            var all=Data.Leaderboard(player);
             title.text=leaderboard?"BẢNG XẾP HẠNG":"BẠN BÈ";
             selfName.text=player.playerName; selfId.text="ID  "+player.id;
             selfElo.text=EloPolicy.Rank(player.elo)+"\n"+player.elo.ToString("N0")+" ELO";
-            selfPosition.text=$"VỊ TRÍ CỦA BẠN\n#{all.Single(e=>e.Player.Id==player.id).Position} / {all.Count}";
+            selfPosition.text=page.myPosition>0?$"VỊ TRÍ CỦA BẠN\n#{page.myPosition} / {page.playerCount}":"Đang tải vị trí…";
             Select(friendsTab,!leaderboard); Select(leaderboardTab,leaderboard);
             listButton.gameObject.SetActive(!leaderboard); directoryButton.gameObject.SetActive(!leaderboard);
             myPositionButton.gameObject.SetActive(leaderboard);
@@ -166,20 +195,23 @@ namespace PickleVerse.FrontEnd
             ClearRows(); selfRow=null;
             if(leaderboard)
             {
-                var entries=Data.Leaderboard(player,search.text);
-                count.text=drawerMode?$"{entries.Count} người chơi":$"{entries.Count} / {all.Count} người chơi  ·  Elo giảm dần";
-                foreach(var entry in entries) AddPlayer(entry.Player,entry.Position,entry.Player.Id==player.id);
+                count.text=$"{page.total} người chơi  ·  Elo giảm dần";
+                foreach(var entry in page.players) AddPlayer(new SocialPlayer(entry.id,entry.name,entry.elo),entry.position,entry.id==player.id);
             }
             else
             {
-                var players=directory?Data.Search(search.text):Data.GetFriends(player.id,search.text);
-                count.text=directory?$"{players.Count} người mẫu  ·  {Data.FriendCount(player.id)} bạn":$"{players.Count} / {Data.FriendCount(player.id)} bạn";
-                foreach(var friend in players) AddPlayer(friend,0,false);
+                count.text=directory?$"{page.total} người chơi  ·  {page.friendCount} bạn":$"{page.friendCount} bạn  ·  {page.total} mục";
+                foreach(var entry in page.players) AddPlayer(new SocialPlayer(entry.id,entry.name,entry.elo),0,false);
+            }
+            if(page.hasMore&&!loading)
+            {
+                var more=Row("LoadMore",55,Card);var button=Button("LoadMoreButton",more,"XEM THÊM",Vector2.zero,Vector2.one,Surface,Mint,16);
+                button.onClick.AddListener(()=>_=FetchAsync(page.offset+50));
             }
             if(content.childCount==0)
             {
                 var empty=Row("Empty",88,Card);
-                Caption("EmptyText",empty,string.IsNullOrWhiteSpace(search.text)?"Danh sách bạn đang trống. Bấm TÌM BẠN để thêm người mẫu.":"Không tìm thấy tên hoặc ID phù hợp.",17,Muted,Vector2.zero,Vector2.one);
+                Caption("EmptyText",empty,loading?"Đang tải danh sách…":string.IsNullOrWhiteSpace(search.text)?"Danh sách đang trống. Bấm TÌM BẠN để gửi lời mời.":"Không tìm thấy tên hoặc ID phù hợp.",17,Muted,Vector2.zero,Vector2.one);
             }
             UnityEngine.Canvas.ForceUpdateCanvases(); UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(content);
             scroll.verticalNormalizedPosition=1;
@@ -199,30 +231,41 @@ namespace PickleVerse.FrontEnd
             Caption("Rank",row,EloPolicy.Rank(player.Elo),17,Mint,new Vector2(.59f,.47f),new Vector2(.78f,.94f));
             Caption("Elo",row,player.Elo.ToString("N0")+" ELO",16,White,new Vector2(.59f,.05f),new Vector2(.78f,.49f));
             if(leaderboard)
-                Caption("Tag",row,self?"BẠN":"DEMO",12,self?Lime:Muted,new Vector2(.80f,0),new Vector2(.98f,1));
+                Caption("Tag",row,self?"BẠN":"",12,self?Lime:Muted,new Vector2(.80f,0),new Vector2(.98f,1));
             else
             {
-                bool added=Data.IsFriend(ProgressionRuntime.Instance.Player.id,player.Id);
-                var action=Button("FriendAction",row,added?(directory?"ĐÃ KẾT BẠN":"XÓA BẠN"):"THÊM BẠN",new Vector2(.80f,drawerMode?.15f:.23f),new Vector2(.975f,drawerMode?.85f:.77f),added?Surface:Mint,added?Muted:Ink,14);
-                action.interactable=!directory || !added;
-                action.onClick.AddListener(()=>ChangeFriend(player,!added));
+                var entry=page.players.Single(p=>p.id==player.Id);string relation=entry.relationship;
+                string label=relation=="friend"?"XÓA BẠN":relation=="outgoing"?"ĐÃ GỬI":relation=="incoming"?"ĐỒNG Ý":"KẾT BẠN";
+                var action=Button("FriendAction",row,label,new Vector2(.80f,relation=="incoming"?.48f:drawerMode?.15f:.23f),new Vector2(.975f,drawerMode?.85f:.83f),Mint,Ink,14);
+                action.interactable=!mutating&&relation!="outgoing";
+                action.onClick.AddListener(()=>ChangeFriend(entry,relation=="friend"?"remove":relation=="incoming"?"accept":"request"));
+                if(relation=="incoming")
+                {
+                    var decline=Button("Decline",row,"TỪ CHỐI",new Vector2(.80f,.08f),new Vector2(.975f,.43f),Surface,Muted,12);
+                    decline.interactable=!mutating;decline.onClick.AddListener(()=>ChangeFriend(entry,"decline"));
+                }
             }
         }
-        void ChangeFriend(SocialPlayer player,bool add)
+        async void ChangeFriend(OnlinePlayer player,string action)
         {
+            if(mutating)return;mutating=true;Refresh();
             try
             {
-                string id=ProgressionRuntime.Instance.Player.id;
-                bool changed=add?Data.AddFriend(id,player.Id):Data.RemoveFriend(id,player.Id);
-                Refresh();
-                feedback.text=changed?(add?"Đã thêm ":"Đã xóa ")+player.Name+(add?" vào danh sách bạn.":" khỏi danh sách bạn."):"Danh sách đã được cập nhật.";
+                await AccountRuntime.Ensure().Account.SendAuthorizedAsync<PickleVerse.Services.Api.ApiMessage>("POST","api/Game/social",new{PlayerId=player.id,Action=action,RequestId=player.requestId});
+                await FetchAsync(0);
+                if(!this)return;
+                feedback.text=action=="request"?"Đã gửi lời mời kết bạn.":"Danh sách đã được cập nhật.";
                 feedback.richText=false;
             }
-            catch(Exception e) { feedback.text=e.Message; }
+            catch(Exception e) { if(this)feedback.text=e.Message; }
+            finally{if(this){mutating=false;Refresh();}}
         }
         public void ShowMyPosition()
         {
-            search.SetTextWithoutNotify(""); Refresh();
+            search.SetTextWithoutNotify("");_=FetchAsync(Math.Max(0,(page.myPosition-1)/50*50),true);
+        }
+        void FocusSelf()
+        {
             if(!selfRow) return;
             float overflow=Mathf.Max(0,content.rect.height-scroll.viewport.rect.height);
             float top=-selfRow.anchoredPosition.y-selfRow.rect.height*.5f;
@@ -264,7 +307,7 @@ namespace PickleVerse.FrontEnd
             window=ui.Panel("Window",modalSafe,Ink,new Vector2(.045f,.065f),new Vector2(.955f,.935f));
             var outline=window.gameObject.AddComponent<UnityEngine.UI.Outline>(); outline.effectColor=new Color(.45f,.86f,.77f,.3f); outline.effectDistance=new Vector2(1,-1);
             title=Caption("Title",window,"BẠN BÈ",29,White,new Vector2(.02f,.90f),new Vector2(.85f,.985f),TextAlignmentOptions.MidlineLeft);
-            Caption("Subtitle",window,"DEMO OFFLINE  ·  Dữ liệu mẫu và danh sách bạn reset khi chạy lại game",13,Mint,new Vector2(.02f,.855f),new Vector2(.90f,.905f),TextAlignmentOptions.MidlineLeft);
+            Caption("Subtitle",window,"Bạn bè và thứ hạng được cập nhật từ tài khoản online",13,Mint,new Vector2(.02f,.855f),new Vector2(.90f,.905f),TextAlignmentOptions.MidlineLeft);
             closeButton=Button("Close",window,"×",new Vector2(.925f,.895f),new Vector2(.98f,.977f),Card,White,28);
             friendsTab=Button("FriendsTab",window,"BẠN BÈ",new Vector2(.02f,.77f),new Vector2(.25f,.845f),Mint,Ink);
             leaderboardTab=Button("LeaderboardTab",window,"BẢNG XẾP HẠNG",new Vector2(.265f,.77f),new Vector2(.51f,.845f),Card,White);

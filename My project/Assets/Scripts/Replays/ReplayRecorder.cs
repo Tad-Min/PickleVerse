@@ -23,22 +23,39 @@ namespace PickleVerse.Replays
         Func<ReplayFrame> scoreboard;
         Func<Vector3> ball;
         Transform ballVisual;
-        double began, nextSample;
-        bool stopped, discontinuity;
+        double began, nextSample,offset;
+        bool stopped, discontinuity,initializing;
+        static readonly Dictionary<string,Task> completions=new Dictionary<string,Task>();
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void ResetCompletions(){completions.Clear();}
+        string Key=>metadata.playerId+":"+metadata.matchId;
         Task writing;
         public bool BackgroundWrites { get; set; } = true;
         public Task Completion {get;private set;}=Task.CompletedTask;
         public string MatchId => metadata?.matchId;
         public int BufferedFrames => buffer.frames.Count;
-        public double Duration => Time.realtimeSinceStartupAsDouble-began;
+        public double Duration => offset+Time.realtimeSinceStartupAsDouble-began;
         public void Begin(ReplayMetadata info,ReplayActorSource[] actors,Func<Vector3> ballPosition,Func<ReplayFrame> state,IReplayRepository storage=null,Transform visualBall=null)
         {
             ballVisual=visualBall;
             repository=storage??ReplayStorage.Repository;metadata=info;sources=actors;ball=ballPosition;scoreboard=state;
-            began=Time.realtimeSinceStartupAsDouble;nextSample=began;stopped=false;buffer=new ReplayChunk();
+            began=Time.realtimeSinceStartupAsDouble;nextSample=began;offset=0;stopped=false;buffer=new ReplayChunk();
             bones=actors.Select(a=>a.root.GetComponentsInChildren<Transform>(true).Where(t=>t!=a.root).ToArray()).ToArray();
             metadata.actors=actors.Select((a,i)=>new ReplayActorInfo{id=a.id,name=a.name,team=a.team,visualId=a.visualId,paddleId=a.paddleId,paddlePath=a.paddle?Path(a.root,a.paddle):"",skinName=a.paddle?a.paddle.Cast<Transform>().FirstOrDefault(t=>t.name.StartsWith("Equipped Paddle",StringComparison.Ordinal))?.name:"",bones=bones[i].Select(t=>Path(a.root,t)).ToArray()}).ToList();
-            try{if(repository is IOnlineReplayRepository online)writing=online.SaveAsync(metadata);else repository.Save(metadata);}catch(Exception e){Fail(e);}
+            try{if(repository is IOnlineReplayRepository online){initializing=true;writing=InitializeOnlineAsync(online);}else repository.Save(metadata);}catch(Exception e){Fail(e);}
+        }
+        async Task InitializeOnlineAsync(IOnlineReplayRepository online)
+        {
+            try
+            {
+                // A reconnect may recreate the recorder while its previous scene is still
+                // flushing. Finish that write before restoring the server chunk manifest.
+                if(completions.TryGetValue(Key,out var previous))await previous;
+                await online.SaveAsync(metadata);
+                offset=metadata.duration;discontinuity=offset>0;
+                began=Time.realtimeSinceStartupAsDouble;nextSample=began;
+            }
+            catch(Exception error){Fail(error);throw;}
+            finally{initializing=false;}
         }
         public static string Path(Transform root,Transform child)
         {
@@ -54,18 +71,18 @@ namespace PickleVerse.Replays
         }
         public void Event(string kind,string detail="")
         {
-            if(stopped||metadata==null)return;
+            if(stopped||initializing||metadata==null)return;
             if(buffer.events.Count<512)buffer.events.Add(new ReplayEvent{time=Duration,kind=kind,detail=detail});
             if(kind=="EndChange"||kind=="NewRally")discontinuity=true;
         }
         void LateUpdate()
         {
-            if(stopped||metadata==null||Time.realtimeSinceStartupAsDouble<nextSample)return;
+            if(stopped||initializing||metadata==null||Time.realtimeSinceStartupAsDouble<nextSample)return;
             nextSample+=1d/30;if(nextSample<Time.realtimeSinceStartupAsDouble)nextSample=Time.realtimeSinceStartupAsDouble+1d/30;Capture();
         }
         public void Capture()
         {
-            if(stopped||metadata==null||sources.Any(a=>!a.root))return;
+            if(stopped||initializing||metadata==null||sources.Any(a=>!a.root))return;
             try
             {
                 var frame=scoreboard();frame.time=Duration;frame.discontinuity=discontinuity;discontinuity=false;
@@ -98,7 +115,9 @@ namespace PickleVerse.Replays
             if(stopped||metadata==null)return;
             if(repository is IOnlineReplayRepository online)
             {
-                stopped=true;var final=buffer;buffer=new ReplayChunk();Completion=FinishOnlineAsync(online,final,complete);return;
+                stopped=true;var final=buffer;buffer=new ReplayChunk();Completion=FinishOnlineAsync(online,final,complete);completions[Key]=Completion;
+                foreach(var key in completions.Where(p=>p.Key!=Key&&p.Value.IsCompleted).Select(p=>p.Key).Take(Math.Max(0,completions.Count-20)).ToArray())completions.Remove(key);
+                return;
             }
             try{CommitPending();Capture();CommitPending();Flush();CommitPending();metadata.complete=complete;repository.Save(metadata);stopped=true;}
             catch(Exception e){Fail(e);}

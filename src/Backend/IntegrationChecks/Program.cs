@@ -24,9 +24,12 @@ if (args.Contains("--check-admin-authorization"))
     await UnityFixture.CheckAdminAuthorizationAsync(connection, root);
     return;
 }
-if (args.Contains("--unity-fixture") || args.Contains("--cleanup-unity-fixture"))
+var photonFixtureArg=args.FirstOrDefault(a=>a.StartsWith("--photon-fixture",StringComparison.Ordinal));
+if (args.Contains("--unity-fixture") || args.Contains("--cleanup-unity-fixture") || photonFixtureArg!=null)
 {
-    await UnityFixture.RunAsync(connection, root, args.Contains("--cleanup-unity-fixture"));
+    string suffix=photonFixtureArg?["--photon-fixture".Length..]??"";
+    if(suffix!=""&&suffix!="-2"&&suffix!="-3")throw new InvalidOperationException("Invalid fixture suffix.");
+    await UnityFixture.RunAsync(connection, root, args.Contains("--cleanup-unity-fixture"),photonFixtureArg!=null,suffix);
     return;
 }
 var database = "pkv_auth_checks_" + Guid.NewGuid().ToString("N");
@@ -73,7 +76,7 @@ try
             await command.ExecuteNonQueryAsync();
         }
     }
-    if (args.Contains("--check-online-game"))
+    if (args.Contains("--check-online-game") || args.Contains("--check-online-multiplayer") || args.Contains("--check-online-social"))
     {
         await using var fixture = new NpgsqlConnection(testBuilder.ConnectionString);
         await fixture.OpenAsync();
@@ -83,7 +86,15 @@ try
             INSERT INTO playerprofiles(userid,playername) SELECT userid,'GameCheck' FROM inserted;
             """,fixture);
         await command.ExecuteNonQueryAsync();
-        await GameChecks.RunAsync(options, time, Check, root);
+        if(args.Contains("--check-online-social"))await SocialChecks.Run(options,Check);
+        else if(args.Contains("--check-online-multiplayer"))
+        {
+            await using var testContext=new PickleVerseContext(options);
+            var id=await testContext.Users.Where(u=>u.Email=="race-check@example.invalid").Select(u=>u.Userid).SingleAsync();
+            await OnlineMatchChecks.Run(options,time,Check,id);
+            await SocialChecks.Run(options,Check);
+        }
+        else await GameChecks.RunAsync(options, time, Check, root);
         Console.WriteLine($"SUCCESS: {checks} online game checks; disposable PostgreSQL database removed.");
         return;
     }
@@ -270,9 +281,9 @@ static class UnityFixture
         Console.WriteLine("PASS: Admin authorization HTTP 401 (anonymous), 403 (Player), 200 (Admin); fixture role restored.");
     }
 
-    public static async Task RunAsync(string connection, string root, bool cleanup)
+    public static async Task RunAsync(string connection, string root, bool cleanup,bool photon=false,string fixtureSuffix="")
     {
-        var path = Path.Combine(root, "artifacts", "unity-account-fixture.json");
+        var path = Path.Combine(root, "artifacts", photon?$"photon-account-fixture{fixtureSuffix}.json":"unity-account-fixture.json");
         var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(connection).Options;
         using var context = new PickleVerseContext(options);
         if (cleanup)
@@ -280,7 +291,30 @@ static class UnityFixture
             if (!File.Exists(path)) return;
             var fixture = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(await File.ReadAllTextAsync(path))!;
             var id = Guid.Parse(fixture["userId"]);
+            if(!fixture["email"].StartsWith("unity-smoke-",StringComparison.Ordinal)||!fixture["email"].EndsWith("@example.invalid",StringComparison.Ordinal))
+                throw new InvalidOperationException("Refusing to clean up a non-fixture account.");
+            var sql=new Services.Game.GameSql(context);
+            if(!await context.Users.AnyAsync(u=>u.Userid==id&&u.Email==fixture["email"]))throw new InvalidOperationException("Fixture identity does not match the database.");
+            var keys=await sql.Query("SELECT objectkey FROM onlinereplays WHERE playerid=@id UNION SELECT objectkey FROM onlinereplaychunks WHERE playerid=@id",r=>r.GetString(0),Services.Game.GameSql.P("id",id));
+            var storageConfig=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>
+                {["Storage:ServiceUrl"]="http://localhost:19000",["Storage:AccessKey"]="minioadmin",["Storage:SecretKey"]="minioadmin",["Storage:BucketName"]="pickleverse"}).Build();
+            var storage=new StorageService(storageConfig,NullLogger<StorageService>.Instance);
+            foreach(var key in keys)
+            {
+                if(!key.StartsWith($"replays/{id:N}/",StringComparison.Ordinal))throw new InvalidOperationException("Unexpected fixture object key.");
+                if(!await storage.DeleteFileAsync(key))throw new InvalidOperationException("Fixture object deletion failed.");
+            }
+            await using var cleanupTx=await context.Database.BeginTransactionAsync();
+            var matches=await sql.Query("SELECT matchid FROM playermatchhistory WHERE playerid=@id UNION SELECT matchid FROM gamematches WHERE ownerid=@id UNION SELECT matchid FROM gamematchplayers WHERE playerid=@id",r=>r.GetGuid(0),Services.Game.GameSql.P("id",id));
+            await sql.Run("DELETE FROM playermatchhistory WHERE playerid=@id",Services.Game.GameSql.P("id",id));
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM users WHERE userid = {id} AND email = {fixture["email"]}");
+            // Preserve a match if any other participant/history remains, including real players.
+            foreach(var match in matches)
+            {
+                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND ownerid IS NULL AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)",Services.Game.GameSql.P("match",match));
+                await sql.Run("DELETE FROM matchhistory WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)",Services.Game.GameSql.P("match",match));
+            }
+            await cleanupTx.CommitAsync();
             File.Delete(path); Console.WriteLine("Unity smoke-test account removed."); return;
         }
         if (File.Exists(path)) throw new InvalidOperationException("Clean up the previous Unity fixture first.");

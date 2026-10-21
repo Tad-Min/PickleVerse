@@ -1,140 +1,35 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Entities.Models;
 using Repositories.UnitOfWork;
 using Services.DTOs;
+using Services.Game;
 using Services.Interfaces;
+using static Services.Game.GameSql;
 
-namespace Services.Implementations
+namespace Services.Implementations;
+
+// Retain existing HTTP contracts while sharing the locked mutations used by the online menu.
+public sealed class FriendService(IUnitOfWork unitOfWork,OnlineSocialService online,GameSql sql):IFriendService
 {
-    public class FriendService : IFriendService
+    public async Task<bool> SendFriendRequestAsync(Guid senderId,Guid receiverId)
+    {await online.Act(senderId,new SocialActionRequest{PlayerId=receiverId,Action="request"});return true;}
+    public async Task<bool> RespondFriendRequestAsync(Guid receiverId,RespondFriendRequestDto request)
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public FriendService(IUnitOfWork unitOfWork)
+        var sender=await sql.One("SELECT senderid FROM friendrequests WHERE requestid=@request AND receiverid=@receiver",r=>(Guid?)r.GetGuid(0),P("request",request.RequestId),P("receiver",receiverId));
+        if(!sender.HasValue)return false;
+        await online.Act(receiverId,new SocialActionRequest{PlayerId=sender.Value,RequestId=request.RequestId,Action=request.Accept?"accept":"decline"});return true;
+    }
+    public async Task<bool> UnfriendAsync(Guid userId,Guid friendId)
+    {await online.Act(userId,new SocialActionRequest{PlayerId=friendId,Action="remove"});return true;}
+    public async Task<bool> BlockUserAsync(Guid userId,Guid blockedUserId)
+    {await online.Act(userId,new SocialActionRequest{PlayerId=blockedUserId,Action="block"});return true;}
+    public async Task<List<FriendDto>> GetFriendsListAsync(Guid userId)
+    {
+        var friendships=await unitOfWork.Friends.GetFriendshipsAsync(userId);var result=new List<FriendDto>();
+        foreach(var friendship in friendships)
         {
-            _unitOfWork = unitOfWork;
+            var id=friendship.Userid1==userId?friendship.Userid2:friendship.Userid1;
+            var p=await unitOfWork.Profiles.GetByUserIdAsync(id);
+            if(p!=null)result.Add(new FriendDto{FriendId=p.Userid,PlayerName=p.Playername,Avatar=p.Avatar,Level=p.Level,Elo=p.Elo});
         }
-
-        public async Task<bool> SendFriendRequestAsync(Guid senderId, Guid receiverId)
-        {
-            if (senderId == receiverId) throw new InvalidOperationException("Không thể tự gửi kết bạn cho chính mình!");
-
-            bool isBlocked = await _unitOfWork.Friends.IsBlockedAsync(senderId, receiverId);
-            if (isBlocked) throw new InvalidOperationException("Không thể gửi kết bạn với người chơi này!");
-
-            bool alreadyFriends = await _unitOfWork.Friends.AreFriendsAsync(senderId, receiverId);
-            if (alreadyFriends) throw new InvalidOperationException("Hai người đã là bạn bè!");
-
-            var existingRequest = await _unitOfWork.Friends.GetPendingFriendRequestAsync(senderId, receiverId);
-            if (existingRequest != null) return true;
-
-            var friendRequest = new Friendrequest
-            {
-                Senderid = senderId,
-                Receiverid = receiverId,
-                Status = "PENDING",
-                Createdat = DateTime.UtcNow
-            };
-
-            await _unitOfWork.Friends.AddFriendRequestAsync(friendRequest);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> RespondFriendRequestAsync(Guid receiverId, RespondFriendRequestDto request)
-        {
-            var fr = await _unitOfWork.Friends.GetFriendRequestAsync(request.RequestId, receiverId);
-            if (fr == null || fr.Status != "PENDING") return false;
-
-            fr.Respondedat = DateTime.UtcNow;
-
-            if (request.Accept)
-            {
-                fr.Status = "ACCEPTED";
-
-                var u1 = fr.Senderid.CompareTo(fr.Receiverid) < 0 ? fr.Senderid : fr.Receiverid;
-                var u2 = fr.Senderid.CompareTo(fr.Receiverid) < 0 ? fr.Receiverid : fr.Senderid;
-
-                var friendship = new Friendship
-                {
-                    Userid1 = u1,
-                    Userid2 = u2,
-                    Createdat = DateTime.UtcNow
-                };
-
-                await _unitOfWork.Friends.AddFriendshipAsync(friendship);
-            }
-            else
-            {
-                fr.Status = "DECLINED";
-            }
-
-            await _unitOfWork.Friends.UpdateFriendRequestAsync(fr);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<List<FriendDto>> GetFriendsListAsync(Guid userId)
-        {
-            var friendships = await _unitOfWork.Friends.GetFriendshipsAsync(userId);
-            var friendIds = friendships.Select(f => f.Userid1 == userId ? f.Userid2 : f.Userid1).ToList();
-
-            var result = new List<FriendDto>();
-            foreach (var friendId in friendIds)
-            {
-                var profile = await _unitOfWork.Profiles.GetByUserIdAsync(friendId);
-                if (profile != null)
-                {
-                    result.Add(new FriendDto
-                    {
-                        FriendId = profile.Userid,
-                        PlayerName = profile.Playername,
-                        Avatar = profile.Avatar,
-                        Level = profile.Level,
-                        Elo = profile.Elo
-                    });
-                }
-            }
-
-            return result;
-        }
-
-        public async Task<bool> BlockUserAsync(Guid userId, Guid blockedUserId)
-        {
-            if (userId == blockedUserId) return false;
-
-            var friendship = await _unitOfWork.Friends.GetFriendshipAsync(userId, blockedUserId);
-            if (friendship != null)
-            {
-                await _unitOfWork.Friends.RemoveFriendshipAsync(friendship);
-            }
-
-            if (!await _unitOfWork.Friends.IsUserBlockedAsync(userId, blockedUserId))
-            {
-                var block = new Blockeduser
-                {
-                    Userid = userId,
-                    Blockeduserid = blockedUserId,
-                    Createdat = DateTime.UtcNow
-                };
-                await _unitOfWork.Friends.AddBlockedUserAsync(block);
-            }
-
-            await _unitOfWork.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> UnfriendAsync(Guid userId, Guid friendId)
-        {
-            var friendship = await _unitOfWork.Friends.GetFriendshipAsync(userId, friendId);
-            if (friendship == null) return false;
-
-            await _unitOfWork.Friends.RemoveFriendshipAsync(friendship);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
-        }
+        return result;
     }
 }

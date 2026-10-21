@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace PickleVerse.Settings
 {
-    // The screen survives Single loads, including NGO-owned scene operations.
+    // The screen survives local and Photon-owned scene operations.
     // No network scene is ever loaded through Unity's local SceneManager here.
     public sealed class SceneLoading:MonoBehaviour
     {
@@ -98,7 +98,7 @@ namespace PickleVerse.Settings
             var gate=new SceneWarmup();Set(.82f,"Đang ổn định hình ảnh");yield return null;
             // Keep the destination cameras rendering under the opaque overlay.
             // UI and gameplay remain blocked; this warms real materials/avatars.
-            while(blocking&&SceneManager.GetActiveScene().name==scene)
+            while(blocking&&(external||SceneManager.GetActiveScene().name==scene))
             {
                 yield return null;gate.Observe(Time.unscaledDeltaTime);
                 bool networkReady=synchronized==null||synchronized();

@@ -17,7 +17,7 @@ public sealed class OnlineReplayService(PickleVerseContext db,GameSql sql,IStora
     static AppException Missing()=>new("Không tìm thấy replay của tài khoản này.",HttpStatusCode.NotFound);
     async Task Guard(Guid player,Guid match)
     {
-        if(await sql.One("SELECT 1 FROM gamematches m WHERE m.matchid=@match AND (m.ownerid=@player OR EXISTS(SELECT 1 FROM playermatchhistory h WHERE h.matchid=m.matchid AND h.playerid=@player))",r=>r.GetInt32(0),P("match",match),P("player",player))!=1)throw Missing();
+        if(await sql.One("SELECT 1 FROM gamematches m WHERE m.matchid=@match AND (m.ownerid=@player OR EXISTS(SELECT 1 FROM playermatchhistory h WHERE h.matchid=m.matchid AND h.playerid=@player) OR (m.data->>'phase' IN ('PLAYING','FINISHED') AND EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player)))",r=>r.GetInt32(0),P("match",match),P("player",player))!=1)throw Missing();
     }
     async Task Lock(Guid player)=>await sql.Query("SELECT userid FROM playerprofiles WHERE userid=@player FOR UPDATE",r=>r.GetGuid(0),P("player",player));
     public async Task<List<ReplayMetadata>> List(Guid player)=>await sql.Query("SELECT metadata::text FROM onlinereplays WHERE playerid=@player ORDER BY updatedat DESC LIMIT 20",r=>GameJson.Read<ReplayMetadata>(r.GetString(0)),P("player",player));

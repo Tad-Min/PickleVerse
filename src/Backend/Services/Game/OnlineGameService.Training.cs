@@ -7,6 +7,7 @@ public sealed partial class OnlineGameService
 {
     public Task<GameSnapshot> StartTraining(Guid id,StartTrainingRequest request) => Execute(id,request.RequestId,"training-start",request,async s=>
     {
+        if(s.Player.pendingMatch!=null)throw Conflict("Bạn cần hoàn tất hoặc rời trận hiện tại trước khi luyện tập.");
         var lesson=s.catalog.lessons.SingleOrDefault(d=>d.id==request.LessonCode) ?? throw Bad("Bài học không tồn tại.");
         var data=TrainingEngine.Ensure(s.Player);
         if(!TrainingEngine.Unlocked(data,lesson)) throw Bad("Hãy hoàn thành các bài học điều kiện trước.");

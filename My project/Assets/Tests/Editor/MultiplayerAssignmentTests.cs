@@ -1,3 +1,4 @@
+#if PICKLEVERSE_LEGACY_NGO
 using System;
 using NUnit.Framework;
 using PickleVerse.Multiplayer;
@@ -30,3 +31,4 @@ namespace PickleVerse.Tests
         }
     }
 }
+#endif

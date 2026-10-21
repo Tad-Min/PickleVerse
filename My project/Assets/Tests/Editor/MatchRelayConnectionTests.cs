@@ -1,3 +1,4 @@
+#if PICKLEVERSE_LEGACY_NGO
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -41,3 +42,4 @@ public sealed class MatchRelayConnectionTests
         Assert.That(calls,Is.Zero);
     }
 }
+#endif

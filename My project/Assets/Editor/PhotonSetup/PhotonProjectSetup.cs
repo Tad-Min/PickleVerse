@@ -17,6 +17,7 @@ namespace PickleVerse.Editor
         {
             if(EditorApplication.isCompiling||EditorApplication.isUpdating)
             {EditorApplication.delayCall+=Configure;return;}
+            if(EditorApplication.isPlayingOrWillChangePlaymode)return;
             FusionGlobalScriptableObjectUtils.EnsureAssetExists<NetworkProjectConfigAsset>();
             FusionGlobalScriptableObjectUtils.EnsureAssetExists<PhotonAppSettings>();
             var settings=PhotonAppSettings.Global;
@@ -33,6 +34,7 @@ namespace PickleVerse.Editor
             if(!config.AssembliesToWeave.Contains("PickleVerse.Multiplayer"))
             {config.AssembliesToWeave=config.AssembliesToWeave.Concat(new[]{"PickleVerse.Multiplayer"}).ToArray();changed=true;}
             if(changed)NetworkProjectConfigUtilities.SaveGlobalConfig(config);
+            CreateLobbyScene();
         }
         [MenuItem("PickleVerse/Online/Create Photon Session Prefab")]
         public static GameObject CreateSessionPrefab()
@@ -61,8 +63,16 @@ namespace PickleVerse.Editor
                 UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene,path);
                 UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene,true);
             }
-            if(!EditorBuildSettings.scenes.Any(s=>s.path==path))
-                EditorBuildSettings.scenes=EditorBuildSettings.scenes.Concat(new[]{new EditorBuildSettingsScene(path,true)}).ToArray();
+            if(!EditorBuildSettings.globalScenes.Any(s=>s.path==path))
+                EditorBuildSettings.globalScenes=EditorBuildSettings.globalScenes.Concat(new[]{new EditorBuildSettingsScene(path,true)}).ToArray();
+            var profile=UnityEditor.Build.Profile.BuildProfile.GetActiveBuildProfile();
+            if(profile&&profile.overrideGlobalScenes)
+            {
+                var required=new[]{"Assets/Scenes/UI/Menu.unity","Assets/Scenes/UI/ModeSelection.unity","Assets/Scenes/BotMatch.unity","Assets/Scenes/Training.unity","Assets/Scenes/UI/PlayMultiplayer.unity","Assets/Scenes/MultiplayerCourt.unity","Assets/Scenes/Shop.unity","Assets/Scenes/Collection.unity","Assets/Scenes/Tutorial.unity","Assets/Scenes/Replay.unity","Assets/Scenes/UI/Loading.unity",path};
+                var scenes=required.Concat(profile.scenes.Where(s=>s.enabled).Select(s=>s.path)).Distinct().Where(p=>AssetDatabase.LoadAssetAtPath<SceneAsset>(p)).Select(p=>new EditorBuildSettingsScene(p,true)).ToArray();
+                if(!profile.scenes.Select(s=>s.path).SequenceEqual(scenes.Select(s=>s.path)))
+                {profile.scenes=scenes;EditorUtility.SetDirty(profile);AssetDatabase.SaveAssets();}
+            }
         }
         public static void CreateCommandPrefab()
         {
@@ -94,7 +104,8 @@ namespace PickleVerse.Editor
                     foreach(var old in root.GetComponentsInChildren<Component>(true).Where(c=>c&&c.GetType().FullName=="Unity.Netcode.NetworkObject"))UnityEngine.Object.DestroyImmediate(old);
                     var network=root.GetComponent<NetworkObject>()??root.AddComponent<NetworkObject>();
                     network.Flags=(network.Flags|NetworkObjectFlags.MasterClientObject)&~NetworkObjectFlags.DestroyWhenStateAuthorityLeaves;
-                    new NetworkObjectBakerEditTime().Bake(root);PrefabUtility.SaveAsPrefabAsset(root,path);
+                    // Persist the newly added object first so Fusion can derive its stable GlobalObjectId.
+                    PrefabUtility.SaveAsPrefabAsset(root,path);
                 }
                 finally{PrefabUtility.UnloadPrefabContents(root);}
             }

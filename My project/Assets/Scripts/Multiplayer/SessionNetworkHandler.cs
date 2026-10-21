@@ -1,3 +1,4 @@
+#if PICKLEVERSE_LEGACY_NGO
 using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -66,3 +67,4 @@ namespace PickleVerse.Multiplayer
         }
     }
 }
+#endif

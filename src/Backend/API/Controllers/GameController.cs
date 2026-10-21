@@ -20,4 +20,9 @@ public sealed class GameController(OnlineGameService game,GameCatalogService cat
     [HttpPost("training/complete")] public Task<GameSnapshot> Complete(TrainingUpdateRequest request) => game.UpdateTraining(Player,request,true);
     [HttpPost("match/bot/start")] public Task<GameSnapshot> StartBot(MatchStartRequest request) => game.StartBot(Player,request);
     [HttpPost("match/bot/complete")] public Task<GameSnapshot> FinishBot(MatchFinishRequest request) => game.FinishBot(Player,request);
+    [HttpPost("match/online/prepare")] public Task<OnlineMatchTicket> PrepareOnline(OnlineMatchRequest request) => game.PrepareOnline(Player,request);
+    [HttpPost("match/online/start")] public Task<OnlineMatchTicket> StartOnline(OnlineMatchRequest request) => game.StartOnline(Player,request);
+    [HttpPost("match/online/report")] public Task<GameSnapshot> ReportOnline(MatchFinishRequest request) => game.ReportOnline(Player,request);
+    [HttpPost("match/online/leave")] public Task<GameSnapshot> LeaveOnline(OnlineMatchCommand request) => game.LeaveOnline(Player,request);
+    [HttpPost("match/online/heartbeat")] public Task<GameSnapshot> HeartbeatOnline(OnlineMatchCommand request) => game.HeartbeatOnline(Player,request);
 }

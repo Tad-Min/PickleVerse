@@ -47,7 +47,7 @@ namespace PickleVerse.Multiplayer
         readonly HashSet<string> ignored=new HashSet<string>();
         PhotonSession browser;
         int operation;
-        bool working,closing,quitting,courtLoading,savingReady,reconnecting;
+        bool working,closing,quitting,courtLoading,savingReady,reconnecting,joining;
         double searchBegan,connectingUntil;
         string lastPartyMatch="";
         GameObject StatePrefab=>Resources.Load<GameObject>("Photon/Session State");
@@ -125,8 +125,15 @@ namespace PickleVerse.Multiplayer
             if(Room==null||closing)return;var data=Room.Data;
             if(data.phase=="closed"||Room.Rejected!=null){_=Safe(ClosePartyAsync(data.notice.Length>0?data.notice:Room.Rejected));return;}
             if(data.phase=="searching"&&!IsCaptain&&State==FlowState.WaitingRoom){clock.Start(Time.realtimeSinceStartupAsDouble);SetState(FlowState.Searching,"Đội trưởng đang tìm trận…");}
-            if(data.matchSession.Length>0&&data.matchSession!=lastPartyMatch&&Match==null&&!working){lastPartyMatch=data.matchSession;_=Safe(JoinMatchAsync(data.matchSession,Room.Runner.SessionInfo.Region,operation));}
+            if(data.matchSession.Length>0&&data.matchSession!=lastPartyMatch&&!working&&!joining&&(Match==null||!IsCaptain&&Match.Id!=data.matchSession))
+            {lastPartyMatch=data.matchSession;_=Safe(FollowPartyMatchAsync(data.matchSession,Room.Region,operation));}
             if(data.phase=="idle"&&Searching&&!IsCaptain)_=Safe(CancelSearchAsync());Changed?.Invoke();
+        }
+        async Task FollowPartyMatchAsync(string name,string region,int generation)
+        {
+            working=true;
+            try{if(Match!=null)await LeaveMatchAsync();await JoinMatchAsync(name,region,generation);}
+            finally{working=false;}
         }
         async Task ClosePartyAsync(string reason){if(closing)return;closing=true;try{CancelLocal();await LeaveMatchAsync();var room=Room;Room=null;if(room!=null)await room.LeaveAsync();SetState(FlowState.WaitingRoom,reason);}finally{closing=false;}}
         public Task FindAsync()
@@ -137,12 +144,13 @@ namespace PickleVerse.Multiplayer
         public async Task StartCustomAsync()
         {
             if(!Custom||!IsCaptain||State!=FlowState.WaitingRoom)return;var members=Members();
-            if(members.Count!=2*(int)Mode||members.Count(m=>m.team==0)!=(int)Mode||members.Count(m=>m.team==1)!=(int)Mode)throw new InvalidOperationException("Cần đủ người ở hai đội trước khi xác nhận trận.");
+            if(!new MatchRoster{custom=true,mode=Mode,members=members}.IsValid())throw new InvalidOperationException("Mỗi đội cần ít nhất một người và không quá sức chứa của chế độ.");
             CancelLocal();Room.Lobby.Command("search","");await CreateMatchAsync(true,operation);
         }
         async void Update()
         {
             if(quitting||closing||navigation.Leaving)return;
+            TickOnlineHeartbeat();
             if((State==FlowState.Delay||State==FlowState.Searching)&&IsCaptain&&!working&&clock.CanSubmit(Time.realtimeSinceStartupAsDouble))await Safe(SearchStepAsync(operation));
             if(Match!=null&&State==FlowState.Connecting&&!working&&!courtLoading)
             {
@@ -194,22 +202,27 @@ namespace PickleVerse.Multiplayer
             var session=PhotonSession.Create("Photon Match");
             try
             {
-                await session.StartAsync("PKV-"+Guid.NewGuid().ToString("N"),PlayerId,Room?.Runner.SessionInfo.Region??Settings.photonRegion,new PhotonRoomData{mode=Mode,custom=custom,phase="searching",night=PickleVerse.LocalMatch.BotMatchLaunchSettings.Night,venue=(CourtVenue)UnityEngine.Random.Range(0,2)},StatePrefab);
+                await session.StartAsync("PKV-"+Guid.NewGuid().ToString("N"),PlayerId,Room?.Region??Settings.photonRegion,new PhotonRoomData{mode=Mode,custom=custom,expectedPlayers=custom?Members().Count:0,phase="searching",night=PickleVerse.LocalMatch.BotMatchLaunchSettings.Night,venue=(CourtVenue)UnityEngine.Random.Range(0,2)},StatePrefab);
                 await session.ReserveAsync(Members());if(generation!=operation){await session.LeaveAsync();return;}AttachMatch(session);
                 if(Room!=null){lastPartyMatch=session.Id;Room.Lobby.Command("match",session.Id);}
             }
             catch{await session.LeaveAsync();throw;}
         }
-        async Task JoinMatchAsync(string name,string region,int generation)
+        async Task JoinMatchAsync(string name,string region,int generation,MatchRoster restoredRoster=null)
         {
+            if(joining)return;joining=true;
             var session=PhotonSession.Create("Photon Match");
+            // Joining an in-progress Fusion session can load its court before JoinAsync
+            // returns. Expose the runner/roster now so court components can bind safely.
+            if(restoredRoster!=null){Match=session;canonicalRoster=Roster=restoredRoster;}
             try
             {
                 await session.JoinAsync(name,PlayerId,region,false);Mode=session.Data.mode;await session.ReserveAsync(IsCaptain?Members():new List<RoomMember>{Self()});
                 if(generation!=operation){await session.LeaveAsync();return;}AttachMatch(session);
                 if(Room!=null&&IsCaptain){lastPartyMatch=session.Id;Room.Lobby.Command("match",session.Id);}
             }
-            catch{await session.LeaveAsync();throw;}
+            catch{if(Match==session){Match=null;Roster=null;canonicalRoster=null;}await session.LeaveAsync();throw;}
+            finally{joining=false;}
         }
         void AttachMatch(PhotonSession session)
         {
@@ -238,7 +251,9 @@ namespace PickleVerse.Multiplayer
         async Task LoadAcceptedCourtAsync()
         {
             working=true;
-            try{await StopBrowser();if(Match==null||Match.Data.phase!="loading")return;await StartOnlineMatchAsync();courtLoading=true;CourtSceneSynchronized=false;SetNotice("Mọi người đã xác nhận • Đang tải sân…");PickleVerse.Settings.SceneLoading.BeginExternal("MultiplayerCourt");if(Match.IsHost)await Match.Runner.LoadScene("MultiplayerCourt",LoadSceneMode.Single);}
+            // SceneStarted/SceneDone own CourtSceneSynchronized. A guest can receive
+            // SceneDone while its HTTP request is still in flight; do not reset it here.
+            try{await StopBrowser();if(Match==null||Match.Data.phase!="loading")return;await StartOnlineMatchAsync();courtLoading=true;SetNotice("Mọi người đã xác nhận • Đang tải sân…");PickleVerse.Settings.SceneLoading.BeginExternal("MultiplayerCourt");if(Match.IsHost)await Match.Runner.LoadScene("MultiplayerCourt",LoadSceneMode.Single);}
             finally{working=false;}
         }
         void SceneStarted(NetworkRunner runner){if(Match?.Runner==runner&&Match.Data.phase=="loading"){CourtSceneSynchronized=false;PickleVerse.Settings.SceneLoading.BeginExternal("MultiplayerCourt");}}
@@ -249,9 +264,9 @@ namespace PickleVerse.Multiplayer
         }
         async Task ReconnectAsync(PhotonSession previous)
         {
-            if(reconnecting)return;reconnecting=true;string name=previous.Id,region=previous.Runner.SessionInfo.Region;int generation=operation;
+            if(reconnecting)return;reconnecting=true;string name=previous.Id,region=previous.Region;var previousRoster=Roster;int generation=operation;
             SetState(FlowState.Reconnecting,"Đang kết nối lại, tối đa 30 giây…");double deadline=Time.realtimeSinceStartupAsDouble+Settings.reconnectSeconds;
-            try{await LeaveMatchAsync();while(generation==operation&&Time.realtimeSinceStartupAsDouble<deadline){try{await JoinMatchAsync(name,region,generation);SetState(FlowState.InMatch,"Đã kết nối lại.");return;}catch{await Task.Delay(1000);}}await ReturnToRoomAsync("Không thể kết nối lại trận.");}
+            try{await LeaveMatchAsync();while(generation==operation&&Time.realtimeSinceStartupAsDouble<deadline){try{await JoinMatchAsync(name,region,generation,previousRoster);SetState(FlowState.InMatch,"Đã kết nối lại.");return;}catch{await Task.Delay(1000);}}await ReturnToRoomAsync("Không thể kết nối lại trận.");}
             finally{reconnecting=false;}
         }
         void CancelLocal(){operation++;clock.Stop();}
@@ -260,13 +275,22 @@ namespace PickleVerse.Multiplayer
         async Task LeaveMatchAsync(){var old=Match;Match=null;if(old!=null){old.Changed-=MatchChanged;old.SceneStarted-=SceneStarted;old.SceneDone-=SceneDone;await old.LeaveAsync();}Roster=null;canonicalRoster=null;ClientIdentities.Clear();courtLoading=false;CourtSceneSynchronized=true;PickleVerse.Settings.SceneLoading.CancelExternal();}
         public async Task ReturnToRoomAsync(string message)
         {
-            if(closing)return;closing=true;try{CancelLocal();await LeaveMatchAsync();await StopBrowser();lastPartyMatch="";if(Room!=null&&Room.IsHost)Room.Lobby.Command("idle","");SetState(FlowState.WaitingRoom,message);SceneManager.LoadScene(RoomSceneName);}finally{closing=false;}
+            if(closing)return;closing=true;
+            try
+            {
+                CancelLocal();await LeaveMatchAsync();await StopBrowser();lastPartyMatch="";
+                if(Room!=null&&Room.IsHost)Room.Lobby.Command("idle","");SetState(FlowState.WaitingRoom,message);
+                var scene=SceneManager.GetSceneByName(RoomSceneName);
+                if(!scene.IsValid()||!scene.isLoaded){await SceneManager.LoadSceneAsync(RoomSceneName,LoadSceneMode.Additive);scene=SceneManager.GetSceneByName(RoomSceneName);}
+                if(scene.IsValid()&&scene.isLoaded)SceneManager.SetActiveScene(scene);
+            }
+            finally{closing=false;}
         }
         public async Task LeaveGameAsync(){await ForfeitOnlineMatchAsync();NetworkMatch.Instance?.RequestLeave();await Task.Delay(300);await ReturnToRoomAsync("Bạn đã rời trận.");}
         public Task ReturnToModeSelectionAsync()=>navigation.ReturnAsync(CancelLocal,CancelSearchAsync,LeaveMatchAsync,LeaveRoomAsync,()=>{OpenDefaultRoomOnLoad=false;SetState(FlowState.Menu,"Đã rời phòng.");SceneManager.LoadScene("ModeSelection");});
         public async Task SignOutFromLobbyAsync(){await CancelSearchAsync();await LeaveRoomAsync();SetState(FlowState.Menu,"Đã đăng xuất.");}
         public void CourtLoaded(){SetState(FlowState.Connecting,"Chờ mọi người tải xong sân…");}
-        public void MatchStarted(){clock.Stop();Match?.Lobby.Command("playing","");SetState(FlowState.InMatch,"Trận đã bắt đầu.");}
+        public void MatchStarted(){clock.Stop();if(Match?.IsHost==true)Match.Lobby.Command("playing","");SetState(FlowState.InMatch,"Trận đã bắt đầu.");}
         public void ShowResult(string text){SetState(FlowState.Results,text);}
         public void SetNotice(string text){Notice=text;Changed?.Invoke();}
         void SetState(FlowState state,string text){State=state;SetNotice(text);}

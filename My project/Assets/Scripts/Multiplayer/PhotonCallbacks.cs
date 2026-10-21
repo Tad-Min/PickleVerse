@@ -11,7 +11,7 @@ namespace PickleVerse.Multiplayer
         public Action<NetworkRunner,PlayerRef> Joined,Left;
         public Action<NetworkRunner> SceneStarted,SceneDone;
         public Action<NetworkRunner,ShutdownReason> Stopped;
-        public List<SessionInfo> Sessions=new List<SessionInfo>();
+        [NonSerialized]public List<SessionInfo> Sessions=new List<SessionInfo>();
         public bool HasSessionList;
         public Action<PlayerRef,byte[]> Reliable;
         public void OnPlayerJoined(NetworkRunner runner,PlayerRef player)=>Joined?.Invoke(runner,player);

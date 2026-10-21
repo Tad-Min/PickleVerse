@@ -1,3 +1,4 @@
+#if PICKLEVERSE_LEGACY_NGO
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -82,3 +83,4 @@ namespace PickleVerse.Tests
         }
     }
 }
+#endif

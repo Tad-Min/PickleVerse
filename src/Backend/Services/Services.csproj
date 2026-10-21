@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Include="../../../My project/Assets/Scripts/Entites/Multiplayer/RoomModels.cs" Link="GameRules/RoomModels.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Entites/Multiplayer/CourtVenue.cs" Link="GameRules/CourtVenue.cs" />
     <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <ProjectReference Include="..\Repositories\Repositories.csproj" />

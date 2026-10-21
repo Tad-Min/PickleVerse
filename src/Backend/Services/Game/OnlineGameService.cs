@@ -91,7 +91,7 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
         var catalog=await catalogs.Load();
         await using var transaction=await db.Database.BeginTransactionAsync();
         var session=await Load(id,catalog);
-        string fingerprint=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(GameJson.Write(payload))));
+        string fingerprint=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(GameJson.Payload(payload))));
         if(requestId!=null)
         {
             if(requestId.Length<8 || requestId.Length>64) throw Bad("Mã yêu cầu không hợp lệ.");
@@ -116,7 +116,14 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
         return session.Snapshot();
     }
 
-    public Task<GameSnapshot> Read(Guid id) => Execute(id,null,"refresh",null,_=>Task.CompletedTask);
+    public async Task<GameSnapshot> Read(Guid id)
+    {
+        await ReconcileOnline(id);
+        // Reconciliation uses its own transaction and may track several profiles. Read the
+        // subsequent locked snapshot afresh, including results committed by another request.
+        db.ChangeTracker.Clear();
+        return await Execute(id,null,"refresh",null,_=>Task.CompletedTask);
+    }
     public Task<GameSnapshot> Claim(Guid id, GameCommand request) => Execute(id,request.RequestId,"claim",request,s=>
     {
         if(!s.Engine.Claim(s.Player,request.Code,Now)) throw Bad("Chưa đủ điều kiện nhận thưởng hoặc đã nhận.");

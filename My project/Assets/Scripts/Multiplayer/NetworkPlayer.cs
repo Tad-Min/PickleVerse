@@ -201,11 +201,11 @@ namespace PickleVerse.Multiplayer
                 (GameControls.Held(GameAction.Right) ? 1 : 0) - (GameControls.Held(GameAction.Left) ? 1 : 0),
                 (GameControls.Held(GameAction.Forward) ? 1 : 0) - (GameControls.Held(GameAction.Backward) ? 1 : 0)), 1);
         }
-        public override void FixedUpdateNetwork()
+        internal void CollectLocalInput(float deltaTime)
         {
             if (!IsSpawned || !IsLocalHuman || !Actor) return;
             if (!CanMove()) { predicted.Clear(); predictedVelocity = Vector3.zero; return; }
-            var move = new Move { sequence = ++sequence, axes = LocalAxes(), run = LocalRun(), swinging=Actor.Swinging, dt = Runner.DeltaTime };
+            var move = new Move { sequence = ++sequence, axes = LocalAxes(), run = LocalRun(), swinging=Actor.Swinging, dt = deltaTime };
             if (!IsServer)
             {
                 var position = transform.position;

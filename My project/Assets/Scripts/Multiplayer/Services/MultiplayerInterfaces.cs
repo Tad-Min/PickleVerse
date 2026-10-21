@@ -31,7 +31,7 @@ namespace PickleVerse.Multiplayer.Services
         List<RoomMember> Members();
     }
 
-    /// <summary>Unity Sessions/Netcode boundary. Views never call this adapter directly.</summary>
+    /// <summary>Photon session boundary. Views never call this adapter directly.</summary>
     public interface IMultiplayerBackend : IMultiplayerState
     {
         Task PlayAsync(string profile);

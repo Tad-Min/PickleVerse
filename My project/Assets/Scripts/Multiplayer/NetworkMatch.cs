@@ -222,7 +222,7 @@ namespace PickleVerse.Multiplayer
         }
         public override void FixedUpdateNetwork()
         {
-            if (!IsSpawned || Body == null) return;
+            if (!IsSpawned || Body == null || IsServer&&Rules==null) return;
             if(!Started)
             {
                 if(IsServer && IntroStart>0 && Runner.SimulationTime>=IntroStart+MultiplayerCinematic.IntroDuration)

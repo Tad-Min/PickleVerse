@@ -12,6 +12,8 @@
 !My project/Assets/Scripts/Entites/Training/*.cs
 !My project/Assets/Scripts/Entites/Replays/
 !My project/Assets/Scripts/Entites/Replays/*.cs
+!My project/Assets/Scripts/Entites/Multiplayer/
+!My project/Assets/Scripts/Entites/Multiplayer/*.cs
 !My project/Assets/Scripts/Progression/
 !My project/Assets/Scripts/Progression/*.cs
 **/bin/

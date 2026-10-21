@@ -50,6 +50,8 @@ static class GameChecks
             "new account owns only its default paddle with no imported local money");
         check(GameJson.Read<GameSnapshot>(GameJson.Write(state)).catalog.lessons.Length==12,
             "snapshot JSON preserves nested Unity fields and enum names");
+        check(GameJson.Payload(new{team=0,winner=true})!=GameJson.Payload(new{team=1,winner=false}),
+            "fingerprints include get-only values rather than collapsing distinct payloads");
         await Rejected(()=>Call(s=>s.Claim(id,new GameCommand {RequestId=Guid.NewGuid().ToString("N"),Code="A.Win5"})),
             "unearned achievement cannot be claimed");
         await Rejected(()=>Call(s=>s.Purchase(id,new GameCommand {RequestId=Guid.NewGuid().ToString("N"),Code="paddle.thot"})),
@@ -171,6 +173,8 @@ static class GameChecks
         await Rejected(()=>Replay(s=>s.Read(Guid.NewGuid(),match)),"a different account cannot read replay metadata",HttpStatusCode.NotFound);
         await Rejected(()=>Replay(s=>s.Chunk(Guid.NewGuid(),match,0)),"a different account cannot read replay chunks",HttpStatusCode.NotFound);
         check((await Replay(s=>s.List(id))).Count==1,"replay metadata can be restored after a new service session");
+        await OnlineMatchChecks.Run(options,clock,check,id);
+        await SocialChecks.Run(options,check);
     }
 
     sealed class CheckStorage:IStorageService

@@ -14,6 +14,10 @@ public static class GameJson
         Converters = { new JsonStringEnumConverter() }
     };
     public static string Write<T>(T value) => JsonSerializer.Serialize(value, Options);
+    // Anonymous request fingerprints expose get-only properties. Snapshot options omit those
+    // computed properties, so fingerprints need their own complete serialization contract.
+    static readonly JsonSerializerOptions PayloadOptions = new(Options) { IgnoreReadOnlyProperties=false };
+    public static string Payload<T>(T value) => JsonSerializer.Serialize(value, PayloadOptions);
     public static T Read<T>(string value) => JsonSerializer.Deserialize<T>(value, Options)
         ?? throw new InvalidOperationException("Invalid stored game data.");
 }
@@ -86,3 +90,21 @@ public sealed class TutorialUpdateRequest
     [Required] public string Key { get; set; } = "";
 }
 public sealed class TutorialState { public bool completed, skipped; }
+
+public sealed class OnlineMatchRequest
+{
+    [Required] public PickleVerse.Multiplayer.MatchRoster Roster { get; set; } = new();
+    [Required, StringLength(100)] public string Session { get; set; } = "";
+    [Required] public string HostPlayerId { get; set; } = "";
+}
+public sealed class OnlineMatchTicket
+{
+    public PickleVerse.Multiplayer.MatchRoster roster = new();
+    public bool allAccepted;
+    public string phase = "PREPARING";
+}
+public sealed class OnlineMatchCommand
+{
+    [Required] public string MatchId { get; set; } = "";
+    [Required, StringLength(64, MinimumLength=8)] public string RequestId { get; set; } = "";
+}

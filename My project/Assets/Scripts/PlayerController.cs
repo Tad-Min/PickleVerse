@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Unity.Netcode;
+using Fusion;
 
 public class PlayerController : MonoBehaviour
 {
@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
         var keyboard = Keyboard.current;
         if (rb == null || keyboard == null) return;
         var networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsSpawned && !networkObject.IsOwner) return;
+        if (networkObject != null && networkObject.IsValid && !networkObject.HasStateAuthority) return;
         Vector2 moveInput = Vector2.zero;
         if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) moveInput.y = 1.0f;
         if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) moveInput.y = -1.0f;

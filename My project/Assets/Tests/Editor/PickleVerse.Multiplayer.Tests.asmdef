@@ -2,8 +2,6 @@
   "name": "PickleVerse.Multiplayer.Tests",
   "references": [
     "PickleVerse.Multiplayer",
-    "Unity.Services.Multiplayer",
-    "Unity.Services.Core",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner",
     "PickleVerse.Entites",

@@ -57,6 +57,17 @@ CREATE TABLE IF NOT EXISTS gamematches (
 );
 ALTER TABLE gamematches DROP CONSTRAINT IF EXISTS gamematches_ownerid_fkey;
 ALTER TABLE gamematches ADD CONSTRAINT gamematches_ownerid_fkey FOREIGN KEY(ownerid) REFERENCES playerprofiles(userid) ON DELETE SET NULL;
+CREATE TABLE IF NOT EXISTS gamematchplayers (
+    matchid UUID NOT NULL REFERENCES gamematches(matchid) ON DELETE CASCADE,
+    playerid UUID NOT NULL REFERENCES playerprofiles(userid) ON DELETE CASCADE,
+    team SMALLINT NOT NULL CHECK(team IN (0,1)),
+    accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    report JSONB,
+    fingerprint VARCHAR(64),
+    lastseenat TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(matchid,playerid)
+);
+CREATE INDEX IF NOT EXISTS gamematchplayers_player_idx ON gamematchplayers(playerid,matchid);
 ALTER TABLE playermissions ADD COLUMN IF NOT EXISTS periodkey VARCHAR(8) NOT NULL DEFAULT '';
 CREATE TABLE IF NOT EXISTS currencytransactions (
     transactionid BIGSERIAL PRIMARY KEY,

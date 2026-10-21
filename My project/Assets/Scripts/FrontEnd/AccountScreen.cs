@@ -80,9 +80,9 @@ namespace PickleVerse.FrontEnd
             }
             foreach (var social in FindObjectsByType<OfflineSocialMenu>(FindObjectsInactive.Include))
             {
-                social.Close(); social.enabled = false;
-                if (social.friendsButton) social.friendsButton.interactable = false;
-                if (social.leaderboardButton) social.leaderboardButton.interactable = false;
+                if(!available)social.Close(); social.enabled = available;
+                if (social.friendsButton) social.friendsButton.interactable = available;
+                if (social.leaderboardButton) social.leaderboardButton.interactable = available;
             }
             foreach (var home in FindObjectsByType<HomeLobbyPresentation>(FindObjectsInactive.Include))
             {
