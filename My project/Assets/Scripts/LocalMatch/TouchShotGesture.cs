@@ -14,7 +14,7 @@ namespace PickleVerse.LocalMatch
     // A touch is a transaction. Preview changes never enter the keyboard release parser.
     public sealed class TouchShotGesture
     {
-        public const string HelpText="<size=28><color=#83E6CD>ĐIỀU KHIỂN CẢM ỨNG</color></size>\n\nKéo cần bên trái để di chuyển; kéo xa để chạy.\nGiữ rồi thả DRIVE / DINK / VOLLEY để đánh.\nKéo lên: DRIVE → SMASH • DINK → DROP • VOLLEY → RESET\nKéo trái: CHÉO • Kéo phải: LỰC • Kéo xuống: HỦY\nTrở về giữa để đánh thường. Có thể vừa di chuyển vừa đánh.\n\nGiao bóng bằng DRIVE; kéo trái/phải để giao chéo/mạnh.\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\nChỉnh kích thước, độ mờ, tay trái và bố trí trong Cài đặt.";
+        public const string HelpText="<size=28><color=#83E6CD>ĐIỀU KHIỂN CẢM ỨNG</color></size>\n\nKéo cần bên trái để đi bộ; giữ nút CHẠY bên phải để chạy nhanh.\nGiữ rồi thả DRIVE / DINK / VOLLEY để đánh.\nKéo lên: DRIVE → SMASH • DINK → DROP • VOLLEY → RESET\nKéo trái: CHÉO • Kéo phải: LỰC • Kéo xuống: HỦY\nTrở về giữa để đánh thường. Có thể vừa di chuyển vừa đánh.\n\nGiao bóng bằng DRIVE; kéo trái/phải để giao chéo/mạnh.\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\nChỉnh kích thước, độ mờ, tay trái và bố trí trong Cài đặt.";
         public const int NoPointer = int.MinValue;
         public int Pointer { get; private set; } = NoPointer;
         public int BaseMask { get; private set; }

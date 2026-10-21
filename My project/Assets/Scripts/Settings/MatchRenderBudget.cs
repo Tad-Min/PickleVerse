@@ -27,12 +27,13 @@ namespace PickleVerse.Settings
         {
             if(!renderCamera)renderCamera=Camera.main?Camera.main:FindAnyObjectByType<Camera>();
             int width=renderCamera?renderCamera.pixelWidth:Screen.width,height=renderCamera?renderCamera.pixelHeight:Screen.height;
+            if(MobileRenderPolicy.Enabled)return MobileRenderPolicy.ScaleCeiling(width,height);
             return Mathf.Min(1,Mathf.Sqrt(1920f*1080/Mathf.Max(1,(float)width*height)));
         }
         void OnEnable()
         {
             count=index=fastChecks=0;
-            Scale=Mathf.Min(.75f*DisplayScale(),GameSettings.Current.renderScale);
+            Scale=Mathf.Min((MobileRenderPolicy.Enabled?1:.75f)*DisplayScale(),GameSettings.Current.renderScale);
             nextCheck=Time.realtimeSinceStartupAsDouble+1;
             SettingsRuntime.SetPresentationScale(this,Scale,2);
         }
@@ -43,14 +44,15 @@ namespace PickleVerse.Settings
             nextCheck=now+.75;
             Array.Copy(samples,sorted,count);Array.Sort(sorted,0,count);
             FrameP95=sorted[Mathf.Min(count-1,(int)(count*.95f))];
-            float display=DisplayScale(),maximum=Mathf.Min(display,GameSettings.Current.renderScale),minimum=Mathf.Min(minimumScale*display,maximum);
+            float display=DisplayScale(),maximum=Mathf.Min(display,GameSettings.Current.renderScale),minimum=Mathf.Min((MobileRenderPolicy.Enabled?.7f:minimumScale)*display,maximum);
             float next=Mathf.Clamp(Scale,minimum,maximum);
             // A user-selected 30 FPS cap is intentional. Keep headroom below 16.67 ms otherwise.
-            float slow=GameSettings.Current.fps<=60?1000f/GameSettings.Current.fps+1.5f:14.5f;
-            float fast=GameSettings.Current.fps==30?30:10.5f;
+            int frameRate=MobileRenderPolicy.FrameRate(GameSettings.Current.fps);
+            float slow=frameRate<=60?1000f/frameRate+1.5f:14.5f;
+            float fast=frameRate==30?30:10.5f;
             if(preferredFrameRate>0)
             {
-                int target=Mathf.Max(30,Mathf.Min(GameSettings.Current.fps,preferredFrameRate));
+                int target=Mathf.Max(30,Mathf.Min(frameRate,preferredFrameRate));
                 slow=1000f/target+1.2f;fast=1000f/target*.82f;
             }
             if(FrameP95>slow){next=Mathf.Max(minimum,next-.075f);fastChecks=0;}

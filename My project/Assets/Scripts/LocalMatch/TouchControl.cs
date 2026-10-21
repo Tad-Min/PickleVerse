@@ -17,7 +17,7 @@ namespace PickleVerse.LocalMatch
         public IMatchTouchInput Input { get; set; }
         IMatchTouchInput Target => Input ?? match;
         public int shotMask;
-        public bool joystick, modifier;
+        public bool joystick, modifier, sprint;
         public RectTransform knob;
         public MobileTouchPad Pad { get; set; }
         int pointer = int.MinValue;
@@ -59,7 +59,7 @@ namespace PickleVerse.LocalMatch
             var settings=GameSettings.Current;
             float magnitude=value.magnitude;
             value=magnitude<=settings.deadzone?Vector2.zero:value.normalized*Mathf.InverseLerp(settings.deadzone,1,magnitude);
-            Target.TouchRun = value.magnitude >= settings.sprintThreshold; Target.TouchMovement = Vector2.ClampMagnitude(value, 1);
+            Target.TouchMovement = Vector2.ClampMagnitude(value, 1);
             if (knob) knob.anchoredPosition = Target.TouchMovement * (rect.rect.width * .32f);
         }
         public void OnPointerUp(PointerEventData e)

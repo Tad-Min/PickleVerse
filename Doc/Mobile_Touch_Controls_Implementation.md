@@ -16,7 +16,8 @@ BotMatch, MultiplayerCourt, Training và Tutorial dùng chung `MobileTouchPad`. 
 | Kéo phải | Thêm Lực vào kỹ thuật cơ bản |
 | Kéo xuống | Hủy, không gửi cú đánh |
 | Kéo trở về giữa | Trở về kỹ thuật cơ bản |
-| Joystick trái; kéo xa | Di chuyển; chạy |
+| Joystick trái | Di chuyển thường, kể cả khi kéo đến rìa |
+| Giữ nút CHẠY bên phải | Chạy nhanh; thả để trở về đi thường |
 
 Giao bóng chỉ dùng Drive, Drive + Lực hoặc Drive + Chéo. Kéo lên khi đang giao vẫn giữ giao bóng. Dink + Lực giữ nguyên cơ chế tăng tốc sau nảy của game, được gameplay xử lý như Drive + Lực.
 
@@ -27,12 +28,14 @@ Hai nút Lực/Chéo riêng và ba nút combo cũ được ẩn. Một ngón đi
 Tham khảo cách giữ nút rồi kéo để chọn biến thể trong [hướng dẫn FIFA Mobile của EA](https://www.ea.com/ea-originals/news/gameplay-guide-button-controls) và [điều khiển mobile của eFootball](https://www.konami.com/efootball/en-us/page/new_controls). Áp dụng nguyên tắc ít nút, hướng kéo nhất quán; hình nút dùng tài nguyên demo của dự án.
 
 - Joystick mờ hơn cụm đánh, đặt sát vùng ngón cái bên trái.
-- Drive lớn hơn Dink/Volley; cụm kỹ thuật chừa toàn bộ sóng và chữ Hủy bên dưới.
+- Cụm Drive/Dink/Volley và nút CHẠY riêng được bố trí theo hình quạt; sóng và nhãn hướng được giữ trong vùng hiển thị.
 - Sóng trắng và tên hướng xuất hiện ngay khi giữ/kéo. Các nút còn lại mờ đi. Gợi ý combo dưới nút đang giữ được ẩn để không chồng chữ Hủy.
 - Layout tính theo vùng an toàn, tỷ lệ màn hình và cỡ nút; hỗ trợ đổi tay trái, độ mờ và vị trí tùy chỉnh. Bố trí tùy chỉnh bị chồng nút được đưa về bố trí an toàn.
 - Training/Tutorial đưa hướng dẫn lên trên; gợi ý thao tác ở phía trên joystick để giữ nhân vật ở giữa sân nhìn rõ. Bố cục desktop được phục hồi khi tắt cảm ứng.
 - Có ngưỡng vào/ra khác nhau để chống rung khi ngón tay gần ranh giới. Không thêm thời gian chờ giữ nút. Khi nhả tay, lựa chọn cuối được chuyển trực tiếp vào gameplay hiện có.
 - Preview hướng kéo không đưa các bit phím trung gian vào bộ đọc bàn phím: không đánh sớm khi đổi hướng, không tích lũy nhầm tổ hợp. Pause, mất focus và tắt pad hủy thao tác đang giữ.
+
+Cập nhật sau kiểm tra Galaxy A32: xem [báo cáo sửa mobile](Galaxy_A32_Mobile_Fixes_20261020.md) về LOD, ngân sách render, nền nhãn combo và kiểm thử 443 test/516 kiểm tra UI. Các số đo ở những phần dưới đây thuộc lượt triển khai trước bản sửa này.
 
 ## Tài nguyên và hiệu suất
 

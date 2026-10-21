@@ -36,9 +36,28 @@ namespace PickleVerse.Audio
         Rect lastSafeArea;
         Vector2 lastResolution;
         Vector2 lastRecordSize;
+        GameObject fullScreenBackdrop;
+        RectTransform playerContent;
+        Camera suspendedCamera;
+        bool suspendedCameraWasEnabled;
         void Awake()
         {
             panel.SetActive(false);
+            // Background covers the cutout/gesture margins; content keeps the safe-area anchors.
+            var backdrop=new GameObject("Full Screen Music Background",typeof(RectTransform),typeof(UnityEngine.UI.Image));
+            var backdropRect=(RectTransform)backdrop.transform;backdropRect.SetParent(canvas.transform,false);backdropRect.SetAsFirstSibling();
+            backdropRect.anchorMin=Vector2.zero;backdropRect.anchorMax=Vector2.one;backdropRect.offsetMin=backdropRect.offsetMax=Vector2.zero;
+            var background=backdrop.GetComponent<UnityEngine.UI.Image>();background.color=new Color(.035f,.06f,.105f,1);background.raycastTarget=true;
+            fullScreenBackdrop=backdrop;fullScreenBackdrop.SetActive(false);
+            var panelRect=(RectTransform)panel.transform;
+            panelRect.SetParent(canvas.transform,false);panelRect.anchorMin=Vector2.zero;panelRect.anchorMax=Vector2.one;panelRect.offsetMin=panelRect.offsetMax=Vector2.zero;
+            var content=new GameObject("Player Safe Content",typeof(RectTransform));playerContent=(RectTransform)content.transform;playerContent.SetParent(panelRect,false);
+            playerContent.anchorMin=Vector2.zero;playerContent.anchorMax=Vector2.one;playerContent.offsetMin=playerContent.offsetMax=Vector2.zero;
+            int childCount=panelRect.childCount-1;
+            for(int i=0;i<childCount;i++)panelRect.GetChild(0).SetParent(playerContent,false);
+            // Record rotation must not rebuild the playlist's entire canvas every frame.
+            if(!discTransform.GetComponent<Canvas>())discTransform.gameObject.AddComponent<Canvas>();
+            if(!miniDisc.GetComponent<Canvas>())miniDisc.gameObject.AddComponent<Canvas>();
             raycaster=canvas.GetComponent<GraphicRaycaster>();
             miniButton.onClick.AddListener(Open);closeButton.onClick.AddListener(Close);
             previousButton.onClick.AddListener(()=>player.Previous());nextButton.onClick.AddListener(()=>player.Next());playButton.onClick.AddListener(()=>player.TogglePause());
@@ -68,9 +87,12 @@ namespace PickleVerse.Audio
         }
         public void Open()
         {
+            if(IsOpen)return;
             if(player==null||!player.Allowed||!MusicScenePolicy.ShowsWidget(scene)||SettingsOverlay.IsOpen||SettingsOverlay.Loading||!FrontEndModalInput.TryAcquire(this))return;
             previousSelection=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
-            panel.SetActive(true);Refresh();Canvas.ForceUpdateCanvases();
+            fullScreenBackdrop.SetActive(true);ApplySafeArea();panel.SetActive(true);Refresh();Canvas.ForceUpdateCanvases();
+            suspendedCamera=Camera.main;
+            if(suspendedCamera){suspendedCameraWasEnabled=suspendedCamera.enabled;suspendedCamera.enabled=false;}
             FitRecord();
             foreach(var text in panel.GetComponentsInChildren<TMP_Text>())text.ForceMeshUpdate();
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(playButton.gameObject);
@@ -78,6 +100,8 @@ namespace PickleVerse.Audio
         public void Close()
         {
             if(panel)panel.SetActive(false);FrontEndModalInput.Release(this);
+            if(fullScreenBackdrop)fullScreenBackdrop.SetActive(false);
+            if(suspendedCamera){suspendedCamera.enabled=suspendedCameraWasEnabled;suspendedCamera=null;}
             if(EventSystem.current&&previousSelection&&previousSelection.activeInHierarchy)EventSystem.current.SetSelectedGameObject(previousSelection);
             previousSelection=null;
         }
@@ -125,7 +149,7 @@ namespace PickleVerse.Audio
             BindCamera();ApplySafeArea();
             if(IsOpen&&Keyboard.current?.escapeKey.wasPressedThisFrame==true){Close();return;}
             bool spinning=player.Playing&&!player.Loading;
-            if(spinning){float angle=-18*Time.unscaledDeltaTime;miniDisc.rectTransform.Rotate(0,0,angle);if(IsOpen)discTransform.Rotate(0,0,angle);}
+            if(spinning){float angle=-18*Time.unscaledDeltaTime;if(IsOpen)discTransform.Rotate(0,0,angle);else miniDisc.rectTransform.Rotate(0,0,angle);}
             if(scene=="Menu"&&!IsOpen)
             {
                 float overflow=textWidth-miniViewport.rect.width;
@@ -158,6 +182,7 @@ namespace PickleVerse.Audio
             var resolution=new Vector2(Screen.width,Screen.height);var area=Screen.safeArea;
             if(resolution==lastResolution&&area==lastSafeArea||resolution.x<=0||resolution.y<=0)return;
             lastResolution=resolution;lastSafeArea=area;safeArea.anchorMin=new Vector2(area.xMin/resolution.x,area.yMin/resolution.y);safeArea.anchorMax=new Vector2(area.xMax/resolution.x,area.yMax/resolution.y);safeArea.offsetMin=safeArea.offsetMax=Vector2.zero;
+            if(playerContent){playerContent.anchorMin=safeArea.anchorMin;playerContent.anchorMax=safeArea.anchorMax;playerContent.offsetMin=playerContent.offsetMax=Vector2.zero;}
         }
         static string TimeText(float value){int seconds=Mathf.Max(0,(int)value);return(seconds/60)+":"+(seconds%60).ToString("00");}
         void OnDestroy(){Close();if(player!=null)player.Changed-=Refresh;}

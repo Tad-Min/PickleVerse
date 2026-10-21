@@ -62,10 +62,42 @@ namespace PickleVerse.LocalMatch.Tests
             e=Event(pad.Drive,1);pad.Drive.OnPointerDown(e);pad.CancelAll();pad.Drive.OnPointerUp(e);Assert.AreEqual(0,receiver.count);
             pad.Drive.OnPointerDown(e);receiver.TouchShotsEnabled=false;pad.Drive.OnPointerUp(e);Assert.AreEqual(0,receiver.count);
         }
-        [Test] public void OnlyFourControlsRemainAndJoystickIsRecessed()
+        [Test] public void FiveControlsRemainAndJoystickIsRecessed()
         {
             int count=0;foreach(var c in pad.GetComponentsInChildren<TouchControl>(true))if(c.gameObject.activeSelf)count++;
-            Assert.AreEqual(4,count);Assert.Less(pad.Joystick.GetComponent<CanvasGroup>().alpha,.5f);
+            Assert.AreEqual(5,count);Assert.Less(pad.Joystick.GetComponent<CanvasGroup>().alpha,.5f);
+        }
+        [Test] public void JoystickEdgeNeverStartsSprintAndRunUsesItsOwnFinger()
+        {
+            var move=Event(pad.Joystick,1,Vector2.up*140);pad.Joystick.OnPointerDown(move);
+            Assert.Greater(receiver.TouchMovement.y,.95f);Assert.IsFalse(receiver.TouchRun);
+            var run=Event(pad.Run,2);pad.Run.OnPointerDown(run);Assert.IsTrue(receiver.TouchRun);
+            pad.Joystick.OnDrag(move);Assert.IsTrue(receiver.TouchRun);
+            var shot=Event(pad.Drive,3);pad.Drive.OnPointerDown(shot);pad.Drive.OnPointerUp(shot);
+            Assert.AreEqual(1,receiver.count);Assert.IsTrue(receiver.TouchRun);
+            pad.Run.OnPointerUp(Event(pad.Run,4));Assert.IsTrue(receiver.TouchRun);
+            pad.Run.OnPointerUp(run);Assert.IsFalse(receiver.TouchRun);Assert.Greater(receiver.TouchMovement.y,.95f);
+        }
+        [Test] public void CancelClearsHeldSprintAndMovementWithoutFiring()
+        {
+            pad.Run.OnPointerDown(Event(pad.Run,1));pad.Joystick.OnPointerDown(Event(pad.Joystick,2,Vector2.right*100));
+            pad.Dink.OnPointerDown(Event(pad.Dink,3));pad.CancelAll();
+            Assert.IsFalse(receiver.TouchRun);Assert.AreEqual(Vector2.zero,receiver.TouchMovement);Assert.AreEqual(0,receiver.count);
+        }
+        [TestCase(1,0,70,"SMASH")][TestCase(2,0,70,"DROP")][TestCase(4,0,70,"RESET")]
+        [TestCase(2,-70,0,"CHÉO")][TestCase(1,70,0,"LỰC")][TestCase(1,0,-70,"HỦY")]
+        public void ActiveWaveLabelHasAContrastingOpaqueBacking(int mask,float x,float y,string expected)
+        {
+            var c=mask==1?pad.Drive:mask==2?pad.Dink:pad.Volley;
+            var e=Event(c,1);pad.Down(c,e);e.position+=new Vector2(x,y)*pad.Unit;pad.Drag(c,e);
+            var wave=pad.GetComponentInChildren<TouchWaveGraphic>();
+            bool found=false;
+            foreach(var label in wave.GetComponentsInChildren<TMPro.TMP_Text>())if(label.text==expected&&label.fontSize>=17)
+            {
+                found=true;var backing=label.transform.parent.GetComponent<UnityEngine.UI.Image>();
+                Assert.IsNotNull(backing);Assert.Greater(backing.color.a,.95f);Assert.Less(label.color.r,.1f);Assert.Greater(backing.color.r,.9f);
+            }
+            Assert.IsTrue(found,"Selected combo label must stay visible");
         }
         [Test] public void ReleasePositionIsUsedEvenWithoutLastDragCallback()
         {

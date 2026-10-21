@@ -10,7 +10,7 @@ namespace PickleVerse.Settings
     [Serializable]
     public sealed class SettingsData
     {
-        public int version = 2;
+        public int version = 3;
         public float master = 1, music = .8f, effects = 1;
         public int graphics = 2, fps = 60, msaa = 4;
         public float renderScale = 1;
@@ -24,7 +24,7 @@ namespace PickleVerse.Settings
         {
             var d = new SettingsData();
             d.keys = new[] { Key.W, Key.S, Key.A, Key.D, Key.LeftShift, Key.J, Key.K, Key.L, Key.U, Key.I, Key.Backspace, Key.T, Key.F1, Key.Enter, Key.Escape }.Select(k => (int)k).ToArray();
-            d.touchPositions = new[] { new Vector2(.14f,.277f), new Vector2(.846f,.277f), new Vector2(.683f,.405f), new Vector2(.851f,.541f), new Vector2(.944f,.165f), new Vector2(.858f,.165f), new Vector2(.772f,.165f), new Vector2(.944f,.245f), new Vector2(.858f,.245f) };
+            d.touchPositions = new[] { new Vector2(.103f,.245f), new Vector2(.758f,.286f), new Vector2(.746f,.554f), new Vector2(.895f,.727f), new Vector2(.899f,.245f), new Vector2(.858f,.165f), new Vector2(.772f,.165f), new Vector2(.944f,.245f), new Vector2(.858f,.245f) };
             return d;
         }
         public SettingsData Copy() => JsonUtility.FromJson<SettingsData>(JsonUtility.ToJson(this));
@@ -38,16 +38,17 @@ namespace PickleVerse.Settings
         public void Validate()
         {
             var defaults = Defaults();
-            bool migrateTouch=version<2&&touchPositions!=null&&touchPositions.Length==9;
+            bool migrateTouch=version<3&&touchPositions!=null&&touchPositions.Length==9;
             if (keys == null || keys.Length != defaults.keys.Length) keys = defaults.keys;
             if (touchPositions == null || touchPositions.Length != 9) touchPositions = defaults.touchPositions;
             if(migrateTouch)
             {
-                var old=new[]{new Vector2(.08f,.15f),new Vector2(.944f,.085f),new Vector2(.858f,.085f),new Vector2(.772f,.085f)};
+                var old=version<2?new[]{new Vector2(.08f,.15f),new Vector2(.944f,.085f),new Vector2(.858f,.085f),new Vector2(.772f,.085f)}:
+                    new[]{new Vector2(.14f,.277f),new Vector2(.846f,.277f),new Vector2(.683f,.405f),new Vector2(.851f,.541f)};
                 for(int i=0;i<4;i++)touchPositions[i]=defaults.touchPositions[i]+(touchPositions[i]-old[i]);
-                version=2;
+                touchPositions[4]=defaults.touchPositions[4]; // Former standalone Drop is now the sprint target.
             }
-            version=2;
+            version=3;
             if (keys.Distinct().Count() != keys.Length || keys.Where((key,index) => !Enum.IsDefined(typeof(Key),key) || key==(int)Key.None || (index!=14 && key==(int)Key.Escape)).Any()) keys=defaults.keys;
             keys[14] = (int)Key.Escape;
             master = Mathf.Clamp01(master); music = Mathf.Clamp01(music); effects = Mathf.Clamp01(effects);

@@ -57,7 +57,7 @@ namespace PickleVerse.LocalMatch.Tests
             Assert.IsTrue(input.Tick(mask&24,false,true,out var shot));Assert.AreEqual(ShotKind.Serve,shot.kind);
         }
         [TestCase(667,375)] [TestCase(844,390)] [TestCase(915,412)] [TestCase(1280,720)]
-        [TestCase(1920,1080)] [TestCase(1024,768)] [TestCase(390,844)]
+        [TestCase(1920,1080)] [TestCase(2400,1080)] [TestCase(1600,720)] [TestCase(1024,768)] [TestCase(390,844)]
         public void WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(float width,float height)
         {
             var safe=new Rect(34,21,width-68,height-42);
@@ -71,7 +71,16 @@ namespace PickleVerse.LocalMatch.Tests
                 }
                 Assert.Greater(Vector2.Distance(l.joystick,l.dink),165*l.unit);
                 Assert.Greater(Vector2.Distance(l.drive,l.volley),90*l.unit);
+                Assert.Greater(Vector2.Distance(l.run,l.drive),110*l.unit);
+                Assert.GreaterOrEqual(l.run.y-56*l.unit,safe.yMin);
+                Assert.LessOrEqual(l.run.x+56*l.unit,safe.xMax);
             }
+        }
+        [TestCase(2400,1080)][TestCase(1600,720)][TestCase(2960,1440)][TestCase(1280,720)]
+        public void Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(int width,int height)
+        {
+            float scale=PickleVerse.Settings.MobileRenderPolicy.ScaleCeiling(width,height);
+            Assert.LessOrEqual(width*scale,1280.01f);Assert.LessOrEqual(height*scale,720.01f);
         }
     }
 }

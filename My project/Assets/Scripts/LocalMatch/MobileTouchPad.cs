@@ -8,23 +8,25 @@ namespace PickleVerse.LocalMatch
     public struct MobileTouchLayout
     {
         public float unit;
-        public Vector2 joystick, drive, dink, volley;
+        public Vector2 joystick, drive, dink, volley, run;
         public static MobileTouchLayout Calculate(Rect safe, float scale, bool leftHanded)
         {
             float u = Mathf.Min(safe.height / 390, safe.width / 700) * Mathf.Clamp(scale,.75f,1.4f);
             // Even at maximum size, the entire cancel wave stays above the safe bottom edge.
-            u = Mathf.Min(u, safe.height / 420, safe.width / 690);
+            u = Mathf.Min(u, safe.height / 440, safe.width / 760);
             var r = new MobileTouchLayout { unit=u };
             r.joystick = new Vector2(safe.xMin+98*u,safe.yMin+108*u);
-            r.drive = new Vector2(safe.xMax-108*u,safe.yMin+108*u);
-            r.dink = new Vector2(safe.xMax-222*u,safe.yMin+158*u);
-            r.volley = new Vector2(safe.xMax-104*u,safe.yMin+203*u);
+            r.drive = new Vector2(safe.xMax-230*u,safe.yMin+126*u);
+            r.dink = new Vector2(safe.xMax-242*u,safe.yMin+244*u);
+            r.volley = new Vector2(safe.xMax-100*u,safe.yMin+320*u);
+            r.run = new Vector2(safe.xMax-96*u,safe.yMin+108*u);
             if(leftHanded)
             {
                 r.joystick.x=safe.center.x*2-r.joystick.x;
                 r.drive.x=safe.center.x*2-r.drive.x;
                 r.dink.x=safe.center.x*2-r.dink.x;
                 r.volley.x=safe.center.x*2-r.volley.x;
+                r.run.x=safe.center.x*2-r.run.x;
             }
             return r;
         }
@@ -39,18 +41,21 @@ namespace PickleVerse.LocalMatch
         public TouchControl Drive { get; private set; }
         public TouchControl Dink { get; private set; }
         public TouchControl Volley { get; private set; }
+        public TouchControl Run { get; private set; }
         public Rect SafeRect { get; private set; }
         public float Unit { get; private set; } = 1;
         RectTransform root, waveRoot;
         TouchWaveGraphic wave;
         readonly TMP_Text[] waveLabels = new TMP_Text[4];
-        readonly TMP_Text[] comboHints = new TMP_Text[4];
-        readonly CanvasGroup[] groups = new CanvasGroup[4];
+        readonly UnityEngine.UI.Image[] labelBackings = new UnityEngine.UI.Image[4];
+        readonly TMP_Text[] comboHints = new TMP_Text[5];
+        readonly CanvasGroup[] groups = new CanvasGroup[5];
         Canvas canvas;
         TMP_FontAsset font;
         TouchControl activeControl;
         Vector2 pressPoint;
         int joyPointer = TouchShotGesture.NoPointer;
+        int runPointer = TouchShotGesture.NoPointer;
         int screenWidth, screenHeight;
         Rect previousSafe, previousRoot;
         bool configured, serving, dirty=true;
@@ -71,22 +76,33 @@ namespace PickleVerse.LocalMatch
         void Configure(IMatchTouchShotReceiver receiver)
         {
             Receiver=receiver;root=(RectTransform)transform;canvas=GetComponentInParent<Canvas>(true);
+            if(canvas&&MobileRenderPolicy.Enabled){canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.worldCamera=null;}
             var controls=GetComponentsInChildren<TouchControl>(true);
             foreach(var c in controls)
             {
                 c.Input=receiver;
                 if(c.joystick)Joystick=c;
+                else if(c.sprint)Run=c;
                 else if(c.shotMask==1)Drive=c;
                 else if(c.shotMask==2)Dink=c;
                 else if(c.shotMask==4)Volley=c;
                 else c.gameObject.SetActive(false);
             }
             if(!Joystick||!Drive||!Dink||!Volley){Debug.LogError("Touch pad needs a joystick and three technique controls.",this);return;}
+            if(!Run)
+            {
+                var runRect=Rect("Sprint",root,new Vector2(94,94));runRect.gameObject.SetActive(false);
+                runRect.gameObject.AddComponent<UnityEngine.UI.Image>();
+                Run=runRect.gameObject.AddComponent<TouchControl>();Run.sprint=true;Run.Input=receiver;
+            }
             var old=Drive.GetComponentInChildren<TMP_Text>(true);
             font=old?old.font:TMP_Settings.defaultFontAsset;
             if(!font&&canvas)foreach(var text in canvas.GetComponentsInChildren<TMP_Text>(true))if(text.font){font=text.font;break;}
             LoadArt();
             Prepare(Joystick,0,0);Prepare(Drive,1,2);Prepare(Dink,2,3);Prepare(Volley,3,4);
+            Prepare(Run,4,1);
+            var runIcon=Rect("Run icon",Run.transform,new Vector2(48,48));
+            var glyph=runIcon.gameObject.AddComponent<UiLineIcon>();glyph.glyph=ArenaGlyph.Run;glyph.color=Color.white;glyph.raycastTarget=false;
             if(Joystick.knob)
             {
                 var image=Joystick.knob.GetComponent<UnityEngine.UI.Image>();
@@ -97,7 +113,14 @@ namespace PickleVerse.LocalMatch
             var hint=root.Find("MoveLabel");if(hint)hint.gameObject.SetActive(false);
             waveRoot=Rect("Swipe waves",root,new Vector2(200,200));
             wave=waveRoot.gameObject.AddComponent<TouchWaveGraphic>();wave.raycastTarget=false;
-            for(int i=0;i<4;i++)waveLabels[i]=Label("Direction "+i,waveRoot,12);
+            for(int i=0;i<4;i++)
+            {
+                var backing=Rect("Direction "+i,waveRoot,new Vector2(i==0?94:76,28));
+                labelBackings[i]=backing.gameObject.AddComponent<UnityEngine.UI.Image>();
+                labelBackings[i].color=new Color(.025f,.06f,.10f,.96f);labelBackings[i].raycastTarget=false;
+                waveLabels[i]=Label("Label",backing,15);
+                var textRect=waveLabels[i].rectTransform;textRect.anchorMin=Vector2.zero;textRect.anchorMax=Vector2.one;textRect.offsetMin=textRect.offsetMax=Vector2.zero;
+            }
             waveLabels[1].text="CHÉO";waveLabels[2].text="LỰC";waveLabels[3].text="HỦY";
             waveRoot.gameObject.SetActive(false);
             presentation=new MobileTouchHud(receiver);
@@ -123,8 +146,9 @@ namespace PickleVerse.LocalMatch
             groups[index]=c.GetComponent<CanvasGroup>();if(!groups[index])groups[index]=c.gameObject.AddComponent<CanvasGroup>();
             if(index==0)return;
             var caption=Label("Technique caption",rect,12);
-            caption.text=index==1?"DRIVE":index==2?"DINK":"VOLLEY";
+            caption.text=index==1?"DRIVE":index==2?"DINK":index==3?"VOLLEY":"CHẠY";
             caption.rectTransform.anchoredPosition=new Vector2(0,-45);
+            if(index==4){caption.rectTransform.anchoredPosition=new Vector2(0,-59);return;}
             var combo=Label("Combo hint",rect,9);
             comboHints[index]=combo;
             combo.text=index==1?"↑ SMASH":index==2?"↑ DROP":"↑ RESET";
@@ -176,11 +200,13 @@ namespace PickleVerse.LocalMatch
             layout.drive=Customized(layout.drive,1,99,settings,defaults);
             layout.dink=Customized(layout.dink,2,99,settings,defaults);
             layout.volley=Customized(layout.volley,3,99,settings,defaults);
+            layout.run=Customized(layout.run,4,56,settings,defaults);
             // Reject overlapping custom targets while retaining safe, responsive defaults.
             if(Vector2.Distance(layout.drive,layout.dink)<100*Unit||Vector2.Distance(layout.drive,layout.volley)<100*Unit||Vector2.Distance(layout.dink,layout.volley)<94*Unit||
-                Vector2.Distance(layout.joystick,layout.drive)<160*Unit||Vector2.Distance(layout.joystick,layout.dink)<155*Unit||Vector2.Distance(layout.joystick,layout.volley)<155*Unit)
+                Vector2.Distance(layout.joystick,layout.drive)<160*Unit||Vector2.Distance(layout.joystick,layout.dink)<155*Unit||Vector2.Distance(layout.joystick,layout.volley)<155*Unit||
+                Vector2.Distance(layout.run,layout.drive)<110*Unit||Vector2.Distance(layout.run,layout.dink)<110*Unit||Vector2.Distance(layout.run,layout.volley)<110*Unit||Vector2.Distance(layout.run,layout.joystick)<160*Unit)
                 layout=MobileTouchLayout.Calculate(SafeRect,settings.touchScale,settings.leftHanded);
-            Position(Joystick,layout.joystick,146);Position(Drive,layout.drive,90);Position(Dink,layout.dink,78);Position(Volley,layout.volley,78);
+            Position(Joystick,layout.joystick,146);Position(Drive,layout.drive,84);Position(Dink,layout.dink,84);Position(Volley,layout.volley,84);Position(Run,layout.run,112);
             if(isActiveAndEnabled)presentation?.Apply();
             RefreshOpacity();
         }
@@ -202,6 +228,11 @@ namespace PickleVerse.LocalMatch
         public void Down(TouchControl control,PointerEventData e)
         {
             if(!configured||Blocked)return;
+            if(control.sprint)
+            {
+                if(runPointer!=TouchShotGesture.NoPointer)return;
+                runPointer=e.pointerId;Receiver.TouchRun=true;RefreshOpacity();return;
+            }
             if(control.joystick)
             {
                 if(joyPointer!=TouchShotGesture.NoPointer)return;
@@ -214,6 +245,7 @@ namespace PickleVerse.LocalMatch
         public void Drag(TouchControl control,PointerEventData e)
         {
             if(Blocked){CancelAll();return;}
+            if(control.sprint)return;
             if(control.joystick)
             {
                 if(joyPointer!=e.pointerId)return;
@@ -222,7 +254,7 @@ namespace PickleVerse.LocalMatch
                 Vector2 value=(p-r.rect.center)/(r.rect.width*.32f);
                 var s=GameSettings.Current;float length=value.magnitude;
                 value=length<=s.deadzone?Vector2.zero:value.normalized*Mathf.InverseLerp(s.deadzone,1,length);
-                Receiver.TouchMovement=Vector2.ClampMagnitude(value,1);Receiver.TouchRun=value.magnitude>=s.sprintThreshold;
+                Receiver.TouchMovement=Vector2.ClampMagnitude(value,1);
                 if(control.knob)control.knob.anchoredPosition=Receiver.TouchMovement*(r.rect.width*.27f);
                 return;
             }
@@ -233,10 +265,15 @@ namespace PickleVerse.LocalMatch
         }
         public void Up(TouchControl control,PointerEventData e,bool cancelled=false)
         {
+            if(control.sprint)
+            {
+                if(runPointer!=e.pointerId)return;
+                runPointer=TouchShotGesture.NoPointer;Receiver.TouchRun=false;RefreshOpacity();return;
+            }
             if(control.joystick)
             {
                 if(joyPointer!=e.pointerId)return;
-                joyPointer=TouchShotGesture.NoPointer;Receiver.TouchMovement=Vector2.zero;Receiver.TouchRun=false;
+                joyPointer=TouchShotGesture.NoPointer;Receiver.TouchMovement=Vector2.zero;
                 if(control.knob)control.knob.anchoredPosition=Vector2.zero;return;
             }
             if(activeControl!=control||Gesture.Pointer!=e.pointerId)return;
@@ -251,17 +288,22 @@ namespace PickleVerse.LocalMatch
         {
             if(!activeControl)return;
             waveRoot.gameObject.SetActive(true);waveRoot.SetAsLastSibling();
-            waveRoot.anchoredPosition=((RectTransform)activeControl.transform).anchoredPosition;waveRoot.localScale=Vector3.one*Unit;
+            Vector2 center=((RectTransform)activeControl.transform).anchoredPosition+root.rect.center;
+            center.x=Mathf.Clamp(center.x,SafeRect.xMin+145*Unit,SafeRect.xMax-145*Unit);
+            center.y=Mathf.Clamp(center.y,SafeRect.yMin+118*Unit,SafeRect.yMax-118*Unit);
+            waveRoot.anchoredPosition=center-root.rect.center;waveRoot.localScale=Vector3.one*Unit;
             wave.direction=Gesture.Direction;wave.progress=Gesture.Progress;wave.serving=serving;wave.SetVerticesDirty();
             waveLabels[0].text=Gesture.BaseMask==1?"SMASH":Gesture.BaseMask==2?"DROP":"RESET";
             for(int i=0;i<4;i++)
             {
                 bool selected=(int)Gesture.Direction==i+1;
-                float r=selected?66+Gesture.Progress*20:i==3?78:57;
+                float r=selected?66+Gesture.Progress*20:i==3?78:64;
                 Vector2 d=i==0?Vector2.up:i==1?Vector2.left:i==2?Vector2.right:Vector2.down;
-                waveLabels[i].rectTransform.anchoredPosition=d*(selected?r+1:r+5);
-                waveLabels[i].color=selected?Color.white:new Color(.9f,.95f,1,.7f);
-                waveLabels[i].gameObject.SetActive(!(serving&&i==0));
+                labelBackings[i].rectTransform.anchoredPosition=d*(r+18);
+                labelBackings[i].color=selected?new Color(.94f,.82f,.51f,1):new Color(.025f,.06f,.10f,.96f);
+                waveLabels[i].fontSize=selected?17:15;
+                waveLabels[i].color=selected?new Color(.04f,.07f,.10f,1):Color.white;
+                labelBackings[i].gameObject.SetActive(!(serving&&i==0));
             }
         }
         void RefreshOpacity()
@@ -276,13 +318,15 @@ namespace PickleVerse.LocalMatch
             groups[1].alpha=alpha*(!ready?.45f:Gesture.Active&&activeControl!=Drive?.24f:1);
             groups[2].alpha=alpha*(!ready||serve?.3f:Gesture.Active&&activeControl!=Dink?.24f:1);
             groups[3].alpha=alpha*(!ready||serve?.3f:Gesture.Active&&activeControl!=Volley?.24f:1);
+            groups[4].alpha=runPointer!=TouchShotGesture.NoPointer?1:alpha;
         }
         void CancelShot(){Gesture.Cancel();activeControl=null;if(waveRoot)waveRoot.gameObject.SetActive(false);RefreshOpacity();}
         public void CancelAll()
         {
-            CancelShot();joyPointer=TouchShotGesture.NoPointer;
+            CancelShot();joyPointer=runPointer=TouchShotGesture.NoPointer;
             if(Receiver!=null){Receiver.TouchMovement=Vector2.zero;Receiver.TouchRun=false;Receiver.TouchShotMask=0;}
             if(Joystick&&Joystick.knob)Joystick.knob.anchoredPosition=Vector2.zero;
+            RefreshOpacity();
         }
         public bool Hit(TouchControl control,Vector2 screenPoint,Camera eventCamera)
         {

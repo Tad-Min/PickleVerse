@@ -37,7 +37,7 @@ namespace PickleVerse.Settings
             baseline=GameSettings.Current.Copy();Draft=baseline.Copy();
             var canvas=GetComponent<Canvas>();
             var camera=Camera.main;
-            if(camera&&camera!=previewCamera){if(previewCamera)previewCamera.gameObject.SetActive(false);canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=camera;canvas.planeDistance=camera.nearClipPlane+.05f;}
+            if(camera&&camera!=previewCamera){if(previewCamera)previewCamera.gameObject.SetActive(false);if(MobileRenderPolicy.Enabled){canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.worldCamera=null;}else{canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=camera;canvas.planeDistance=camera.nearClipPlane+.05f;}}
             if(!EventSystem.current)
             {
                 var events=new GameObject("Settings EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));
@@ -60,7 +60,25 @@ namespace PickleVerse.Settings
             var hint=pages[0].transform.Find("PauseHint").GetComponent<TMP_Text>();
             if(!game)hint.text="Tùy chỉnh trước khi vào sân. Nút đăng xuất áp dụng cho phiên hiện tại.";
             captureOverlay.SetActive(false);confirmOverlay.SetActive(false);
-            Refresh();ShowTab(0);ShowKeyboard(!Application.isMobilePlatform);ApplySafeArea();
+            ConfigureTouchControls();Refresh();ShowTab(0);ShowKeyboard(!Application.isMobilePlatform);ApplySafeArea();
+        }
+
+        void ConfigureTouchControls()
+        {
+            string[] names={"DI CHUYỂN","DRIVE","DINK","VOLLEY","CHẠY"};
+            for(int i=0;i<touchHandles.Length;i++)
+            {
+                touchHandles[i].gameObject.SetActive(i<names.Length);
+                if(i<names.Length){var label=touchHandles[i].GetComponentInChildren<TMP_Text>(true);if(label)label.text=names[i];}
+            }
+            // Sprint is a dedicated hold button; its old joystick threshold no longer applies.
+            if(sliders.Length>7)sliders[7].gameObject.SetActive(false);
+            if(sliderValues.Length>7)sliderValues[7].gameObject.SetActive(false);
+            foreach(var label in touchPage.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if(label.text=="Ngưỡng chạy")label.gameObject.SetActive(false);
+                if(label.name=="TouchNote")label.text="Kéo nút để đổi vị trí. Giữ CHẠY để tăng tốc.\nGiữ kỹ thuật rồi kéo: ↑ combo • ← Chéo • → Lực • ↓ Hủy.";
+            }
         }
 
         void Start(){if(EventSystem.current)EventSystem.current.SetSelectedGameObject(tabs[0].gameObject);}
