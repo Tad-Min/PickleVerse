@@ -50,6 +50,25 @@ namespace PickleVerse.Tests.Services
             Assert.That(payload.Properties().Select(p => p.Name), Is.EquivalentTo(new[] { "email", "password", "confirmPassword", "isMale" }));
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public async Task ActivityClosesBeforeLogoutOrAccountSwitch(bool switchAccount)
+        {
+            bool closed = false;
+            var fake = new FakeTransport { Handler = (m,p,j,t,c) =>
+            {
+                if (p == "api/Auth/logout") Assert.That(closed, Is.True);
+                return Task.FromResult(p == "api/Profiles/me" ? Ok(Profile()) : Ok(Tokens()));
+            }};
+            var account = new AccountService(new ApiClient(fake));
+            await account.LoginAsync("first@example.invalid", "example-only");
+            account.BeforeSessionEnd = () => { Assert.That(account.IsSignedIn, Is.True); closed = true; return Task.CompletedTask; };
+            if (switchAccount) await account.LoginAsync("second@example.invalid", "example-only");
+            else await account.LogoutAsync();
+            Assert.That(closed, Is.True);
+            Assert.That(account.IsSignedIn, Is.EqualTo(switchAccount));
+        }
+
         [Test]
         public async Task LoginLoadsAuthenticatedProfileInsteadOfTrustingLocalData()
         {

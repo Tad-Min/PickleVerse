@@ -36,9 +36,18 @@ public sealed partial class OnlineGameService
             var through=session.start.AddSeconds(elapsed);
             // Serializing on the profile and crediting only uncovered time prevents
             // retries and overlapping app instances from adding the same interval twice.
-            var covered=await sql.One("SELECT max(creditedthrough) FROM appactivitysessions WHERE playerid=@id",r=>r.IsDBNull(0)?(DateTime?)null:r.GetDateTime(0),P("id",id));
-            var from=covered.HasValue&&covered.Value>session.start?covered.Value:session.start;
-            total+=Math.Max(0,(long)(through-from).TotalSeconds);
+            var from=session.start.AddSeconds(session.elapsed);
+            var covered=await sql.Query("SELECT startedat,creditedthrough FROM appactivitysessions WHERE playerid=@id AND creditedthrough>@from AND startedat<@through ORDER BY startedat",
+                r=>new{start=r.GetDateTime(0),end=r.GetDateTime(1)},P("id",id),P("from",from),P("through",through));
+            var cursor=from;double uncovered=0;
+            foreach(var interval in covered)
+            {
+                var start=interval.start<from?from:interval.start;var end=interval.end>through?through:interval.end;
+                if(start>cursor)uncovered+=(start-cursor).TotalSeconds;
+                if(end>cursor)cursor=end;
+            }
+            if(through>cursor)uncovered+=(through-cursor).TotalSeconds;
+            total+=Math.Max(0,(long)uncovered);
             await sql.Run("UPDATE appactivitysessions SET playerid=@id,elapsedseconds=@elapsed,creditedthrough=@through,closed=@closed WHERE sessionid=@session",
                 P("id",id),P("elapsed",elapsed),P("through",through),P("closed",request.Close),P("session",request.SessionId));
             await sql.Run("UPDATE playerprofiles SET timeplayedseconds=@total WHERE userid=@id",P("total",total),P("id",id));

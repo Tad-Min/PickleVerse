@@ -1,6 +1,10 @@
-# Tiến độ chuyển game sang online — cập nhật 21/10/2026
+# Tiến độ chuyển game sang online — cập nhật 22/10/2026
 
 Phạm vi đã được người dùng duyệt: lấy dữ liệu prototype Unity làm dữ liệu gốc, chuyển tiến trình sang backend, mở lại các menu/gameplay, dùng Photon và lưu replay S3. Luồng multiplayer được chốt: tìm trận → tất cả người chơi xác nhận → tải sân → bắt đầu. Không triển khai Unity dedicated server riêng.
+
+Bổ sung được duyệt 22/10: [thời gian từ mở app, 10 UUID đối thủ ảo và fallback trong phòng Photon sau 360 giây](App_Activity_Ranked_Fallback.md). Không chuyển Rank Online sang scene PvE. Đây là phần thay thế hành vi fallback trước đó.
+
+Đã kiểm chứng phần bổ sung trên Editor và Windows với thời gian chờ thực tế 360,80/360,77 giây và tổng kết +60/-60 Elo. Đã qua 22 kiểm tra backend mới, 122 kiểm tra backend hồi quy, 18 kiểm tra Unity Services, kiểm tra đồng hồ hồ sơ và chạy lại hai người thật. Hai tài khoản thử và dữ liệu trận/replay thử đã dọn; giữ 10 tài khoản ảo không đăng nhập được. Chi tiết và bằng chứng trong tài liệu liên kết trên.
 
 ## Đã kiểm chứng
 

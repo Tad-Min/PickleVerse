@@ -28,7 +28,7 @@ namespace PickleVerse.Multiplayer
             catch(Exception error){if(!quitting)SetNotice("Chưa đồng bộ trạng thái trận: "+error.Message);}
             finally{heartbeatBusy=false;}
         }
-        object OnlineRequest()=>new{Roster=Match.Data.Roster(Match.Runner.SessionInfo.Region),Session=Match.Id,
+        object OnlineRequest()=>new{SearchId=rankedSearchId,Roster=Match.Data.Roster(Match.Runner.SessionInfo.Region),Session=Match.Id,
             HostPlayerId=Match.Runner.GetPlayerUserId(Match.Lobby.Object.StateAuthority)};
         async Task PrepareOnlineMatchAsync()
         {

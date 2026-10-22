@@ -32,14 +32,14 @@ namespace PickleVerse.Multiplayer
         sealed class ActorPose
         {
             public NetworkPlayer player;public MatchActor actor;public Vector3 destination,visualPosition,visualScale;public Quaternion rotation,visualRotation;
-            public bool paddleActive; public AnimationClip walk;
+            public bool paddleActive; public AnimationClip walk; readonly int capturedEnd;
             public ActorPose(NetworkPlayer p,AnimationClip walk)
-            {player=p;actor=p.Actor;this.walk=walk;destination=actor.transform.position;rotation=actor.transform.rotation;visualPosition=actor.visual.localPosition;visualRotation=actor.visual.localRotation;visualScale=actor.visual.localScale;paddleActive=actor.paddle&&actor.paddle.activeSelf;}
+            {player=p;actor=p.Actor;this.walk=walk;capturedEnd=p.CourtEnd;destination=actor.transform.position;rotation=actor.transform.rotation;visualPosition=actor.visual.localPosition;visualRotation=actor.visual.localRotation;visualScale=actor.visual.localScale;paddleActive=actor.paddle&&actor.paddle.activeSelf;}
             public void Sample(AnimationClip clip,float time,bool celebration=false)
             {if(celebration)actor.SampleCelebration(clip,time);else actor.SampleEntrance(clip,time);actor.visual.SetLocalPositionAndRotation(visualPosition,visualRotation);actor.visual.localScale=visualScale;}
             public AnimationClip Clip(string name)=>actor.clips.FirstOrDefault(c=>c.name==name).clip;
             public void Restore()
-            {if(!actor)return;actor.ResetAt(destination,player.CourtEnd);actor.transform.rotation=rotation;actor.visual.SetLocalPositionAndRotation(visualPosition,visualRotation);actor.visual.localScale=visualScale;if(actor.paddle)actor.paddle.SetActive(paddleActive);actor.RefreshPose();}
+            {if(!actor)return;actor.ResetAt(destination,player&&player.IsSpawned?player.CourtEnd:capturedEnd);actor.transform.rotation=rotation;actor.visual.SetLocalPositionAndRotation(visualPosition,visualRotation);actor.visual.localScale=visualScale;if(actor.paddle)actor.paddle.SetActive(paddleActive);actor.RefreshPose();}
         }
         void Awake(){ui=GetComponent<MultiplayerCourtUI>();Build();}
         void Build()
@@ -56,7 +56,7 @@ namespace PickleVerse.Multiplayer
             var maskImage=sheenMask.gameObject.AddComponent<UnityEngine.UI.Image>();maskImage.raycastTarget=false;maskImage.color=Color.white;
             var mask=sheenMask.gameObject.AddComponent<UnityEngine.UI.Mask>();mask.showMaskGraphic=false;
             var sheen=MatchPresentationUi.Label("Shine",sheenMask,font,"Thắng",76,new Vector2(.5f,.5f),new Vector2(.5f,.5f),new Color(1,1,.94f));sheenText=sheen.rectTransform;
-            next=MatchPresentationUi.Button("Continue",safeArea,font,"TIẾP TỤC  →",new Vector2(.36f,.075f),new Vector2(.64f,.15f),true);
+            next=MatchPresentationUi.Button("Continue",safeArea,font,"THOÁT TRẬN  →",new Vector2(.36f,.075f),new Vector2(.64f,.15f),true);
             next.onClick.AddListener(()=>{if(OutcomeReady)ui.resultScreen.Open();});
             overlay.gameObject.SetActive(false);
         }

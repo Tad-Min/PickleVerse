@@ -90,6 +90,8 @@ namespace PickleVerse.Multiplayer
             var app=MultiplayerApp.Instance;
             if(!app) { SceneManager.LoadScene("PlayMultiplayer"); return; }
             var match=NetworkMatch.Instance;
+            if(match && match.IsSpawned && match.Finished && resultScreen && !resultScreen.IsVisible)
+            {resultScreen.Open();return;}
             if(match && match.IsSpawned && match.BetweenGames && !match.Finished)
             {
                 if(match.IsServer && !app.Busy) match.RequestNextGame();

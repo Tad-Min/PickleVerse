@@ -16,3 +16,8 @@ Không chạy toàn bộ file khởi tạo lên database đang có dữ liệu, 
 
 Hướng dẫn chạy Docker dev, cấu trúc service Unity và kết quả kiểm thử:
 [Unity – Backend Integration](Doc/Unity_Backend_Integration.md).
+
+Database cũng chứa 10 tài khoản ảo role Player dùng cho đối thủ dự phòng Rank Online
+sau 6 phút tìm người thật. Chúng không có quyền đăng nhập. Luồng vẫn chạy trong phòng
+Photon; thời gian hoạt động tính từ lúc mở app. Xem thay đổi schema và cách đồng bộ tại
+[Thời gian app và Rank Online](Doc/App_Activity_Ranked_Fallback.md).

@@ -81,7 +81,7 @@ namespace PickleVerse.Multiplayer
             if(!data.party)
             {
                 Runner.SessionInfo.IsVisible=!data.custom&&data.phase=="searching"&&!full;
-                Runner.SessionInfo.IsOpen=data.phase=="searching"||data.phase=="playing"&&data.seats.Any(s=>s.peer==0);
+                Runner.SessionInfo.IsOpen=data.phase=="searching"||data.phase=="playing"&&data.seats.Any(s=>!s.member.bot&&s.peer==0);
                 int cap=(int)data.mode;
                 Runner.SessionInfo.UpdateCustomProperties(new Dictionary<string,SessionProperty>{
                     {"fit1",data.seats.Count(s=>s.member.team==0)<cap||data.seats.Count(s=>s.member.team==1)<cap},
@@ -98,7 +98,7 @@ namespace PickleVerse.Multiplayer
             string identity=Runner.GetPlayerUserId(source);
             if(requested==null||requested.Count<1||requested.Count>(data.party?1:data.custom?2*(int)data.mode:2)
                 ||requested.All(m=>m.id!=identity)||requested.Select(m=>m.id).Distinct().Count()!=requested.Count
-                ||requested.Any(m=>!Guid.TryParse(m.id,out _)||string.IsNullOrWhiteSpace(m.name)||m.name.Length>18))
+                ||requested.Any(m=>m.bot||RankedBotAccounts.Contains(m.id)||!Guid.TryParse(m.id,out _)||string.IsNullOrWhiteSpace(m.name)||m.name.Length>18))
             {Reject(source,"Thông tin người chơi không hợp lệ.");return;}
             var existing=data.seats.FirstOrDefault(s=>s.member.id==identity);
             if(existing!=null)
@@ -137,7 +137,19 @@ namespace PickleVerse.Multiplayer
             {BeginReady(data);Save(data);}
         }
         void BeginReady(PhotonRoomData data)
-        {data.phase="ready";data.deadline=Runner.SimulationTime+MatchReadyPolicy.Seconds;foreach(var seat in data.seats)seat.decision=ReadyDecision.Pending;}
+        {data.phase="ready";data.deadline=Runner.SimulationTime+MatchReadyPolicy.Seconds;foreach(var seat in data.seats)seat.decision=seat.member.bot?ReadyDecision.Accepted:ReadyDecision.Pending;}
+        public bool TryBeginRankedFallback()
+        {
+            if(!HasStateAuthority||Data.party||Data.custom||Data.mode!=PlayMode.Singles||Data.phase!="searching"||Data.seats.Count!=1||Data.seats[0].member.bot||Data.seats[0].peer==0)return false;
+            Data.phase="assigning-bot";Save(Data);return true;
+        }
+        public void CompleteRankedFallback(RoomMember bot)
+        {
+            if(!HasStateAuthority||Data.phase!="assigning-bot"||Data.seats.Count!=1||!bot.bot||!RankedBotAccounts.Contains(bot.id))throw new InvalidOperationException("Phòng không còn nhận đối thủ dự phòng.");
+            bot.team=1-Data.seats[0].member.team;Data.seats.Add(new PhotonSeat{member=bot,peer=0});
+            BeginReady(Data);Save(Data);
+        }
+        public void ResumeHumanSearch(){if(HasStateAuthority&&Data.phase=="assigning-bot"){Data.phase="searching";Save(Data);}}
         void Reject(PlayerRef player,string reason)=>PhotonSession.Find(Runner).Send(player,Object,"reject",reason);
         void ReadyFrom(bool accept,PlayerRef source)
         {

@@ -12,7 +12,7 @@ public sealed partial class OnlineGameService
     }
     public Task<GameSnapshot> StartBot(Guid id,MatchStartRequest request) => Execute(id,request.RequestId,"bot-start",request,async s=>
     {
-        if(request.Kind!=MatchKind.BotPractice && request.Kind!=MatchKind.RankedBot) throw Bad("Chế độ đấu bot không hợp lệ.");
+        if(request.Kind!=MatchKind.BotPractice) throw Bad("Rank phải tìm trận online và chờ đủ 6 phút để được cấp đối thủ dự phòng.");
         if(s.Player.pendingMatch is { } pending)
         {
             if(!pending.Bot)throw Conflict("Bạn cần hoàn tất hoặc rời trận online hiện tại trước.");
@@ -80,7 +80,6 @@ public sealed partial class OnlineGameService
                 :(result.outcome==MatchOutcome.Won?rewards.onlineWinReward:rewards.onlineLossReward);
             ProgressionEngine.Grant(s.Player,new RewardBundle(coins,0,0));
         }
-        s.Player.activeSeconds+=Math.Max(0,TimeSpan.FromTicks(result.endedUtcTicks-result.startedUtcTicks).TotalSeconds);
         await sql.Run("UPDATE gamematches SET status='FINISHED',data=@data::jsonb,updatedat=@now WHERE matchid=@match",
             P("data",GameJson.Write(stored)),P("now",Now),P("match",Guid.Parse(result.id)));
         await sql.Run("INSERT INTO matchhistory(matchid,createdat,matchtype,teamascore,teambscore) VALUES(@match,@now,@kind,@own,@opponent) ON CONFLICT DO NOTHING",

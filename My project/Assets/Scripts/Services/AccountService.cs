@@ -16,6 +16,7 @@ namespace PickleVerse.Services
         public bool IsSignedIn => !string.IsNullOrEmpty(accessToken) && Profile != null;
         public int SessionVersion => generation;
         public event Action Changed;
+        public Func<Task> BeforeSessionEnd { get; set; }
         public AccountService(ApiClient api) { this.api = api; }
 
         public async Task RegisterAsync(RegisterRequest request, CancellationToken cancellation = default)
@@ -30,6 +31,7 @@ namespace PickleVerse.Services
 
         public async Task LoginAsync(string email, string password, CancellationToken cancellation = default)
         {
+            if (IsSignedIn && BeforeSessionEnd != null) await BeforeSessionEnd();
             Clear(); int attempt = generation;
             var result = await api.SendAsync<AuthResponse>("POST", "api/Auth/login", new LoginRequest { Email = email, Password = password }, cancellation: cancellation);
             ValidateTokens(result);
@@ -54,6 +56,7 @@ namespace PickleVerse.Services
             int version = generation;
             try
             {
+                if (IsSignedIn && BeforeSessionEnd != null) await BeforeSessionEnd();
                 if (IsSignedIn) await AuthorizedAsync<ApiMessage>("POST", "api/Auth/logout", new RefreshTokenRequest { RefreshToken = refreshToken }, cancellation);
             }
             finally { if (version == generation) Clear(); }

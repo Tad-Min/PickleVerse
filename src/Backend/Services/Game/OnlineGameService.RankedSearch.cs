@@ -41,7 +41,7 @@ public sealed partial class OnlineGameService
         if(search==null||search.cancelled)throw Conflict("Lượt tìm trận đã bị hủy.");
         if(Now<search.start.AddSeconds(360))throw Conflict("Chưa đủ 6 phút tìm đối thủ thật.");
         Guid bot;
-        int elo=EloPolicy.BotElo(s.Player.elo,s.Player.rankLossStreak);
+        int elo=Math.Max(EloPolicy.Minimum,EloPolicy.BotElo(s.Player.elo,s.Player.rankLossStreak));
         if(search.bot.HasValue)
         {
             if(search.match!=request.MatchId||search.session!=request.Session)throw Conflict("Bot đã được cấp cho phòng khác.");

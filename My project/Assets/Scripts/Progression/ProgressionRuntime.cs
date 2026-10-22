@@ -124,6 +124,11 @@ namespace PickleVerse.Progression
         public void SwitchPlayer(string id, string name) => throw new InvalidOperationException("Hãy đăng xuất và đăng nhập tài khoản khác.");
         public void UpdateWallet(Action<PlayerProfile> mutation) => throw new InvalidOperationException("Cửa hàng chưa sẵn sàng.");
         public void Save() { }
+        void Update()
+        {
+            if (Ready && AppActivityRuntime.Instance)
+                player.activeSeconds = Math.Max(player.activeSeconds, AppActivityRuntime.Instance.Seconds);
+        }
         void OnApplicationQuit() { Quitting?.Invoke(); shuttingDown = true; }
         void OnDestroy()
         {

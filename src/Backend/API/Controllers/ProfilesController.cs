@@ -55,12 +55,9 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost("sync-time")]
-        public async Task<IActionResult> SyncTime([FromBody] SyncTimeRequest request)
+        public IActionResult SyncTime([FromBody] SyncTimeRequest request)
         {
-            var userId = GetCurrentUserId();
-            var success = await _profileService.SyncTimePlayedAsync(userId, request.PlayedSeconds);
-            if (!success) return BadRequest(new { message = "Đồng bộ giờ chơi thất bại." });
-            return Ok(new { message = "Đồng bộ giờ chơi thành công." });
+            return StatusCode(410,new { message = "Dùng api/Game/activity/open và activity/checkpoint để đồng bộ phiên mở app, tránh cộng thời gian trùng." });
         }
 
         [HttpGet("leaderboard")]

@@ -73,7 +73,7 @@ try
         await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
         await command.ExecuteNonQueryAsync();
     }
-    if (args.Contains("--check-online-game") || args.Contains("--check-online-multiplayer") || args.Contains("--check-online-social"))
+    if (args.Contains("--check-online-game") || args.Contains("--check-online-multiplayer") || args.Contains("--check-online-social") || args.Contains("--check-app-ranked"))
     {
         await using var fixture = new NpgsqlConnection(testBuilder.ConnectionString);
         await fixture.OpenAsync();
@@ -83,7 +83,13 @@ try
             INSERT INTO playerprofiles(userid,playername) SELECT userid,'GameCheck' FROM inserted;
             """,fixture);
         await command.ExecuteNonQueryAsync();
-        if(args.Contains("--check-online-social"))await SocialChecks.Run(options,Check);
+        if(args.Contains("--check-app-ranked"))
+        {
+            await using var testContext=new PickleVerseContext(options);
+            var id=await testContext.Users.Where(u=>u.Email=="race-check@example.invalid").Select(u=>u.Userid).SingleAsync();
+            await ActivityRankedChecks.Run(options,time,Check,id);
+        }
+        else if(args.Contains("--check-online-social"))await SocialChecks.Run(options,Check);
         else if(args.Contains("--check-online-multiplayer"))
         {
             await using var testContext=new PickleVerseContext(options);
@@ -103,7 +109,8 @@ try
     var invalidRegistration = await Call(s => s.RegisterAsync(new RegisterRequest { Email = "invalid@example.invalid", Password = "IntegrationPass!23", ConfirmPassword = "DifferentPass!23" }));
     Check(!invalidRegistration.Success && invalidRegistration.Code == "password_confirmation_mismatch", "service rejects mismatched confirmation");
     using (var context = new PickleVerseContext(options))
-        Check(!await context.Users.AnyAsync() && mail.Codes.Count == 0, "invalid confirmation creates no account or OTP");
+        Check(await context.Users.CountAsync() == 10 && mail.Codes.Count == 0, "invalid confirmation creates no account or OTP beyond the ten virtual accounts");
+    Check(!(await Login("rank-bot-1@players.pickleverse.invalid")).Success,"virtual ranked accounts cannot sign in");
     const string email = "online-check@example.invalid";
     string defaultName = await Register(email, "AuthCheck", isMale: false); string code = mail.Codes[email];
     Check((await Login(email)).Code == "email_not_verified", "unverified login rejected");
@@ -140,7 +147,7 @@ try
     var beforeBan = await Login(email);
     using (var context = new PickleVerseContext(options))
     {
-        var user = await context.Users.SingleAsync(); user.Status = "SUSPENDED"; await context.SaveChangesAsync();
+        var user = await context.Users.SingleAsync(u=>u.Email==email); user.Status = "SUSPENDED"; await context.SaveChangesAsync();
     }
     Check((await Login(email)).Code == "account_inactive", "suspended login rejected");
     Check((await Refresh(beforeBan.RefreshToken!)).Code == "account_inactive", "suspended refresh rejected");

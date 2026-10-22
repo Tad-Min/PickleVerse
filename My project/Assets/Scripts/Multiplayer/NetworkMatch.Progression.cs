@@ -32,7 +32,7 @@ namespace PickleVerse.Multiplayer
             var enemies=Roster.members.Where(m=>m.team!=member.team).ToList();
             return new MatchResult {
                 id=Roster.matchId, startedUtcTicks=StartedUtc,
-                kind=Roster.custom?MatchKind.Custom:Roster.RankedBot?MatchKind.RankedBot:Roster.mode==PlayMode.Singles?MatchKind.RankedSingles:MatchKind.MatchedDoubles,
+                kind=Roster.custom?MatchKind.Custom:Roster.mode==PlayMode.Singles?MatchKind.RankedSingles:MatchKind.MatchedDoubles,
                 ownElo=member.elo, opponentElo=enemies[0].elo,
                 opponents=enemies.Select(m=>new OpponentInfo {id=m.id,name=m.name,elo=m.elo}).ToList()
             };
