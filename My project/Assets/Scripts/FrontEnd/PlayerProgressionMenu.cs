@@ -32,13 +32,18 @@ namespace PickleVerse.FrontEnd
         bool priorMenuInteraction=true;
         double nextTick;
         bool buildingShell;
-        static readonly Color Ink=new Color(.025f,.065f,.095f), Surface=new Color(.045f,.115f,.15f), Card=new Color(.075f,.16f,.20f), Mint=new Color(.45f,.86f,.77f), Lime=new Color(.79f,.96f,.45f), White=new Color(.94f,.97f,.96f), Muted=new Color(.63f,.75f,.79f);
+        bool opened;
+        public bool IsOpen=>opened;
+        long listRevision;
+        PickleVerse.Settings.UiListPages listPages;
+        static readonly Color Ink=PickleVerse.Settings.LobbyPanelStyle.Background, Surface=PickleVerse.Settings.LobbyPanelStyle.Surface, Card=PickleVerse.Settings.LobbyPanelStyle.Card, Mint=PickleVerse.Settings.ScreenUiTheme.Mint, Lime=PickleVerse.Settings.ScreenUiTheme.Gold, White=PickleVerse.Settings.ScreenUiTheme.Text, Muted=PickleVerse.Settings.ScreenUiTheme.Muted;
 
         void Awake()
         {
             if(!modal) BuildShell();
             else ConfigureEditForm();
             ConfigureTrainingUI();
+            ApplyPresentation();
             if(!progressionButton)progressionButton=GetComponentsInChildren<Button>(true).FirstOrDefault(b=>b.name=="BtnProgression");
             if(progressionButton){progressionButton.interactable=true;progressionButton.onClick.AddListener(OpenTrainingProgress);}
             var menuRoot=transform.Find("HomeSafeArea");
@@ -57,13 +62,14 @@ namespace PickleVerse.FrontEnd
             careerButton.onClick.AddListener(OpenCareer);
             editButton.onClick.AddListener(OpenEditor);
             editButton.gameObject.SetActive(ProgressionRuntime.DeveloperControls);
-            ProgressionRuntime.Changed+=Refresh;
+            ProgressionRuntime.Changed+=ProgressionChanged;
             Close(); Refresh();
         }
-        void OnDestroy() { ProgressionRuntime.Changed-=Refresh;PickleVerse.Settings.FrontEndModalInput.Release(this); }
+        void OnDestroy() { ProgressionRuntime.Changed-=ProgressionChanged;PickleVerse.Settings.FrontEndModalInput.Release(this); }
+        void ProgressionChanged(){listRevision++;Refresh();}
         void Update()
         {
-            if(!modal.gameObject.activeSelf) return;
+            if(!opened) return;
             ApplySafeArea();
             if(Keyboard.current?.escapeKey.wasPressedThisFrame==true) Close();
             if(Time.realtimeSinceStartupAsDouble>=nextTick)
@@ -82,18 +88,19 @@ namespace PickleVerse.FrontEnd
         {
             GetComponent<OfflineSocialMenu>()?.Close();
             if(!PickleVerse.Settings.FrontEndModalInput.TryAcquire(this))return;
-            if(!modal.gameObject.activeSelf)
+            if(!opened)
             {
                 priorSelection=EventSystem.current?.currentSelectedGameObject;
                 if(menuInteraction) { priorMenuInteraction=menuInteraction.interactable; menuInteraction.interactable=false; }
             }
-            view=next; modal.gameObject.SetActive(true); modal.SetAsLastSibling(); ApplySafeArea(); Refresh();
+            opened=true;view=next;modal.SetAsLastSibling();ApplySafeArea();Refresh();
+            modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Show();
             EventSystem.current?.SetSelectedGameObject(modal.Find("SafeArea/Window/Close").gameObject);
         }
         public void Close()
         {
             if(!modal) return;
-            modal.gameObject.SetActive(false);
+            opened=false;modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
             PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction) menuInteraction.interactable=priorMenuInteraction;
             if(EventSystem.current && priorSelection && priorSelection.activeInHierarchy) EventSystem.current.SetSelectedGameObject(priorSelection);
@@ -105,46 +112,58 @@ namespace PickleVerse.FrontEnd
             modalSafe.anchorMin=new Vector2(area.xMin/Screen.width,area.yMin/Screen.height);
             modalSafe.anchorMax=new Vector2(area.xMax/Screen.width,area.yMax/Screen.height);
             modalSafe.offsetMin=modalSafe.offsetMax=Vector2.zero;
+            LayoutPresentation();
         }
         public void Refresh()
         {
             if(!Application.isPlaying || !ProgressionRuntime.Exists) return;
             var player=ProgressionRuntime.Instance.Player; var engine=ProgressionRuntime.Instance.Engine;
             menuName.text=player.playerName; menuLevel.text=$"LV {player.level}  ·  {EloPolicy.Rank(player.elo)}  {player.elo}";
-            wallet.text=$"<color=#C9F573>TOKENPAD</color>  {player.coins:N0}    <color=#73DCC4>ELITE TOKEN</color>  {player.gems:N0}";
-            if(!modal.gameObject.activeSelf) return;
+            wallet.text=$"<color=#8FE9D8>TOKENPAD</color>  {player.coins:N0}    <color=#E8CD9E>ELITE TOKEN</color>  {player.gems:N0}";
+            if(!opened) return;
             Render(player,engine);
         }
         void Render(PlayerProfile p,ProgressionEngine engine)
         {
+            PickleVerse.Settings.UiListPages.Page page=null;
+            bool rebuild=false;
+            if(view!=View.Edit)
+            {
+                if(listPages==null)listPages=new PickleVerse.Settings.UiListPages(scroll,content);
+                page=listPages.Select(view.ToString());
+                if(content!=page.content){content=page.content;rows=null;}
+                rebuild=page.revision!=listRevision;
+                if(rebuild)ClearRows();else activeTime=page.context as TMP_Text;
+            }
             bool profile=view==View.Statistics || view==View.Achievements, missions=view==View.Daily || view==View.Weekly, training=view==View.Training;
-            title.text=training?"TIẾN TRÌNH LUYỆN TẬP":profile?"HỒ SƠ":missions?"NHIỆM VỤ":view==View.Career?"LỊCH SỬ THI ĐẤU":"CHỈNH PLAYER";
+            title.text=training?"Tiến trình luyện tập":view==View.Achievements?"Thành tựu":profile?"Hồ sơ":missions?"Nhiệm vụ":view==View.Career?"Lịch sử thi đấu":"Chỉnh player";
             subtitle.text=training?"THÀNH THẠO KỸ THUẬT • LỖI THƯỜNG GẶP • TIẾP TỤC LUYỆN":profile?"THỐNG KÊ VÀ TIẾN TRÌNH":missions?"TÍCH LŨY TIẾN TRÌNH • NHẬN PHẦN THƯỞNG":view==View.Career?"20 TRẬN GẦN NHẤT • GIỜ VIỆT NAM":"EDITOR / DEVELOPMENT BUILD";
             identityName.text=p.playerName; identityId.text="ID\n"+p.id;
-            identityRank.text=$"<color=#C9F573>{EloPolicy.Rank(p.elo).ToUpperInvariant()}</color>\n{p.elo:N0} ELO";
+            UpdateAvatar(p);
+            identityRank.text=$"<color=#E8CD9E>{EloPolicy.Rank(p.elo).ToUpperInvariant()}</color>\n{p.elo:N0} ELO";
             statsTab.gameObject.SetActive(profile); achievementTab.gameObject.SetActive(profile);
             dailyTab.gameObject.SetActive(missions||training); weeklyTab.gameObject.SetActive(missions||training);trainingTab.gameObject.SetActive(missions||training);
             Tab(statsTab,view==View.Statistics); Tab(achievementTab,view==View.Achievements); Tab(dailyTab,view==View.Daily); Tab(weeklyTab,view==View.Weekly);
+            Tab(trainingTab,training);
             summary.gameObject.SetActive(view!=View.Edit); editForm.gameObject.SetActive(view==View.Edit);
             scroll.gameObject.SetActive(view!=View.Edit);
             levelText.gameObject.SetActive(profile || view==View.Career); xpText.gameObject.SetActive(profile || view==View.Career);
             xpFill.transform.parent.gameObject.SetActive(profile || view==View.Career);
             countdown.gameObject.SetActive(missions); summaryFill.transform.parent.gameObject.SetActive(missions||training); bonusButton.gameObject.SetActive(missions||training);
             summaryText.gameObject.SetActive(missions||training);
-            levelText.text=$"LEVEL {p.level}"; xpText.text=$"{p.levelXp:N0} / {p.NextLevelXp:N0} XP";
+            levelText.text=$"LEVEL {p.level}";levelText.color=Lime; xpText.text=$"{p.levelXp:N0} / {p.NextLevelXp:N0} XP";
             Fill(xpFill,p.levelXp/(float)p.NextLevelXp);
-            ClearRows();
-            if(training) BuildTrainingProgress(p);
-            else if(view==View.Statistics) BuildStatistics(p);
+            if(training) BuildTrainingProgress(p,rebuild);
+            else if(view==View.Statistics){if(rebuild)BuildStatistics(p);else RefreshStatisticsTime();}
             else if(view==View.Achievements || missions)
             {
-                if(view==View.Daily&&p.dailyStreak!=null)
+                if(rebuild&&view==View.Daily&&p.dailyStreak!=null)
                 {
                     var streak=p.dailyStreak;bool played=streak.days.Contains(ProgressionEngine.DayKey(DateTime.UtcNow));
                     AddMessage("DAILY STREAK · "+streak.current+" ngày",(played?"Đã chơi hôm nay":"Chơi ít nhất một trận để giữ chuỗi")+"\nDài nhất: "+streak.best+" ngày · Đổi ngày lúc 07:00 giờ Việt Nam");
                 }
                 var scope=view==View.Achievements?ProgressScope.Achievement:view==View.Daily?ProgressScope.Daily:ProgressScope.Weekly;
-                foreach(var def in engine.Config.definitions.Where(d=>d.scope==scope)) AddProgressRow(p,engine,def);
+                if(rebuild)foreach(var def in engine.Config.definitions.Where(d=>d.scope==scope)) AddProgressRow(p,engine,def);
                 if(missions)
                 {
                     int count=engine.Count(scope), completed=engine.Completed(p,scope);
@@ -158,8 +177,11 @@ namespace PickleVerse.FrontEnd
             }
             else if(view==View.Career)
             {
-                if(p.history.Count==0) AddMessage("Chưa có trận đấu", "Hoàn tất một trận để lưu đối thủ và tỷ số tại đây.");
-                foreach(var result in p.history) AddHistory(result);
+                if(rebuild)
+                {
+                    if(p.history.Count==0) AddMessage("Chưa có trận đấu", "Hoàn tất một trận để lưu đối thủ và tỷ số tại đây.");
+                    foreach(var result in p.history) AddHistory(result);
+                }
             }
             else
             {
@@ -169,7 +191,12 @@ namespace PickleVerse.FrontEnd
                 editEliteToken.SetTextWithoutNotify(p.gems.ToString(CultureInfo.InvariantCulture));
                 feedback.text="Lưu player đang dùng. Chuyển ID để tải hoặc tạo player khác.";
             }
-            Canvas.ForceUpdateCanvases(); LayoutRebuilder.ForceRebuildLayoutImmediate(content); scroll.verticalNormalizedPosition=1;
+            if(rebuild)
+            {
+                page.revision=listRevision;page.context=activeTime;
+                LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+            }
+            scroll.verticalNormalizedPosition=1;
             UpdateCountdown();
         }
         TMP_Text activeTime;
@@ -191,8 +218,8 @@ namespace PickleVerse.FrontEnd
         {
             var row=Row(def.id,130); long progress=engine.Progress(p,def); bool claimed=engine.Claimed(p,def), done=progress>=def.target;
             Text("Title",row,def.title,19,White,new Vector2(0,.57f),new Vector2(.66f,1),new Vector2(18,0),new Vector2(-12,-8));
-            var fill=Bar("Progress",row,new Vector2(.02f,.17f),new Vector2(.65f,.42f)); Fill(fill,progress/(float)def.target);
-            Text("Count",(RectTransform)fill.transform.parent,$"{Math.Min(progress,def.target):N0} / {def.target:N0}",16,White,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
+            var fill=Bar("Progress",row,new Vector2(.025f,.22f),new Vector2(.51f,.28f)); Fill(fill,progress/(float)def.target);
+            Text("Count",row,$"{Math.Min(progress,def.target):N0} / {def.target:N0}",15,White,new Vector2(.53f,.10f),new Vector2(.65f,.40f),Vector2.zero,Vector2.zero,TextAlignmentOptions.MidlineRight);
             Text("Reward",row,def.reward.ToString(),14,Muted,new Vector2(.68f,.53f),new Vector2(.98f,.98f),Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
             var claim=MakeButton("Claim",row,claimed?"ĐÃ NHẬN":done?"NHẬN THƯỞNG":"CHƯA ĐẠT",()=>Claim(def.id),new Vector2(.69f,.15f),new Vector2(.97f,.51f),done&&!claimed?Lime:Surface,done&&!claimed?Ink:Muted,15);
             claim.interactable=done&&!claimed;
@@ -219,12 +246,12 @@ namespace PickleVerse.FrontEnd
             Text("Time",row,result.KindLabel+"  ·  "+time,14,Muted,new Vector2(0,.29f),new Vector2(.73f,.57f),new Vector2(18,0),Vector2.zero);
             Text("Outcome",row,$"{result.OutcomeLabel}\n{result.gamesWon} : {result.gamesLost} game  ·  {(result.eloDelta>=0?"+":"")}{result.eloDelta} Elo",17,result.outcome==MatchOutcome.Won?Lime:Mint,new Vector2(.71f,.26f),new Vector2(.98f,.97f),Vector2.zero,Vector2.zero,TextAlignmentOptions.MidlineRight);
             var detail=Text("Detail",row,"Bấm để xem tỷ số từng game",13,Muted,new Vector2(0,0),new Vector2(.98f,.28f),new Vector2(18,4),new Vector2(-12,0));
-            var button=row.gameObject.AddComponent<Button>(); button.targetGraphic=row.GetComponent<Image>(); StyleButton(button,Card); bool expanded=false;
+            var button=row.GetComponent<Button>()??row.gameObject.AddComponent<Button>(); button.targetGraphic=row.GetComponent<Image>(); StyleButton(button,Card); bool expanded=false;
             var replayLabel=PickleVerse.Replays.ReplayStorage.Availability(result.playerId,result.id);
-            var replayRect=new GameObject("WatchReplay",typeof(RectTransform),typeof(Image),typeof(Button)).GetComponent<RectTransform>();replayRect.SetParent(row,false);
+            var replayRect=Panel("WatchReplay",row,Card);var replayControl=replayRect.GetComponent<Button>()??replayRect.gameObject.AddComponent<Button>();
             replayRect.anchorMin=new Vector2(.53f,0);replayRect.anchorMax=new Vector2(.98f,.27f);replayRect.offsetMin=replayRect.offsetMax=Vector2.zero;
             replayRect.GetComponent<Image>().color=Card;
-            var replayButton=replayRect.GetComponent<Button>();StyleButton(replayButton,Card);replayButton.interactable=replayLabel.StartsWith("Xem replay",StringComparison.Ordinal);
+            var replayButton=replayControl;StyleButton(replayButton,Card);replayButton.interactable=replayLabel.StartsWith("Xem replay",StringComparison.Ordinal);
             Text("Label",replayRect,replayLabel,13,Mint,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
             replayButton.onClick.AddListener(()=>{float prior=scroll.verticalNormalizedPosition;Close();PickleVerse.Replays.ReplayLaunch.Select(result.playerId,result.id,()=>{PickleVerse.Shop.LobbyNavigation.ReturnToLobby();StartCoroutine(RestoreHistory(prior));});PickleVerse.Shop.LobbyNavigation.OpenReplay();});
             button.onClick.AddListener(()=> {
@@ -234,7 +261,7 @@ namespace PickleVerse.FrontEnd
             });
         }
         void AddMessage(string heading,string body)
-        { var row=Row("Empty",120); Text("Message",row,heading+"\n<size=17><color=#A1BFC9>"+body+"</color></size>",24,White,Vector2.zero,Vector2.one,new Vector2(24,0),new Vector2(-24,0),TextAlignmentOptions.Center); }
+        { var row=Row("Empty",96); Text("Message",row,heading+"\n<size=15><color=#A4B5CF>"+body+"</color></size>",21,White,Vector2.zero,Vector2.one,new Vector2(24,0),new Vector2(-24,0),TextAlignmentOptions.Center); }
         System.Collections.IEnumerator RestoreHistory(float position)
         {
             yield return null;while(PickleVerse.Shop.LobbyNavigation.IsBusy)yield return null;
@@ -368,28 +395,28 @@ namespace PickleVerse.FrontEnd
         void ClearRows()
         {
             activeTime=null;
-            foreach(Transform row in content.Cast<Transform>().ToArray()) { row.SetParent(null); if(Application.isPlaying) Destroy(row.gameObject); else DestroyImmediate(row.gameObject); }
+            Rows.ReleaseAll();
         }
         RectTransform Row(string name,float height)
-        { var row=Panel(name,content,Card); var layout=row.gameObject.AddComponent<LayoutElement>(); layout.preferredHeight=height; layout.minHeight=height; return row; }
+        { return Rows.Take(name=="Empty"?"Message":name=="Insights"?"Insights":view==View.Statistics?"Stat":view==View.Career?"History":view==View.Training?"Training":"Mission",name,height); }
         public RectTransform Rect(string name,Transform parent,Vector2 min,Vector2 max)
-        { var rect=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>(); rect.SetParent(parent,false); rect.anchorMin=min; rect.anchorMax=max; rect.offsetMin=rect.offsetMax=Vector2.zero; return rect; }
+        { var rect=parent.Find(name) as RectTransform;if(!rect){rect=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();rect.SetParent(parent,false);} rect.anchorMin=min; rect.anchorMax=max; rect.offsetMin=rect.offsetMax=Vector2.zero; return rect; }
         public RectTransform Panel(string name,Transform parent,Color color,Vector2? min=null,Vector2? max=null)
-        { var rect=Rect(name,parent,min??Vector2.zero,max??Vector2.one); var image=rect.gameObject.AddComponent<Image>(); image.color=color; image.sprite=rounded; image.type=Image.Type.Sliced; return rect; }
+        { var rect=Rect(name,parent,min??Vector2.zero,max??Vector2.one); var image=rect.GetComponent<Image>()??rect.gameObject.AddComponent<Image>(); image.color=color; image.sprite=rounded; image.type=Image.Type.Sliced;image.raycastTarget=false; return rect; }
         public TMP_Text Text(string name,Transform parent,string value,int size,Color color,Vector2 min,Vector2 max,Vector2 offsetMin,Vector2 offsetMax,TextAlignmentOptions alignment=TextAlignmentOptions.MidlineLeft)
         {
             var rect=Rect(name,parent,min,max); rect.offsetMin=offsetMin; rect.offsetMax=offsetMax;
-            var text=rect.gameObject.AddComponent<TextMeshProUGUI>(); text.font=font; text.text=value; text.fontSize=size; text.color=color; text.alignment=alignment; text.raycastTarget=false; text.textWrappingMode=TextWrappingModes.Normal; text.overflowMode=TextOverflowModes.Ellipsis; return text;
+            var text=rect.GetComponent<TextMeshProUGUI>()??rect.gameObject.AddComponent<TextMeshProUGUI>(); text.font=font; text.text=value; text.fontSize=size; text.color=color; text.alignment=alignment; text.raycastTarget=false; text.textWrappingMode=TextWrappingModes.Normal; text.overflowMode=TextOverflowModes.Ellipsis; return text;
         }
         Image Bar(string name,Transform parent,Vector2 min,Vector2 max)
         { var track=Panel(name,parent,Ink,min,max); return Panel("Fill",track,Mint).GetComponent<Image>(); }
         static void Fill(Image image,float amount) { image.rectTransform.anchorMax=new Vector2(Mathf.Clamp01(amount),1); image.rectTransform.offsetMin=image.rectTransform.offsetMax=Vector2.zero; }
         public Button MakeButton(string name,Transform parent,string caption,UnityEngine.Events.UnityAction action,Vector2 min,Vector2 max,Color color,Color textColor,int fontSize)
-        { var rect=Panel(name,parent,color,min,max); var button=rect.gameObject.AddComponent<Button>(); button.targetGraphic=rect.GetComponent<Image>(); StyleButton(button,color); Text("Label",rect,caption,fontSize,textColor,Vector2.zero,Vector2.one,new Vector2(8,0),new Vector2(-8,0),TextAlignmentOptions.Center); if(Application.isPlaying && !buildingShell) button.onClick.AddListener(action); return button; }
+        { var rect=Panel(name,parent,color,min,max); var button=rect.GetComponent<Button>()??rect.gameObject.AddComponent<Button>(); button.targetGraphic=rect.GetComponent<Image>();button.onClick.RemoveAllListeners(); StyleButton(button,color); Text("Label",rect,caption,fontSize,textColor,Vector2.zero,Vector2.one,new Vector2(10,0),new Vector2(-10,0),TextAlignmentOptions.Center);PickleVerse.Settings.LobbyPanelStyle.Button(button,color==Lime); if(Application.isPlaying && !buildingShell) button.onClick.AddListener(action); return button; }
         static TMP_Text Label(Button button) => button.GetComponentInChildren<TMP_Text>();
         static void StyleButton(Button button,Color color)
         { var colors=button.colors; colors.normalColor=Color.white; colors.highlightedColor=new Color(1.13f,1.13f,1.13f); colors.pressedColor=new Color(.72f,.8f,.8f); colors.selectedColor=new Color(1.1f,1.1f,1.1f); colors.disabledColor=new Color(.65f,.65f,.65f); button.colors=colors; }
         static void Tab(Button button,bool selected)
-        { button.GetComponent<Image>().color=selected?Mint:Card; Label(button).color=selected?Ink:White; }
+        { PickleVerse.Settings.LobbyPanelStyle.Tab(button,selected); }
     }
 }
