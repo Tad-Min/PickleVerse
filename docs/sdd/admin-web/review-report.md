@@ -107,7 +107,7 @@ Toàn bộ 6 Milestones và 23 tasks trong [docs/sdd/admin-web/plan.md](file:///
 
 ### Milestone 6: Quality Gate & Documentation
 - **Status**: PASSED (Clean)
-- **Observations**: Sách hướng dẫn vận hành [Administrator_Guide.md](file:///d:/Repository/PickleVerse/Doc/Administrator_Guide.md) được hoàn thiện đầy đủ.
+- **Observations**: Sách hướng dẫn vận hành [Administrator_Guide.md](../../../Doc/PickleVerse_Project_Documentation.md#doc-administrator-guide) được hoàn thiện đầy đủ.
 - **Nit / Suggestion**: File bundle `index-Bow8eoO4.js` có kích thước ~712kB (do gom chung Recharts và Radix icons). Trong tương lai có thể bổ sung `React.lazy()` để code-split từng trang nhằm tối ưu thời gian tải thêm 30%.
 
 ---

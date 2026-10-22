@@ -262,7 +262,7 @@
   - **Files:** Toàn bộ thư mục `src/Frontend/`
   - **Test/Check:** Chạy `npm run lint` và `tsc --noEmit` đạt 0 lỗi, không còn `console.log` debug rác trong production code.
 - [x] **Task 6.3 — End-to-End Verification Run & Admin Guide Documentation**
-  - **Files:** `Doc/Administrator_Guide.md`
+  - **Files:** [Doc/Administrator_Guide.md](../../../Doc/PickleVerse_Project_Documentation.md#doc-administrator-guide)
   - **Test/Check:** Thực hiện kịch bản E2E hoàn chỉnh: Đăng nhập Admin $\rightarrow$ Khóa/Mở tài khoản $\rightarrow$ Tạo bài học/Drill $\rightarrow$ Xem trận đấu polling $\rightarrow$ Duyệt vi phạm $\rightarrow$ Xem Heatmap AI. Viết tài liệu hướng dẫn vận hành cho Quản trị viên theo đúng cam kết trong Proposal.
 
 ---

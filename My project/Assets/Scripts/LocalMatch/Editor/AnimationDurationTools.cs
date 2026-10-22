@@ -15,7 +15,13 @@ namespace PickleVerse.LocalMatch.Editor
         const string ReportFolder = "../UnityWork/AnimationDuration";
         public static Dictionary<string, float> Targets()
         {
-            var rows = Regex.Matches(File.ReadAllText("../Doc/duration_animation.md"),
+            var documentation = File.ReadAllText("../Doc/PickleVerse_Project_Documentation.md");
+            const string beginMarker = "<!-- BEGIN SOURCE: duration_animation.md -->";
+            const string endMarker = "<!-- END SOURCE: duration_animation.md -->";
+            int begin = documentation.IndexOf(beginMarker, StringComparison.Ordinal);
+            int end = begin < 0 ? -1 : documentation.IndexOf(endMarker, begin + beginMarker.Length, StringComparison.Ordinal);
+            if (begin < 0 || end < 0) throw new InvalidDataException("Animation duration section is missing from the project documentation.");
+            var rows = Regex.Matches(documentation.Substring(begin + beginMarker.Length, end - begin - beginMarker.Length),
                 @"\|\s*\d+\s*\|\s*`(PKV_[^`]+)`\s*\|\s*([\d.]+)s");
             var result = rows.Cast<Match>().ToDictionary(m => m.Groups[1].Value,
                 m => float.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture));

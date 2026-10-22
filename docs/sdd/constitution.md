@@ -20,7 +20,7 @@
 *100% endpoint quản trị trong `AdminController` bắt buộc phải được gắn attribute `[Authorize(Roles = "Admin")]`. Phía Frontend, toàn bộ route quản trị phải được bảo vệ bởi Route Guard; khi nhận phản hồi HTTP 401 hoặc 403, client phải ngay lập tức hủy token và chuyển hướng về trang Login.*
 * **Rationale:** Ngăn chặn việc người dùng bình thường (Role `Player`) hoặc người chưa đăng nhập can thiệp vào dữ liệu nhạy cảm hoặc chức năng quản trị hệ thống.
 * **Applicability:** Tất cả endpoint quản trị backend và router frontend web.
-* **Evidence:** Báo cáo kiểm thử bảo mật tại [Doc/Backend_Followup_Findings.md](file:///d:/Repository/PickleVerse/Doc/Backend_Followup_Findings.md).
+* **Evidence:** Báo cáo kiểm thử bảo mật tại [Doc/Backend_Followup_Findings.md](../../Doc/PickleVerse_Project_Documentation.md#doc-backend-followup-findings).
 * **Verification:** Test tự động kiểm tra 3 trạng thái: Chưa đăng nhập $\rightarrow$ HTTP 401; Role Player $\rightarrow$ HTTP 403; Role Admin $\rightarrow$ HTTP 200.
 * **Exception process:** Không có ngoại lệ.
 
