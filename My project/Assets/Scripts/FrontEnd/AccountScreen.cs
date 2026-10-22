@@ -149,7 +149,7 @@ namespace PickleVerse.FrontEnd
             {
                 FrontEndModalInput.TryAcquire(this);
                 if (!pausedByGate) { priorTimeScale = Time.timeScale; Time.timeScale = 0; pausedByGate = true; }
-                cover.SetActive(true); Show(account.IsSignedIn ? Page.Sync : page == Page.Profile || page == Page.Sync ? Page.Login : page);
+                cover.SetActive(true); Show(account.IsSignedIn ? Page.Sync : page == Page.Profile || page == Page.Sync ? Page.Login : page, false);
             }
             else
             {
@@ -159,8 +159,9 @@ namespace PickleVerse.FrontEnd
             }
             accountButton.gameObject.SetActive(!required && page != Page.Profile && SceneManager.GetActiveScene().name == "Menu");
         }
-        void Show(Page next)
+        void Show(Page next, bool clearFeedback = true)
         {
+            bool changedPage = page != next;
             page = next;
             bool syncing = next == Page.Sync;
             title.text = syncing ? "TẢI DỮ LIỆU TRÒ CHƠI" : next == Page.Login ? "CHÀO MỪNG TRỞ LẠI" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC EMAIL" : "TÀI KHOẢN CỦA BẠN";
@@ -178,7 +179,8 @@ namespace PickleVerse.FrontEnd
             resend.gameObject.SetActive(next == Page.Verify);
             logout.gameObject.SetActive(next == Page.Profile || syncing); close.gameObject.SetActive(next == Page.Profile);
             submitLabel.text = syncing ? "THỬ TẢI LẠI" : next == Page.Login ? "ĐĂNG NHẬP" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC" : "LƯU HỒ SƠ";
-            SetGender(male); feedback.text = "";
+            SetGender(male);
+            if (clearFeedback || changedPage) feedback.text = "";
         }
         void SetGender(bool value)
         {
@@ -241,7 +243,13 @@ namespace PickleVerse.FrontEnd
         {
             if (string.IsNullOrWhiteSpace(email.text)) throw new ArgumentException("Vui lòng nhập email.");
             var result = await account.ResendOtpAsync(email.text.Trim(), lifetime.Token);
-            resendAt = Time.realtimeSinceStartupAsDouble + 60; feedback.text = result.Message;
+            if (result.Code == "email_already_verified")
+            {
+                otp.text = "";
+                Show(Page.Login);
+            }
+            else resendAt = Time.realtimeSinceStartupAsDouble + 60;
+            feedback.text = result.Message;
         });
         async void Logout() => await Run(async () => { await account.LogoutAsync(lifetime.Token); Show(Page.Login); RefreshVisibility(); });
         void OnDestroy()

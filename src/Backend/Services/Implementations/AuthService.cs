@@ -22,7 +22,7 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
     string SigningKey => configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
     DateTime UtcNow => clock.GetUtcNow().UtcDateTime;
     static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
-    static bool Active(User user) => string.Equals(user.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase);
+    static bool Active(User user) => !PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) && string.Equals(user.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase);
     static string HashRefreshToken(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     static AuthResponse Failure(string message, string code) => new() { Message = message, Code = code };
     static string DefaultPlayerName() => "player" + RandomNumberGenerator.GetHexString(12, lowercase: true);
@@ -99,17 +99,25 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         catch { await unitOfWork.RollbackTransactionAsync(); throw; }
     }
 
-    public async Task ResendOtpAsync(ResendOtpRequest request)
+    public async Task<ResendOtpResponse> ResendOtpAsync(ResendOtpRequest request)
     {
         var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
-        if (user == null || !Active(user)) return;
+        if (user == null || !Active(user)) return new ResendOtpResponse();
         await unitOfWork.BeginTransactionAsync();
         string code;
         try
         {
             await unitOfWork.Users.LockUserAsync(user.Userid);
             var latest = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
-            if (latest?.Isverified == true) { await unitOfWork.RollbackTransactionAsync(); return; }
+            if (latest?.Isverified == true)
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                return new ResendOtpResponse
+                {
+                    Code = "email_already_verified",
+                    Message = "Email đã được xác thực. Hãy đăng nhập bằng email và mật khẩu đã đăng ký."
+                };
+            }
             if (latest != null && latest.Createdat.AddSeconds(EmailOtpPolicy.ResendCooldownSeconds) > UtcNow)
                 throw new AppException("Vui lòng chờ ít nhất 60 giây trước khi gửi lại mã.", HttpStatusCode.TooManyRequests);
             emailSender.EnsureConfigured();
@@ -119,12 +127,13 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         }
         catch { await unitOfWork.RollbackTransactionAsync(); throw; }
         await emailSender.SendVerificationCodeAsync(user.Email, code);
+        return new ResendOtpResponse();
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
+        if (user == null || PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
             return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials");
         var rejected = await RejectIneligibleUserAsync(user);
         if (rejected != null) return rejected;

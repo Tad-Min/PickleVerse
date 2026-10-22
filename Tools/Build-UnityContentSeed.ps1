@@ -45,10 +45,15 @@ $lines.Add('-- END UNITY GAME CONTENT SEED')
 $root = Split-Path $PSScriptRoot -Parent
 $database = Join-Path $root 'src/Database.sql'
 $original = [System.IO.File]::ReadAllText($database)
-$marker = '-- BEGIN ONLINE GAME SCHEMA'
-$index = $original.IndexOf($marker,[StringComparison]::Ordinal)
-if($index -ge 0) { $original=$original.Substring(0,$index).TrimEnd()+"`n" }
-$migration = [System.IO.File]::ReadAllText((Join-Path $root 'src/GameOnlineSetup.sql'))
-$output = $original+"`n$marker`n"+$migration+"`n-- END ONLINE GAME SCHEMA`n`n"+($lines -join "`n")+"`n"
+$startMarker = '-- BEGIN UNITY GAME CONTENT SEED'
+$endMarker = '-- END UNITY GAME CONTENT SEED'
+$start = $original.IndexOf($startMarker,[StringComparison]::Ordinal)
+$end = $original.IndexOf($endMarker,[StringComparison]::Ordinal)
+if($start -lt 0 -or $end -lt $start -or
+    $original.IndexOf($startMarker,$start+$startMarker.Length,[StringComparison]::Ordinal) -ge 0 -or
+    $original.IndexOf($endMarker,$end+$endMarker.Length,[StringComparison]::Ordinal) -ge 0) {
+    throw 'Database.sql must contain exactly one complete Unity seed block.'
+}
+$output = $original.Substring(0,$start)+($lines -join "`n")+$original.Substring($end+$endMarker.Length)
 [System.IO.File]::WriteAllText($database,$output,[System.Text.UTF8Encoding]::new($false))
 Write-Output "Seed generated: 10 achievements, 17 missions, 3 cosmetics, 12 lessons/drills."

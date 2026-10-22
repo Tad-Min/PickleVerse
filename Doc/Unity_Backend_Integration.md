@@ -46,7 +46,7 @@ SMTP_FROM_EMAIL=<same sending address>
 
 Gmail dùng `smtp.gmail.com:587` với STARTTLS. App Password yêu cầu cấu hình tài khoản Google phù hợp; xem [Google App Password](https://support.google.com/accounts/answer/185833). Credential đã được cấu hình tại máy và SMTP đã chấp nhận email OTP thử; kết quả này không thay cho việc kiểm tra hộp thư/spam của người nhận.
 
-Database mới tự chạy `src/Database.sql` và `src/DevAuthSetup.sql`. Với volume DB đã tồn tại, init script không tự chạy lại: áp dụng `DevAuthSetup.sql` vào đúng DB trước khi chạy backend mới. Script nâng độ dài cột OTP, thêm bộ đếm nhập sai và seed role bằng thao tác idempotent, không xóa dữ liệu.
+Database mới chỉ cần `src/Database.sql`: toàn bộ schema, cột OTP lưu hash, bộ đếm nhập sai, role Player/Admin và seed game Unity đã được gộp vào file này. Compose tự chạy file khi khởi tạo volume PostgreSQL lần đầu; không cần chạy thêm SQL nào. Với PostgreSQL chạy riêng, kết nối vào một database trống và chạy toàn bộ file một lần. Volume DB đã tồn tại được giữ nguyên và init script không tự chạy lại; không chạy toàn bộ file khởi tạo lên database đang có dữ liệu.
 
 ## Cấu trúc Unity
 
@@ -111,6 +111,8 @@ Backend bắt buộc xác nhận mật khẩu khớp, tự sinh tên mặc đị
 Xác nhận mật khẩu dùng [CompareAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations.compareattribute?view=net-10.0); hậu tố tên dùng [RandomNumberGenerator.GetHexString](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.randomnumbergenerator.gethexstring?view=net-10.0) của .NET.
 
 OTP có 6 chữ số, hạn 10 phút, tối đa 5 lần nhập sai cho một mã, chờ 60 giây trước khi gửi lại. Mã được gắn với tài khoản và lưu dưới dạng HMAC; token refresh được lưu dưới dạng hash và xoay khi sử dụng. Access token hạn 2 giờ, refresh token hạn 14 ngày. API auth có giới hạn 20 yêu cầu/phút/IP trong một cửa sổ cố định.
+
+`POST /api/Auth/resend-otp` trả `{ code, message }`. Với tài khoản đã xác thực, code là `email_already_verified`: không tạo OTP/email mới, Unity chuyển về Đăng nhập, giữ email đã nhập và hiển thị hướng dẫn. Các trường hợp còn lại giữ phản hồi chung `verification_requested`; tài khoản đang hoạt động và chưa xác thực mới được gửi OTP, vẫn áp dụng thời gian chờ 60 giây. Giao diện giữ thông báo sau khi cập nhật trạng thái màn hình và xóa thông báo cũ khi người dùng chủ động chuyển tab.
 
 ## Đối chiếu hai tài liệu đề tài
 

@@ -25,8 +25,8 @@ namespace PickleVerse.Services
         }
         public Task<ApiMessage> VerifyEmailAsync(string email, string code, CancellationToken cancellation = default) =>
             api.SendAsync<ApiMessage>("POST", "api/Auth/verify-email", new VerifyEmailRequest { Email = email, Token = code }, cancellation: cancellation);
-        public Task<ApiMessage> ResendOtpAsync(string email, CancellationToken cancellation = default) =>
-            api.SendAsync<ApiMessage>("POST", "api/Auth/resend-otp", new EmailRequest { Email = email }, cancellation: cancellation);
+        public Task<ResendOtpResponse> ResendOtpAsync(string email, CancellationToken cancellation = default) =>
+            api.SendAsync<ResendOtpResponse>("POST", "api/Auth/resend-otp", new EmailRequest { Email = email }, cancellation: cancellation);
 
         public async Task LoginAsync(string email, string password, CancellationToken cancellation = default)
         {

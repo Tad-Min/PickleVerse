@@ -9,6 +9,11 @@ namespace API.Controllers;
 public sealed class GameController(OnlineGameService game,GameCatalogService catalogs) : ControllerBase
 {
     Guid Player => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    [AllowAnonymous,HttpPost("activity/open")] public Task<AppActivityReceipt> OpenActivity(AppActivityRequest request) => game.OpenActivity(request);
+    [HttpPost("activity/checkpoint")] public Task<AppActivityReceipt> Activity(AppActivityRequest request) => game.Activity(Player,request);
+    [HttpPost("ranked/search")] public Task<RankedSearchTicket> Search(RankedSearchRequest request) => game.BeginRankedSearch(Player,request);
+    [HttpPost("ranked/cancel")] public Task<RankedSearchTicket> CancelSearch(RankedSearchRequest request) => game.CancelRankedSearch(Player,request);
+    [HttpPost("ranked/bot")] public Task<PickleVerse.Multiplayer.RoomMember> Bot(RankedBotRequest request) => game.AssignRankedBot(Player,request);
     [HttpGet("catalog")] public Task<GameCatalog> Catalog() => catalogs.Load();
     [HttpGet("state")] public Task<GameSnapshot> State() => game.Read(Player);
     [HttpPost("claim")] public Task<GameSnapshot> Claim(GameCommand request) => game.Claim(Player,request);

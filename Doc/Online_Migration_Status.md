@@ -4,7 +4,7 @@ Phạm vi đã được người dùng duyệt: lấy dữ liệu prototype Unit
 
 ## Đã kiểm chứng
 
-- `src/Seed/UnityCatalog.json` lấy từ Progression Config, Shop Catalog và TrainingCurriculum của Unity; `Tools/Build-UnityContentSeed.ps1` sinh phần schema bổ sung và seed cuối `src/Database.sql`.
+- `src/Database.sql` là file SQL duy nhất để khởi tạo database mới: chứa schema gốc, cấu hình OTP/role, schema online và seed Unity. `src/Seed/UnityCatalog.json` lấy từ Progression Config, Shop Catalog và TrainingCurriculum của Unity; `Tools/Build-UnityContentSeed.ps1` chỉ cập nhật khối seed được đánh dấu, giữ nguyên phần schema.
 - Docker PostgreSQL đã có 10 achievement, 17 nhiệm vụ, 3 cosmetic, 12 lesson, 12 drill. Đã sao lưu trước khi áp dụng; tài khoản hiện có được giữ nguyên.
 - API Docker `/api/Game/state`, claim, purchase, equip và training đã được build/chạy. JSON HTTP đã kiểm tra bằng tài khoản tạm.
 - Backend dùng lại các thuật toán C# thuần của Unity để giữ điều kiện mở khóa, sao, XP và phần thưởng. Lệnh ghi có khóa theo người chơi và mã chống xử lý lặp.

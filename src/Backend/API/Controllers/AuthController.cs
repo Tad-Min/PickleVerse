@@ -62,8 +62,7 @@ namespace API.Controllers
         [HttpPost("resend-otp")]
         public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequest request)
         {
-            await _authService.ResendOtpAsync(request);
-            return Ok(new { message = "Nếu email thuộc tài khoản chưa xác thực, mã mới sẽ được gửi. Hãy kiểm tra cả mục thư rác." });
+            return Ok(await _authService.ResendOtpAsync(request));
         }
 
         [Authorize]

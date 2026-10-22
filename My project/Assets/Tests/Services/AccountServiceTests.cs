@@ -60,6 +60,25 @@ namespace PickleVerse.Tests.Services
             Assert.That(account.Profile.PlayerName, Is.EqualTo("Server Name")); Assert.That(bearer, Is.EqualTo("access-one"));
         }
 
+        [TestCase("email_already_verified")]
+        [TestCase("verification_requested")]
+        public async Task ResendPreservesServerStatusWithoutSigningIn(string status)
+        {
+            var fake = new FakeTransport { Handler = (method, path, json, token, cancellation) =>
+            {
+                Assert.That(method, Is.EqualTo("POST"));
+                Assert.That(path, Is.EqualTo("api/Auth/resend-otp"));
+                Assert.That(JObject.Parse(json)["email"].Value<string>(), Is.EqualTo("test@example.invalid"));
+                Assert.That(token, Is.Null);
+                return Task.FromResult(Ok(new { code = status, message = "Server response" }));
+            } };
+            var account = new AccountService(new ApiClient(fake));
+            var result = await account.ResendOtpAsync("test@example.invalid");
+            Assert.That(result.Code, Is.EqualTo(status));
+            Assert.That(result.Message, Is.EqualTo("Server response"));
+            Assert.That(account.IsSignedIn, Is.False);
+        }
+
         [Test]
         public async Task ConcurrentUnauthorizedRequestsShareOneRefresh()
         {

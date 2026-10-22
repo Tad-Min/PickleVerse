@@ -42,6 +42,12 @@ namespace Services.DTOs
         public string Email { get; set; } = string.Empty;
     }
 
+    public class ResendOtpResponse
+    {
+        public string Code { get; set; } = "verification_requested";
+        public string Message { get; set; } = "Nếu email thuộc tài khoản chưa xác thực, mã mới sẽ được gửi. Hãy kiểm tra cả mục thư rác.";
+    }
+
     public class RefreshTokenRequest
     {
         [Required]

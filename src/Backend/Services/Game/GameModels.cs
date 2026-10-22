@@ -93,9 +93,28 @@ public sealed class TutorialState { public bool completed, skipped; }
 
 public sealed class OnlineMatchRequest
 {
+    public string SearchId { get; set; } = "";
     [Required] public PickleVerse.Multiplayer.MatchRoster Roster { get; set; } = new();
     [Required, StringLength(100)] public string Session { get; set; } = "";
     [Required] public string HostPlayerId { get; set; } = "";
+}
+public sealed class AppActivityRequest
+{
+    public Guid SessionId { get; set; }
+    [Range(0,604800)] public long ElapsedSeconds { get; set; }
+    public bool Close { get; set; }
+}
+public sealed class AppActivityReceipt
+{
+    public long totalSeconds, elapsedSeconds;
+}
+public sealed class RankedSearchRequest { public Guid SearchId { get; set; } }
+public sealed class RankedSearchTicket { public double remainingSeconds; }
+public sealed class RankedBotRequest
+{
+    public Guid SearchId { get; set; }
+    public Guid MatchId { get; set; }
+    [Required,StringLength(100)] public string Session { get; set; } = "";
 }
 public sealed class OnlineMatchTicket
 {

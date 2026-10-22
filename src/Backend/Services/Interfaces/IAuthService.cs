@@ -8,7 +8,7 @@ namespace Services.Interfaces
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<bool> VerifyEmailAsync(VerifyEmailRequest request);
-        Task ResendOtpAsync(ResendOtpRequest request);
+        Task<ResendOtpResponse> ResendOtpAsync(ResendOtpRequest request);
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request);
         Task<bool> LogoutAsync(Guid userId, string refreshToken);

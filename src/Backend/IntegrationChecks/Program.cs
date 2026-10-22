@@ -64,17 +64,14 @@ async Task<string> Register(string email, string label, bool isMale = true)
 Task<bool> Verify(string email, string code) => Call(s => s.VerifyEmailAsync(new VerifyEmailRequest { Email = email, Token = code }));
 Task<AuthResponse> Login(string email) => Call(s => s.LoginAsync(new LoginRequest { Email = email, Password = "IntegrationPass!23" }));
 Task<AuthResponse> Refresh(string token) => Call(s => s.RefreshTokenAsync(new RefreshTokenRequest { RefreshToken = token }));
-async Task Resend(string email) => await Call(async s => { await s.ResendOtpAsync(new ResendOtpRequest { Email = email }); return true; });
+Task<ResendOtpResponse> Resend(string email) => Call(s => s.ResendOtpAsync(new ResendOtpRequest { Email = email }));
 try
 {
     await using (var setup = new NpgsqlConnection(testBuilder.ConnectionString))
     {
         await setup.OpenAsync();
-        foreach (var script in new[] { "Database.sql", "DevAuthSetup.sql" })
-        {
-            await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", script)), setup);
-            await command.ExecuteNonQueryAsync();
-        }
+        await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
+        await command.ExecuteNonQueryAsync();
     }
     if (args.Contains("--check-online-game") || args.Contains("--check-online-multiplayer") || args.Contains("--check-online-social"))
     {
@@ -114,6 +111,17 @@ try
     Check(!await Verify(email, "not-six-digits"), "malformed OTP rejected");
     Check(await Verify(email, code), "valid OTP accepted");
     Check(!await Verify(email, code), "OTP replay rejected");
+    int sentBeforeVerifiedResend = mail.SendCount;
+    var verifiedResend = await Resend(email);
+    Check(verifiedResend.Code == "email_already_verified" && verifiedResend.Message.Contains("đăng nhập"),
+        "verified resend returns a clear sign-in response");
+    using (var context = new PickleVerseContext(options))
+        Check(mail.SendCount == sentBeforeVerifiedResend && await context.Verificationemails.CountAsync() == 1
+            && (await context.Verificationemails.SingleAsync()).Isverified,
+            "verified resend sends no email and preserves existing verification");
+    var unknownResend = await Resend("unknown-check@example.invalid");
+    Check(unknownResend.Code == "verification_requested" && mail.SendCount == sentBeforeVerifiedResend,
+        "unknown resend keeps the generic response and sends no email");
     var login = await Login(email);
     Check(login.Success && login.Profile?.PlayerName == defaultName && !login.Profile.IsMale, "login returns generated name and selected gender from server profile");
     using (var context = new PickleVerseContext(options))
@@ -167,7 +175,8 @@ try
     bool cooldown = false;
     try { await Resend(lockedEmail); } catch (AppException ex) { cooldown = ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests; }
     Check(cooldown, "resend cooldown enforced");
-    time.Now = time.Now.AddSeconds(61); await Resend(lockedEmail);
+    time.Now = time.Now.AddSeconds(61); var unverifiedResend = await Resend(lockedEmail);
+    Check(unverifiedResend.Code == "verification_requested", "unverified resend retains the verification flow");
     Check(await Verify(lockedEmail, mail.Codes[lockedEmail]), "resend issues a usable OTP after lockout");
 
     const string expiredEmail = "expired-check@example.invalid";
@@ -205,6 +214,7 @@ finally
 sealed class CapturedMail : IEmailSender
 {
     public Dictionary<string, string> Codes { get; } = new();
+    public int SendCount { get; private set; }
     public IEmailSender? LiveSender { get; set; }
     public string? Recipient { get; set; }
     public void EnsureConfigured() { }
@@ -212,6 +222,7 @@ sealed class CapturedMail : IEmailSender
     {
         if (email == Recipient && LiveSender != null) await LiveSender.SendVerificationCodeAsync(email, code);
         Codes[email] = code;
+        SendCount++;
     }
 }
 sealed class TestClock : TimeProvider

@@ -12,6 +12,7 @@ namespace PickleVerse.Services.Api
     [Serializable] public sealed class LoginRequest { public string Email { get; set; } public string Password { get; set; } }
     [Serializable] public sealed class VerifyEmailRequest { public string Email { get; set; } public string Token { get; set; } }
     [Serializable] public sealed class EmailRequest { public string Email { get; set; } }
+    [Serializable] public sealed class ResendOtpResponse { public string Code { get; set; } public string Message { get; set; } }
     [Serializable] public sealed class RefreshTokenRequest { public string RefreshToken { get; set; } }
     [Serializable] public sealed class ApiMessage { public string Message { get; set; } }
     [Serializable] public sealed class AuthResponse
