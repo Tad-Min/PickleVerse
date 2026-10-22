@@ -9,3 +9,6 @@ DesignPrototypes/
 .env.*
 !.env.example
 artifacts/
+node_modules/
+dist/
+.vite/

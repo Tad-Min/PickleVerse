@@ -23,6 +23,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AdminWebPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // 2. Configure PostgreSQL DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<PickleVerseContext>(options =>
@@ -128,6 +139,7 @@ if (app.Environment.IsDevelopment())
 // Docker dev exposes HTTP; deployed environments must terminate TLS.
 if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
 
+app.UseCors("AdminWebPolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
