@@ -171,3 +171,6 @@ LightingData.asset     binary
 Assets/Fonts/*.asset merge=binary
 "Assets/LocalMatchContent/Match Vietnamese Font.asset" merge=binary
 "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset" merge=binary
+
+# Preserve binary output from the mobile LOD generator without newline conversion.
+Assets/LocalMatchContent/StadiumEnhanced/MobileMeshes/*.asset -text -diff merge=binary

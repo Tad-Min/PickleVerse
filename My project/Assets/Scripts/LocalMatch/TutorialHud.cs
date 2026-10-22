@@ -35,6 +35,11 @@ namespace PickleVerse.LocalMatch
             chapter.text=lesson.kind==TutorialKind.Complete?"ĐÃ HOÀN THÀNH":"CƠ BẢN  /  "+(tutorial.LessonIndex+1).ToString("00")+" - 17";
             title.text=lesson.title;body.text=lesson.body;bool shot=lesson.kind==TutorialKind.Shot,move=lesson.kind==TutorialKind.Movement;
             touchRoot.SetActive((shot||move)&&touchWanted);
+            if(shot&&touchRoot.activeSelf&&(lesson.mask&24)!=0)
+            {
+                string technique=(lesson.mask&7)==2?"Dink":(lesson.mask&7)==4?"Volley":"Drive";
+                body.text="Giữ nút "+technique+((lesson.mask&16)!=0?", kéo sang trái tới CHÉO rồi thả để đánh chéo.":", kéo sang phải tới LỰC rồi thả để đánh mạnh.")+"\nKéo trở về giữa để đánh thường; kéo xuống HỦY để bỏ cú đánh.";
+            }
             var cue=(RectTransform)keyPanel.transform;
             cue.anchorMin=touchRoot.activeSelf?new Vector2(.255f,.755f):new Vector2(.04f,.07f);
             cue.anchorMax=touchRoot.activeSelf?new Vector2(.695f,.875f):new Vector2(.40f,.205f);
@@ -44,7 +49,7 @@ namespace PickleVerse.LocalMatch
             {
                 string modifier=(lesson.mask&8)!=0?GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Power)):(lesson.mask&16)!=0?GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Cross)):"";
                 int baseMask=lesson.mask&7;string key=GameControls.ShotKeys(baseMask);
-                instruction.text=touchRoot.activeSelf?(modifier.Length>0?"Chạm "+TouchKeys(lesson.mask&24)+" để bật, rồi chạm "+TouchKeys(baseMask)+".":"Chạm "+TouchKeys(baseMask)+" khi bóng đang tới."):
+                instruction.text=touchRoot.activeSelf?"Giữ rồi thả khi bóng tới. Kéo xuống để hủy.":
                     modifier.Length>0?"Giữ "+modifier+" → bấm rồi thả "+key+". Sau đó thả "+modifier+".":"Bấm rồi thả "+key+" khi bóng đang tới.";
             }
             else instruction.text="Di chuyển một đoạn, sau đó thử chạy.";
@@ -55,7 +60,7 @@ namespace PickleVerse.LocalMatch
         }
         static string MovementKeys()=>GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Forward))+" / "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Left))+" / "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Backward))+" / "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Right))+"  +  "+GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Run));
         static string TouchKeys(int mask)
-        {string[] labels={"DRIVE","DINK","VOLLEY","LỰC","CHÉO"};string text="";for(int i=0;i<5;i++)if((mask&(1<<i))!=0)text+=(text.Length==0?"":" + ")+labels[i];return text;}
+        {return TouchShotGesture.Hint(mask);}
         public void Refresh()
         {
             if(!tutorial)return;next.interactable=tutorial.CanContinue;feedback.text=tutorial.Feedback;
@@ -74,6 +79,7 @@ namespace PickleVerse.LocalMatch
             var settings=GameSettings.Current;
             foreach(var control in tutorial.touchControls)
             {
+                if(control.Pad)continue;
                 int index=control.joystick?0:control.shotMask==1?1:control.shotMask==2?2:control.shotMask==4?3:control.shotMask==8?7:8;
                 Vector2 position=settings.touchPositions[index];if(settings.leftHanded)position.x=1-position.x;
                 var rect=(RectTransform)control.transform;

@@ -6,7 +6,10 @@
     "PickleVerse.Entites",
     "Unity.Behavior",
     "Unity.Behavior.SerializableGUID",
-    "Unity.Netcode.Runtime"
+    "Unity.Netcode.Runtime",
+    "Unity.ugui",
+    "Unity.TextMeshPro",
+    "PickleVerse.Settings"
   ],
   "includePlatforms": [
     "Editor"

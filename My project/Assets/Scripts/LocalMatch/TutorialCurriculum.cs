@@ -22,7 +22,7 @@ namespace PickleVerse.LocalMatch
             new TutorialLesson(TutorialKind.Out,"Lỗi • Bóng ra ngoài","Bóng chạm đất ngoài đường biên là out. Bóng chạm vạch biên vẫn trong sân. Riêng khi giao bóng, vạch kitchen thuộc vùng không được rơi vào.",3),
             new TutorialLesson(TutorialKind.DoubleBounce,"Lỗi • Nảy hai lần","Đỡ bóng trước khi nó nảy lần thứ hai trên phía sân của bạn. Hãy nhìn bóng đang tới và chuẩn bị vợt sớm.",3),
             new TutorialLesson(TutorialKind.KitchenVolley,"Lỗi • Volley trong kitchen","Không volley khi chân chạm kitchen hoặc vạch kitchen. Sau volley, đà lao vào vùng này cũng là lỗi. Đánh bóng đã nảy trong kitchen thì được phép.",4),
-            new TutorialLesson(TutorialKind.Movement,"Di chuyển vào vị trí","Di chuyển một đoạn ngắn bằng các phím hướng, rồi thử chạy. Trên điện thoại, kéo cần di chuyển; kéo xa hơn để chạy.",0),
+            new TutorialLesson(TutorialKind.Movement,"Di chuyển vào vị trí","Di chuyển một đoạn ngắn bằng các phím hướng, rồi thử chạy. Trên điện thoại, kéo cần để đi; giữ nút CHẠY bên phải để chạy nhanh.",0),
             new TutorialLesson(TutorialKind.Shot,"Drive • Đánh sau nảy","Đối phương sẽ đưa bóng tới. Drive đẩy bóng sâu qua sân. Bấm rồi thả nút đánh; bài tập sẽ giúp bạn canh lúc bóng đến.",0,1),
             new TutorialLesson(TutorialKind.Shot,"Dink • Đánh nhẹ","Chờ bóng nảy rồi đánh nhẹ qua lưới vào kitchen bên kia. Bạn có thể bước vào kitchen để đánh bóng đã nảy.",0,2),
             new TutorialLesson(TutorialKind.Shot,"Volley • Đánh trên không","Đánh bóng trước khi nó nảy và đứng ngoài kitchen. Pha luyện này bắt đầu sau hai lần nảy bắt buộc ở đầu rally.",0,4),

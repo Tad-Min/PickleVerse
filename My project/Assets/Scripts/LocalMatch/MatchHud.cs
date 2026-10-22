@@ -31,7 +31,7 @@ namespace PickleVerse.LocalMatch
             GameSettings.Changed-=RefreshBindings;GameSettings.Changed+=RefreshBindings;RefreshBindings();
             if (announcements) { announcements.match = owner; announcements.Clear(); }
             if(!shotPanel && selection)shotPanel=selection.transform.parent.gameObject;
-            if (touchControls) touchControls.SetActive(Application.isMobilePlatform);
+            if (touchControls) { MobileTouchPad.Install(touchControls,owner); touchControls.SetActive(Application.isMobilePlatform); }
         }
         void Update()
         {
@@ -67,7 +67,7 @@ namespace PickleVerse.LocalMatch
             bool swinging=match.human.Swinging && !string.IsNullOrEmpty(match.ActiveShotKeys);
             string keys=choosing?match.SelectionKeys:swinging?match.ActiveShotKeys:"",description=choosing?match.Selection:swinging?match.human.Intent.ToString():"";
             if(keys!=shownKeys||description!=shownSelection){shownKeys=keys;shownSelection=description;selection.text=keys.Length>0?"<b>"+keys+"</b>\n<size=14>"+description+"</size>":"";}
-            if(shotPanel)shotPanel.SetActive(!match.Paused && (choosing || swinging));
+            if(shotPanel)shotPanel.SetActive(!(touchControls&&touchControls.activeInHierarchy) && !match.Paused && (choosing || swinging));
             if(timing)timing.gameObject.SetActive(false);
             if(!broadcast)serveClock.text = match.Phase == MatchPhase.PreServe ? "GIAO BÓNG  " + Mathf.Max(0, 10f - match.ServeElapsed).ToString("0.0") + "s" : match.Phase == MatchPhase.Rally ? (rules.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY") : "";
             if(!broadcast && match.Phase==MatchPhase.Rally && rules.ExpectedHitter==0 && match.PredictContact(match.human.end,true,out _,out var eta,match.human.ContactOffset(new ShotIntent(ShotKind.Drive)).y))
@@ -101,13 +101,14 @@ namespace PickleVerse.LocalMatch
             if(show) {help.transform.SetAsLastSibling();helpPaused=match&&!match.Paused;if(helpPaused)match.TogglePause();}
             else if(helpPaused && match && match.Paused){match.TogglePause();helpPaused=false;}
         }
-        public void ToggleTouch() { touchControls.SetActive(!touchControls.activeSelf); }
+        public void ToggleTouch() { touchControls.SetActive(!touchControls.activeSelf);RefreshBindings(); }
         public void ChooseMode() { UnityEngine.SceneManagement.SceneManager.LoadScene("ModeSelection"); }
         public void OpenSettings() { if(match)SettingsOverlay.Open(match); }
         void RefreshBindings()
         {
             string K(GameAction action)=>GameSettings.KeyName(GameSettings.Current.KeyFor(action));
-            driveKey=K(GameAction.Drive);
+            bool mobile=Application.isMobilePlatform||touchControls&&touchControls.activeSelf;
+            driveKey=mobile?"DRIVE":K(GameAction.Drive);
             var text=help?help.transform.Find("HelpText")?.GetComponent<TMP_Text>():null;
             if(text)text.text="<size=28><color=#83E6CD>ĐIỀU KHIỂN VÀ LUẬT</color></size>\n\n"+
                 K(GameAction.Forward)+" / "+K(GameAction.Backward)+" / "+K(GameAction.Left)+" / "+K(GameAction.Right)+" di chuyển • "+K(GameAction.Run)+" chạy\n"+
@@ -115,6 +116,7 @@ namespace PickleVerse.LocalMatch
                 K(GameAction.Drive)+"+"+K(GameAction.Dink)+" Drop | "+K(GameAction.Drive)+"+"+K(GameAction.Volley)+" Smash | "+K(GameAction.Dink)+"+"+K(GameAction.Volley)+" Reset\n"+
                 K(GameAction.Power)+" tăng lực • "+K(GameAction.Cross)+" đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\n"+
                 K(GameAction.Timeout)+" time-out • Esc cài đặt • "+K(GameAction.Help)+" hướng dẫn\nCảm ứng: joystick và các nút kỹ thuật; chỉnh bố trí trong Cài đặt.";
+            if(text&&mobile)text.text=TouchShotGesture.HelpText;
             if(layout)layout.RefreshKeys();
             else{var helpButton=transform.Find("Help")?.GetComponentInChildren<TMP_Text>();if(helpButton)helpButton.text=K(GameAction.Help)+" / Hướng dẫn";var timeoutButton=transform.Find("Timeout")?.GetComponentInChildren<TMP_Text>();if(timeoutButton)timeoutButton.text=K(GameAction.Timeout)+" / Time-out";}
         }
