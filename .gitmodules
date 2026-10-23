@@ -1,6 +1,0 @@
-[submodule ".agents/plugins/sdd-hybrid"]
-	path = .agents/plugins/sdd-hybrid
-	url = https://github.com/Huy19N/sdd-hybrid-antigravity-plugin.git
-[submodule ".agents/plugins/superpowers"]
-	path = .agents/plugins/superpowers
-	url = https://github.com/obra/superpowers.git
