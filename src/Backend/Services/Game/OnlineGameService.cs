@@ -6,11 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using PickleVerse.Progression;
 using Repositories.Context;
 using Services.Exceptions;
+using Services.Configuration;
 using static Services.Game.GameSql;
 
 namespace Services.Game;
 
-public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql, GameCatalogService catalogs, TimeProvider clock)
+public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql, GameCatalogService catalogs, TimeProvider clock, ServerSettings settings, RedisGameState matchmaking, LeaderboardCache leaderboard)
 {
     sealed class StoredState
     {

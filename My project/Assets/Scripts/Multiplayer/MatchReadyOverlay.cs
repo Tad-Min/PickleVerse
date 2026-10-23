@@ -28,7 +28,7 @@ namespace PickleVerse.Multiplayer
             MatchPresentationUi.Image("GoldEdge",card,new Vector2(0,.985f),Vector2.one,MatchPresentationUi.Gold);
             title=MatchPresentationUi.Label("Title",card,font,"ĐÃ TÌM THẤY TRẬN",36,new Vector2(.04f,.77f),new Vector2(.96f,.91f),MatchPresentationUi.Gold);
             subtitle=MatchPresentationUi.Label("Mode",card,font,"",20,new Vector2(.05f,.68f),new Vector2(.95f,.77f),Color.white);
-            countdown=MatchPresentationUi.Label("Countdown",card,font,"20",60,new Vector2(.35f,.44f),new Vector2(.65f,.65f),Color.white);
+            countdown=MatchPresentationUi.Label("Countdown",card,font,"",60,new Vector2(.35f,.44f),new Vector2(.65f,.65f),Color.white);
             seats=MatchPresentationUi.Label("Players",card,font,"",22,new Vector2(.06f,.35f),new Vector2(.94f,.44f),new Color(.5f,.9f,.8f));
             var track=MatchPresentationUi.Image("TimerTrack",card,new Vector2(.09f,.30f),new Vector2(.91f,.315f),new Color(.12f,.2f,.27f));
             progress=MatchPresentationUi.Image("Remaining",track.transform,Vector2.zero,Vector2.one,MatchPresentationUi.Gold);
@@ -52,10 +52,10 @@ namespace PickleVerse.Multiplayer
             subtitle.text=app.Mode==PlayMode.Doubles?"ĐẤU ĐÔI / 2v2":"ĐẤU ĐƠN / 1v1";
             countdown.text=Mathf.CeilToInt(app.ReadySeconds).ToString("00");
             seats.text=$"{app.ReadyCount} / {app.Roster.Count} ĐÃ XÁC NHẬN";
-            progress.rectTransform.anchorMax=new Vector2(app.ReadySeconds/MatchReadyPolicy.Seconds,1);
+            progress.rectTransform.anchorMax=new Vector2(Mathf.Clamp01(app.ReadySeconds/app.ReadyConfirmationSeconds),1);
             accept.interactable=app.CanAcceptMatch;cancel.interactable=!app.ReadyCheckBusy&&!app.ReadyCheckAccepted;
             accept.GetComponentInChildren<TMP_Text>().text=app.ReadyCheckAccepted?"ĐÃ CHẤP NHẬN":app.ReadyCheckBusy?"ĐANG GỬI…":"CHẤP NHẬN";
-            hint.text=app.ReadyCheckAccepted?"Chờ mọi người xác nhận • Nếu trận bị hủy, bạn sẽ tự tìm tiếp.":app.CanAcceptMatch?"Xác nhận trong 20 giây • Hủy để dừng tìm trận.":"Đang kết nối những người chơi đã tìm thấy…";
+            hint.text=app.ReadyCheckAccepted?"Chờ mọi người xác nhận • Nếu trận bị hủy, bạn sẽ tự tìm tiếp.":app.CanAcceptMatch?$"Xác nhận trong {app.ReadyConfirmationSeconds} giây • Hủy để dừng tìm trận.":"Đang kết nối những người chơi đã tìm thấy…";
         }
     }
 }

@@ -12,6 +12,8 @@ namespace PickleVerse.Progression
     [Serializable] public sealed class OnlineGameCatalog
     {
         public string version;
+        public RuntimeMatchmakingSettings matchmaking;
+        public RuntimeOnlineMatchSettings onlineMatch;
         public int winXp, lossXp;
         public RewardBundle dailyBonus, weeklyBonus;
         public List<ProgressDefinition> definitions;

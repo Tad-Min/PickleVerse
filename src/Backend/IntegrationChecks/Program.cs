@@ -28,7 +28,7 @@ var photonFixtureArg=args.FirstOrDefault(a=>a.StartsWith("--photon-fixture",Stri
 if (args.Contains("--unity-fixture") || args.Contains("--cleanup-unity-fixture") || photonFixtureArg!=null)
 {
     string suffix=photonFixtureArg?["--photon-fixture".Length..]??"";
-    if(suffix!=""&&suffix!="-2"&&suffix!="-3")throw new InvalidOperationException("Invalid fixture suffix.");
+    if(suffix!=""&&suffix!="-2"&&suffix!="-3"&&suffix!="-4")throw new InvalidOperationException("Invalid fixture suffix.");
     await UnityFixture.RunAsync(connection, root, args.Contains("--cleanup-unity-fixture"),photonFixtureArg!=null,suffix);
     return;
 }
@@ -41,14 +41,13 @@ var testBuilder = new NpgsqlConnectionStringBuilder(connection) { Database = dat
 var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(testBuilder.ConnectionString).Options;
 var mail = new CapturedMail();
 var time = new TestClock();
-var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
-    { ["Jwt:Key"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48)) }).Build();
+var config = TestSettings.Configuration();
 int checks = 0;
 void Check(bool passed, string name) { if (!passed) throw new Exception("FAILED: " + name); checks++; Console.WriteLine("PASS: " + name); }
 async Task<T> Call<T>(Func<AuthService, Task<T>> action)
 {
     using var context = new PickleVerseContext(options); using var uow = new UnitOfWork(context);
-    return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, time));
+    return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, time, new Services.Configuration.ServerSettings(config)));
 }
 var generatedNames = new HashSet<string>(StringComparer.Ordinal);
 async Task<string> Register(string email, string label, bool isMale = true)
@@ -72,6 +71,18 @@ try
         await setup.OpenAsync();
         await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
         await command.ExecuteNonQueryAsync();
+    }
+    if (args.Contains("--check-redis"))
+    {
+        await RedisChecks.Run(options,time,Check);
+        Console.WriteLine($"SUCCESS: {checks} Redis checks; disposable SQL database and Redis keys removed.");
+        return;
+    }
+    if (args.Contains("--check-configuration"))
+    {
+        await ConfigurationChecks.Run(options, time, Check);
+        Console.WriteLine($"SUCCESS: {checks} configuration checks; disposable PostgreSQL database removed.");
+        return;
     }
     if (args.Contains("--check-online-game") || args.Contains("--check-online-multiplayer") || args.Contains("--check-online-social") || args.Contains("--check-app-ranked"))
     {
@@ -177,7 +188,7 @@ try
         await using var cleanup = new NpgsqlCommand("DROP TRIGGER registration_name_collision ON playerprofiles; DROP FUNCTION collide_default_name_once(); DROP SEQUENCE registration_name_collision;", collision);
         await cleanup.ExecuteNonQueryAsync();
     }
-    for (int i = 0; i < EmailOtpPolicy.MaxAttempts; i++) Check(!await Verify(lockedEmail, lockedCode == "000000" ? "111111" : "000000"), "incorrect OTP attempt " + (i + 1));
+    for (int i = 0; i < new Services.Configuration.ServerSettings(config).Otp.MaxAttempts; i++) Check(!await Verify(lockedEmail, lockedCode == "000000" ? "111111" : "000000"), "incorrect OTP attempt " + (i + 1));
     Check(!await Verify(lockedEmail, lockedCode), "five failures lock the OTP");
     bool cooldown = false;
     try { await Resend(lockedEmail); } catch (AppException ex) { cooldown = ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests; }
@@ -203,7 +214,7 @@ try
             .Select(l => l.Split('=', 2)).ToDictionary(p => p[0].Trim(), p => p[1].Trim());
         foreach (var entry in new[] { ("SMTP_USERNAME", "Smtp:Username"), ("SMTP_APP_PASSWORD", "Smtp:Password"), ("SMTP_FROM_EMAIL", "Smtp:FromEmail") })
             config[entry.Item2] = smtp.GetValueOrDefault(entry.Item1);
-        mail.LiveSender = new SmtpEmailSender(config, NullLogger<SmtpEmailSender>.Instance);
+        mail.LiveSender = new SmtpEmailSender(new Services.Configuration.ServerSettings(config), NullLogger<SmtpEmailSender>.Instance);
         mail.Recipient = config["Smtp:Username"]!;
         await Register(mail.Recipient, "GmailCheck");
         Check(await Verify(mail.Recipient, mail.Codes[mail.Recipient]), "real Gmail SMTP accepted OTP; verification succeeds");
@@ -214,6 +225,7 @@ try
 }
 finally
 {
+    await TestRedis.Cleanup();
     await using var drop = new NpgsqlCommand($"DROP DATABASE \"{database}\" WITH (FORCE)", admin);
     await drop.ExecuteNonQueryAsync();
 }
@@ -337,9 +349,9 @@ static class UnityFixture
         }
         if (File.Exists(path)) throw new InvalidOperationException("Clean up the previous Unity fixture first.");
         using var uow = new UnitOfWork(context);
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Jwt:Key"] = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N") }).Build();
+        var config = TestSettings.Configuration();
         var mail = new CapturedMail();
-        var auth = new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, TimeProvider.System);
+        var auth = new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, TimeProvider.System, new Services.Configuration.ServerSettings(config));
         var suffix = Guid.NewGuid().ToString("N");
         var email = "unity-smoke-" + suffix + "@example.invalid";
         var password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));

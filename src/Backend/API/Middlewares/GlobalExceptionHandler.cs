@@ -36,6 +36,7 @@ namespace API.Middlewares
                 BadRequestException badReqEx => ((int)HttpStatusCode.BadRequest, badReqEx.Message),
                 UnauthorizedException unauthEx => ((int)HttpStatusCode.Unauthorized, unauthEx.Message),
                 ForbiddenException forbidEx => ((int)HttpStatusCode.Forbidden, forbidEx.Message),
+                StackExchange.Redis.RedisException => (503, "Dịch vụ ghép trận tạm thời chưa sẵn sàng. Vui lòng thử lại."),
                 AppException appEx => ((int)appEx.StatusCode, appEx.Message),
                 KeyNotFoundException => ((int)HttpStatusCode.NotFound, "Tài nguyên không tìm thấy."),
                 UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Không có quyền truy cập."),

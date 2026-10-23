@@ -25,6 +25,7 @@ namespace PickleVerse.Multiplayer
         public string matchId="",matchSession="",phase="idle",notice="";
         public double deadline;
         public int expectedPlayers;
+        public MatchRoster assignment;
         public int authority,revision;
         public List<PhotonSeat> seats=new List<PhotonSeat>();
         public MatchRoster Roster(string region)=>new MatchRoster{matchId=matchId,mode=mode,custom=custom,night=night,venue=venue,region=region,members=seats.Select(s=>s.member).ToList()};
@@ -114,7 +115,7 @@ namespace PickleVerse.Multiplayer
             var sceneManager=Runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
             var result=await Runner.StartGame(new StartGameArgs{GameMode=GameMode.Shared,SessionName=name,
                 PlayerCount=initial.party?(initial.custom?2*(int)initial.mode:2):2*(int)initial.mode,
-                IsVisible=!initial.party&&!initial.custom,CustomLobbyName="pickleverse-online",SceneManager=sceneManager,Scene=InitialScene(),
+                IsVisible=false,CustomLobbyName="pickleverse-online",SceneManager=sceneManager,Scene=InitialScene(),
                 AuthValues=new Photon.Realtime.AuthenticationValues(playerId),CustomPhotonAppSettings=Settings(region),
                 SessionProperties=new Dictionary<string,SessionProperty>{{"kind",initial.party?0:initial.custom?2:1},{"mode",(int)initial.mode},{"protocol",(int)Services.MultiplayerSceneConfiguration.ProtocolVersion},{"stage",0},{"fit1",true},{"fit2",true},
                     {"elo",Progression.ProgressionRuntime.Instance.Player.elo},{"losses",Progression.ProgressionRuntime.Instance.Player.rankLossStreak},{"expanded",false}}});

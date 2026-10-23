@@ -52,14 +52,16 @@ namespace PickleVerse.Multiplayer
         double rankedBotDeadline=double.PositiveInfinity;
         string rankedSearchId="";
         bool startingSearch;
-        [Serializable]sealed class RankedSearchTicket{public double remainingSeconds;}
+        [Serializable]sealed class RankedSearchTicket{public double remainingSeconds;public bool roomReady;public string state,matchId,session,hostPlayerId,region;public MatchRoster roster;}
+        double assignmentObserved;
         string lastPartyMatch="";
         GameObject StatePrefab=>Resources.Load<GameObject>("Photon/Session State");
         public bool CourtSceneSynchronized{get;private set;}=true;
         public bool ReadyCheckActive=>Match!=null&&State==FlowState.Connecting&&Match.Data.phase=="ready";
         public bool ReadyCheckAccepted=>Match?.Data.seats.Find(s=>s.member.id==PlayerId)?.decision==ReadyDecision.Accepted;
         public bool ReadyCheckBusy=>savingReady;
-        public float ReadySeconds=>Match==null?0:Mathf.Max(0,(float)(Match.Data.deadline-Match.Runner.SimulationTime));
+        public int ReadyConfirmationSeconds=>ProgressionRuntime.Instance.Snapshot.catalog.matchmaking.readyConfirmationSeconds;
+        public float ReadySeconds=>Match==null?0:Mathf.Max(0,(float)Math.Min(Match.Data.deadline-Match.Runner.SimulationTime,serverReadyUntil-Time.realtimeSinceStartupAsDouble));
         public bool CanAcceptMatch=>ReadyCheckActive&&ReadySeconds>0&&!savingReady&&!ReadyCheckAccepted;
         public int ReadyCount=>Match?.Data.seats.Count(s=>s.decision==ReadyDecision.Accepted)??0;
         public static MultiplayerApp Ensure(){if(!Instance)new GameObject("Photon Multiplayer").AddComponent<MultiplayerApp>();return Instance;}
@@ -128,8 +130,8 @@ namespace PickleVerse.Multiplayer
         {
             if(Room==null||closing)return;var data=Room.Data;
             if(data.phase=="closed"||Room.Rejected!=null){_=Safe(ClosePartyAsync(data.notice.Length>0?data.notice:Room.Rejected));return;}
-            if(data.phase=="searching"&&!IsCaptain&&State==FlowState.WaitingRoom){clock.Start(Time.realtimeSinceStartupAsDouble);SetState(FlowState.Searching,"Đội trưởng đang tìm trận…");}
-            if(data.matchSession.Length>0&&data.matchSession!=lastPartyMatch&&!working&&!joining&&(Match==null||!IsCaptain&&Match.Id!=data.matchSession))
+            if(data.phase=="searching"&&!IsCaptain&&State==FlowState.WaitingRoom&&!startingSearch)_=Safe(BeginQueueAsync(false));
+            if(Custom&&data.matchSession.Length>0&&data.matchSession!=lastPartyMatch&&!working&&!joining&&(Match==null||!IsCaptain&&Match.Id!=data.matchSession))
             {lastPartyMatch=data.matchSession;_=Safe(FollowPartyMatchAsync(data.matchSession,Room.Region,operation));}
             if(data.phase=="idle"&&Searching&&!IsCaptain)_=Safe(CancelSearchAsync());Changed?.Invoke();
         }
@@ -140,22 +142,32 @@ namespace PickleVerse.Multiplayer
             finally{working=false;}
         }
         async Task ClosePartyAsync(string reason){if(closing)return;closing=true;try{CancelLocal();await LeaveMatchAsync();var room=Room;Room=null;if(room!=null)await room.LeaveAsync();SetState(FlowState.WaitingRoom,reason);}finally{closing=false;}}
-        public async Task FindAsync()
+        public Task FindAsync()
         {
-            if(State!=FlowState.WaitingRoom||Custom||!IsCaptain)return;
+            if(State!=FlowState.WaitingRoom||Custom||!IsCaptain)return Task.CompletedTask;
+            return BeginQueueAsync(true);
+        }
+        async Task BeginQueueAsync(bool captain)
+        {
             CancelLocal();int generation=operation;ignored.Clear();searchBegan=Time.realtimeSinceStartupAsDouble;rankedBotDeadline=double.PositiveInfinity;
-            clock.Start(searchBegan);Room?.Lobby.Command("search","");startingSearch=true;SetState(FlowState.Delay,"Chuẩn bị tìm trận…");
+            assignmentObserved=0;clock.Start(searchBegan);startingSearch=true;SetState(FlowState.Delay,"Đang vào hàng chờ online…");
+            if(captain)Room?.Lobby.Command("search","");
+            string key=rankedSearchId=Guid.NewGuid().ToString("N");
             try
             {
-                if(Mode==PlayMode.Singles)
-                {
-                    string key=rankedSearchId=Guid.NewGuid().ToString("N");
-                    var ticket=await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST","api/Game/ranked/search",new{SearchId=Guid.Parse(key)});
-                    if(generation!=operation){await CancelRankedTicketAsync(key);return;}
-                    rankedBotDeadline=Math.Max(searchBegan+RankedSearchGate.DeadlineSeconds,Time.realtimeSinceStartupAsDouble+ticket.remainingSeconds);
-                }
+                var ticket=await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST","api/Game/ranked/search",new{
+                    SearchId=Guid.Parse(key),Mode=Mode.ToString(),Region=Room?.Region??Settings.photonRegion,
+                    Protocol=MultiplayerSceneConfiguration.ProtocolVersion,Group=Room?.Id??PlayerId,Members=Members().Select(m=>Guid.Parse(m.id)).ToArray()});
+                if(generation!=operation){await CancelRankedTicketAsync(key);return;}
+                rankedBotDeadline=Time.realtimeSinceStartupAsDouble+ticket.remainingSeconds;
+                SetState(FlowState.Searching,"Đang tìm đối thủ online…");
             }
-            catch{if(generation==operation){CancelLocal();SetState(FlowState.WaitingRoom,"Chưa mở được lượt tìm trận online.");}throw;}
+            catch
+            {
+                try{await CancelRankedTicketAsync(key);}catch(Exception){}
+                if(generation==operation){CancelLocal();Room?.Lobby.Command("idle","");SetState(FlowState.WaitingRoom,"Chưa mở được lượt tìm trận online.");}
+                throw;
+            }
             finally{if(generation==operation)startingSearch=false;}
         }
         public async Task StartCustomAsync()
@@ -168,7 +180,11 @@ namespace PickleVerse.Multiplayer
         {
             if(quitting||closing||navigation.Leaving)return;
             TickOnlineHeartbeat();
-            if((State==FlowState.Delay||State==FlowState.Searching)&&IsCaptain&&!working&&!startingSearch&&clock.CanSubmit(Time.realtimeSinceStartupAsDouble))await Safe(SearchStepAsync(operation));
+            // The captain may start searching before JoinRoomAsync has subscribed to the
+            // party's Changed event. Reconcile that initial state on the next frame too.
+            if(Room!=null&&!Custom&&!IsCaptain&&Room.Data.phase=="searching"&&State==FlowState.WaitingRoom&&!startingSearch&&!working)
+                await Safe(BeginQueueAsync(false));
+            if((State==FlowState.Delay||State==FlowState.Searching)&&!working&&!startingSearch&&clock.CanSubmit(Time.realtimeSinceStartupAsDouble))await Safe(SearchStepAsync(operation));
             if(Match!=null&&State==FlowState.Connecting&&!working&&!courtLoading)
             {
                 if(Match.Data.phase=="loading")await Safe(LoadAcceptedCourtAsync());
@@ -182,31 +198,48 @@ namespace PickleVerse.Multiplayer
             working=true;
             try
             {
-                if(generation!=operation||Match!=null&&(Match.Data.phase!="searching"||Match.PlayerCount>Members().Count))return;
-                SetState(FlowState.Searching,"Đang tìm đối thủ trên Photon…");
-                if(Mode==PlayMode.Singles&&Time.realtimeSinceStartupAsDouble>=rankedBotDeadline)
-                {await AddRankedOpponentAsync(generation);return;}
-                if(Mode==PlayMode.Doubles&&clock.TimedOut(Time.realtimeSinceStartupAsDouble)){await CancelSearchAsync();SetNotice("Hết thời gian tìm trận. Hãy thử lại.");return;}
-                if(browser==null)
+                if(generation!=operation||string.IsNullOrEmpty(rankedSearchId)||Match!=null&&Match.Data.phase!="searching")return;
+                var ticket=await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST","api/Game/ranked/poll",new{SearchId=Guid.Parse(rankedSearchId)});
+                if(generation!=operation)return;
+                if(ticket.state=="MATCHED")
                 {
-                    browser=PhotonSession.Create("Photon Match Browser");
-                    var result=await browser.Runner.JoinSessionLobby(SessionLobby.Custom,"pickleverse-online",customAppSettings:PhotonSession.Settings(Room?.Runner.SessionInfo.Region??Settings.photonRegion));
-                    if(!result.Ok)throw new InvalidOperationException("Không đọc được danh sách trận Photon.");
-                    await PhotonSession.WaitAsync(()=>browser.Callbacks.HasSessionList,"Chưa nhận danh sách phòng Photon.");
+                    if(assignmentObserved==0)assignmentObserved=Time.realtimeSinceStartupAsDouble;
+                    if(Match==null)
+                    {
+                        if(ticket.hostPlayerId==PlayerId)await CreateAssignedMatchAsync(ticket,generation);
+                        else if(ticket.roomReady)
+                        {
+                            try{await JoinMatchAsync(ticket.session,ticket.region,generation);}
+                            catch(Exception){if(Time.realtimeSinceStartupAsDouble-assignmentObserved>30){await CancelSearchAsync();SetNotice("Không kết nối được phòng trận. Hãy tìm lại.");return;}}
+                        }
+                    }
                 }
-                if(generation!=operation)return;if(Match!=null&&Match.PlayerCount>Members().Count)return;
-                bool expanded=Time.realtimeSinceStartupAsDouble-searchBegan>=30;Match?.Lobby.ExpandSearch(expanded);
-                var candidate=browser.Callbacks.Sessions.Where(s=>s.IsOpen&&s.IsVisible&&s.Name!=Match?.Id&&!ignored.Contains(s.Name)
-                    &&Int(s,"kind")==1&&Int(s,"mode")== (int)Mode&&Int(s,"protocol")==MultiplayerSceneConfiguration.ProtocolVersion&&Int(s,"stage")==0
-                    &&Bool(s,Members().Count==2?"fit2":"fit1")&&(Match==null||string.CompareOrdinal(s.Name,Match.Id)<0)&&Compatible(s,expanded)).OrderBy(s=>s.Name,StringComparer.Ordinal).FirstOrDefault();
-                if(candidate!=null)
+                else if(ticket.state=="SEARCHING")
                 {
-                    await LeaveMatchAsync();
-                    try{await JoinMatchAsync(candidate.Name,Room?.Runner.SessionInfo.Region??Settings.photonRegion,generation);}catch(Exception e){ignored.Add(candidate.Name);SetNotice("Phòng vừa đủ người: "+e.Message);}
+                    if(Mode==PlayMode.Singles&&ticket.remainingSeconds<=0){await AddRankedOpponentAsync(generation);return;}
+                    if(Mode==PlayMode.Doubles&&clock.TimedOut(Time.realtimeSinceStartupAsDouble)){await CancelSearchAsync();SetNotice("Hết thời gian tìm trận. Hãy thử lại.");return;}
                 }
-                else if(Match==null)await CreateMatchAsync(false,generation);await Task.Delay(750);
+                await Task.Delay(1000);
+            }
+            catch(Exception error)
+            {
+                if(generation==operation){await CancelSearchAsync();SetNotice("Lượt tìm trận đã dừng: "+error.Message);}
             }
             finally{working=false;}
+        }
+        async Task CreateAssignedMatchAsync(RankedSearchTicket ticket,int generation)
+        {
+            var session=PhotonSession.Create("Photon Match");
+            try
+            {
+                await session.StartAsync(ticket.session,PlayerId,ticket.region,new PhotonRoomData{mode=Mode,custom=false,
+                    matchId=ticket.matchId,expectedPlayers=ticket.roster.HumanCount,assignment=ticket.roster,
+                    phase="searching",night=ticket.roster.night,venue=ticket.roster.venue},StatePrefab);
+                await session.ReserveAsync(Members());
+                if(generation!=operation){await session.LeaveAsync();return;}AttachMatch(session);
+                await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST","api/Game/ranked/room-ready",new{SearchId=Guid.Parse(rankedSearchId)});
+            }
+            catch{await session.LeaveAsync();throw;}
         }
         async Task AddRankedOpponentAsync(int generation)
         {
@@ -269,18 +302,18 @@ namespace PickleVerse.Multiplayer
         {
             if(Match==null||closing)return;Roster=canonicalRoster??Match.Data.Roster(Match.Runner.SessionInfo.Region);
             foreach(var seat in Match.Data.seats.Where(s=>s.peer!=0)){ulong key=(ulong)seat.peer;bool joined=!ClientIdentities.ContainsKey(key);ClientIdentities[key]=seat.member.id;if(joined)PeerConnected?.Invoke(key);}
-            if(Match.Data.phase=="ready"&&State!=FlowState.InMatch&&State!=FlowState.Results)SetState(FlowState.Connecting,"Đã tìm thấy trận • Xác nhận để tham gia.");Changed?.Invoke();
+            if(Match.Data.phase=="ready"&&State!=FlowState.InMatch&&State!=FlowState.Results){SetState(FlowState.Connecting,"Đã tìm thấy trận • Xác nhận để tham gia.");_=Safe(EnsureReadyOfferAsync());}Changed?.Invoke();
         }
         public async Task AcceptMatchAsync()
         {
             if(!CanAcceptMatch)return;savingReady=true;Changed?.Invoke();
-            try{await PrepareOnlineMatchAsync();Match.Lobby.Ready(true);await PhotonSession.WaitAsync(()=>Match==null||ReadyCheckAccepted||Match.Data.phase!="ready","Chưa gửi được xác nhận.");}
+            try{await EnsureReadyOfferAsync();await PrepareOnlineMatchAsync();Match.Lobby.Ready(true);await PhotonSession.WaitAsync(()=>Match==null||ReadyCheckAccepted||Match.Data.phase!="ready","Chưa gửi được xác nhận.");}
             catch(Exception error){SetNotice(error.Message);}finally{savingReady=false;Changed?.Invoke();}
         }
         public async Task DeclineMatchAsync(){if(Match!=null)Match.Lobby.Ready(false);await CancelSearchAsync();}
         async Task RejectedMatchAsync()
         {
-            bool retry=ReadyCheckAccepted&&!Custom;string message=Match.Data.notice;ignored.Add(Match.Id);await LeaveMatchAsync();if(Room!=null&&IsCaptain)Room.Lobby.Command("idle","");SetState(FlowState.WaitingRoom,message);if(retry&&IsCaptain)await FindAsync();
+            bool retry=ReadyCheckAccepted&&!Custom;string message=Match.Data.notice;ignored.Add(Match.Id);await CancelRankedTicketAsync(rankedSearchId);rankedSearchId="";await LeaveMatchAsync();if(Room!=null&&IsCaptain)Room.Lobby.Command("idle","");SetState(FlowState.WaitingRoom,message);if(retry&&IsCaptain)await FindAsync();
         }
         async Task LoadAcceptedCourtAsync()
         {
@@ -311,13 +344,15 @@ namespace PickleVerse.Multiplayer
             await LeaveMatchAsync();await StopBrowser();lastPartyMatch="";SetState(FlowState.WaitingRoom,"Đã hủy tìm trận.");
             if(AccountRuntime.Ensure().Account.IsSignedIn)await CancelRankedTicketAsync(key);
         }
-        async Task LeaveMatchAsync(){var old=Match;Match=null;if(old!=null){old.Changed-=MatchChanged;old.SceneStarted-=SceneStarted;old.SceneDone-=SceneDone;await old.LeaveAsync();}Roster=null;canonicalRoster=null;ClientIdentities.Clear();courtLoading=false;CourtSceneSynchronized=true;PickleVerse.Settings.SceneLoading.CancelExternal();}
+        async Task LeaveMatchAsync(){var old=Match;Match=null;readyOffer=null;serverReadyUntil=double.PositiveInfinity;if(old!=null){old.Changed-=MatchChanged;old.SceneStarted-=SceneStarted;old.SceneDone-=SceneDone;await old.LeaveAsync();}Roster=null;canonicalRoster=null;ClientIdentities.Clear();courtLoading=false;CourtSceneSynchronized=true;PickleVerse.Settings.SceneLoading.CancelExternal();}
         public async Task ReturnToRoomAsync(string message)
         {
             if(closing)return;closing=true;
             try
             {
-                CancelLocal();await LeaveMatchAsync();await StopBrowser();lastPartyMatch="";
+                CancelLocal();string ticket=rankedSearchId;rankedSearchId="";
+                if(AccountRuntime.Ensure().Account.IsSignedIn)await Safe(CancelRankedTicketAsync(ticket));
+                await LeaveMatchAsync();await StopBrowser();lastPartyMatch="";
                 if(Room!=null&&Room.IsHost)Room.Lobby.Command("idle","");SetState(FlowState.WaitingRoom,message);
                 var scene=SceneManager.GetSceneByName(RoomSceneName);
                 if(!scene.IsValid()||!scene.isLoaded){await SceneManager.LoadSceneAsync(RoomSceneName,LoadSceneMode.Additive);scene=SceneManager.GetSceneByName(RoomSceneName);}

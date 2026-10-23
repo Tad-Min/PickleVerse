@@ -55,6 +55,24 @@ services:
     networks:
       - pickleverse_network
 
+  # Redis owns transient queues/consent; PostgreSQL remains the durable game database.
+  redis:
+    image: redis:7.4-alpine
+    container_name: pickleverse_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-16379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks:
+      - pickleverse_network
+
   # 4. Backend Web API (.NET 10)
   backend-api:
     build:
@@ -66,6 +84,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=pickleverse;Username=sa;Password=12345;"
+      Redis__ConnectionString: "redis:6379,abortConnect=false,connectTimeout=3000,syncTimeout=3000"
       Storage__ServiceUrl: "http://s3-storage:9000"
       Storage__AccessKey: "minioadmin"
       Storage__SecretKey: "minioadmin"
@@ -74,12 +93,9 @@ services:
       Jwt__Key: "${JWT_KEY:?Set JWT_KEY in the ignored .env file}"
       Jwt__Issuer: "PickleVerseAPI"
       Jwt__Audience: "PickleVerseClient"
-      Smtp__Host: "smtp.gmail.com"
-      Smtp__Port: "587"
       Smtp__Username: "${SMTP_USERNAME:-}"
       Smtp__Password: "${SMTP_APP_PASSWORD:-}"
       Smtp__FromEmail: "${SMTP_FROM_EMAIL:-}"
-      Smtp__FromName: "PickleVerse"
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
@@ -87,10 +103,14 @@ services:
         condition: service_healthy
       s3-storage:
         condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - pickleverse_network
 
 volumes:
+  redis_data:
+    driver: local
   postgres_data:
     driver: local
   s3_data:

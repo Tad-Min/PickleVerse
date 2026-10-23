@@ -13,11 +13,12 @@ using Services.DTOs;
 using Services.Exceptions;
 using Services.Interfaces;
 using Services.Security;
+using Services.Configuration;
 
 namespace Services.Implementations;
 
 public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles,
-    IConfiguration configuration, IEmailSender emailSender, TimeProvider clock) : IAuthService
+    IConfiguration configuration, IEmailSender emailSender, TimeProvider clock, ServerSettings settings) : IAuthService
 {
     string SigningKey => configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
     DateTime UtcNow => clock.GetUtcNow().UtcDateTime;
@@ -70,13 +71,14 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         }
         // Failed delivery leaves an unverified account that resend-otp can recover.
         await emailSender.SendVerificationCodeAsync(email, code);
-        return new AuthResponse { Success = true, Code = "verification_required", Message = "Đã đăng ký. Hãy nhập mã được gửi tới email để kích hoạt tài khoản." };
+        return new AuthResponse { Success = true, Code = "verification_required", Message = "Đã đăng ký. Hãy nhập mã được gửi tới email để kích hoạt tài khoản.",
+            OtpLifetimeMinutes=settings.Otp.LifetimeMinutes, OtpResendCooldownSeconds=settings.Otp.ResendCooldownSeconds };
     }
 
     Verificationemail NewVerification(User user, string code) => new()
     {
         Userid = user.Userid, Email = user.Email, Token = EmailOtpPolicy.Hash(user.Userid, code, SigningKey),
-        Createdat = UtcNow, Expiresat = UtcNow.AddMinutes(EmailOtpPolicy.LifetimeMinutes), Isverified = false
+        Createdat = UtcNow, Expiresat = UtcNow.AddMinutes(settings.Otp.LifetimeMinutes), Isverified = false
     };
 
     public async Task<bool> VerifyEmailAsync(VerifyEmailRequest request)
@@ -88,7 +90,7 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         {
             await unitOfWork.Users.LockUserAsync(user.Userid);
             var record = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
-            if (record == null || !EmailOtpPolicy.CanVerify(record.Expiresat, record.Isverified, record.Failedattempts, UtcNow))
+            if (record == null || !EmailOtpPolicy.CanVerify(record.Expiresat, record.Isverified, record.Failedattempts, UtcNow, settings.Otp.MaxAttempts))
             { await unitOfWork.RollbackTransactionAsync(); return false; }
             bool matches = EmailOtpPolicy.Matches(user.Userid, request.Token, record.Token, SigningKey);
             if (matches) record.Isverified = true;
@@ -102,7 +104,7 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
     public async Task<ResendOtpResponse> ResendOtpAsync(ResendOtpRequest request)
     {
         var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
-        if (user == null || !Active(user)) return new ResendOtpResponse();
+        if (user == null || !Active(user)) return OtpReceipt();
         await unitOfWork.BeginTransactionAsync();
         string code;
         try
@@ -118,8 +120,8 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
                     Message = "Email đã được xác thực. Hãy đăng nhập bằng email và mật khẩu đã đăng ký."
                 };
             }
-            if (latest != null && latest.Createdat.AddSeconds(EmailOtpPolicy.ResendCooldownSeconds) > UtcNow)
-                throw new AppException("Vui lòng chờ ít nhất 60 giây trước khi gửi lại mã.", HttpStatusCode.TooManyRequests);
+            if (latest != null && latest.Createdat.AddSeconds(settings.Otp.ResendCooldownSeconds) > UtcNow)
+                throw new AppException($"Vui lòng chờ ít nhất {settings.Otp.ResendCooldownSeconds} giây trước khi gửi lại mã.", HttpStatusCode.TooManyRequests);
             emailSender.EnsureConfigured();
             code = EmailOtpPolicy.Generate();
             await unitOfWork.Users.AddVerificationEmailAsync(NewVerification(user, code));
@@ -127,8 +129,11 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         }
         catch { await unitOfWork.RollbackTransactionAsync(); throw; }
         await emailSender.SendVerificationCodeAsync(user.Email, code);
-        return new ResendOtpResponse();
+        return OtpReceipt();
     }
+
+    ResendOtpResponse OtpReceipt() => new() { OtpLifetimeMinutes=settings.Otp.LifetimeMinutes,
+        OtpResendCooldownSeconds=settings.Otp.ResendCooldownSeconds };
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
@@ -190,7 +195,7 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
     {
         string raw = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         return (raw, new Refreshtoken
-        { Userid = userId, Tokenhash = HashRefreshToken(raw), Createdat = UtcNow, Expiresat = UtcNow.AddDays(14) });
+        { Userid = userId, Tokenhash = HashRefreshToken(raw), Createdat = UtcNow, Expiresat = UtcNow.AddDays(settings.Authentication.RefreshTokenDays) });
     }
 
     async Task<AuthResponse> SignedInAsync(User user, string refreshToken) => new()
@@ -208,7 +213,7 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         };
         var token = new JwtSecurityToken(configuration["Jwt:Issuer"] ?? "PickleVerseAPI",
             configuration["Jwt:Audience"] ?? "PickleVerseClient", claims,
-            expires: UtcNow.AddHours(2), signingCredentials: new SigningCredentials(
+            expires: UtcNow.AddHours(settings.Authentication.AccessTokenHours), signingCredentials: new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)), SecurityAlgorithms.HmacSha256));
         return new JwtSecurityTokenHandler().WriteToken(token);
     }

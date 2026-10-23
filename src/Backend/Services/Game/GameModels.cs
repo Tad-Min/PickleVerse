@@ -33,6 +33,8 @@ public sealed class GameCatalog
     public int winXp, lossXp;
     public RewardBundle dailyBonus, weeklyBonus;
     public MatchRewards matchRewards = new();
+    public RuntimeMatchmakingSettings matchmaking = new();
+    public RuntimeOnlineMatchSettings onlineMatch = new();
     public List<ProgressDefinition> definitions = [];
     public TrainingDrill[] lessons = [];
     public CosmeticOffer[] cosmetics = [];
@@ -108,8 +110,22 @@ public sealed class AppActivityReceipt
 {
     public long totalSeconds, elapsedSeconds;
 }
-public sealed class RankedSearchRequest { public Guid SearchId { get; set; } }
-public sealed class RankedSearchTicket { public double remainingSeconds; }
+public sealed class RankedSearchRequest
+{
+    public Guid SearchId { get; set; }
+    public PickleVerse.Multiplayer.PlayMode Mode { get; set; } = PickleVerse.Multiplayer.PlayMode.Singles;
+    public string Region { get; set; } = "asia";
+    public int Protocol { get; set; }
+    public string Group { get; set; } = "";
+    public Guid[] Members { get; set; } = [];
+}
+public sealed class RankedSearchTicket
+{
+    public double remainingSeconds;
+    public bool roomReady;
+    public string state="SEARCHING",matchId="",session="",hostPlayerId="",region="";
+    public PickleVerse.Multiplayer.MatchRoster? roster;
+}
 public sealed class RankedBotRequest
 {
     public Guid SearchId { get; set; }
@@ -121,6 +137,7 @@ public sealed class OnlineMatchTicket
     public PickleVerse.Multiplayer.MatchRoster roster = new();
     public bool allAccepted;
     public string phase = "PREPARING";
+    public double readyRemainingSeconds;
 }
 public sealed class OnlineMatchCommand
 {

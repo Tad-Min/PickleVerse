@@ -1,3 +1,6 @@
+using Services.Game;
+using Repositories.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +19,13 @@ namespace Services.Implementations
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ProfileService> _logger;
 
-        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger)
+        readonly LeaderboardCache? _leaderboard;
+        readonly PickleVerseContext? _context;
+        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger,LeaderboardCache? leaderboard=null,PickleVerseContext? context=null)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _leaderboard=leaderboard;_context=context;
         }
 
         public async Task<PlayerProfileResponse?> GetMyProfileAsync(Guid userId)
@@ -126,6 +132,17 @@ namespace Services.Implementations
         {
             try
             {
+                top=Math.Clamp(top,1,1000);
+                if(_leaderboard!=null&&_context!=null)
+                {
+                    try
+                    {
+                        var key=await _leaderboard.Snapshot(new GameSql(_context));var ids=await _leaderboard.Top(key,top);
+                        var cachedProfiles=await _context.Playerprofiles.AsNoTracking().Include(p=>p.User).Where(p=>ids.Contains(p.Userid)).ToListAsync();
+                        return ids.Select(id=>cachedProfiles.FirstOrDefault(p=>p.Userid==id)).Where(p=>p!=null).Select(p=>MapToResponse(p!)).ToList();
+                    }
+                    catch(StackExchange.Redis.RedisException error){_logger.LogWarning(error,"Leaderboard cache unavailable; reading PostgreSQL.");}
+                }
                 var profiles = await _unitOfWork.Profiles.GetLeaderboardAsync(top);
                 return profiles.Select(MapToResponse).ToList();
             }

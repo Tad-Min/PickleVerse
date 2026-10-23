@@ -13,6 +13,8 @@ namespace PickleVerse.Services
         int generation;
         Task refreshTask;
         public BackendPlayerProfile Profile { get; private set; }
+        public int OtpLifetimeMinutes { get; private set; }
+        public int OtpResendCooldownSeconds { get; private set; }
         public bool IsSignedIn => !string.IsNullOrEmpty(accessToken) && Profile != null;
         public int SessionVersion => generation;
         public event Action Changed;
@@ -23,11 +25,21 @@ namespace PickleVerse.Services
         {
             var result = await api.SendAsync<AuthResponse>("POST", "api/Auth/register", request, cancellation: cancellation);
             if (!result.Success) throw new ApiException(400, result.Message, result.Code);
+            ApplyOtpPolicy(result.OtpLifetimeMinutes, result.OtpResendCooldownSeconds);
         }
         public Task<ApiMessage> VerifyEmailAsync(string email, string code, CancellationToken cancellation = default) =>
             api.SendAsync<ApiMessage>("POST", "api/Auth/verify-email", new VerifyEmailRequest { Email = email, Token = code }, cancellation: cancellation);
-        public Task<ResendOtpResponse> ResendOtpAsync(string email, CancellationToken cancellation = default) =>
-            api.SendAsync<ResendOtpResponse>("POST", "api/Auth/resend-otp", new EmailRequest { Email = email }, cancellation: cancellation);
+        public async Task<ResendOtpResponse> ResendOtpAsync(string email, CancellationToken cancellation = default)
+        {
+            var result=await api.SendAsync<ResendOtpResponse>("POST", "api/Auth/resend-otp", new EmailRequest { Email = email }, cancellation: cancellation);
+            if(result.Code!="email_already_verified")ApplyOtpPolicy(result.OtpLifetimeMinutes,result.OtpResendCooldownSeconds);
+            return result;
+        }
+        void ApplyOtpPolicy(int minutes,int cooldown)
+        {
+            if(minutes<=0||cooldown<=0)throw new ApiException(502,"Máy chủ chưa trả đủ cấu hình xác thực email.","invalid_response");
+            OtpLifetimeMinutes=minutes;OtpResendCooldownSeconds=cooldown;
+        }
 
         public async Task LoginAsync(string email, string password, CancellationToken cancellation = default)
         {

@@ -1,17 +1,16 @@
 using System.Security.Cryptography;
 using System.Text;
 using PickleVerse.Progression;
+using Services.Configuration;
 using static Services.Game.GameSql;
 
 namespace Services.Game;
 
-public sealed class GameCatalogService(GameSql sql)
+public sealed class GameCatalogService(GameSql sql, ServerSettings settings)
 {
     public async Task<GameCatalog> Load()
     {
-        var settings = await sql.One("SELECT value::text FROM gamesettings WHERE key='progression'",r=>r.GetString(0))
-            ?? throw new InvalidOperationException("Game content seed is missing.");
-        var catalog = GameJson.Read<GameCatalog>(settings);
+        var catalog = settings.CreateCatalog();
         catalog.definitions.AddRange(await sql.Query("SELECT achievementcode,achievementname,type,target,reward::text FROM achievements ORDER BY achievementid",r=>
             new ProgressDefinition(r.GetString(0),r.GetString(1),ProgressScope.Achievement,Enum.Parse<ProgressMetric>(r.GetString(2)),r.GetInt32(3),GameJson.Read<RewardBundle>(r.GetString(4)))));
         catalog.definitions.AddRange(await sql.Query("SELECT config::text FROM missions WHERE code IS NOT NULL ORDER BY missionid",r=>GameJson.Read<ProgressDefinition>(r.GetString(0))));

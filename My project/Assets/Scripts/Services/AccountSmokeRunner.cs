@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PickleVerse.Services.Api;
 using UnityEngine;
 
@@ -32,6 +33,10 @@ namespace PickleVerse.Services
                 report["startedSignedOut"] = !account.IsSignedIn;
                 await account.LoginAsync(fixture["email"], fixture["password"]);
                 report["authenticatedProfile"] = account.Profile.UserId == Guid.Parse(fixture["userId"]);
+                var catalog=await account.SendAuthorizedAsync<JObject>("GET","api/Game/catalog");
+                report["serverMatchmakingSettings"] = (int?)catalog["matchmaking"]?["botFallbackSeconds"]==360&&(int?)catalog["matchmaking"]?["readyConfirmationSeconds"]==120;
+                report["serverHeartbeatSettings"] = (int?)catalog["onlineMatch"]?["disconnectTimeoutSeconds"]==35&&(int?)catalog["onlineMatch"]?["heartbeatSeconds"]==8;
+                report["serverProgressionSettings"] = (int?)catalog["winXp"]==10&&(int?)catalog["lossXp"]==5&&(int?)catalog["dailyBonus"]?["coins"]==200&&(int?)catalog["weeklyBonus"]?["coins"]==1000;
                 await account.UpdateProfileAsync(new UpdateProfileRequest { PlayerName = "WindowsApiCheck", IsMale = true });
                 report["serverProfileUpdated"] = account.Profile.PlayerName == "WindowsApiCheck" && account.Profile.IsMale;
                 await account.LogoutAsync();

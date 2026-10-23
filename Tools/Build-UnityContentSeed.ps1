@@ -6,25 +6,24 @@ function JsonSql($value) { return (Sql ($value | ConvertTo-Json -Depth 30 -Compr
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('-- BEGIN UNITY GAME CONTENT SEED')
 $lines.Add('-- Exported from Unity Resources/Progression Config, Shop/Shop Catalog and TrainingCurriculum.')
-$lines.Add('BEGIN;')
 foreach($currency in @('TOKENPAD','ELITE TOKEN')) {
-    $lines.Add("INSERT INTO currencies(currencyname,description) VALUES ($(Sql $currency),$(Sql $currency)) ON CONFLICT(currencyname) DO NOTHING;")
+    $lines.Add("INSERT INTO Currencies(CurrencyName,Description) VALUES ($(Sql $currency),$(Sql $currency)) ON CONFLICT(CurrencyName) DO NOTHING;")
 }
 foreach($definition in $catalog.definitions) {
     $reward = JsonSql $definition.reward
     if($definition.scope -eq 'Achievement') {
-        $lines.Add("INSERT INTO achievements(achievementcode,achievementname,description,type,target,reward) VALUES ($(Sql $definition.id),$(Sql $definition.title),$(Sql $definition.title),$(Sql $definition.metric),$($definition.target),$reward) ON CONFLICT(achievementcode) DO UPDATE SET achievementname=EXCLUDED.achievementname,description=EXCLUDED.description,type=EXCLUDED.type,target=EXCLUDED.target,reward=EXCLUDED.reward;")
+        $lines.Add("INSERT INTO Achievements(AchievementCode,AchievementName,Description,Type,Target,Reward) VALUES ($(Sql $definition.id),$(Sql $definition.title),$(Sql $definition.title),$(Sql $definition.metric),$($definition.target),$reward) ON CONFLICT(AchievementCode) DO UPDATE SET AchievementName=EXCLUDED.AchievementName,Description=EXCLUDED.Description,Type=EXCLUDED.Type,Target=EXCLUDED.Target,Reward=EXCLUDED.Reward;")
     } else {
-        $lines.Add("INSERT INTO missions(code,missionname,description,type,target,reward,config) VALUES ($(Sql $definition.id),$(Sql $definition.title),$(Sql $definition.title),$(Sql $definition.scope),$($definition.target),$reward,$(JsonSql $definition)) ON CONFLICT(code) DO UPDATE SET missionname=EXCLUDED.missionname,description=EXCLUDED.description,type=EXCLUDED.type,target=EXCLUDED.target,reward=EXCLUDED.reward,config=EXCLUDED.config;")
+        $lines.Add("INSERT INTO Missions(Code,MissionName,Description,Type,Target,Reward,Config) VALUES ($(Sql $definition.id),$(Sql $definition.title),$(Sql $definition.title),$(Sql $definition.scope),$($definition.target),$reward,$(JsonSql $definition)) ON CONFLICT(Code) DO UPDATE SET MissionName=EXCLUDED.MissionName,Description=EXCLUDED.Description,Type=EXCLUDED.Type,Target=EXCLUDED.Target,Reward=EXCLUDED.Reward,Config=EXCLUDED.Config;")
     }
 }
 foreach($cosmetic in $catalog.cosmetics) {
     $currency = if($cosmetic.tokenpadPrice -gt 0 -or $cosmetic.id -eq 'paddle.default') {'TOKENPAD'} else {'ELITE TOKEN'}
     $price = if($currency -eq 'TOKENPAD') {$cosmetic.tokenpadPrice} else {$cosmetic.elitePrice}
-    $lines.Add("INSERT INTO cosmetics(currencyid,itemcode,cosmeticname,description,price,type,config) SELECT currencyid,$(Sql $cosmetic.id),$(Sql $cosmetic.title),$(Sql $cosmetic.description),$price,'Paddle',$(JsonSql $cosmetic) FROM currencies WHERE currencyname=$(Sql $currency) ON CONFLICT(itemcode) DO UPDATE SET currencyid=EXCLUDED.currencyid,cosmeticname=EXCLUDED.cosmeticname,description=EXCLUDED.description,price=EXCLUDED.price,type=EXCLUDED.type,config=EXCLUDED.config;")
+    $lines.Add("INSERT INTO Cosmetics(CurrencyId,ItemCode,CosmeticName,Description,Price,Type,Config) SELECT CurrencyId,$(Sql $cosmetic.id),$(Sql $cosmetic.title),$(Sql $cosmetic.description),$price,'Paddle',$(JsonSql $cosmetic) FROM Currencies WHERE CurrencyName=$(Sql $currency) ON CONFLICT(ItemCode) DO UPDATE SET CurrencyId=EXCLUDED.CurrencyId,CosmeticName=EXCLUDED.CosmeticName,Description=EXCLUDED.Description,Price=EXCLUDED.Price,Type=EXCLUDED.Type,Config=EXCLUDED.Config;")
     foreach($offer in @(@{name='TOKENPAD';price=$cosmetic.tokenpadPrice},@{name='ELITE TOKEN';price=$cosmetic.elitePrice})) {
         if($offer.price -gt 0 -or ($cosmetic.id -eq 'paddle.default' -and $offer.name -eq 'TOKENPAD')) {
-            $lines.Add("INSERT INTO cosmeticprices(cosmeticid,currencyid,price) SELECT c.cosmeticid,u.currencyid,$($offer.price) FROM cosmetics c CROSS JOIN currencies u WHERE c.itemcode=$(Sql $cosmetic.id) AND u.currencyname=$(Sql $offer.name) ON CONFLICT(cosmeticid,currencyid) DO UPDATE SET price=EXCLUDED.price;")
+            $lines.Add("INSERT INTO CosmeticPrices(CosmeticId,CurrencyId,Price) SELECT c.CosmeticId,u.CurrencyId,$($offer.price) FROM Cosmetics c CROSS JOIN Currencies u WHERE c.ItemCode=$(Sql $cosmetic.id) AND u.CurrencyName=$(Sql $offer.name) ON CONFLICT(CosmeticId,CurrencyId) DO UPDATE SET Price=EXCLUDED.Price;")
         }
     }
 }
@@ -32,15 +31,12 @@ $order = 0
 foreach($lesson in $catalog.lessons) {
     $order++
     $reward = JsonSql @{coins=$lesson.reward;gems=0;xp=$lesson.xp}
-    $lines.Add("INSERT INTO techniques(techniquename,description) VALUES ($(Sql $lesson.skill),$(Sql $lesson.title)) ON CONFLICT(techniquename) DO NOTHING;")
-    $lines.Add("INSERT INTO lessons(code,lessonname,description,type,target,reward,sortorder,config) VALUES ($(Sql $lesson.id),$(Sql $lesson.title),$(Sql $lesson.explanation),$(Sql $lesson.skill),$($lesson.required),$reward,$order,$(JsonSql $lesson)) ON CONFLICT(code) DO UPDATE SET lessonname=EXCLUDED.lessonname,description=EXCLUDED.description,type=EXCLUDED.type,target=EXCLUDED.target,reward=EXCLUDED.reward,sortorder=EXCLUDED.sortorder,config=EXCLUDED.config;")
-    $lines.Add("INSERT INTO drills(code,techniqueid,drillname,description) SELECT $(Sql $lesson.id),techniqueid,$(Sql $lesson.title),$(Sql $lesson.coaching) FROM techniques WHERE techniquename=$(Sql $lesson.skill) ON CONFLICT(code) DO UPDATE SET techniqueid=EXCLUDED.techniqueid,drillname=EXCLUDED.drillname,description=EXCLUDED.description;")
-    $lines.Add("INSERT INTO lessondrills(lessonid,drillid,target) SELECT l.lessonid,d.drillid,$($lesson.required) FROM lessons l CROSS JOIN drills d WHERE l.code=$(Sql $lesson.id) AND d.code=$(Sql $lesson.id) ON CONFLICT(lessonid,drillid) DO UPDATE SET target=EXCLUDED.target;")
+    $lines.Add("INSERT INTO Techniques(TechniqueName,Description) VALUES ($(Sql $lesson.skill),$(Sql $lesson.title)) ON CONFLICT(TechniqueName) DO NOTHING;")
+    $lines.Add("INSERT INTO Lessons(Code,LessonName,Description,Type,Target,Reward,SortOrder,Config) VALUES ($(Sql $lesson.id),$(Sql $lesson.title),$(Sql $lesson.explanation),$(Sql $lesson.skill),$($lesson.required),$reward,$order,$(JsonSql $lesson)) ON CONFLICT(Code) DO UPDATE SET LessonName=EXCLUDED.LessonName,Description=EXCLUDED.Description,Type=EXCLUDED.Type,Target=EXCLUDED.Target,Reward=EXCLUDED.Reward,SortOrder=EXCLUDED.SortOrder,Config=EXCLUDED.Config;")
+    $lines.Add("INSERT INTO Drills(Code,TechniqueId,DrillName,Description) SELECT $(Sql $lesson.id),TechniqueId,$(Sql $lesson.title),$(Sql $lesson.coaching) FROM Techniques WHERE TechniqueName=$(Sql $lesson.skill) ON CONFLICT(Code) DO UPDATE SET TechniqueId=EXCLUDED.TechniqueId,DrillName=EXCLUDED.DrillName,Description=EXCLUDED.Description;")
+    $lines.Add("INSERT INTO LessonDrills(LessonId,DrillId,Target) SELECT l.LessonId,d.DrillId,$($lesson.required) FROM Lessons l CROSS JOIN Drills d WHERE l.Code=$(Sql $lesson.id) AND d.Code=$(Sql $lesson.id) ON CONFLICT(LessonId,DrillId) DO UPDATE SET Target=EXCLUDED.Target;")
 }
-$settings = @{winXp=$catalog.winXp;lossXp=$catalog.lossXp;dailyBonus=$catalog.dailyBonus;weeklyBonus=$catalog.weeklyBonus;matchRewards=$catalog.matchRewards}
-$lines.Add("INSERT INTO gamesettings(key,value) VALUES ('progression',$(JsonSql $settings)) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value;")
-$lines.Add("INSERT INTO playercosmetics(playerid,cosmeticid,equipped) SELECT p.userid,c.cosmeticid,NOT EXISTS(SELECT 1 FROM playercosmetics pc WHERE pc.playerid=p.userid AND pc.equipped) FROM playerprofiles p CROSS JOIN cosmetics c WHERE c.itemcode='paddle.default' ON CONFLICT(playerid,cosmeticid) DO NOTHING;")
-$lines.Add('COMMIT;')
+$lines.Add("INSERT INTO PlayerCosmetics(PlayerId,CosmeticId,Equipped) SELECT p.UserId,c.CosmeticId,NOT EXISTS(SELECT 1 FROM PlayerCosmetics pc WHERE pc.PlayerId=p.UserId AND pc.Equipped) FROM PlayerProfiles p CROSS JOIN Cosmetics c WHERE c.ItemCode='paddle.default' ON CONFLICT(PlayerId,CosmeticId) DO NOTHING;")
 $lines.Add('-- END UNITY GAME CONTENT SEED')
 $root = Split-Path $PSScriptRoot -Parent
 $database = Join-Path $root 'src/Database.sql'

@@ -15,7 +15,7 @@ static class OnlineMatchChecks
         async Task<T> Call<T>(Func<OnlineGameService,Task<T>> action)
         {
             await using var context=new PickleVerseContext(options);var sql=new GameSql(context);
-            return await action(new OnlineGameService(context,sql,new GameCatalogService(sql),clock));
+            return await action(new OnlineGameService(context,sql,new GameCatalogService(sql,TestSettings.Load()),clock,TestSettings.Load(),TestRedis.State,TestRedis.Leaderboard));
         }
         async Task Reject(Func<Task> call,string name,HttpStatusCode status=HttpStatusCode.Conflict)
         {bool rejected=false;try{await call();}catch(AppException ex){if(ex.StatusCode!=status)throw new Exception(name+": expected "+status+", received "+ex.StatusCode+": "+ex.Message,ex);rejected=true;}check(rejected,name);}

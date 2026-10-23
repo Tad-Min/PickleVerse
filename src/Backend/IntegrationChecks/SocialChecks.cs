@@ -10,7 +10,7 @@ static class SocialChecks
     public static async Task Run(DbContextOptions<PickleVerseContext> options,Action<bool,string> check)
     {
         async Task<T> Call<T>(Func<OnlineSocialService,Task<T>> call)
-        {await using var db=new PickleVerseContext(options);return await call(new OnlineSocialService(db,new GameSql(db)));}
+        {await using var db=new PickleVerseContext(options);return await call(new OnlineSocialService(db,new GameSql(db),TestRedis.Leaderboard));}
         async Task Act(Guid self,Guid other,string action,int request=0)=>await Call(async s=>{await s.Act(self,new SocialActionRequest{PlayerId=other,Action=action,RequestId=request});return true;});
         async Task Rejected(Func<Task> call,string name)
         {bool rejected=false;try{await call();}catch(AppException ex){rejected=ex.StatusCode==HttpStatusCode.Conflict;}check(rejected,name);}

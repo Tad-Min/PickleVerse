@@ -16,7 +16,20 @@ namespace PickleVerse.Tests.Services
         static readonly Guid UserId = Guid.Parse("dca3d53b-7aba-443f-afbe-7c18277dccde");
         static ApiHttpResponse Ok(object value) => new ApiHttpResponse(200, JsonConvert.SerializeObject(value));
         static BackendPlayerProfile Profile(string name = "Online Player") => new BackendPlayerProfile { UserId = UserId, PlayerName = name, Level = 3, Elo = 250 };
-        static AuthResponse Tokens(string token = "access-one") => new AuthResponse { Success = true, AccessToken = token, RefreshToken = "refresh-" + token, Profile = Profile() };
+        static AuthResponse Tokens(string token = "access-one") => new AuthResponse { Success = true, AccessToken = token, RefreshToken = "refresh-" + token, Profile = Profile(), OtpLifetimeMinutes=10, OtpResendCooldownSeconds=60 };
+
+        [Test]
+        public async Task OtpDisplayTimingComesFromApiResponses()
+        {
+            var registration=Tokens();registration.OtpLifetimeMinutes=2;registration.OtpResendCooldownSeconds=3;
+            var fake=new FakeTransport { Handler=(m,p,j,t,c)=>Task.FromResult(p.EndsWith("/register")?Ok(registration):
+                Ok(new ResendOtpResponse{Code="verification_requested",OtpLifetimeMinutes=4,OtpResendCooldownSeconds=7})) };
+            var account=new AccountService(new ApiClient(fake));
+            await account.RegisterAsync(new RegisterRequest{Email="otp@example.invalid",Password="example-only",ConfirmPassword="example-only"});
+            Assert.That(account.OtpLifetimeMinutes,Is.EqualTo(2));Assert.That(account.OtpResendCooldownSeconds,Is.EqualTo(3));
+            await account.ResendOtpAsync("otp@example.invalid");
+            Assert.That(account.OtpLifetimeMinutes,Is.EqualTo(4));Assert.That(account.OtpResendCooldownSeconds,Is.EqualTo(7));
+        }
         sealed class FakeTransport : IApiTransport
         {
             public Func<string, string, string, string, CancellationToken, Task<ApiHttpResponse>> Handler;
@@ -89,7 +102,7 @@ namespace PickleVerse.Tests.Services
                 Assert.That(path, Is.EqualTo("api/Auth/resend-otp"));
                 Assert.That(JObject.Parse(json)["email"].Value<string>(), Is.EqualTo("test@example.invalid"));
                 Assert.That(token, Is.Null);
-                return Task.FromResult(Ok(new { code = status, message = "Server response" }));
+                return Task.FromResult(Ok(new { code = status, message = "Server response", otpLifetimeMinutes=10, otpResendCooldownSeconds=60 }));
             } };
             var account = new AccountService(new ApiClient(fake));
             var result = await account.ResendOtpAsync("test@example.invalid");

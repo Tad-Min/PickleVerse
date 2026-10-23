@@ -11,8 +11,18 @@ namespace PickleVerse.Multiplayer
 {
     public sealed partial class MultiplayerApp
     {
-        [Serializable]sealed class MatchTicket{public MatchRoster roster;public bool allAccepted;public string phase;}
+        [Serializable]sealed class MatchTicket{public MatchRoster roster;public bool allAccepted;public string phase;public double readyRemainingSeconds;}
         MatchRoster canonicalRoster;
+        Task readyOffer;
+        double serverReadyUntil=double.PositiveInfinity;
+        Task EnsureReadyOfferAsync()=>readyOffer==null||readyOffer.IsFaulted||readyOffer.IsCanceled?(readyOffer=OfferOnlineMatchAsync()):readyOffer;
+        async Task OfferOnlineMatchAsync()
+        {
+            var match=Match;
+            var ticket=await AccountRuntime.Ensure().Account.SendAuthorizedAsync<MatchTicket>("POST","api/Game/match/online/offer",OnlineRequest());
+            if(Match!=match)throw new OperationCanceledException();
+            canonicalRoster=ticket.roster;Roster=canonicalRoster;serverReadyUntil=Time.realtimeSinceStartupAsDouble+ticket.readyRemainingSeconds;
+        }
         readonly Dictionary<string,Task> resultWrites=new Dictionary<string,Task>();
         bool heartbeatBusy;
         double nextHeartbeat;
@@ -20,7 +30,7 @@ namespace PickleVerse.Multiplayer
         {
             var runtime=ProgressionRuntime.Instance;var pending=runtime.Ready?runtime.Player.pendingMatch:null;
             if(heartbeatBusy||pending==null||pending.Bot||Match==null||Time.realtimeSinceStartupAsDouble<nextHeartbeat)return;
-            heartbeatBusy=true;nextHeartbeat=Time.realtimeSinceStartupAsDouble+8;_=HeartbeatAsync(pending.id);
+            heartbeatBusy=true;nextHeartbeat=Time.realtimeSinceStartupAsDouble+runtime.Snapshot.catalog.onlineMatch.heartbeatSeconds;_=HeartbeatAsync(pending.id);
         }
         async Task HeartbeatAsync(string matchId)
         {

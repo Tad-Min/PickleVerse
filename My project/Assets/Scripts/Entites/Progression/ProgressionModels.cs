@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace PickleVerse.Progression
 {
+    [Serializable] public sealed class RuntimeMatchmakingSettings
+    {
+        public int botFallbackSeconds, readyConfirmationSeconds;
+    }
+    [Serializable] public sealed class RuntimeOnlineMatchSettings
+    {
+        public int disconnectTimeoutSeconds, heartbeatSeconds;
+    }
     public enum ProgressScope { Achievement, Daily, Weekly }
     public enum ProgressMetric { Matches, Wins, Points, Returns, Serves, BotMatches, HumanMatches, HumanWins, RankedWins, DoublesWins, BestStreak, HigherRatedWins }
     public enum MatchKind { BotPractice, RankedSingles, RankedBot, MatchedDoubles, Custom }

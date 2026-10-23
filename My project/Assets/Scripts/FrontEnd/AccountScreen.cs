@@ -165,7 +165,9 @@ namespace PickleVerse.FrontEnd
             page = next;
             bool syncing = next == Page.Sync;
             title.text = syncing ? "TẢI DỮ LIỆU TRÒ CHƠI" : next == Page.Login ? "CHÀO MỪNG TRỞ LẠI" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC EMAIL" : "TÀI KHOẢN CỦA BẠN";
-            subtitle.text = next == Page.Verify ? "Nhập mã 6 chữ số trong email. Mã có hiệu lực 10 phút."
+            subtitle.text = next == Page.Verify ? account.OtpLifetimeMinutes>0
+                ? $"Nhập mã 6 chữ số trong email. Mã có hiệu lực {account.OtpLifetimeMinutes} phút."
+                : "Nhập mã 6 chữ số trong email. Thời hạn của mã được ghi trong email."
                 : syncing ? "Đang tải hồ sơ, cửa hàng và bài học trực tuyến. Nếu mất kết nối, hãy thử lại." : next == Page.Profile ? $"LV {account.Profile.Level}  ·  {account.Profile.Elo} ELO  ·  {account.Profile.WinCount} thắng / {account.Profile.LoseCount} thua" : "Đăng nhập để tiếp tục hành trình PickleVerse.";
             loginTab.gameObject.SetActive(next != Page.Profile && !syncing); registerTab.gameObject.SetActive(next != Page.Profile && !syncing);
             loginTab.transform.parent.gameObject.SetActive(next != Page.Profile && !syncing);
@@ -204,7 +206,7 @@ namespace PickleVerse.FrontEnd
                 if (password.text.Length < 6) throw new ArgumentException("Mật khẩu cần ít nhất 6 ký tự.");
                 if (password.text != confirmPassword.text) throw new ArgumentException("Mật khẩu xác nhận chưa khớp.");
                 await account.RegisterAsync(new RegisterRequest { Email = mail, Password = password.text, ConfirmPassword = confirmPassword.text, IsMale = male }, cancellation);
-                password.text = confirmPassword.text = ""; resendAt = Time.realtimeSinceStartupAsDouble + 60;
+                password.text = confirmPassword.text = ""; resendAt = Time.realtimeSinceStartupAsDouble + account.OtpResendCooldownSeconds;
                 Show(Page.Verify); feedback.text = "Mã xác thực đã được gửi. Hãy kiểm tra cả thư rác.";
             }
             else if (page == Page.Verify)
@@ -248,7 +250,7 @@ namespace PickleVerse.FrontEnd
                 otp.text = "";
                 Show(Page.Login);
             }
-            else resendAt = Time.realtimeSinceStartupAsDouble + 60;
+            else resendAt = Time.realtimeSinceStartupAsDouble + account.OtpResendCooldownSeconds;
             feedback.text = result.Message;
         });
         async void Logout() => await Run(async () => { await account.LogoutAsync(lifetime.Token); Show(Page.Login); RefreshVisibility(); });

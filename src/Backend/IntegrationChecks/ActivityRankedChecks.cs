@@ -14,7 +14,7 @@ static class ActivityRankedChecks
         async Task<T> Call<T>(Func<OnlineGameService,Task<T>> action)
         {
             await using var db=new PickleVerseContext(options);var sql=new GameSql(db);
-            return await action(new OnlineGameService(db,sql,new GameCatalogService(sql),clock));
+            return await action(new OnlineGameService(db,sql,new GameCatalogService(sql,TestSettings.Load()),clock,TestSettings.Load(),TestRedis.State,TestRedis.Leaderboard));
         }
         async Task Reject(Func<Task> action,string name,HttpStatusCode code=HttpStatusCode.Conflict)
         {

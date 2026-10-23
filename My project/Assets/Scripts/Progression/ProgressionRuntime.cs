@@ -83,6 +83,10 @@ namespace PickleVerse.Progression
             if (!this || !account.IsSignedIn) return;
             if (state?.player == null || state.catalog?.definitions == null || state.catalog.lessons == null
                 || state.catalog.cosmetics == null || state.inventory?.owned == null || state.tutorial == null
+                || state.catalog.matchmaking == null || state.catalog.onlineMatch == null
+                || state.catalog.matchmaking.botFallbackSeconds <= 0 || state.catalog.matchmaking.readyConfirmationSeconds <= 0
+                || state.catalog.onlineMatch.heartbeatSeconds <= 0
+                || state.catalog.onlineMatch.disconnectTimeoutSeconds <= state.catalog.onlineMatch.heartbeatSeconds
                 || state.player.id != account.Profile.UserId.ToString("N"))
                 throw new InvalidOperationException("Dữ liệu trò chơi từ máy chủ chưa đầy đủ.");
             if (Ready && state.revision < Snapshot.revision) return;

@@ -73,13 +73,21 @@ public sealed partial class OnlineGameService
         if(RankedBotAccounts.Contains(caller.ToString("N"))||!stored.roster.members.Any(m=>MatchId(m.id)==caller))throw new AppException("Bạn không thuộc trận này.",HttpStatusCode.Forbidden);
         if(create!=null&&(RosterKey(stored.roster)!=RosterKey(create.Roster)||stored.session!=create.Session||stored.host!=create.HostPlayerId))
             throw Conflict("Đội hình hoặc phòng Photon của trận đã thay đổi.");
+        if(create!=null&&!stored.roster.custom&&!stored.roster.RankedBot&&!string.IsNullOrEmpty(create.SearchId))
+        {
+            var assigned=await matchmaking.Get(caller,MatchId(create.SearchId),false);
+            if(assigned.state!="MATCHED"||assigned.matchId!=match.ToString("N")||assigned.session!=stored.session||assigned.host!=stored.host
+                ||assigned.roster==null||RosterKey(assigned.roster)!=RosterKey(stored.roster))throw Conflict("Phòng không khớp đội hình API đã ghép.");
+        }
         int botElo=0;
         if(stored.roster.RankedBot && stored.phase=="PREPARING")
         {
             var bot=stored.roster.members.Single(m=>m.bot);
-            botElo=await sql.One("SELECT botelo FROM rankedsearches WHERE searchid=@search AND playerid=@host AND NOT cancelled AND botid=@bot AND matchid=@match AND photonsession=@session AND startedat<=@deadline",
-                r=>r.GetInt32(0),P("search",MatchId(stored.searchId)),P("host",MatchId(stored.host)),P("bot",MatchId(bot.id)),P("match",match),P("session",stored.session),P("deadline",Now.AddSeconds(-360)));
-            if(botElo<100)throw Conflict("Lượt tìm trận chưa đủ hạn, đã hủy hoặc đối thủ dự phòng không khớp.");
+            var assigned=await matchmaking.Get(MatchId(stored.host),MatchId(stored.searchId),false);
+            if(!await matchmaking.OwnsBot(bot.id,assigned.searchId)||assigned.state!="BOT"||assigned.matchId!=match.ToString("N")||assigned.session!=stored.session
+                ||assigned.roster?.members.SingleOrDefault(m=>m.bot)?.id!=bot.id||Milliseconds<assigned.started+settings.Matchmaking.BotFallbackSeconds*1000L)
+                throw Conflict("Lượt tìm trận chưa đủ hạn, đã hủy hoặc đối thủ dự phòng không khớp.");
+            botElo=assigned.botElo;
         }
         var catalog=await catalogs.Load();var players=new Dictionary<Guid,Session>();
         foreach(var id in stored.roster.members.Select(m=>MatchId(m.id)).Order())
@@ -104,7 +112,18 @@ public sealed partial class OnlineGameService
         }
         var participants=await Participants(match);
         var result=await action(stored,players,participants);
-        await tx.CommitAsync();return result;
+        await tx.CommitAsync();
+        try
+        {
+            if(stored.phase is "FINISHED" or "CANCELLED")await matchmaking.ReleaseMatch(stored.roster);
+            if(stored.phase=="FINISHED")await leaderboard.Invalidate();
+        }
+        catch(StackExchange.Redis.RedisException error)
+        {
+            // SQL already committed the result. Transient reservations/cache expire or are reconciled on retry.
+            System.Diagnostics.Trace.TraceWarning("Redis cleanup after durable online match {0}: {1}",match,error.GetType().Name);
+        }
+        return result;
     }
     static MatchKind OnlineKind(MatchRoster r) => r.custom?MatchKind.Custom:r.mode==PlayMode.Singles?MatchKind.RankedSingles:MatchKind.MatchedDoubles;
     static OnlineMatchTicket Ticket(OnlineMatch m,List<Participant> participants) => new(){roster=m.roster,allAccepted=participants.All(p=>p.accepted),phase=m.phase};
@@ -114,24 +133,22 @@ public sealed partial class OnlineGameService
         ownElo=member.elo,opponentElo=(int)Math.Round(match.roster.members.Where(m=>m.team!=member.team).Average(m=>m.elo)),
         opponents=match.roster.members.Where(m=>m.team!=member.team).Select(m=>new OpponentInfo{id=m.id,name=m.name,elo=m.elo}).ToList()
     };
-    public Task<OnlineMatchTicket> PrepareOnline(Guid id,OnlineMatchRequest request)
+    async Task<OnlineMatchTicket> ConsentOnline(Guid id,OnlineMatchRequest request,bool accept)
     {
         ValidateRoster(id,request);var match=MatchId(request.Roster.matchId);
-        return OnlineTransaction(id,match,request,async (m,players,participants)=>
+        return await OnlineTransaction(id,match,request,async (m,players,participants)=>
         {
             if(m.phase!="PREPARING")throw Conflict("Trận không còn nhận xác nhận.");
-            if(await sql.One("SELECT createdat FROM gamematches WHERE matchid=@match",r=>r.GetDateTime(0),P("match",match))<Now.AddMinutes(-2))throw Conflict("Lượt xác nhận đã hết hạn.");
-            participants.Single(p=>p.id==id).accepted=true;
-            if(!m.roster.RankedBot)await sql.Run("UPDATE rankedsearches SET cancelled=true WHERE playerid=@id AND botid IS NULL",P("id",id));
-            await sql.Run("UPDATE gamematchplayers SET accepted=true,lastseenat=@now WHERE matchid=@match AND playerid=@player",P("now",Now),P("match",match),P("player",id));
-            foreach(var bot in m.roster.members.Where(x=>x.bot))
-            {
-                participants.Single(p=>p.id==MatchId(bot.id)).accepted=true;
-                await sql.Run("UPDATE gamematchplayers SET accepted=true,lastseenat=@now WHERE matchid=@match AND playerid=@bot",P("now",Now),P("match",match),P("bot",MatchId(bot.id)));
-            }
-            return Ticket(m,participants);
+            if(await sql.One("SELECT createdat FROM gamematches WHERE matchid=@match",r=>r.GetDateTime(0),P("match",match))<Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds))throw Conflict("Lượt xác nhận đã hết hạn.");
+            var ready=await matchmaking.Consent(m.roster.matchId,Hash(RosterKey(m.roster)+m.session+m.host),
+                m.roster.members.Select(x=>x.id).ToArray(),m.roster.members.Where(x=>x.bot).Select(x=>x.id).ToArray(),
+                accept?id.ToString("N"):null,Milliseconds,settings.Matchmaking.ReadyConfirmationSeconds);
+            foreach(var p in participants)p.accepted=ready.Accepted.Contains(p.id.ToString("N"));
+            var ticket=Ticket(m,participants);ticket.readyRemainingSeconds=Math.Max(0,(ready.Deadline-Milliseconds)/1000d);return ticket;
         });
     }
+    public Task<OnlineMatchTicket> OfferOnline(Guid id,OnlineMatchRequest request)=>ConsentOnline(id,request,false);
+    public Task<OnlineMatchTicket> PrepareOnline(Guid id,OnlineMatchRequest request)=>ConsentOnline(id,request,true);
     public Task<OnlineMatchTicket> StartOnline(Guid id,OnlineMatchRequest request)
     {
         ValidateRoster(id,request);var match=MatchId(request.Roster.matchId);
@@ -139,8 +156,12 @@ public sealed partial class OnlineGameService
         {
             if(RosterKey(m.roster)!=RosterKey(request.Roster)||m.session!=request.Session||m.host!=request.HostPlayerId)throw Conflict("Phòng hoặc đội hình không khớp xác nhận.");
             if(m.phase=="PLAYING")return Ticket(m,participants);
-            if(m.phase!="PREPARING"||participants.Any(p=>!p.accepted))throw Conflict("Mọi người phải xác nhận trước khi tải sân.");
-            if(await sql.One("SELECT createdat FROM gamematches WHERE matchid=@match",r=>r.GetDateTime(0),P("match",match))<Now.AddMinutes(-2))throw Conflict("Lượt xác nhận đã hết hạn.");
+            if(m.phase!="PREPARING")throw Conflict("Trận không còn nhận xác nhận.");
+            var ready=await matchmaking.Consent(m.roster.matchId,Hash(RosterKey(m.roster)+m.session+m.host),
+                m.roster.members.Select(x=>x.id).ToArray(),m.roster.members.Where(x=>x.bot).Select(x=>x.id).ToArray(),null,Milliseconds,settings.Matchmaking.ReadyConfirmationSeconds);
+            if(!ready.AllAccepted)throw Conflict("Mọi người phải xác nhận trước khi tải sân.");
+            foreach(var p in participants)p.accepted=true;
+            if(await sql.One("SELECT createdat FROM gamematches WHERE matchid=@match",r=>r.GetDateTime(0),P("match",match))<Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds))throw Conflict("Lượt xác nhận đã hết hạn.");
             if(players.Values.Any(s=>s.Player.pendingMatch!=null))throw Conflict("Một người chơi vẫn còn trận chưa hoàn tất.");
             m.phase="PLAYING";m.startedUtcTicks=Now.Ticks;
             foreach(var member in m.roster.members)
@@ -149,7 +170,7 @@ public sealed partial class OnlineGameService
                 DailyStreakEngine.Ensure(s.Player,Now);s.Engine.RefreshPeriods(s.Player,Now);
                 await Persist(s,MatchId(member.id),"online-start:"+m.roster.matchId,"online-start");
             }
-            await sql.Run("UPDATE gamematchplayers SET lastseenat=@now WHERE matchid=@match",P("now",Now),P("match",match));
+            await sql.Run("UPDATE gamematchplayers SET accepted=true,lastseenat=@now WHERE matchid=@match",P("now",Now),P("match",match));
             await SaveOnline(match,m);return Ticket(m,participants);
         });
     }
@@ -236,7 +257,6 @@ public sealed partial class OnlineGameService
                 P("player",MatchId(member.id)),P("match",match),P("status",r.outcome==MatchOutcome.Won?"WIN":r.outcome==MatchOutcome.Lost?"LOSE":"INTERRUPTED"),P("team",member.team==0),P("elo",r.eloDelta));
         }
         m.phase="FINISHED";await SaveOnline(match,m);
-        if(m.roster.RankedBot)await sql.Run("UPDATE rankedsearches SET cancelled=true WHERE matchid=@match",P("match",match));
     }
     async Task EndOnline(Guid match,OnlineMatch m,Dictionary<Guid,Session> players,int? loser,string reason,HashSet<Guid> forfeits)
     {
@@ -260,7 +280,7 @@ public sealed partial class OnlineGameService
     async Task<bool> ExpireDisconnected(Guid match,OnlineMatch m,Dictionary<Guid,Session> players,List<Participant> participants)
     {
         if(m.phase!="PLAYING")return false;
-        var stale=participants.Where(p=>!RankedBotAccounts.Contains(p.id.ToString("N"))&&p.lastSeen<Now.AddSeconds(-35)&&p.report==null).Select(p=>p.id).ToHashSet();
+        var stale=participants.Where(p=>!RankedBotAccounts.Contains(p.id.ToString("N"))&&p.lastSeen<Now.AddSeconds(-settings.OnlineMatch.DisconnectTimeoutSeconds)&&p.report==null).Select(p=>p.id).ToHashSet();
         if(stale.Count==0)return false;
         var disconnectedTeams=m.roster.members.Where(x=>stale.Contains(MatchId(x.id))).Select(x=>x.team).Distinct().ToList();
         await EndOnline(match,m,players,disconnectedTeams.Count==1?disconnectedTeams[0]:null,"Hết thời gian kết nối lại trận.",disconnectedTeams.Count==1?stale:[]);

@@ -12,11 +12,19 @@ namespace PickleVerse.Services.Api
     [Serializable] public sealed class LoginRequest { public string Email { get; set; } public string Password { get; set; } }
     [Serializable] public sealed class VerifyEmailRequest { public string Email { get; set; } public string Token { get; set; } }
     [Serializable] public sealed class EmailRequest { public string Email { get; set; } }
-    [Serializable] public sealed class ResendOtpResponse { public string Code { get; set; } public string Message { get; set; } }
+    [Serializable] public sealed class ResendOtpResponse
+    {
+        public string Code { get; set; }
+        public string Message { get; set; }
+        public int OtpLifetimeMinutes { get; set; }
+        public int OtpResendCooldownSeconds { get; set; }
+    }
     [Serializable] public sealed class RefreshTokenRequest { public string RefreshToken { get; set; } }
     [Serializable] public sealed class ApiMessage { public string Message { get; set; } }
     [Serializable] public sealed class AuthResponse
     {
+        public int OtpLifetimeMinutes { get; set; }
+        public int OtpResendCooldownSeconds { get; set; }
         public bool Success { get; set; }
         public string Code { get; set; }
         public string Message { get; set; }

@@ -17,7 +17,7 @@ static class GameChecks
         {
             await using var context=new PickleVerseContext(options);
             var sql=new GameSql(context);
-            return await action(new OnlineGameService(context,sql,new GameCatalogService(sql),clock));
+            return await action(new OnlineGameService(context,sql,new GameCatalogService(sql,TestSettings.Load()),clock,TestSettings.Load(),TestRedis.State,TestRedis.Leaderboard));
         }
         async Task Rejected(Func<Task> action, string name, HttpStatusCode status=HttpStatusCode.BadRequest)
         {
@@ -31,8 +31,11 @@ static class GameChecks
             id=await context.Users.Where(u=>u.Email=="race-check@example.invalid").Select(u=>u.Userid).SingleAsync();
             string script=await File.ReadAllTextAsync(Path.Combine(root,"src","Database.sql"));
             var sql=new GameSql(context);
-            await sql.Run(script[script.IndexOf("-- BEGIN ONLINE GAME SCHEMA",StringComparison.Ordinal)..]);
-            var catalog=await new GameCatalogService(sql).Load();
+            const string seedStart="-- BEGIN INITIAL DATA", seedEnd="-- END INITIAL DATA";
+            int start=script.IndexOf(seedStart,StringComparison.Ordinal),end=script.IndexOf(seedEnd,StringComparison.Ordinal);
+            if(start<0||end<=start)throw new InvalidOperationException("Database.sql must contain one complete initial data section.");
+            await sql.Run("BEGIN;\n"+script[start..end]+"\nCOMMIT;");
+            var catalog=await new GameCatalogService(sql,TestSettings.Load()).Load();
             check(catalog.definitions.Count(d=>d.scope==ProgressScope.Achievement)==10 && catalog.definitions.Count(d=>d.scope!=ProgressScope.Achievement)==17,
                 "Unity seed is repeatable: 10 achievements and 17 missions");
             check(catalog.lessons.Length==12 && catalog.lessons.Count(l=>l.prerequisites.Length==0)==4,

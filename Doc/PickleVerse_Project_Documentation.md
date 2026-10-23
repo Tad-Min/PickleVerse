@@ -14,6 +14,9 @@ Bốn tài liệu yêu cầu được giữ riêng, nguyên trạng: [Core Featu
   - [1.2. Unity và backend: đợt tài khoản online](#doc-unity-backend-integration)
   - [1.3. Thời gian trong app và đối thủ dự phòng Rank Online](#doc-app-activity-ranked-fallback)
   - [1.4. Sách Hướng Dẫn Vận Hành Hệ Thống Quản Trị](#doc-administrator-guide)
+  - [1.5. Từ điển database: tác dụng bảng và cột](#doc-database-dictionary)
+  - [1.6. Cấu hình API và thời gian trận](#doc-server-configuration)
+  - [1.7. Redis: hàng chờ, xác nhận và bảng xếp hạng](#doc-redis-matchmaking)
 - [2. Hướng dẫn chơi và các tính năng](#phan-2)
   - [2.1. Luồng chọn chế độ và thiết lập trận bot](#doc-mode-selection-flow)
   - [2.2. BotMatch — scene đấu đơn với bot cục bộ](#doc-pickleverse-botmatch-guide)
@@ -344,7 +347,7 @@ Tên, giới tính và vợt lấy từ hồ sơ database. Elo của đối th�
 <a id="doc-app-activity-ranked-fallback--tài-khoản-và-dữ-liệu"></a>
 #### Tài khoản và dữ liệu
 
-Seed nằm trong block `BEGIN APP ACTIVITY AND RANKED FALLBACK` của `src/Database.sql`. Chạy toàn bộ file chỉ cho database mới. Với volume đã có, chỉ áp dụng block bổ sung này; không xóa volume.
+`src/Database.sql` khởi tạo toàn bộ schema và dữ liệu gốc trong một transaction `BEGIN … COMMIT`. Hai bảng phiên nằm cùng phần schema online; 10 tài khoản bot nằm trong phần `INITIAL DATA` cùng các seed khác. Không còn block migration riêng cho app activity/ranked fallback. Chạy toàn bộ file chỉ cho database mới; với database đã có dữ liệu cần migration phù hợp, không chạy lại file khởi tạo và không xóa volume.
 
 10 tài khoản có role **Player**, hồ sơ riêng và UUID cố định. Danh sách chuẩn cho Unity/API nằm trong `My project/Assets/Scripts/Entites/Multiplayer/RankedBotAccounts.cs`; backend compile cùng file, kiểm thử đối chiếu với SQL. Các tài khoản này không đăng nhập/refresh được và không gửi OTP; không có mật khẩu đăng nhập chung. Không tạo xác thực email giả để đưa chúng vào danh sách người thật.
 
@@ -543,6 +546,779 @@ Phân hệ gồm 4 thẻ (Tabs) riêng biệt:
 [↑ Mục lục](#muc-luc)
 
 ---
+
+<a id="doc-database-dictionary"></a>
+### 1.5. Từ điển database: tác dụng bảng và cột — cập nhật 23/10/2026
+
+Phần này mô tả **37 bảng và 208 cột** theo `Database.sql` và mã backend/Unity hiện tại. Unity truy cập dữ liệu qua API backend. Tên bảng và cột trình bày theo PascalCase trong SQL; PostgreSQL chuẩn hóa tên không đặt trong dấu ngoặc kép về chữ thường.
+
+Nguồn đối chiếu: [Database.sql](D:/Repository/PickleVerse/src/Database.sql), [AuthService.cs](D:/Repository/PickleVerse/src/Backend/Services/Implementations/AuthService.cs), [OnlineGameService.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/OnlineGameService.cs), [GameCatalogService.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/GameCatalogService.cs), [OnlineGameService.Training.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/OnlineGameService.Training.cs), [OnlineGameService.Activity.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/OnlineGameService.Activity.cs), [OnlineGameService.RankedSearch.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/OnlineGameService.RankedSearch.cs), [OnlineGameService.OnlineMatches.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/OnlineGameService.OnlineMatches.cs), [OnlineReplayService.cs](D:/Repository/PickleVerse/src/Backend/Services/Game/OnlineReplayService.cs).
+
+Khóa chính xác định duy nhất một bản ghi; khóa chính ghép gồm nhiều cột. Khóa ngoại liên kết tới bảng khác. `JSONB` lưu dữ liệu có cấu trúc JSON; các cột có tên kết thúc bằng `Seconds` tính bằng giây.
+
+#### Bảng và tác dụng trong dự án
+
+| STT | Bảng | Tác dụng của bảng trong dự án |
+|---|---|---|
+| 1 | [`Roles`](#doc-database-dictionary--roles) | Danh sách vai trò Player/Admin, dùng để phân quyền truy cập API. |
+| 2 | [`Users`](#doc-database-dictionary--users) | Lưu tài khoản người chơi thật và 10 bot: email, mật khẩu đã băm, vai trò và trạng thái; phục vụ đăng ký, đăng nhập và kiểm soát tài khoản. |
+| 3 | [`RefreshTokens`](#doc-database-dictionary--refreshtokens) | Lưu refresh token đã băm để gia hạn phiên đăng nhập, đổi token và thu hồi phiên khi đăng xuất. |
+| 4 | [`VerificationEmail`](#doc-database-dictionary--verificationemail) | Lưu các lần xác thực email bằng OTP: mã đã băm, hạn sử dụng, số lần nhập sai và kết quả xác thực; phục vụ đăng ký, gửi lại mã và xác minh email. |
+| 5 | [`PlayerProfiles`](#doc-database-dictionary--playerprofiles) | Lưu hồ sơ và chỉ số chính: tên, avatar, giới tính, Elo, cấp độ, EXP, thắng/thua và thời gian hoạt động; cung cấp dữ liệu cho NameTag, Profile và bảng xếp hạng Unity. |
+| 6 | [`FriendRequests`](#doc-database-dictionary--friendrequests) | Lưu lời mời kết bạn và trạng thái chờ/chấp nhận/từ chối; phục vụ danh sách lời mời trong tính năng bạn bè. |
+| 7 | [`Friendships`](#doc-database-dictionary--friendships) | Lưu quan hệ bạn bè đã được chấp nhận; cung cấp danh sách bạn bè. |
+| 8 | [`BlockedUsers`](#doc-database-dictionary--blockedusers) | Lưu danh sách chặn; backend dùng để lọc danh sách người chơi và ngăn các thao tác kết bạn liên quan. |
+| 9 | [`MatchHistory`](#doc-database-dictionary--matchhistory) | Lưu thông tin chung của trận đã ghi nhận: loại trận, thời điểm và tỉ số hai đội; phục vụ lịch sử thi đấu. |
+| 10 | [`PlayerMatchHistory`](#doc-database-dictionary--playermatchhistory) | Lưu kết quả riêng của từng người trong trận: thắng/thua, đội và Elo cộng/trừ; phục vụ lịch sử và tổng kết trận. |
+| 11 | [`ReportPlayerInMatch`](#doc-database-dictionary--reportplayerinmatch) | Lưu tố cáo người chơi trong trận và trạng thái xử lý; dùng bởi API gửi tố cáo và API Admin xem/xử lý. |
+| 12 | [`MatchHistoryReplay`](#doc-database-dictionary--matchhistoryreplay) | Lưu đường dẫn replay gắn với lịch sử trận, được dùng bởi luồng API replay ban đầu. |
+| 13 | [`Currencies`](#doc-database-dictionary--currencies) | Danh mục các loại tiền trong game, hiện gồm TOKENPAD và ELITE TOKEN. |
+| 14 | [`PlayerCurrencies`](#doc-database-dictionary--playercurrencies) | Lưu số dư từng loại tiền của mỗi người; dùng khi hiển thị ví, mua vật phẩm và nhận thưởng. |
+| 15 | [`Cosmetics`](#doc-database-dictionary--cosmetics) | Danh mục vật phẩm, hiện seed có 3 cây vợt; cung cấp tên, mô tả và cấu hình cho cửa hàng/bộ sưu tập Unity. |
+| 16 | [`PlayerCosmetics`](#doc-database-dictionary--playercosmetics) | Lưu vật phẩm người chơi sở hữu và trạng thái trang bị; dùng cho kho đồ, bộ sưu tập và chọn vợt. |
+| 17 | [`Achievements`](#doc-database-dictionary--achievements) | Danh mục 10 thành tựu gốc với mục tiêu và phần thưởng; cung cấp nội dung màn hình Achievement. |
+| 18 | [`PlayerAchievements`](#doc-database-dictionary--playerachievements) | Lưu tiến độ và trạng thái nhận thưởng thành tựu của từng người; backend cập nhật cùng tiến trình online. |
+| 19 | [`Missions`](#doc-database-dictionary--missions) | Danh mục 17 nhiệm vụ gốc, hiện phục vụ nhiệm vụ ngày/tuần cùng mục tiêu và phần thưởng. |
+| 20 | [`PlayerMissions`](#doc-database-dictionary--playermissions) | Lưu tiến độ và nhận thưởng nhiệm vụ của mỗi người theo kỳ ngày/tuần; làm mới tiến độ khi đổi kỳ. |
+| 21 | [`Techniques`](#doc-database-dictionary--techniques) | Danh mục kỹ thuật như Drive, Dink, Volley; dùng phân loại bài tập và thống kê độ thành thạo. |
+| 22 | [`Lessons`](#doc-database-dictionary--lessons) | Danh mục 12 bài học gốc để Unity tải vào Training, gồm thứ tự, điều kiện mở khóa, mục tiêu và phần thưởng. |
+| 23 | [`Drills`](#doc-database-dictionary--drills) | Danh mục 12 bài tập gốc, liên kết với kỹ thuật cần luyện. |
+| 24 | [`LessonDrills`](#doc-database-dictionary--lessondrills) | Liên kết bài học với bài tập và đặt mục tiêu của từng bài tập trong bài học. |
+| 25 | [`PlayerTechniqueMastery`](#doc-database-dictionary--playertechniquemastery) | Lưu lượt thực hiện, số lỗi và độ thành thạo theo kỹ thuật; Training online cập nhật khi hoàn tất, API coaching dùng đánh giá và gợi ý. |
+| 26 | [`PlayerTechniquesErrors`](#doc-database-dictionary--playertechniqueserrors) | Nhật ký lỗi kỹ thuật và lời khuyên, có thể gắn với bài học hoặc trận; được dùng bởi API ghi nhận lỗi coaching. |
+| 27 | [`PlayerLessonDrills`](#doc-database-dictionary--playerlessondrills) | Lưu kết quả tốt nhất theo người chơi/bài học/bài tập và trạng thái nhận thưởng; Training online cập nhật khi hoàn tất lượt tập. |
+| 28 | [`CosmeticPrices`](#doc-database-dictionary--cosmeticprices) | Lưu giá từng vật phẩm theo từng loại tiền; API mua hàng online tra giá tại đây. |
+| 29 | [`GameProgress`](#doc-database-dictionary--gameprogress) | Lưu trạng thái tiến trình tổng hợp dạng JSON; là một nguồn dữ liệu chính của luồng online, cùng các bảng hồ sơ, ví và tiến độ quan hệ. |
+| 30 | [`GameCommands`](#doc-database-dictionary--gamecommands) | Ghi mã yêu cầu và dấu vết xử lý để ngăn thực hiện lặp thao tác như mua vật phẩm, nhận thưởng hoặc cập nhật Training khi Unity gửi lại request. |
+| 31 | [`TrainingSessions`](#doc-database-dictionary--trainingsessions) | Lưu từng lượt tập và checkpoint riêng biệt; backend kiểm tra dữ liệu lượt tập trước khi hoàn tất, chấm kết quả và trao thưởng. |
+| 32 | [`AppActivitySessions`](#doc-database-dictionary--appactivitysessions) | Ghi phiên từ lúc mở app, gồm trước đăng nhập; sau khi gắn tài khoản, backend cộng thời gian vào hồ sơ và tránh cộng trùng. Bảng khởi tạo rỗng. |
+| 33 | [`GameMatches`](#doc-database-dictionary--gamematches) | Lưu trạng thái vận hành trận: loại trận, chủ phiên, đội hình, phòng Photon, giai đoạn và kết quả; hỗ trợ luồng xác nhận, bắt đầu, hoàn tất hoặc hủy. |
+| 34 | [`GameMatchPlayers`](#doc-database-dictionary--gamematchplayers) | Lưu thành viên, đội, xác nhận, liên lạc và báo cáo kết quả của từng bên; phục vụ xác nhận trước tải sân và đối chiếu kết quả trận. |
+| 35 | [`CurrencyTransactions`](#doc-database-dictionary--currencytransactions) | Nhật ký cộng/trừ tiền và số dư sau giao dịch; dùng đối chiếu mua hàng, nhận thưởng và kiểm tra sai lệch. |
+| 36 | [`OnlineReplays`](#doc-database-dictionary--onlinereplays) | Lưu metadata replay theo trận và người chơi; luồng replay online của Unity dùng bảng này để liệt kê, tải và cập nhật bản ghi. |
+| 37 | [`OnlineReplayChunks`](#doc-database-dictionary--onlinereplaychunks) | Lưu thông tin từng đoạn replay để tải và phát lại theo thứ tự; dữ liệu chuyển động được lưu thành file nén trên S3. |
+
+10 tài khoản bot nằm trong `Users` và `PlayerProfiles`, dùng vai trò Player, UUID cố định và bị chặn đăng nhập; không có bảng bot riêng. `AppActivitySessions` khởi tạo rỗng để ghi nhận thời gian mở app. Hàng chờ và trạng thái tìm trận/xác nhận đã chuyển sang Redis; không còn bảng `RankedSearches`.
+
+#### Cột và tác dụng trong từng bảng
+
+<a id="doc-database-dictionary--roles"></a>
+##### 1. `Roles`
+
+Tác dụng của bảng trong dự án: Danh sách vai trò Player/Admin, dùng để phân quyền truy cập API.
+
+Khóa chính: `RoleId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `RoleId` | Mã vai trò tự tăng, là khóa chính. |
+| `RoleName` | Tên vai trò duy nhất, hiện gồm Player và Admin. |
+| `Description` | Mô tả vai trò. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--users"></a>
+##### 2. `Users`
+
+Tác dụng của bảng trong dự án: Lưu tài khoản người chơi thật và 10 bot: email, mật khẩu đã băm, vai trò và trạng thái; phục vụ đăng ký, đăng nhập và kiểm soát tài khoản.
+
+Khóa chính: `UserId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `UserId` | UUID duy nhất của tài khoản, là khóa chính. |
+| `Email` | Email duy nhất dùng đăng ký, đăng nhập và xác thực. |
+| `PasswordHash` | Mật khẩu đã băm; tài khoản bot dùng giá trị đánh dấu để chặn đăng nhập. |
+| `RoleId` | Liên kết tới Roles, xác định quyền của tài khoản. |
+| `Status` | Trạng thái ACTIVE (hoạt động), BANNED (bị khóa), SUSPENDED (tạm ngưng). |
+| `CreatedAt` | Thời điểm tạo tài khoản. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--refreshtokens"></a>
+##### 3. `RefreshTokens`
+
+Tác dụng của bảng trong dự án: Lưu refresh token đã băm để gia hạn phiên đăng nhập, đổi token và thu hồi phiên khi đăng xuất.
+
+Khóa chính: `TokenId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `TokenId` | Mã bản ghi refresh token tự tăng, là khóa chính. |
+| `UserId` | Tài khoản sở hữu token, liên kết tới Users. |
+| `TokenHash` | Giá trị băm duy nhất của refresh token; không lưu token gốc. |
+| `ExpiresAt` | Thời điểm token hết hạn. |
+| `IsRevoked` | Token đã bị thu hồi hay chưa, chẳng hạn sau đăng xuất hoặc đổi token. |
+| `CreatedAt` | Thời điểm tạo token. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--verificationemail"></a>
+##### 4. `VerificationEmail`
+
+Tác dụng của bảng trong dự án: Lưu các lần xác thực email bằng OTP: mã đã băm, hạn sử dụng, số lần nhập sai và kết quả xác thực; phục vụ đăng ký, gửi lại mã và xác minh email.
+
+Khóa chính: `VerificationEmailId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `VerificationEmailId` | Mã bản ghi xác thực tự tăng, là khóa chính. |
+| `UserId` | Tài khoản cần xác thực, liên kết tới Users. |
+| `Email` | Email nhận OTP của lần xác thực này. |
+| `Token` | Giá trị băm của OTP, dùng đối chiếu mã người chơi nhập. |
+| `FailedAttempts` | Số lần nhập OTP sai, phục vụ giới hạn thử mã. |
+| `CreatedAt` | Thời điểm tạo bản ghi OTP. |
+| `ExpiresAt` | Thời điểm OTP hết hiệu lực. |
+| `IsVerified` | Lần xác thực này đã thành công hay chưa. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playerprofiles"></a>
+##### 5. `PlayerProfiles`
+
+Tác dụng của bảng trong dự án: Lưu hồ sơ và chỉ số chính: tên, avatar, giới tính, Elo, cấp độ, EXP, thắng/thua và thời gian hoạt động; cung cấp dữ liệu cho NameTag, Profile và bảng xếp hạng Unity.
+
+Khóa chính: `UserId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `UserId` | Vừa là khóa chính, vừa liên kết tới Users; mỗi tài khoản có một hồ sơ. |
+| `Avatar` | Mã avatar của người chơi, mặc định initial. |
+| `PlayerName` | Tên hiển thị duy nhất trên NameTag, Profile và danh sách người chơi. |
+| `Elo` | Điểm xếp hạng hiện tại, tối thiểu 100. |
+| `IsMale` | Giới tính nhân vật: true là nam, false là nữ. |
+| `TimePlayedSeconds` | Tổng thời gian hoạt động trong app, tính bằng giây, gồm cả menu và tìm trận. |
+| `Level` | Cấp độ hiện tại, bắt đầu từ 1. |
+| `Exp` | EXP trong cấp hiện tại, phục vụ xét lên cấp. |
+| `WinStreak` | Chuỗi trận thắng liên tiếp hiện tại. |
+| `DayStreak` | Chuỗi ngày chơi liên tiếp; logic hiện tại ghi nhận ngày có trận hoàn tất hợp lệ. |
+| `WinCount` | Tổng số trận thắng được hệ thống tiến trình ghi nhận. |
+| `LoseCount` | Tổng số trận thua được hệ thống tiến trình ghi nhận. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--friendrequests"></a>
+##### 6. `FriendRequests`
+
+Tác dụng của bảng trong dự án: Lưu lời mời kết bạn và trạng thái chờ/chấp nhận/từ chối; phục vụ danh sách lời mời trong tính năng bạn bè.
+
+Khóa chính: `RequestId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `RequestId` | Mã lời mời tự tăng, là khóa chính. |
+| `SenderId` | Tài khoản gửi lời mời, liên kết tới Users. |
+| `ReceiverId` | Tài khoản nhận lời mời, liên kết tới Users. |
+| `Status` | PENDING đang chờ, ACCEPTED đã chấp nhận, DECLINED đã từ chối. |
+| `CreatedAt` | Thời điểm gửi lời mời. |
+| `RespondedAt` | Thời điểm phản hồi; để trống khi chưa phản hồi. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--friendships"></a>
+##### 7. `Friendships`
+
+Tác dụng của bảng trong dự án: Lưu quan hệ bạn bè đã được chấp nhận; cung cấp danh sách bạn bè.
+
+Khóa chính: `UserId1` + `UserId2`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `UserId1` | Tài khoản thứ nhất trong quan hệ bạn bè, liên kết tới Users. |
+| `UserId2` | Tài khoản thứ hai, liên kết tới Users; hai UUID phải theo thứ tự UserId1 &lt; UserId2 để tránh lưu trùng một cặp. |
+| `CreatedAt` | Thời điểm hình thành quan hệ bạn bè. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--blockedusers"></a>
+##### 8. `BlockedUsers`
+
+Tác dụng của bảng trong dự án: Lưu danh sách chặn; backend dùng để lọc danh sách người chơi và ngăn các thao tác kết bạn liên quan.
+
+Khóa chính: `UserId` + `BlockedUserId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `UserId` | Tài khoản thực hiện chặn, liên kết tới Users. |
+| `BlockedUserId` | Tài khoản bị chặn, liên kết tới Users. |
+| `CreatedAt` | Thời điểm chặn. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--matchhistory"></a>
+##### 9. `MatchHistory`
+
+Tác dụng của bảng trong dự án: Lưu thông tin chung của trận đã ghi nhận: loại trận, thời điểm và tỉ số hai đội; phục vụ lịch sử thi đấu.
+
+Khóa chính: `MatchId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MatchId` | UUID duy nhất của trận, là khóa chính. |
+| `CreatedAt` | Thời điểm tạo bản ghi lịch sử; luồng online hiện ghi khi chốt kết quả trận. |
+| `MatchType` | Loại trận, chẳng hạn RankedSingles, MatchedDoubles, Custom; mặc định SQL là 1Vs1. |
+| `TeamAScore` | Kết quả đội A; luồng online hiện lưu số game thắng, ví dụ 2 trong trận thắng 2–1. |
+| `TeamBScore` | Số game thắng của đội B trong luồng online hiện tại. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playermatchhistory"></a>
+##### 10. `PlayerMatchHistory`
+
+Tác dụng của bảng trong dự án: Lưu kết quả riêng của từng người trong trận: thắng/thua, đội và Elo cộng/trừ; phục vụ lịch sử và tổng kết trận.
+
+Khóa chính: `PlayerId` + `MatchId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người chơi có kết quả này, liên kết tới PlayerProfiles. |
+| `MatchId` | Trận liên quan, liên kết tới MatchHistory. |
+| `Status` | Kết quả của người chơi: WIN, LOSE hoặc INTERRUPTED theo luồng backend hiện tại. |
+| `IsTeamA` | True thuộc đội A, false thuộc đội B. |
+| `ReceivedElo` | Elo thay đổi sau trận: dương được cộng, âm bị trừ, 0 không đổi. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--reportplayerinmatch"></a>
+##### 11. `ReportPlayerInMatch`
+
+Tác dụng của bảng trong dự án: Lưu tố cáo người chơi trong trận và trạng thái xử lý; dùng bởi API gửi tố cáo và API Admin xem/xử lý.
+
+Khóa chính: `ReporterId` + `ReportedPlayerId` + `MatchId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `ReporterId` | Người gửi tố cáo, liên kết tới PlayerProfiles. |
+| `ReportedPlayerId` | Người bị tố cáo, liên kết tới PlayerProfiles. |
+| `MatchId` | Trận xảy ra sự việc, liên kết tới MatchHistory. |
+| `Reason` | Nội dung hoặc lý do tố cáo. |
+| `Status` | PENDING chờ xử lý, CHECKING đang kiểm tra, ACCEPTED chấp nhận, DECLINED bác bỏ. |
+| `CreatedAt` | Thời điểm gửi tố cáo. |
+| `UpdatedAt` | Thời điểm cập nhật tố cáo gần nhất. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--matchhistoryreplay"></a>
+##### 12. `MatchHistoryReplay`
+
+Tác dụng của bảng trong dự án: Lưu đường dẫn replay gắn với lịch sử trận, được dùng bởi luồng API replay ban đầu.
+
+Khóa chính: `MatchId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MatchId` | Vừa là khóa chính, vừa liên kết tới MatchHistory. |
+| `ReplayUrl` | Đường dẫn file replay của luồng API replay ban đầu. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--currencies"></a>
+##### 13. `Currencies`
+
+Tác dụng của bảng trong dự án: Danh mục các loại tiền trong game, hiện gồm TOKENPAD và ELITE TOKEN.
+
+Khóa chính: `CurrencyId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `CurrencyId` | Mã loại tiền tự tăng, là khóa chính. |
+| `CurrencyName` | Tên loại tiền duy nhất, hiện gồm TOKENPAD và ELITE TOKEN. |
+| `Description` | Mô tả loại tiền. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playercurrencies"></a>
+##### 14. `PlayerCurrencies`
+
+Tác dụng của bảng trong dự án: Lưu số dư từng loại tiền của mỗi người; dùng khi hiển thị ví, mua vật phẩm và nhận thưởng.
+
+Khóa chính: `PlayerId` + `CurrencyId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người sở hữu số dư, liên kết tới PlayerProfiles. |
+| `CurrencyId` | Loại tiền, liên kết tới Currencies. |
+| `Amount` | Số dư hiện tại của loại tiền đó, không được âm. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--cosmetics"></a>
+##### 15. `Cosmetics`
+
+Tác dụng của bảng trong dự án: Danh mục vật phẩm, hiện seed có 3 cây vợt; cung cấp tên, mô tả và cấu hình cho cửa hàng/bộ sưu tập Unity.
+
+Khóa chính: `CosmeticId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `CosmeticId` | Mã vật phẩm tự tăng trong database, là khóa chính. |
+| `CurrencyId` | Loại tiền gắn với giá cơ bản của vật phẩm, liên kết tới Currencies. |
+| `ItemCode` | Mã vật phẩm duy nhất dùng trong game, ví dụ paddle.default. |
+| `CosmeticName` | Tên vật phẩm hiển thị trong cửa hàng. |
+| `Description` | Mô tả vật phẩm. |
+| `Price` | Giá tương ứng CurrencyId trong bản ghi này; luồng mua online hiện tra giá tại CosmeticPrices. |
+| `Type` | Loại vật phẩm, hiện seed dùng Paddle. |
+| `Config` | JSON cấu hình vật phẩm: mã, tên, bộ sưu tập, giá và thứ tự phát hành… |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playercosmetics"></a>
+##### 16. `PlayerCosmetics`
+
+Tác dụng của bảng trong dự án: Lưu vật phẩm người chơi sở hữu và trạng thái trang bị; dùng cho kho đồ, bộ sưu tập và chọn vợt.
+
+Khóa chính: `PlayerId` + `CosmeticId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người sở hữu vật phẩm, liên kết tới PlayerProfiles. |
+| `CosmeticId` | Vật phẩm đã sở hữu, liên kết tới Cosmetics. |
+| `Equipped` | Vật phẩm đang được trang bị hay chưa. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--achievements"></a>
+##### 17. `Achievements`
+
+Tác dụng của bảng trong dự án: Danh mục 10 thành tựu gốc với mục tiêu và phần thưởng; cung cấp nội dung màn hình Achievement.
+
+Khóa chính: `AchievementId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `AchievementId` | Mã thành tựu tự tăng trong database, là khóa chính. |
+| `AchievementCode` | Mã thành tựu duy nhất dùng trong game, ví dụ A.Win5. |
+| `AchievementName` | Tên hiển thị, ví dụ “Thắng 5 trận”. |
+| `Description` | Mô tả thành tựu. |
+| `Type` | Chỉ số cần theo dõi, chẳng hạn số trận thắng Wins. |
+| `Target` | Mức cần đạt để hoàn thành, chẳng hạn 5 trận thắng. |
+| `Reward` | JSON phần thưởng; seed hiện dùng coins, gems, xp. Giá trị DEFAULT trong DDL còn theo cấu trúc cũ Exp/Currency; các bản ghi seed có giá trị riêng. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playerachievements"></a>
+##### 18. `PlayerAchievements`
+
+Tác dụng của bảng trong dự án: Lưu tiến độ và trạng thái nhận thưởng thành tựu của từng người; backend cập nhật cùng tiến trình online.
+
+Khóa chính: `PlayerId` + `AchievementId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người chơi có tiến độ này, liên kết tới PlayerProfiles. |
+| `AchievementId` | Thành tựu đang theo dõi, liên kết tới Achievements. |
+| `Progress` | Giá trị tiến độ hiện tại; ví dụ thắng 3/5 trận thì lưu 3. |
+| `IsClaimed` | Người chơi đã nhận phần thưởng hay chưa. |
+| `ClaimedAt` | Thời điểm nhận thưởng; để trống nếu chưa nhận. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--missions"></a>
+##### 19. `Missions`
+
+Tác dụng của bảng trong dự án: Danh mục 17 nhiệm vụ gốc, hiện phục vụ nhiệm vụ ngày/tuần cùng mục tiêu và phần thưởng.
+
+Khóa chính: `MissionId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MissionId` | Mã nhiệm vụ tự tăng trong database, là khóa chính. |
+| `MissionName` | Tên nhiệm vụ hiển thị trong game. |
+| `Description` | Mô tả nhiệm vụ. |
+| `Type` | Phạm vi nhiệm vụ trong seed hiện tại, như Daily hoặc Weekly. |
+| `Target` | Giá trị cần đạt để hoàn thành nhiệm vụ. |
+| `Reward` | JSON phần thưởng; seed hiện dùng coins, gems, xp, còn DEFAULT trong DDL là cấu trúc cũ Exp/Currency. |
+| `Code` | Mã nhiệm vụ nhận diện giữa Unity và backend; có unique index và được phép NULL trong schema. |
+| `Config` | JSON định nghĩa đầy đủ: mã, phạm vi, chỉ số theo dõi, mục tiêu và phần thưởng. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playermissions"></a>
+##### 20. `PlayerMissions`
+
+Tác dụng của bảng trong dự án: Lưu tiến độ và nhận thưởng nhiệm vụ của mỗi người theo kỳ ngày/tuần; làm mới tiến độ khi đổi kỳ.
+
+Khóa chính: `PlayerId` + `MissionId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người chơi thực hiện nhiệm vụ, liên kết tới PlayerProfiles. |
+| `MissionId` | Nhiệm vụ tương ứng, liên kết tới Missions. |
+| `Progress` | Tiến độ nhiệm vụ trong kỳ hiện tại. |
+| `IsClaimed` | Đã nhận thưởng nhiệm vụ trong kỳ này hay chưa. |
+| `ClaimedAt` | Thời điểm nhận thưởng trong kỳ; để trống nếu chưa nhận. |
+| `PeriodKey` | Mã kỳ yyyyMMdd: ngày hiện tại với Daily, ngày bắt đầu tuần với Weekly; dùng làm mới tiến độ đúng kỳ. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--techniques"></a>
+##### 21. `Techniques`
+
+Tác dụng của bảng trong dự án: Danh mục kỹ thuật như Drive, Dink, Volley; dùng phân loại bài tập và thống kê độ thành thạo.
+
+Khóa chính: `TechniqueId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `TechniqueId` | Mã kỹ thuật tự tăng, là khóa chính. |
+| `TechniqueName` | Tên kỹ thuật duy nhất, như Drive, Dink, Volley. |
+| `Description` | Mô tả kỹ thuật. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--lessons"></a>
+##### 22. `Lessons`
+
+Tác dụng của bảng trong dự án: Danh mục 12 bài học gốc để Unity tải vào Training, gồm thứ tự, điều kiện mở khóa, mục tiêu và phần thưởng.
+
+Khóa chính: `LessonId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `LessonId` | Mã bài học tự tăng trong database, là khóa chính. |
+| `LessonName` | Tên bài học hiển thị trong Training. |
+| `Description` | Nội dung giải thích bài học. |
+| `Code` | Mã bài học dùng trong game, như drive, footwork; có unique index và được phép NULL trong schema. |
+| `SortOrder` | Thứ tự hiển thị bài học. |
+| `Type` | Loại kỹ năng của bài học theo dữ liệu seed hiện tại. |
+| `Target` | Mục tiêu cần đạt, chẳng hạn số lượt thực hiện thành công. |
+| `Config` | JSON cấu hình đầy đủ: hướng dẫn, số lượt tập, mục tiêu, kỹ thuật và các bài tiên quyết để mở khóa. |
+| `Reward` | JSON phần thưởng; seed hiện dùng coins, gems, xp, còn DEFAULT trong DDL là cấu trúc cũ Exp/Currency. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--drills"></a>
+##### 23. `Drills`
+
+Tác dụng của bảng trong dự án: Danh mục 12 bài tập gốc, liên kết với kỹ thuật cần luyện.
+
+Khóa chính: `DrillId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `DrillId` | Mã bài tập tự tăng, là khóa chính. |
+| `TechniqueId` | Kỹ thuật bài tập rèn luyện, liên kết tới Techniques. |
+| `DrillName` | Tên bài tập. |
+| `Description` | Mô tả hoặc lời hướng dẫn thực hiện. |
+| `Code` | Mã bài tập; seed hiện liên kết với bài học bằng cùng mã. Có unique index và được phép NULL trong schema. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--lessondrills"></a>
+##### 24. `LessonDrills`
+
+Tác dụng của bảng trong dự án: Liên kết bài học với bài tập và đặt mục tiêu của từng bài tập trong bài học.
+
+Khóa chính: `LessonId` + `DrillId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `LessonId` | Bài học chứa bài tập, liên kết tới Lessons. |
+| `DrillId` | Bài tập thuộc bài học, liên kết tới Drills. |
+| `Target` | Mục tiêu của bài tập khi nằm trong bài học này. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playertechniquemastery"></a>
+##### 25. `PlayerTechniqueMastery`
+
+Tác dụng của bảng trong dự án: Lưu lượt thực hiện, số lỗi và độ thành thạo theo kỹ thuật; Training online cập nhật khi hoàn tất, API coaching dùng đánh giá và gợi ý.
+
+Khóa chính: `PlayerId` + `TechniqueId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người chơi được đánh giá, liên kết tới PlayerProfiles. |
+| `TechniqueId` | Kỹ thuật được đánh giá, liên kết tới Techniques. |
+| `TotalAttempts` | Tổng lượt thực hiện kỹ thuật đã ghi nhận. |
+| `TotalErrors` | Tổng lượt lỗi đã ghi nhận. |
+| `MasteryScore` | Điểm thành thạo do database tự tính bằng phép chia số nguyên: (TotalAttempts − TotalErrors) × 100 / TotalAttempts; bằng 0 khi chưa có lượt thực hiện. |
+| `LastUpdatedAt` | Thời điểm cập nhật thống kê gần nhất. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playertechniqueserrors"></a>
+##### 26. `PlayerTechniquesErrors`
+
+Tác dụng của bảng trong dự án: Nhật ký lỗi kỹ thuật và lời khuyên, có thể gắn với bài học hoặc trận; được dùng bởi API ghi nhận lỗi coaching.
+
+Khóa chính: `ErrorLogId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `ErrorLogId` | Mã bản ghi lỗi tự tăng, là khóa chính. |
+| `PlayerId` | Người mắc lỗi, liên kết tới PlayerProfiles. |
+| `TechniqueId` | Kỹ thuật liên quan, liên kết tới Techniques. |
+| `MatchId` | Trận liên quan, liên kết tới MatchHistory; có thể để trống. |
+| `LessonId` | Bài học liên quan, liên kết tới Lessons; có thể để trống. |
+| `ErrorType` | Loại lỗi kỹ thuật được ghi nhận. |
+| `CoachingTip` | Lời khuyên để khắc phục lỗi. |
+| `CreatedAt` | Thời điểm ghi nhận lỗi. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--playerlessondrills"></a>
+##### 27. `PlayerLessonDrills`
+
+Tác dụng của bảng trong dự án: Lưu kết quả tốt nhất theo người chơi/bài học/bài tập và trạng thái nhận thưởng; Training online cập nhật khi hoàn tất lượt tập.
+
+Khóa chính: `PlayerId` + `LessonId` + `DrillId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người thực hiện bài tập, liên kết tới PlayerProfiles. |
+| `LessonId` | Bài học liên quan, liên kết tới Lessons. |
+| `DrillId` | Bài tập liên quan, liên kết tới Drills. |
+| `Score` | Kết quả tốt nhất; luồng Training hiện lưu số sao đạt được. |
+| `IsClaimedReward` | Cờ ghi nhận thưởng; luồng Training hiện đặt theo kết quả passed và giữ lại trạng thái đã đạt trước đó. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--cosmeticprices"></a>
+##### 28. `CosmeticPrices`
+
+Tác dụng của bảng trong dự án: Lưu giá từng vật phẩm theo từng loại tiền; API mua hàng online tra giá tại đây.
+
+Khóa chính: `CosmeticId` + `CurrencyId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `CosmeticId` | Vật phẩm được định giá, liên kết tới Cosmetics. |
+| `CurrencyId` | Loại tiền dùng để mua, liên kết tới Currencies. |
+| `Price` | Giá bán bằng loại tiền đó; API kiểm tra và trừ tiền theo giá này. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--gameprogress"></a>
+##### 29. `GameProgress`
+
+Tác dụng của bảng trong dự án: Lưu trạng thái tiến trình tổng hợp dạng JSON; là một nguồn dữ liệu chính của luồng online, cùng các bảng hồ sơ, ví và tiến độ quan hệ.
+
+Khóa chính: `PlayerId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Vừa là khóa chính, vừa liên kết tới PlayerProfiles; mỗi người có một trạng thái tổng hợp. |
+| `Data` | JSON chứa tiến trình chi tiết: tutorial, Training, nhiệm vụ, thống kê và trạng thái trận liên quan. |
+| `Revision` | Số phiên bản tăng mỗi lần backend lưu tiến trình. |
+| `UpdatedAt` | Thời điểm lưu tiến trình gần nhất. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--gamecommands"></a>
+##### 30. `GameCommands`
+
+Tác dụng của bảng trong dự án: Ghi mã yêu cầu và dấu vết xử lý để ngăn thực hiện lặp thao tác như mua vật phẩm, nhận thưởng hoặc cập nhật Training khi Unity gửi lại request.
+
+Khóa chính: `PlayerId` + `CommandId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `PlayerId` | Người gửi thao tác, liên kết tới PlayerProfiles. |
+| `CommandId` | Mã yêu cầu client gửi, giúp nhận biết lần gửi lại của cùng thao tác. |
+| `Kind` | Loại thao tác, như mua vật phẩm, nhận thưởng hoặc cập nhật Training. |
+| `Fingerprint` | Mã băm nội dung yêu cầu; phát hiện dùng lại CommandId cho nội dung khác. |
+| `Result` | Kết quả xử lý dạng JSON; mã hiện tại lưu revision sau xử lý. |
+| `CreatedAt` | Thời điểm ghi nhận thao tác đã xử lý. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--trainingsessions"></a>
+##### 31. `TrainingSessions`
+
+Tác dụng của bảng trong dự án: Lưu từng lượt tập và checkpoint riêng biệt; backend kiểm tra dữ liệu lượt tập trước khi hoàn tất, chấm kết quả và trao thưởng.
+
+Khóa chính: `AttemptId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `AttemptId` | UUID duy nhất của lượt tập, là khóa chính. |
+| `PlayerId` | Người đang luyện tập, liên kết tới PlayerProfiles. |
+| `LessonId` | Bài học đang tập, liên kết tới Lessons. |
+| `DrillId` | Bài tập đang thực hiện, liên kết tới Drills; cặp LessonId/DrillId phải tồn tại trong LessonDrills. |
+| `Data` | JSON số liệu lượt tập: lượt đánh, thành công, lỗi, thời gian và kết quả đánh giá. |
+| `Completed` | Lượt tập đã được hoàn tất hay chưa. |
+| `CreatedAt` | Thời điểm bắt đầu lượt tập. |
+| `UpdatedAt` | Thời điểm cập nhật checkpoint hoặc kết quả gần nhất. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--appactivitysessions"></a>
+##### 32. `AppActivitySessions`
+
+Tác dụng của bảng trong dự án: Ghi phiên từ lúc mở app, gồm trước đăng nhập; sau khi gắn tài khoản, backend cộng thời gian vào hồ sơ và tránh cộng trùng. Bảng khởi tạo rỗng.
+
+Khóa chính: `SessionId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `SessionId` | UUID duy nhất của phiên mở app, là khóa chính. |
+| `PlayerId` | Người sở hữu phiên, liên kết tới PlayerProfiles; được để trống trước khi đăng nhập. |
+| `StartedAt` | Mốc bắt đầu phiên mở app, dùng làm cơ sở tính thời gian hoạt động. |
+| `ElapsedSeconds` | Thời lượng của phiên đã được backend ghi nhận, tính bằng giây. |
+| `CreditedThrough` | Mốc thời gian đã dùng để tính tổng hoạt động, hỗ trợ tránh cộng trùng khi đồng bộ lại hoặc khi các phiên chồng nhau. |
+| `Closed` | Phiên đã được đánh dấu đóng hay chưa. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--gamematches"></a>
+##### 33. `GameMatches`
+
+Tác dụng của bảng trong dự án: Lưu trạng thái vận hành trận: loại trận, chủ phiên, đội hình, phòng Photon, giai đoạn và kết quả; hỗ trợ luồng xác nhận, bắt đầu, hoàn tất hoặc hủy.
+
+Khóa chính: `MatchId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MatchId` | UUID duy nhất của trận, là khóa chính. |
+| `OwnerId` | Người tạo/chủ phiên trận, liên kết tới PlayerProfiles; luồng Photon hiện gắn với người host. Có thể để trống. |
+| `Kind` | Loại trận, như RankedSingles, MatchedDoubles, Custom hoặc BotPractice. |
+| `Status` | Trạng thái tổng quát: STARTED, FINISHED, CANCELLED; STARTED bao gồm giai đoạn chuẩn bị và đang chơi của trận online. |
+| `Data` | JSON trạng thái chi tiết: đội hình, phòng Photon, host và kết quả; trận online có phase PREPARING, PLAYING, FINISHED hoặc CANCELLED. |
+| `CreatedAt` | Thời điểm tạo phiên trận, phục vụ cả kiểm tra hạn xác nhận. |
+| `UpdatedAt` | Thời điểm cập nhật trạng thái trận gần nhất. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--gamematchplayers"></a>
+##### 34. `GameMatchPlayers`
+
+Tác dụng của bảng trong dự án: Lưu thành viên, đội, xác nhận, liên lạc và báo cáo kết quả của từng bên; phục vụ xác nhận trước tải sân và đối chiếu kết quả trận.
+
+Khóa chính: `MatchId` + `PlayerId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MatchId` | Trận tham gia, liên kết tới GameMatches. |
+| `PlayerId` | Người tham gia, liên kết tới PlayerProfiles; có thể là người thật hoặc tài khoản bot. |
+| `Team` | Đội của người chơi: 0 là đội A, 1 là đội B. |
+| `Accepted` | Bản ghi xác nhận bền vững khi trận bắt đầu. Quyết định xác nhận trong lúc chờ lưu ở Redis; bot được tự xác nhận, chỉ người thật cần bấm. |
+| `Report` | JSON kết quả trận do bên tham gia gửi lên, dùng đối chiếu và chốt kết quả; khác với tố cáo người chơi. |
+| `Fingerprint` | Mã băm tỉ số chuẩn hóa theo đội, giúp so sánh kết quả các bên gửi lên. |
+| `LastSeenAt` | Thời điểm liên lạc gần nhất được ghi nhận, hỗ trợ xử lý mất kết nối hoặc rời trận. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--currencytransactions"></a>
+##### 35. `CurrencyTransactions`
+
+Tác dụng của bảng trong dự án: Nhật ký cộng/trừ tiền và số dư sau giao dịch; dùng đối chiếu mua hàng, nhận thưởng và kiểm tra sai lệch.
+
+Khóa chính: `TransactionId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `TransactionId` | Mã giao dịch tự tăng, là khóa chính. |
+| `PlayerId` | Người có biến động tiền, liên kết tới PlayerProfiles. |
+| `CurrencyId` | Loại tiền thay đổi, liên kết tới Currencies. |
+| `CommandId` | Mã thao tác gây ra giao dịch; tổ hợp PlayerId/CurrencyId/CommandId là duy nhất. Cột này không khai báo khóa ngoại tới GameCommands. |
+| `Delta` | Lượng tiền thay đổi: dương là cộng, âm là trừ. |
+| `BalanceAfter` | Số dư sau giao dịch, không được âm. |
+| `Reason` | Lý do thay đổi tiền, chẳng hạn mua vật phẩm hoặc nhận thưởng. |
+| `CreatedAt` | Thời điểm ghi nhận giao dịch. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--onlinereplays"></a>
+##### 36. `OnlineReplays`
+
+Tác dụng của bảng trong dự án: Lưu metadata replay theo trận và người chơi; luồng replay online của Unity dùng bảng này để liệt kê, tải và cập nhật bản ghi.
+
+Khóa chính: `MatchId` + `PlayerId`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MatchId` | Trận được ghi replay, liên kết tới GameMatches. |
+| `PlayerId` | Người sở hữu bản ghi replay, liên kết tới PlayerProfiles. |
+| `ObjectKey` | Khóa file metadata trên S3, dạng replays/{player}/{match}/metadata.json. |
+| `Metadata` | JSON thông tin replay: nhân vật, tần suất lấy mẫu, thời lượng, danh sách chunk và trạng thái hoàn tất. |
+| `UpdatedAt` | Thời điểm cập nhật replay gần nhất. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+<a id="doc-database-dictionary--onlinereplaychunks"></a>
+##### 37. `OnlineReplayChunks`
+
+Tác dụng của bảng trong dự án: Lưu thông tin từng đoạn replay để tải và phát lại theo thứ tự; dữ liệu chuyển động được lưu thành file nén trên S3.
+
+Khóa chính: `MatchId` + `PlayerId` + `ChunkIndex`.
+
+| Cột | Tác dụng của cột |
+|---|---|
+| `MatchId` | Trận của đoạn replay; kết hợp PlayerId để liên kết tới OnlineReplays. |
+| `PlayerId` | Người sở hữu đoạn replay; thuộc cùng bản ghi replay tổng thể. |
+| `ChunkIndex` | Thứ tự đoạn replay, bắt đầu từ 0; SQL giới hạn nhỏ hơn 10000. |
+| `ObjectKey` | Khóa file dữ liệu đoạn replay đã nén trên S3. |
+| `ContentHash` | Mã băm SHA-256 của dữ liệu đoạn replay, kiểm tra nội dung khi tải lại cùng chunk. |
+| `Metadata` | JSON mô tả đoạn replay, hiện gồm tên file và mốc thời gian bắt đầu/kết thúc. |
+
+[↑ Danh sách bảng](#doc-database-dictionary) · [↑ Mục lục](#muc-luc)
+
+---
+
+<a id="doc-server-configuration"></a>
+### 1.6. Cấu hình API và thời gian trận — cập nhật 23/10/2026
+
+Các thông số vận hành được quản lý tại `src/Backend/API/appsettings.json`. API đọc và kiểm tra cấu hình khi khởi động bằng `ServerSettings`; sau khi đổi file cần khởi động lại API. Docker image đóng gói file này, nên chạy `docker compose up -d --build backend-api` để áp dụng thay đổi trong repository.
+
+| Section | Cấu hình đã chốt |
+|---|---|
+| `Smtp` | Host `smtp.gmail.com`, Port `587`, FromName `PickleVerse`; kết nối STARTTLS. |
+| `Otp` | LifetimeMinutes `10`, ResendCooldownSeconds `60`, MaxAttempts `5`. |
+| `Authentication` | AccessTokenHours `2`, RefreshTokenDays `14`. |
+| `Matchmaking` | BotFallbackSeconds `360`, ReadyConfirmationSeconds `120`. |
+| `OnlineMatch` | DisconnectTimeoutSeconds `35`, HeartbeatSeconds `8`. |
+| `Progression` | EXP thắng `10`, EXP thua `5`; thưởng bot thắng/thua `100/50`, online thắng/thua `150/75`; bonus ngày `200 coins / 0 gems / 20 xp`, bonus tuần `1000 coins / 0 gems / 50 xp`. |
+
+`Smtp:Username`, `Smtp:Password`, `Smtp:FromEmail` để trống trong file được commit. Docker Compose lấy `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` từ `.env` và truyền thành biến môi trường `Smtp__Username`, `Smtp__Password`, `Smtp__FromEmail`. Giữ App Password ngoài Git và Unity.
+
+API gửi riêng `catalog.matchmaking` và `catalog.onlineMatch` cho Unity. Unity dùng thời gian chờ bot, đồng hồ xác nhận và heartbeat từ catalog; backend vẫn kiểm tra điều kiện ghép bot, thời hạn xác nhận và mất kết nối. Catalog không chứa cấu hình SMTP, OTP hoặc thời hạn token. Phản hồi đăng ký/gửi lại OTP chỉ trả thêm thời hạn mã và thời gian chờ gửi lại để giao diện hiển thị đúng cấu hình. Mọi người thật phải xác nhận; bot được backend ghi nhận tự động trong luồng đối thủ dự phòng.
+
+`GameSettings` đã được bỏ khỏi schema và script seed; toàn bộ giá trị progression nêu trên chuyển sang `appsettings.json`. Sau đợt chuyển Redis ở mục 1.7, schema khởi tạo hiện có **37 bảng / 208 cột**. Danh mục achievement, mission, cosmetic và training tiếp tục lấy từ database, được seed qua `UnityCatalog.json` như trước.
+
+Với database đang có dữ liệu: triển khai API mới trước, sao lưu rồi thực hiện `DROP TABLE IF EXISTS GameSettings;` trong transaction riêng. Không chạy lại toàn bộ `Database.sql` lên database hiện có. Việc bỏ bảng cấu hình không yêu cầu xóa tài khoản, tiến trình, lịch sử, replay hoặc volume.
+
+Các báo cáo lịch sử ghi 39 bảng/219 cột hoặc xác nhận 20 giây phản ánh phiên bản trước thay đổi này; cấu hình hiện hành là các giá trị ở bảng trên.
+
+Kiểm chứng ngày 23/10/2026: 20 kiểm tra cấu hình với cả giá trị mặc định và giá trị khác mặc định; 122 kiểm tra backend hồi quy; 22 kiểm tra thời gian app và Rank fallback; 428/428 EditMode. Windows development build thành công, chạy smoke đăng nhập → đọc catalog cấu hình → cập nhật hồ sơ → đăng xuất đạt (36 frame). SMTP Gmail đã qua kiểm tra STARTTLS và xác thực; không gửi email thử trong đợt kiểm tra này. 5 cảnh báo build thuộc các API Unity/Photon deprecated trong HitGradeFeedback.cs và PhotonCallbacks.cs, hai file không sửa trong đợt này.
+
+Đã áp dụng bỏ GameSettings vào database dev sau khi sao lưu: còn 38 bảng/217 cột, giữ 12 tài khoản/12 hồ sơ/5 lịch sử trận. Mọi bảng khác giữ nguyên số bản ghi trong transaction bỏ bảng; tài khoản thử đã dọn. Báo cáo và bản sao lưu nằm trong thư mục ignored `artifacts/verification/server-settings-20261023/`.
+
+[↑ Mục lục](#muc-luc)
+
+---
+
+<a id="doc-redis-matchmaking"></a>
+### 1.7. Redis: hàng chờ, xác nhận và bảng xếp hạng — 23/10/2026
+
+Đây là kiến trúc hiện hành, thay cho các mô tả `RankedSearches` trong báo cáo lịch sử phía sau. PostgreSQL lưu tài khoản, hồ sơ, Elo, lịch sử và thời gian hoạt động; Redis quản lý trạng thái tạm của quá trình tìm trận và xác nhận. Photon Fusion vẫn kết nối người chơi và đồng bộ trận đấu.
+
+Luồng: Unity đăng ký hàng chờ qua API → API ghép đủ người và trả cùng MatchId/PhotonSession → Unity vào phòng Photon được chỉ định → từng người tự xác nhận qua API → Redis cho phép bắt đầu khi đủ xác nhận → API ghi trận vào trạng thái PLAYING và cập nhật hồ sơ trong PostgreSQL → Unity tải sân và bắt đầu. Phòng Custom giữ cách mời bằng mã Photon và sử dụng cùng bước xác nhận Redis.
+
+| Dữ liệu | Nơi lưu và cách sử dụng |
+|---|---|
+| Hàng chờ | Redis Sorted Set, tách theo chế độ Singles/Doubles, vùng Photon và protocol. Mỗi lượt có UUID, thời điểm do server ghi và tài khoản sở hữu. API xét tối đa 512 lượt đầu mỗi vùng/chế độ/protocol trong một lần poll. |
+| Nhóm đôi | Mỗi thành viên tự đăng ký bằng JWT của mình, cùng mã nhóm và danh sách thành viên; chỉ đưa nhóm vào ghép khi đã đủ lượt đăng ký hợp lệ. Giữ các thành viên cùng đội. |
+| Ghép cặp | So sánh trạng thái cũ và cập nhật mọi lượt được chọn trong một Lua script nguyên tử. Hai request đồng thời không thể cấp cùng một lượt cho hai trận. Giữ quy tắc Elo hiện có cho Singles. |
+| Bot Rank | API vẫn kiểm tra đủ 360 giây; 10 UUID bot giữ trong PostgreSQL. Redis giữ quyền cấp bot, PostgreSQL kiểm tra bot đang trong trận. Chỉ người thật bấm xác nhận. |
+| Xác nhận | Redis Hash theo MatchId, lưu dấu vân tay phòng/đội hình, hạn 120 giây và từng UUID đã đồng ý. API `offer` mở hạn trước lần đồng ý đầu tiên. Hủy lượt ghép làm mất hiệu lực xác nhận của toàn trận. |
+| Trận và kết quả | `GameMatches`, `GameMatchPlayers`, `MatchHistory`, `PlayerMatchHistory`, hồ sơ/phần thưởng vẫn trong PostgreSQL. Cột `GameMatchPlayers.Accepted` ghi nhận đội hình đã xác nhận khi bắt đầu, không cập nhật theo từng lần bấm lúc chờ. |
+| Bảng xếp hạng | Redis Sorted Set dùng điểm `-Elo` và UUID dạng N; thứ tự Elo giảm dần, UUID tăng dần khi hòa điểm. API đọc metadata và quan hệ chặn/kết bạn hiện tại từ PostgreSQL. Cả danh sách Unity và endpoint Profiles/leaderboard dùng cache. |
+| Thời gian app | `AppActivitySessions` giữ nguyên trong PostgreSQL, cùng transaction với tổng thời gian hồ sơ để tránh cộng trùng. |
+
+Cấu hình `Redis` trong `src/Backend/API/appsettings.json`: kết nối local `localhost:16379`, prefix `pickleverse:`, lưu ticket/tombstone 900 giây, loại người không poll quá 30 giây khỏi lần ghép tiếp theo, cache leaderboard 15 giây. Unity poll khoảng 1 giây/lần. Key có thời hạn giúp dọn phiên đã bỏ; hủy/kết thúc trận giải phóng chỗ ngay. Elo có nguồn chuẩn trong PostgreSQL; kết thúc trận làm mất hiệu lực cache. Thay đổi từ luồng quản trị/xác thực có thể cần tối đa 15 giây để hiện trong cache mới.
+
+Docker Compose thêm Redis 7.4 Alpine, cổng chỉ bind loopback 16379, volume `redis_data`, AOF `everysec`, giới hạn 256 MB và `noeviction`. API đợi Redis healthy và `/health/ready` kiểm tra cả PostgreSQL/Redis. Redis chỉ được gọi từ API; Unity không kết nối Redis trực tiếp. Bản dev này dùng một Redis instance, chưa cấu hình cluster/failover. AOF mỗi giây không phải bảo đảm không mất dữ liệu: nếu mất trạng thái tìm trận/xác nhận, người chơi cần tìm/xác nhận lại; trận đã PLAYING và kết quả vẫn ở PostgreSQL. Khi Redis lỗi, API ghép trận trả 503; leaderboard có thể đọc PostgreSQL dự phòng.
+
+Database mới chỉ chạy `src/Database.sql`: **37 bảng / 208 cột**, không tạo `GameSettings` hoặc `RankedSearches`. Với database đã tồn tại: sao lưu, triển khai API mới rồi bỏ riêng `RankedSearches` bằng `DROP TABLE IF EXISTS RankedSearches;`; không chạy lại toàn bộ init script và không xóa volume. Các lượt tìm trận cũ là dữ liệu tạm, người chơi bắt đầu tìm lại. `AppActivitySessions` và mọi dữ liệu người chơi/lịch sử được giữ.
+
+Nguồn kỹ thuật: [Redis persistence](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/), [Redis Lua atomic execution](https://redis.io/docs/latest/develop/programmability/eval-intro/), [Redis Sorted Sets](https://redis.io/docs/latest/develop/data-types/sorted-sets/), [StackExchange.Redis](https://seredis.dev/Basics.html). Kết quả kiểm thử và backup dev nằm tại thư mục ignored `artifacts/verification/redis-20261023/`.
+
+Đã xác minh: 28 kiểm tra Redis, 20 cấu hình, 22 activity/ranked, 31 online/social và 122 auth/game hồi quy; 428/428 Unity EditMode. Windows development build thành công (một cảnh báo obsolete `SimulationMessagePtr` của Photon đã có từ trước). Hai Windows Player tìm trận Singles, xác nhận và vào sân thành công; bốn Windows Player (một nhóm hai người + hai solo) hoàn tất Doubles trên cùng MatchId, nhóm giữ cùng đội trong PostgreSQL. Đã bổ sung bước host báo phòng Photon sẵn sàng trước khi guest tham gia để tránh `GameNotFound`, và kiểm tra lại trạng thái nhóm khi khách vừa vào trong lúc chủ nhóm bắt đầu tìm. Lần Doubles cuối không còn lỗi `GameNotFound`.
+
+Database dev đã sao lưu vào `artifacts/verification/redis-20261023/dev-before-redis.dump`, bỏ riêng bảng `RankedSearches`, giữ dữ liệu các bảng khác; các tài khoản và replay/lịch sử kiểm thử được dọn sau xác minh. Từ điển bảng/cột ở mục 1.5 được đối chiếu lại theo schema hiện hành (37 bảng, 208 cột). Database cũ có thể có thứ tự vật lý cột khác file init do lịch sử cập nhật; tên và tác dụng cột không thay đổi.
+
+
 
 <a id="phan-2"></a>
 ## 2. Hướng dẫn chơi và các tính năng

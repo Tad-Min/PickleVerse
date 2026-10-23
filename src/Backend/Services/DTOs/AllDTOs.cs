@@ -44,6 +44,8 @@ namespace Services.DTOs
 
     public class ResendOtpResponse
     {
+        public int OtpLifetimeMinutes { get; set; }
+        public int OtpResendCooldownSeconds { get; set; }
         public string Code { get; set; } = "verification_requested";
         public string Message { get; set; } = "Nếu email thuộc tài khoản chưa xác thực, mã mới sẽ được gửi. Hãy kiểm tra cả mục thư rác.";
     }
@@ -56,6 +58,8 @@ namespace Services.DTOs
 
     public class AuthResponse
     {
+        public int OtpLifetimeMinutes { get; set; }
+        public int OtpResendCooldownSeconds { get; set; }
         public string Code { get; set; } = string.Empty;
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;

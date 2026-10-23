@@ -1,3 +1,4 @@
+using StackExchange.Redis;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +12,14 @@ using Services.Interfaces;
 using API.Middlewares;
 using System.Threading.RateLimiting;
 using Services.Game;
+using Services.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton(new ServerSettings(builder.Configuration));
+builder.Services.AddSingleton(new RedisSettings(builder.Configuration));
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>ConnectionMultiplexer.Connect(sp.GetRequiredService<RedisSettings>().ConnectionString));
+builder.Services.AddSingleton<RedisGameState>();
+builder.Services.AddSingleton<LeaderboardCache>();
 
 // 1. Add Controllers
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -145,7 +152,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/health/ready", async (PickleVerseContext db, CancellationToken ct) =>
-    await db.Database.CanConnectAsync(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
+app.MapGet("/health/ready", async (PickleVerseContext db,IConnectionMultiplexer redis,CancellationToken ct) =>
+{
+    try
+    {
+        if(!await db.Database.CanConnectAsync(ct))return Results.StatusCode(503);
+        await redis.GetDatabase().PingAsync();return Results.Ok(new { status="ready" });
+    }
+    catch(RedisException){return Results.StatusCode(503);}
+});
 
 app.Run();

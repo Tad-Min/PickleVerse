@@ -24,7 +24,7 @@ public sealed class SocialActionRequest
     public string Action {get;set;}="";
     public int RequestId {get;set;}
 }
-public sealed class OnlineSocialService(PickleVerseContext db,GameSql sql)
+public sealed class OnlineSocialService(PickleVerseContext db,GameSql sql,LeaderboardCache leaderboard)
 {
     const string Visible="""
         WITH ranked AS (
@@ -49,6 +49,7 @@ public sealed class OnlineSocialService(PickleVerseContext db,GameSql sql)
     {
         if(view is not("friends" or "directory" or "leaderboard"))throw new AppException("Danh sách không hợp lệ.",HttpStatusCode.BadRequest);
         query=(query??"").Trim();if(query.Length>64||offset<0||offset>10000000)throw new AppException("Bộ lọc không hợp lệ.",HttpStatusCode.BadRequest);
+        if(view=="leaderboard")return await ReadLeaderboard(self,query,offset);
         // Use one database snapshot for rows, counts and the player's global rank.
         await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
         const string filter=" WHERE (@view<>'friends' OR relationship IN ('friend','incoming','outgoing')) AND (@view='leaderboard' OR userid<>@self) AND (strpos(lower(playername),lower(@q))>0 OR strpos(replace(userid::text,'-',''),replace(lower(@q),'-',''))>0)";
@@ -60,6 +61,39 @@ public sealed class OnlineSocialService(PickleVerseContext db,GameSql sql)
         var count=await sql.One(Visible+" SELECT count(*)::int FROM ranked",r=>r.GetInt32(0),P("self",self));
         var friends=await sql.One(Visible+" SELECT count(*)::int FROM relations WHERE relationship='friend'",r=>r.GetInt32(0),P("self",self));
         await tx.CommitAsync();return new OnlineSocialPage{Players=rows,Total=total,MyPosition=rank,PlayerCount=count,FriendCount=friends,Offset=offset,HasMore=offset+rows.Count<total};
+    }
+    async Task<OnlineSocialPage> ReadLeaderboard(Guid self,string query,int offset)
+    {
+        try
+        {
+            await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+            var key=await leaderboard.Snapshot(sql);
+            // Relationships, blocking and profile details remain authoritative SQL data.
+            var rows=await sql.Query(Visible.Replace("row_number() OVER(ORDER BY p.elo DESC,p.userid)::int AS position","0::int AS position")+" SELECT userid,playername,elo,avatar,level,position,relationship,requestid FROM relations WHERE strpos(lower(playername),lower(@q))>0 OR strpos(replace(userid::text,'-',''),replace(lower(@q),'-',''))>0",
+                r=>new OnlineSocialPlayer{Id=r.GetGuid(0),Name=r.GetString(1),Elo=r.GetInt32(2),Avatar=r.IsDBNull(3)?"":r.GetString(3),Level=r.GetInt32(4),Relationship=r.GetString(6),RequestId=r.GetInt32(7)},P("self",self),P("q",query));
+            var ranks=await leaderboard.Ranks(key,rows.Select(x=>x.Id).ToArray());
+            var selected=ranks.Skip(offset).Take(50).Select(x=>{var p=rows.Single(r=>r.Id==x.id);p.Position=x.position;return p;}).ToList();
+            var rank=await leaderboard.Rank(key,self);var count=await leaderboard.Count(key);
+            var friends=await sql.One(Visible+" SELECT count(*)::int FROM relations WHERE relationship='friend'",r=>r.GetInt32(0),P("self",self));
+            await tx.CommitAsync();return new(){Players=selected,Total=ranks.Count,MyPosition=rank,PlayerCount=count,FriendCount=friends,Offset=offset,HasMore=offset+selected.Count<ranks.Count};
+        }
+        catch(StackExchange.Redis.RedisException)
+        {
+            // The leaderboard is reconstructible; matchmaking deliberately has no SQL fallback.
+            return await ReadSqlLeaderboard(self,query,offset);
+        }
+    }
+    async Task<OnlineSocialPage> ReadSqlLeaderboard(Guid self,string query,int offset)
+    {
+        await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+        const string filter=" WHERE strpos(lower(playername),lower(@q))>0 OR strpos(replace(userid::text,'-',''),replace(lower(@q),'-',''))>0";
+        var rows=await sql.Query(Visible+" SELECT userid,playername,elo,avatar,level,position,relationship,requestid FROM relations"+filter+" ORDER BY position LIMIT 50 OFFSET @offset",
+            r=>new OnlineSocialPlayer{Id=r.GetGuid(0),Name=r.GetString(1),Elo=r.GetInt32(2),Avatar=r.IsDBNull(3)?"":r.GetString(3),Level=r.GetInt32(4),Position=r.GetInt32(5),Relationship=r.GetString(6),RequestId=r.GetInt32(7)},P("self",self),P("q",query),P("offset",offset));
+        var total=await sql.One(Visible+" SELECT count(*)::int FROM relations"+filter,r=>r.GetInt32(0),P("self",self),P("q",query));
+        var rank=await sql.One(Visible+" SELECT position FROM ranked WHERE userid=@self",r=>r.GetInt32(0),P("self",self));
+        var count=await sql.One(Visible+" SELECT count(*)::int FROM ranked",r=>r.GetInt32(0),P("self",self));
+        var friends=await sql.One(Visible+" SELECT count(*)::int FROM relations WHERE relationship='friend'",r=>r.GetInt32(0),P("self",self));
+        await tx.CommitAsync();return new(){Players=rows,Total=total,MyPosition=rank,PlayerCount=count,FriendCount=friends,Offset=offset,HasMore=offset+rows.Count<total};
     }
     public async Task Act(Guid self,SocialActionRequest input)
     {
