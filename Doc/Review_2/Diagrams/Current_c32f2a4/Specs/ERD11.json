@@ -1,0 +1,89 @@
+{
+  "id": "ERD11",
+  "title": "Current SQL schema 11",
+  "nodes": [
+    {
+      "id": "OnlineReplays",
+      "title": "OnlineReplays",
+      "body": [
+        "PK FK MatchId: UUID",
+        "PK FK PlayerId: UUID",
+        "ObjectKey: VARCHAR(500)",
+        "Metadata: JSONB",
+        "UpdatedAt: TIMESTAMPTZ"
+      ],
+      "x": 40,
+      "y": 135,
+      "w": 620,
+      "h": 209,
+      "shape": "box"
+    },
+    {
+      "id": "OnlineReplayChunks",
+      "title": "OnlineReplayChunks",
+      "body": [
+        "PK FK MatchId: UUID",
+        "PK FK PlayerId: UUID",
+        "PK ChunkIndex: INT",
+        "ObjectKey: VARCHAR(500)",
+        "ContentHash: VARCHAR(64)",
+        "Metadata: JSONB"
+      ],
+      "x": 730,
+      "y": 135,
+      "w": 620,
+      "h": 238,
+      "shape": "box"
+    },
+    {
+      "id": "GameMatches",
+      "title": "GameMatches",
+      "body": [
+        "Referenced table — see other",
+        "ERD"
+      ],
+      "x": 40,
+      "y": 548,
+      "w": 420,
+      "h": 90,
+      "shape": "box"
+    },
+    {
+      "id": "PlayerProfiles",
+      "title": "PlayerProfiles",
+      "body": [
+        "Referenced table — see other",
+        "ERD"
+      ],
+      "x": 495,
+      "y": 548,
+      "w": 420,
+      "h": 90,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "OnlineReplays",
+      "target": "GameMatches",
+      "label": "MatchId",
+      "dashed": true
+    },
+    {
+      "source": "OnlineReplays",
+      "target": "PlayerProfiles",
+      "label": "PlayerId",
+      "dashed": true
+    },
+    {
+      "source": "OnlineReplayChunks",
+      "target": "OnlineReplays",
+      "label": "MatchId,PlayerId",
+      "dashed": false
+    }
+  ],
+  "kind": "erd",
+  "note": "37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.",
+  "width": 1400,
+  "height": 728
+}

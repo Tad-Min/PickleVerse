@@ -1,0 +1,19 @@
+erDiagram
+  OnlineReplays {
+    UUID MatchId PK,FK "required"
+    UUID PlayerId PK,FK "required"
+    VARCHAR_500 ObjectKey "required"
+    JSONB Metadata "required"
+    TIMESTAMPTZ UpdatedAt "required"
+  }
+  GameMatches ||--o{ OnlineReplays : "MatchId"
+  PlayerProfiles ||--o{ OnlineReplays : "PlayerId"
+  OnlineReplayChunks {
+    UUID MatchId PK,FK "required"
+    UUID PlayerId PK,FK "required"
+    INT ChunkIndex PK "required"
+    VARCHAR_500 ObjectKey "required"
+    VARCHAR_64 ContentHash "required"
+    JSONB Metadata "required"
+  }
+  OnlineReplays ||--o{ OnlineReplayChunks : "MatchId,PlayerId"

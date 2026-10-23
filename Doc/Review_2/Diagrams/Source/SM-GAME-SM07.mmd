@@ -1,0 +1,13 @@
+stateDiagram-v2
+    %% GAME-SM07 - Network match lifecycle
+    %% Source definition: My project/Assets/Scripts/Multiplayer/NetworkMatch.cs:34
+    Loading --> Prepared: PreparedServerRpc
+    Prepared --> Revealed: Loadingoverlay finish
+    Revealed --> Intro: Allhumansrevealack
+    Intro --> PreServe: Servertime tick
+    PreServe --> Rally: Accepted serve
+    Settling --> BetweenPoints: Commitrally
+    Settling --> BetweenGames: Commitgame
+    BetweenGames --> PreServe: NextGame
+    PreServe --> Timeout: RequestTimeout
+    Timeout --> PreServe: ResumeTimeout/expiry

@@ -1,0 +1,52 @@
+%% ERD-DB-A01: CURRENT SQL/EF — deployment not verified
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    Roles {
+        serial RoleId PK "NOT NULL"
+        varchar_32 RoleName UK "NOT NULL"
+        varchar_254 Description "NOT NULL"
+    }
+    Users {
+        uuid UserId PK "NOT NULL"
+        varchar_254 Email UK "NOT NULL"
+        varchar_254 PasswordHash "NOT NULL"
+        int RoleId FK "NOT NULL"
+        varchar_20 Status "NOT NULL"
+        timestamptz CreatedAt "NOT NULL"
+    }
+    PlayerProfiles {
+        uuid UserId PK,FK "NOT NULL"
+        varchar_80 Avatar "NOT NULL"
+        varchar_18 PlayerName UK "NOT NULL"
+        int Elo "NOT NULL"
+        boolean IsMale "NOT NULL"
+        bigint TimePlayedSeconds "NOT NULL"
+        int Level "NOT NULL"
+        int Exp "NOT NULL"
+        int WinStreak "NOT NULL"
+        int DayStreak "NOT NULL"
+        int WinCount "NOT NULL"
+        int LoseCount "NOT NULL"
+    }
+    RefreshTokens {
+        serial TokenId PK "NOT NULL"
+        uuid UserId FK "NOT NULL"
+        varchar_254 TokenHash UK "NOT NULL"
+        timestamptz ExpiresAt "NOT NULL"
+        boolean IsRevoked "NOT NULL"
+        timestamptz CreatedAt "NOT NULL"
+    }
+    VerificationEmail {
+        serial VerificationEmailId PK "NOT NULL"
+        uuid UserId FK "NOT NULL"
+        varchar_254 Email "NOT NULL"
+        varchar_10 Token "NOT NULL"
+        timestamptz CreatedAt "NOT NULL"
+        timestamptz ExpiresAt "NOT NULL"
+        boolean IsVerified "NOT NULL"
+    }
+    Roles ||--o{ Users : "RoleId"
+    Users ||--o| PlayerProfiles : "UserId"
+    Users ||--o{ RefreshTokens : "UserId"
+    Users ||--o{ VerificationEmail : "UserId"

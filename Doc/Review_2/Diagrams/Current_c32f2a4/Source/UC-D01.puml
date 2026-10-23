@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+actor "Player" as Player
+actor "Administrator" as Admin
+rectangle "PickleVerse" {
+  usecase "UC01\nRegister and verify account" as UC01
+  usecase "UC02\nSign in refresh and sign out" as UC02
+  usecase "UC03\nAssess initial skill and choose character" as UC03
+  usecase "UC04\nComplete replay or skip tutorial" as UC04
+  usecase "UC05\nSelect a drill and view instructions" as UC05
+  usecase "UC06\nPractice foundational and advanced techniques" as UC06
+}
+Player --> UC01
+Player --> UC02
+Player --> UC03
+Player --> UC04
+Player --> UC05
+Player --> UC06
+@enduml

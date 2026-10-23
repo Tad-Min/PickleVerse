@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1128" viewBox="0 0 1400 1128">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="1128" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ERD07  Current SQL schema 7</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.</text>
+<path d="M1040.0,344 V646.0 H250.0 V948" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M730,239.5 H695.0 V268.5 H660" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1040.0,657 V802.5 H250.0 V948" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M730,538.0 H695.0 V625.0 H660" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="135" width="620" height="267" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Achievements</text>
+<text x="62" y="202" font-family="Arial" font-size="23" fill="#222c39">PK AchievementId: SERIAL</text>
+<text x="62" y="231" font-family="Arial" font-size="23" fill="#222c39">AchievementCode: VARCHAR(50)</text>
+<text x="62" y="260" font-family="Arial" font-size="23" fill="#222c39">AchievementName: VARCHAR(254)</text>
+<text x="62" y="289" font-family="Arial" font-size="23" fill="#222c39">Description: VARCHAR(254)</text>
+<text x="62" y="318" font-family="Arial" font-size="23" fill="#222c39">Type: VARCHAR(25)</text>
+<text x="62" y="347" font-family="Arial" font-size="23" fill="#222c39">Target: INT</text>
+<text x="62" y="376" font-family="Arial" font-size="23" fill="#222c39">Reward: JSONB</text>
+<rect x="730" y="135" width="620" height="209" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerAchievements</text>
+<text x="752" y="202" font-family="Arial" font-size="23" fill="#222c39">PK FK PlayerId: UUID</text>
+<text x="752" y="231" font-family="Arial" font-size="23" fill="#222c39">PK FK AchievementId: INT</text>
+<text x="752" y="260" font-family="Arial" font-size="23" fill="#222c39">Progress: INT</text>
+<text x="752" y="289" font-family="Arial" font-size="23" fill="#222c39">IsClaimed: BOOLEAN</text>
+<text x="752" y="318" font-family="Arial" font-size="23" fill="#222c39">ClaimedAt: TIMESTAMPTZ ?</text>
+<rect x="40" y="477" width="620" height="296" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="515" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Missions</text>
+<text x="62" y="544" font-family="Arial" font-size="23" fill="#222c39">PK MissionId: SERIAL</text>
+<text x="62" y="573" font-family="Arial" font-size="23" fill="#222c39">MissionName: VARCHAR(254)</text>
+<text x="62" y="602" font-family="Arial" font-size="23" fill="#222c39">Description: VARCHAR(254)</text>
+<text x="62" y="631" font-family="Arial" font-size="23" fill="#222c39">Type: VARCHAR(25)</text>
+<text x="62" y="660" font-family="Arial" font-size="23" fill="#222c39">Target: INT</text>
+<text x="62" y="689" font-family="Arial" font-size="23" fill="#222c39">Reward: JSONB</text>
+<text x="62" y="718" font-family="Arial" font-size="23" fill="#222c39">Code: VARCHAR(50) ?</text>
+<text x="62" y="747" font-family="Arial" font-size="23" fill="#222c39">Config: JSONB</text>
+<rect x="730" y="419" width="620" height="238" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="457" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerMissions</text>
+<text x="752" y="486" font-family="Arial" font-size="23" fill="#222c39">PK FK PlayerId: UUID</text>
+<text x="752" y="515" font-family="Arial" font-size="23" fill="#222c39">PK FK MissionId: INT</text>
+<text x="752" y="544" font-family="Arial" font-size="23" fill="#222c39">Progress: INT</text>
+<text x="752" y="573" font-family="Arial" font-size="23" fill="#222c39">IsClaimed: BOOLEAN</text>
+<text x="752" y="602" font-family="Arial" font-size="23" fill="#222c39">ClaimedAt: TIMESTAMPTZ ?</text>
+<text x="752" y="631" font-family="Arial" font-size="23" fill="#222c39">PeriodKey: VARCHAR(8)</text>
+<rect x="40" y="948" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="986" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerProfiles</text>
+<text x="62" y="1015" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="62" y="1044" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+</svg>

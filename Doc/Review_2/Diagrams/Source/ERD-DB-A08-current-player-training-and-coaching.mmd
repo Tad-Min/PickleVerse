@@ -1,0 +1,56 @@
+%% ERD-DB-A08: CURRENT SQL/EF — deployment not verified
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    PlayerTechniqueMastery {
+        uuid PlayerId PK,FK "NOT NULL"
+        int TechniqueId PK,FK "NOT NULL"
+        int TotalAttempts "NOT NULL"
+        int TotalErrors "NOT NULL"
+        smallint MasteryScore "NULL allowed"
+        timestamptz LastUpdatedAt "NOT NULL"
+    }
+    PlayerTechniquesErrors {
+        serial ErrorLogId PK "NOT NULL"
+        uuid PlayerId FK "NOT NULL"
+        int TechniqueId FK "NOT NULL"
+        uuid MatchId FK "NULL allowed"
+        int LessonId FK "NULL allowed"
+        varchar_50 ErrorType "NOT NULL"
+        text CoachingTip "NOT NULL"
+        timestamptz CreatedAt "NOT NULL"
+    }
+    PlayerLessonDrills {
+        uuid PlayerId PK,FK "NOT NULL"
+        int LessonId PK,FK "NOT NULL"
+        int DrillId PK,FK "NOT NULL"
+        int Score "NOT NULL"
+        boolean IsClaimedReward "NOT NULL"
+    }
+    PlayerProfiles {
+        uuid UserId PK,FK "NOT NULL; reference only"
+        varchar_18 PlayerName UK "NOT NULL; reference only"
+    }
+    Techniques {
+        serial TechniqueId PK "NOT NULL; reference only"
+        varchar_254 TechniqueName UK "NOT NULL; reference only"
+    }
+    MatchHistory {
+        uuid MatchId PK "NOT NULL; reference only"
+    }
+    Lessons {
+        serial LessonId PK "NOT NULL; reference only"
+    }
+    Drills {
+        serial DrillId PK "NOT NULL; reference only"
+        int TechniqueId FK "NOT NULL; reference only"
+    }
+    PlayerProfiles ||--o{ PlayerTechniqueMastery : "PlayerId"
+    Techniques ||--o{ PlayerTechniqueMastery : "TechniqueId"
+    PlayerProfiles ||--o{ PlayerTechniquesErrors : "PlayerId"
+    Techniques ||--o{ PlayerTechniquesErrors : "TechniqueId"
+    MatchHistory |o--o{ PlayerTechniquesErrors : "MatchId"
+    Lessons |o--o{ PlayerTechniquesErrors : "LessonId"
+    PlayerProfiles ||--o{ PlayerLessonDrills : "PlayerId"
+    Lessons ||--o{ PlayerLessonDrills : "LessonId"
+    Drills ||--o{ PlayerLessonDrills : "DrillId"

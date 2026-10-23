@@ -1,0 +1,88 @@
+{
+  "id": "DATA01",
+  "title": "JSON and transient data ownership",
+  "nodes": [
+    {
+      "id": "progress",
+      "title": "GameProgress.Data JSONB",
+      "body": [
+        "PlayerProfile",
+        "training attempts and aggregates",
+        "daily/streak and reward state",
+        "processed match / tutorial data"
+      ],
+      "x": 40,
+      "y": 150,
+      "w": 560,
+      "h": 180,
+      "shape": "box"
+    },
+    {
+      "id": "matches",
+      "title": "GameMatches.Data JSONB",
+      "body": [
+        "Canonical roster / session / host",
+        "phase PREPARING PLAYING FINISHED CANCELLED",
+        "accepted/report state joined by",
+        "participants"
+      ],
+      "x": 760,
+      "y": 150,
+      "w": 560,
+      "h": 180,
+      "shape": "box"
+    },
+    {
+      "id": "redis",
+      "title": "Redis transient state",
+      "body": [
+        "Queue and ready reservations",
+        "Search and match TTLs",
+        "Versioned Elo sorted-set cache"
+      ],
+      "x": 40,
+      "y": 510,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "s3",
+      "title": "S3 replay object payload",
+      "body": [
+        "Compressed bounded frame/event chunks",
+        "Object key and hash in PostgreSQL",
+        "Not a relational entity"
+      ],
+      "x": 760,
+      "y": 510,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "progress",
+      "target": "matches",
+      "label": "result application",
+      "dashed": false
+    },
+    {
+      "source": "redis",
+      "target": "matches",
+      "label": "reservation / canonicalization",
+      "dashed": false
+    },
+    {
+      "source": "matches",
+      "target": "s3",
+      "label": "authorized participant replay",
+      "dashed": false
+    }
+  ],
+  "kind": "architecture",
+  "note": "JSON members are schema-less persisted payloads, not extra SQL tables. PostgreSQL owns durable state; Redis TTL loss must not award rewards.",
+  "width": 1400,
+  "height": 751
+}

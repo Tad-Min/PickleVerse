@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1012" viewBox="0 0 1400 1012">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="1012" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ERD06  Current SQL schema 6</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.</text>
+<path d="M350.0,431 V631.5 H250.0 V832" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M730,210.5 H695.0 V283.0 H660" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1040.0,286 V559.0 H250.0 V832" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,657 V744.5 H705.0 V832" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,506 V468.5 H350.0 V431" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="135" width="620" height="296" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Cosmetics</text>
+<text x="62" y="202" font-family="Arial" font-size="23" fill="#222c39">PK CosmeticId: SERIAL</text>
+<text x="62" y="231" font-family="Arial" font-size="23" fill="#222c39">FK CurrencyId: INT</text>
+<text x="62" y="260" font-family="Arial" font-size="23" fill="#222c39">ItemCode: VARCHAR(50)</text>
+<text x="62" y="289" font-family="Arial" font-size="23" fill="#222c39">CosmeticName: VARCHAR(254)</text>
+<text x="62" y="318" font-family="Arial" font-size="23" fill="#222c39">Description: VARCHAR(254)</text>
+<text x="62" y="347" font-family="Arial" font-size="23" fill="#222c39">Price: INT</text>
+<text x="62" y="376" font-family="Arial" font-size="23" fill="#222c39">Type: VARCHAR(25)</text>
+<text x="62" y="405" font-family="Arial" font-size="23" fill="#222c39">Config: JSONB</text>
+<rect x="730" y="135" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">CosmeticPrices</text>
+<text x="752" y="202" font-family="Arial" font-size="23" fill="#222c39">PK FK CosmeticId: INT</text>
+<text x="752" y="231" font-family="Arial" font-size="23" fill="#222c39">PK FK CurrencyId: INT</text>
+<text x="752" y="260" font-family="Arial" font-size="23" fill="#222c39">Price: INT</text>
+<rect x="40" y="506" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="544" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerCosmetics</text>
+<text x="62" y="573" font-family="Arial" font-size="23" fill="#222c39">PK FK PlayerId: UUID</text>
+<text x="62" y="602" font-family="Arial" font-size="23" fill="#222c39">PK FK CosmeticId: INT</text>
+<text x="62" y="631" font-family="Arial" font-size="23" fill="#222c39">Equipped: BOOLEAN</text>
+<rect x="40" y="832" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="870" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Currencies</text>
+<text x="62" y="899" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="62" y="928" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+<rect x="495" y="832" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="517" y="870" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerProfiles</text>
+<text x="517" y="899" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="517" y="928" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+</svg>

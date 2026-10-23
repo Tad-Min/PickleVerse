@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="776" viewBox="0 0 1400 776">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="776" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ERD08  Current SQL schema 8</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.</text>
+<path d="M730,239.5 H695.0 V210.5 H660" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M730,494.5 H695.0 V523.5 H660" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1040.0,419 V381.5 H1040.0 V344" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="135" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Techniques</text>
+<text x="62" y="202" font-family="Arial" font-size="23" fill="#222c39">PK TechniqueId: SERIAL</text>
+<text x="62" y="231" font-family="Arial" font-size="23" fill="#222c39">TechniqueName: VARCHAR(254)</text>
+<text x="62" y="260" font-family="Arial" font-size="23" fill="#222c39">Description: VARCHAR(254)</text>
+<rect x="730" y="135" width="620" height="209" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Drills</text>
+<text x="752" y="202" font-family="Arial" font-size="23" fill="#222c39">PK DrillId: SERIAL</text>
+<text x="752" y="231" font-family="Arial" font-size="23" fill="#222c39">FK TechniqueId: INT</text>
+<text x="752" y="260" font-family="Arial" font-size="23" fill="#222c39">DrillName: VARCHAR(254)</text>
+<text x="752" y="289" font-family="Arial" font-size="23" fill="#222c39">Description: VARCHAR(254)</text>
+<text x="752" y="318" font-family="Arial" font-size="23" fill="#222c39">Code: VARCHAR(50) ?</text>
+<rect x="40" y="361" width="620" height="325" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="399" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Lessons</text>
+<text x="62" y="428" font-family="Arial" font-size="23" fill="#222c39">PK LessonId: SERIAL</text>
+<text x="62" y="457" font-family="Arial" font-size="23" fill="#222c39">LessonName: VARCHAR(254)</text>
+<text x="62" y="486" font-family="Arial" font-size="23" fill="#222c39">Description: VARCHAR(254)</text>
+<text x="62" y="515" font-family="Arial" font-size="23" fill="#222c39">Code: VARCHAR(50) ?</text>
+<text x="62" y="544" font-family="Arial" font-size="23" fill="#222c39">SortOrder: INT</text>
+<text x="62" y="573" font-family="Arial" font-size="23" fill="#222c39">Type: VARCHAR(25)</text>
+<text x="62" y="602" font-family="Arial" font-size="23" fill="#222c39">Target: INT</text>
+<text x="62" y="631" font-family="Arial" font-size="23" fill="#222c39">Config: JSONB</text>
+<text x="62" y="660" font-family="Arial" font-size="23" fill="#222c39">Reward: JSONB</text>
+<rect x="730" y="419" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="457" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">LessonDrills</text>
+<text x="752" y="486" font-family="Arial" font-size="23" fill="#222c39">PK FK LessonId: INT</text>
+<text x="752" y="515" font-family="Arial" font-size="23" fill="#222c39">PK FK DrillId: INT</text>
+<text x="752" y="544" font-family="Arial" font-size="23" fill="#222c39">Target: INT</text>
+</svg>

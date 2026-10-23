@@ -1,0 +1,44 @@
+@startuml UC-03
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam packageStyle rectangle
+skinparam usecase {
+  BorderColor #314C68
+  FontColor #102333
+}
+skinparam actor {
+  BorderColor #314C68
+  FontColor #102333
+}
+title UC-03 - Bot matches and shared shot gameplay
+actor "Player" as A_player
+rectangle "PickleVerse game / Bot matches and shared shot gameplay" {
+  usecase "G-UC23\nChoose bot difficulty, venue and lighting\n<<SOURCE IMPLEMENTED>>" as G_UC23 #E7F3EC
+  usecase "G-UC24\nPlay a singles match against a bot\n<<SOURCE IMPLEMENTED>>" as G_UC24 #E7F3EC
+  usecase "G-UC25\nPlay an Elo-adapted behavior-tree bot\n<<PARTIAL / INTEGRATION GAP>>" as G_UC25 #FFF1D6
+  usecase "G-UC26\nMove, run and hit at the same time\n<<SOURCE IMPLEMENTED>>" as G_UC26 #E7F3EC
+  usecase "G-UC27\nServe and execute shot types or modifiers\n<<SOURCE IMPLEMENTED>>" as G_UC27 #E7F3EC
+  usecase "G-UC28\nReceive Perfect or Good contact grading\n<<SOURCE IMPLEMENTED>>" as G_UC28 #E7F3EC
+  usecase "G-UC29\nPause, get help, time out or leave a match\n<<SOURCE IMPLEMENTED>>" as G_UC29 #E7F3EC
+  usecase "G-UC30\nView entrance and win/loss presentations\n<<SOURCE IMPLEMENTED>>" as G_UC30 #E7F3EC
+  usecase "G-UC56\nUse touch movement, sprint and shot gestures\n<<PARTIAL / INTEGRATION GAP>>" as G_UC56 #FFF1D6
+}
+A_player -- G_UC23
+A_player -- G_UC24
+A_player -- G_UC25
+A_player -- G_UC26
+A_player -- G_UC27
+A_player -- G_UC28
+A_player -- G_UC29
+A_player -- G_UC30
+A_player -- G_UC56
+legend bottom
+  Green: source implemented; amber: partial / integration gap.
+  Purple: demo fixtures only; red: target with no game evidence.
+  Grey isolated use case: outside baseline; no implemented actor path.
+  Source coverage is not runtime acceptance or review approval.
+endlegend
+@enduml

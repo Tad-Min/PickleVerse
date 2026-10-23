@@ -1,0 +1,43 @@
+%% ERD-DB-A06: CURRENT SQL/EF — deployment not verified
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    Achievements {
+        serial AchievementId PK "NOT NULL"
+        varchar_50 AchievementCode UK "NOT NULL"
+        varchar_254 AchievementName "NOT NULL"
+        varchar_254 Description "NOT NULL"
+        varchar_25 Type "NOT NULL"
+        int Target "NOT NULL"
+        jsonb Reward "NOT NULL"
+    }
+    PlayerAchievements {
+        uuid PlayerId PK,FK "NOT NULL"
+        int AchievementId PK,FK "NOT NULL"
+        int Progress "NOT NULL"
+        boolean IsClaimed "NOT NULL"
+        timestamptz ClaimedAt "NULL allowed"
+    }
+    Missions {
+        serial MissionId PK "NOT NULL"
+        varchar_254 MissionName "NOT NULL"
+        varchar_254 Description "NOT NULL"
+        varchar_25 Type "NOT NULL"
+        int Target "NOT NULL"
+        jsonb Reward "NOT NULL"
+    }
+    PlayerMissions {
+        uuid PlayerId PK,FK "NOT NULL"
+        int MissionId PK,FK "NOT NULL"
+        int Progress "NOT NULL"
+        boolean IsClaimed "NOT NULL"
+        timestamptz ClaimedAt "NULL allowed"
+    }
+    PlayerProfiles {
+        uuid UserId PK,FK "NOT NULL; reference only"
+        varchar_18 PlayerName UK "NOT NULL; reference only"
+    }
+    PlayerProfiles ||--o{ PlayerAchievements : "PlayerId"
+    Achievements ||--o{ PlayerAchievements : "AchievementId"
+    PlayerProfiles ||--o{ PlayerMissions : "PlayerId"
+    Missions ||--o{ PlayerMissions : "MissionId"

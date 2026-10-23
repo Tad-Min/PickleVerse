@@ -1,0 +1,14 @@
+flowchart TD
+  Start((Start))
+  A1["Join eligible skill queue / Player and queue API"]
+  A2["Poll canonical offer and accept / Player decision and Game API"]
+  A3["Wait for all required human acceptances / Game API and required peers"]
+  A4["Start Photon Shared session and play / Players and Photon Shared peers"]
+  A5["Report consistent results and read finalized rating / Participant reports and Game API"]
+  Start --> A1
+  A1 --> A2
+  A2 --> A3
+  A3 --> A4
+  A4 --> A5
+  A5 --> End["A canonical match result updates each participant once."]
+  A2 -. "validation or dependency failure" .-> X["A decline/timeout cancels the offer; a conflicting report blocks normal finalization and applies server policy."]

@@ -1,0 +1,106 @@
+{
+  "id": "ERD03",
+  "title": "Current SQL schema 3",
+  "nodes": [
+    {
+      "id": "FriendRequests",
+      "title": "FriendRequests",
+      "body": [
+        "PK RequestId: SERIAL",
+        "FK SenderId: UUID",
+        "FK ReceiverId: UUID",
+        "Status: VARCHAR(20)",
+        "CreatedAt: TIMESTAMPTZ",
+        "RespondedAt: TIMESTAMPTZ ?"
+      ],
+      "x": 40,
+      "y": 135,
+      "w": 620,
+      "h": 238,
+      "shape": "box"
+    },
+    {
+      "id": "Friendships",
+      "title": "Friendships",
+      "body": [
+        "PK FK UserId1: UUID",
+        "PK FK UserId2: UUID",
+        "CreatedAt: TIMESTAMPTZ"
+      ],
+      "x": 730,
+      "y": 135,
+      "w": 620,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "BlockedUsers",
+      "title": "BlockedUsers",
+      "body": [
+        "PK FK UserId: UUID",
+        "PK FK BlockedUserId: UUID",
+        "CreatedAt: TIMESTAMPTZ"
+      ],
+      "x": 40,
+      "y": 448,
+      "w": 620,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "Users",
+      "title": "Users",
+      "body": [
+        "Referenced table — see other",
+        "ERD"
+      ],
+      "x": 40,
+      "y": 774,
+      "w": 420,
+      "h": 90,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "FriendRequests",
+      "target": "Users",
+      "label": "SenderId",
+      "dashed": true
+    },
+    {
+      "source": "FriendRequests",
+      "target": "Users",
+      "label": "ReceiverId",
+      "dashed": true
+    },
+    {
+      "source": "Friendships",
+      "target": "Users",
+      "label": "UserId1",
+      "dashed": true
+    },
+    {
+      "source": "Friendships",
+      "target": "Users",
+      "label": "UserId2",
+      "dashed": true
+    },
+    {
+      "source": "BlockedUsers",
+      "target": "Users",
+      "label": "UserId",
+      "dashed": true
+    },
+    {
+      "source": "BlockedUsers",
+      "target": "Users",
+      "label": "BlockedUserId",
+      "dashed": true
+    }
+  ],
+  "kind": "erd",
+  "note": "37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.",
+  "width": 1400,
+  "height": 954
+}

@@ -1,0 +1,34 @@
+%% ERD-DB-T15: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    technique_errors {
+        varchar_40 error_code PK "NOT NULL"
+        varchar_120 display_name "NOT NULL"
+        text description "NOT NULL"
+    }
+    coaching_tips {
+        varchar_80 tip_code PK "NOT NULL"
+        varchar_16 locale "NOT NULL"
+        text tip_text "NOT NULL"
+        boolean is_active "NOT NULL"
+    }
+    error_tips {
+        varchar_40 error_code PK,FK "NOT NULL"
+        varchar_80 tip_code PK,FK "NOT NULL"
+        smallint priority "NOT NULL"
+    }
+    training_attempt_errors {
+        uuid attempt_id PK,FK "NOT NULL"
+        varchar_40 error_code PK,FK "NOT NULL"
+        integer occurrences "NOT NULL"
+    }
+    training_attempts {
+        uuid attempt_id PK "NOT NULL; reference only"
+        uuid user_id FK "NOT NULL; reference only"
+        varchar_80 drill_code FK "NOT NULL; reference only"
+    }
+    technique_errors ||--o{ error_tips : "error_code"
+    coaching_tips ||--o{ error_tips : "tip_code"
+    training_attempts ||--o{ training_attempt_errors : "attempt_id"
+    technique_errors ||--o{ training_attempt_errors : "error_code"

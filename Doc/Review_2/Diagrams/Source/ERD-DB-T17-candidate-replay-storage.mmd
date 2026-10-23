@@ -1,0 +1,35 @@
+%% ERD-DB-T17: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    match_replays {
+        uuid replay_id PK "NOT NULL"
+        uuid match_id FK "NOT NULL"
+        uuid owner_user_id FK "NOT NULL"
+        integer format_version "NOT NULL"
+        smallint sample_rate "NOT NULL"
+        numeric_14_3 duration_seconds "NOT NULL"
+        boolean is_complete "NOT NULL"
+        text storage_prefix "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    replay_chunks {
+        uuid replay_id PK,FK "NOT NULL"
+        integer chunk_number PK "NOT NULL"
+        text storage_key "NOT NULL"
+        numeric_14_6 start_seconds "NOT NULL"
+        numeric_14_6 end_seconds "NOT NULL"
+        bigint size_bytes "NULL allowed"
+        bytea sha256 "NULL allowed"
+    }
+    match_participants {
+        uuid participant_id PK "NOT NULL; reference only"
+        uuid match_id FK "NOT NULL; reference only"
+        smallint team_number FK "NOT NULL; reference only"
+        uuid user_id FK "NULL allowed; reference only"
+        uuid bot_profile_id FK "NULL allowed; reference only"
+        varchar_80 paddle_item_code FK "NULL allowed; reference only"
+        uuid reward_grant_id FK,UK "NULL allowed; reference only"
+    }
+    match_participants ||--o| match_replays : "match_id,owner_user_id"
+    match_replays ||--o{ replay_chunks : "replay_id"

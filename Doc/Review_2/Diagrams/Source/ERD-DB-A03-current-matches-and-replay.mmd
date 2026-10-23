@@ -1,0 +1,29 @@
+%% ERD-DB-A03: CURRENT SQL/EF — deployment not verified
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    MatchHistory {
+        uuid MatchId PK "NOT NULL"
+        timestamptz CreatedAt "NOT NULL"
+        varchar_25 MatchType "NOT NULL"
+        int TeamAScore "NOT NULL"
+        int TeamBScore "NOT NULL"
+    }
+    PlayerMatchHistory {
+        uuid PlayerId PK,FK "NOT NULL"
+        uuid MatchId PK,FK "NOT NULL"
+        varchar_25 Status "NOT NULL"
+        boolean IsTeamA "NOT NULL"
+        int ReceivedElo "NOT NULL"
+    }
+    MatchHistoryReplay {
+        uuid MatchId PK,FK "NOT NULL"
+        varchar_1000 ReplayUrl "NOT NULL"
+    }
+    PlayerProfiles {
+        uuid UserId PK,FK "NOT NULL; reference only"
+        varchar_18 PlayerName UK "NOT NULL; reference only"
+    }
+    PlayerProfiles ||--o{ PlayerMatchHistory : "PlayerId"
+    MatchHistory ||--o{ PlayerMatchHistory : "MatchId"
+    MatchHistory ||--o| MatchHistoryReplay : "MatchId"

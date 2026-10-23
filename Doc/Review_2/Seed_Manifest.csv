@@ -1,0 +1,12 @@
+﻿fixture_key,planned_state,constraints,execution_status
+PLAYER_A,Verified ACTIVE player; Elo 1500; female; tutorial not completed; review2 practice data,Human team A; account UUID assigned by staging registration,PROPOSED ONLY — NOT CREATED OR RUN
+PLAYER_B,Verified ACTIVE player; Elo 1500; male,Human team B; same region/protocol as A,PROPOSED ONLY — NOT CREATED OR RUN
+PLAYER_C,Verified ACTIVE player; Elo 1500; male,Second member team A for doubles,PROPOSED ONLY — NOT CREATED OR RUN
+PLAYER_D,Verified ACTIVE player; Elo 1500; female,Second member team B for doubles,PROPOSED ONLY — NOT CREATED OR RUN
+PLAYER_NEW,Unregistered synthetic email; controlled staging mailbox,OTP success/expiry/failure fixtures; never a real personal mailbox,PROPOSED ONLY — NOT CREATED OR RUN
+ADMIN_A,Admin role; separate synthetic account,Do not place password/token in repository; use staging secret injection,PROPOSED ONLY — NOT CREATED OR RUN
+CATALOG_V1,Source UnityCatalog.json; cloned isolated runtime config,Record actual catalog version/hash when seeded; 12 source drill definitions,PROPOSED ONLY — NOT CREATED OR RUN
+REWARD_STATES,One eligible and one claimed objective per daily/weekly period,Freeze server clock/window; explicit XP/currency expected deltas from catalog,PROPOSED ONLY — NOT CREATED OR RUN
+MATCH_RESULT,Canonical participants; team A wins games 11–9 and 11–8,Use new unique match/request IDs; malformed or conflicting report as negative data,PROPOSED ONLY — NOT CREATED OR RUN
+REPLAY,Authorized valid chunk plus foreign/corrupt/oversized variants,Generate only synthetic actor samples; observe configured size/count limits,PROPOSED ONLY — NOT CREATED OR RUN
+ANALYTICS,Four current-day active players; two inactive historical players,Expected active users today = 4; total users = 6 before adding separate Admin/new-account fixtures,PROPOSED ONLY — NOT CREATED OR RUN

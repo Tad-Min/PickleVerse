@@ -1,0 +1,13 @@
+stateDiagram-v2
+  state "PREPARING" as S0
+  state "PLAYING" as S1
+  state "FINISHED" as S2
+  state "CANCELLED" as S3
+  [*] --> S0
+  S0 --> S1: 1 all required humans accepted and start validated
+  S0 --> S3: 2 decline/timeout
+  S1 --> S1: 3 heartbeat or partial report
+  S1 --> S2: 4 all matching reports or policy forfeit
+  S1 --> S1: 5 reject conflicting/foreign result
+  S2 --> S2: 6 duplicate same report returns state
+  S3 --> S3: 7 reject late start

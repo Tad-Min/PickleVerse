@@ -1,0 +1,114 @@
+{
+  "id": "SM13",
+  "title": "Moderation and appeal target",
+  "nodes": [
+    {
+      "id": "PENDING",
+      "title": "PENDING",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "CHECKING",
+      "title": "CHECKING",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "ACCEPTED",
+      "title": "ACCEPTED",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "DECLINED",
+      "title": "DECLINED",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "AppealedTarget",
+      "title": "AppealedTarget",
+      "body": [],
+      "x": 495,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "ClosedTarget",
+      "title": "ClosedTarget",
+      "body": [],
+      "x": 950,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "PENDING",
+      "target": "CHECKING",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "CHECKING",
+      "target": "ACCEPTED",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "CHECKING",
+      "target": "DECLINED",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "PENDING",
+      "target": "ACCEPTED",
+      "label": "4",
+      "dashed": false
+    },
+    {
+      "source": "PENDING",
+      "target": "DECLINED",
+      "label": "5",
+      "dashed": false
+    },
+    {
+      "source": "ACCEPTED",
+      "target": "AppealedTarget",
+      "label": "6",
+      "dashed": false
+    },
+    {
+      "source": "AppealedTarget",
+      "target": "ClosedTarget",
+      "label": "7",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Target lifecycle, incomplete implementation; declared SQL states retained where applicable. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 545
+}

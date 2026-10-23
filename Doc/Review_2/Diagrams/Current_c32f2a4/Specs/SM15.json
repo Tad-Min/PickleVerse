@@ -1,0 +1,176 @@
+{
+  "id": "SM15",
+  "title": "Multiplayer client flow",
+  "nodes": [
+    {
+      "id": "Menu",
+      "title": "Menu",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "WaitingRoom",
+      "title": "WaitingRoom",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Delay",
+      "title": "Delay",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Searching",
+      "title": "Searching",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Connecting",
+      "title": "Connecting",
+      "body": [],
+      "x": 495,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "InMatch",
+      "title": "InMatch",
+      "body": [],
+      "x": 950,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Reconnecting",
+      "title": "Reconnecting",
+      "body": [],
+      "x": 40,
+      "y": 545,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Results",
+      "title": "Results",
+      "body": [],
+      "x": 495,
+      "y": 545,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Menu",
+      "target": "WaitingRoom",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "WaitingRoom",
+      "target": "Delay",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "Delay",
+      "target": "Searching",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "Searching",
+      "target": "Connecting",
+      "label": "4",
+      "dashed": false
+    },
+    {
+      "source": "Connecting",
+      "target": "InMatch",
+      "label": "5",
+      "dashed": false
+    },
+    {
+      "source": "InMatch",
+      "target": "Results",
+      "label": "6",
+      "dashed": false
+    },
+    {
+      "source": "InMatch",
+      "target": "Reconnecting",
+      "label": "7",
+      "dashed": false
+    },
+    {
+      "source": "Reconnecting",
+      "target": "InMatch",
+      "label": "8",
+      "dashed": false
+    },
+    {
+      "source": "Reconnecting",
+      "target": "WaitingRoom",
+      "label": "9",
+      "dashed": false
+    },
+    {
+      "source": "Searching",
+      "target": "WaitingRoom",
+      "label": "10",
+      "dashed": false
+    },
+    {
+      "source": "Connecting",
+      "target": "WaitingRoom",
+      "label": "11",
+      "dashed": false
+    },
+    {
+      "source": "Results",
+      "target": "WaitingRoom",
+      "label": "12",
+      "dashed": false
+    },
+    {
+      "source": "WaitingRoom",
+      "target": "Menu",
+      "label": "13",
+      "dashed": false
+    },
+    {
+      "source": "Delay",
+      "target": "WaitingRoom",
+      "label": "14",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Actual FlowState enum; ready acceptance is a separate canonical match state. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 745
+}

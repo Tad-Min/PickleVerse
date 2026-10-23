@@ -1,0 +1,45 @@
+%% ERD-DB-T01: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    app_users {
+        uuid user_id PK "NOT NULL"
+        varchar_32 username "NOT NULL"
+        varchar_254 email "NULL allowed"
+        text password_hash "NULL allowed"
+        varchar_16 status "NOT NULL"
+        timestamptz email_verified_at "NULL allowed"
+        timestamptz last_login_at "NULL allowed"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    roles {
+        varchar_24 role_code PK "NOT NULL"
+        varchar_80 display_name "NOT NULL"
+    }
+    user_roles {
+        uuid user_id PK,FK "NOT NULL"
+        varchar_24 role_code PK,FK "NOT NULL"
+        uuid granted_by FK "NULL allowed"
+        timestamptz granted_at "NOT NULL"
+    }
+    player_identities {
+        uuid user_id FK "NOT NULL"
+        varchar_32 provider PK "NOT NULL"
+        varchar_160 external_id PK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    auth_sessions {
+        uuid session_id PK "NOT NULL"
+        uuid user_id FK "NOT NULL"
+        bytea refresh_token_hash UK "NOT NULL"
+        varchar_120 device_label "NULL allowed"
+        timestamptz created_at "NOT NULL"
+        timestamptz expires_at "NOT NULL"
+        timestamptz revoked_at "NULL allowed"
+    }
+    app_users ||--o{ user_roles : "user_id"
+    roles ||--o{ user_roles : "role_code"
+    app_users |o--o{ user_roles : "granted_by"
+    app_users ||--o{ player_identities : "user_id"
+    app_users ||--o{ auth_sessions : "user_id"

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1146" viewBox="0 0 1440 1146">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1440" height="1146" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">LOGICAL01  Logical entities and association meaning</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">Conceptual cardinalities are explained inside each domain. ERD01–11 map each association to explicit</text>
+<text x="40" y="101" font-family="Arial" font-size="20" fill="#546174">SQL keys; optionality and delete policy are in the FK register.</text>
+<path d="M660,230.5 H710.0 V230.5 H760" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M350.0,306 V418.0 H350.0 V530" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M350.0,306 V605.5 H350.0 V905" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M350.0,306 V418.0 H1070.0 V530" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M350.0,681 V793.0 H1070.0 V905" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="155" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="193" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Account and player</text>
+<text x="62" y="222" font-family="Arial" font-size="23" fill="#222c39">User 1 — 0..1 PlayerProfile row</text>
+<text x="62" y="251" font-family="Arial" font-size="23" fill="#222c39">Role 1 — many Users</text>
+<text x="62" y="280" font-family="Arial" font-size="23" fill="#222c39">Profile 1 — many owned records</text>
+<rect x="760" y="155" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="193" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Learning catalog and attempt</text>
+<text x="782" y="222" font-family="Arial" font-size="23" fill="#222c39">Lesson many — many Drill via LessonDrills</text>
+<text x="782" y="251" font-family="Arial" font-size="23" fill="#222c39">Technique 1 — many Drills</text>
+<text x="782" y="280" font-family="Arial" font-size="23" fill="#222c39">Player 1 — many TrainingSessions</text>
+<rect x="40" y="530" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="568" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Match and participant result</text>
+<text x="62" y="597" font-family="Arial" font-size="23" fill="#222c39">GameMatch 1 — many GameMatchPlayers</text>
+<text x="62" y="626" font-family="Arial" font-size="23" fill="#222c39">History 1 — many PlayerMatchHistory</text>
+<text x="62" y="655" font-family="Arial" font-size="23" fill="#222c39">Player many — many Match via participants</text>
+<rect x="760" y="530" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="568" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Economy and objectives</text>
+<text x="782" y="597" font-family="Arial" font-size="23" fill="#222c39">Player many — many Cosmetic via ownership</text>
+<text x="782" y="626" font-family="Arial" font-size="23" fill="#222c39">Player many — many Mission/Achievement</text>
+<text x="782" y="655" font-family="Arial" font-size="23" fill="#222c39">Wallet 1 currency/player; ledger many entries</text>
+<rect x="40" y="905" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="943" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Social relationship</text>
+<text x="62" y="972" font-family="Arial" font-size="23" fill="#222c39">Users many — many via Friendship</text>
+<text x="62" y="1001" font-family="Arial" font-size="23" fill="#222c39">Request has exactly one sender and recipient</text>
+<text x="62" y="1030" font-family="Arial" font-size="23" fill="#222c39">Block has owner and blocked user</text>
+<rect x="760" y="905" width="620" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="943" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Replay and progress aggregate</text>
+<text x="782" y="972" font-family="Arial" font-size="23" fill="#222c39">Match/player 1 — many replay chunks</text>
+<text x="782" y="1001" font-family="Arial" font-size="23" fill="#222c39">Player 1 — 0..1 GameProgress row</text>
+<text x="782" y="1030" font-family="Arial" font-size="23" fill="#222c39">JSONB aggregate members are not SQL tables</text>
+</svg>

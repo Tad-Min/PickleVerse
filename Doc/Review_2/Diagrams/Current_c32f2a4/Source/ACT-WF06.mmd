@@ -1,0 +1,14 @@
+flowchart TD
+  Start((Start))
+  A1["Authenticate as administrator / Admin browser and auth API"]
+  A2["Inspect a user or moderation report / Administrator and protected API"]
+  A3["Apply valid access/status decision / Administrator and user API"]
+  A4["Create and publish playable lesson configuration / Administrator and CMS API target"]
+  A5["Inspect period-defined operational analytics / Administrator and analytics API target"]
+  Start --> A1
+  A1 --> A2
+  A2 --> A3
+  A3 --> A4
+  A4 --> A5
+  A5 --> End["Authorized actions change service data and support operational decisions."]
+  A2 -. "validation or dependency failure" .-> X["A non-admin request is denied; invalid publication/status data leaves existing records unchanged."]

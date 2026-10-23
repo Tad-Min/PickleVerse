@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="751" viewBox="0 0 1400 751">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="751" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">DATA01  JSON and transient data ownership</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">JSON members are schema-less persisted payloads, not extra SQL tables. PostgreSQL owns durable</text>
+<text x="40" y="101" font-family="Arial" font-size="20" fill="#546174">state; Redis TTL loss must not award rewards.</text>
+<path d="M600,240.0 H680.0 V240.0 H760" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M320.0,510 V420.0 H1040.0 V330" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1040.0,330 V420.0 H1040.0 V510" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="150" width="560" height="180" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="188" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">GameProgress.Data JSONB</text>
+<text x="62" y="217" font-family="Arial" font-size="23" fill="#222c39">PlayerProfile</text>
+<text x="62" y="246" font-family="Arial" font-size="23" fill="#222c39">training attempts and aggregates</text>
+<text x="62" y="275" font-family="Arial" font-size="23" fill="#222c39">daily/streak and reward state</text>
+<text x="62" y="304" font-family="Arial" font-size="23" fill="#222c39">processed match / tutorial data</text>
+<rect x="760" y="150" width="560" height="180" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="188" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">GameMatches.Data JSONB</text>
+<text x="782" y="217" font-family="Arial" font-size="23" fill="#222c39">Canonical roster / session / host</text>
+<text x="782" y="246" font-family="Arial" font-size="23" fill="#222c39">phase PREPARING PLAYING FINISHED CANCELLED</text>
+<text x="782" y="275" font-family="Arial" font-size="23" fill="#222c39">accepted/report state joined by</text>
+<text x="782" y="304" font-family="Arial" font-size="23" fill="#222c39">participants</text>
+<rect x="40" y="510" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="548" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Redis transient state</text>
+<text x="62" y="577" font-family="Arial" font-size="23" fill="#222c39">Queue and ready reservations</text>
+<text x="62" y="606" font-family="Arial" font-size="23" fill="#222c39">Search and match TTLs</text>
+<text x="62" y="635" font-family="Arial" font-size="23" fill="#222c39">Versioned Elo sorted-set cache</text>
+<rect x="760" y="510" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="548" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">S3 replay object payload</text>
+<text x="782" y="577" font-family="Arial" font-size="23" fill="#222c39">Compressed bounded frame/event chunks</text>
+<text x="782" y="606" font-family="Arial" font-size="23" fill="#222c39">Object key and hash in PostgreSQL</text>
+<text x="782" y="635" font-family="Arial" font-size="23" fill="#222c39">Not a relational entity</text>
+</svg>

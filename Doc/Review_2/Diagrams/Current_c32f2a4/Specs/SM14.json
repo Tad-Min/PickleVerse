@@ -1,0 +1,116 @@
+{
+  "id": "SM14",
+  "title": "Training controller phase",
+  "nodes": [
+    {
+      "id": "Catalogue",
+      "title": "Catalogue",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Briefing",
+      "title": "Briefing",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Practice",
+      "title": "Practice",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Recovery",
+      "title": "Recovery",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Finished",
+      "title": "Finished",
+      "body": [],
+      "x": 495,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Catalogue",
+      "target": "Briefing",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "Briefing",
+      "target": "Practice",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "Practice",
+      "target": "Recovery",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "Recovery",
+      "target": "Practice",
+      "label": "4",
+      "dashed": false
+    },
+    {
+      "source": "Recovery",
+      "target": "Finished",
+      "label": "5",
+      "dashed": false
+    },
+    {
+      "source": "Practice",
+      "target": "Catalogue",
+      "label": "6",
+      "dashed": false
+    },
+    {
+      "source": "Finished",
+      "target": "Practice",
+      "label": "7",
+      "dashed": false
+    },
+    {
+      "source": "Finished",
+      "target": "Briefing",
+      "label": "8",
+      "dashed": false
+    },
+    {
+      "source": "Briefing",
+      "target": "Catalogue",
+      "label": "9",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Actual controller enum; transitions are selected main control paths. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 545
+}

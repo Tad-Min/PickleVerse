@@ -1,0 +1,209 @@
+﻿table,column,type,nullable,primary_key,foreign_key,definition,evidence
+Roles,RoleId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:8
+Roles,RoleName,VARCHAR(32),False,False,[],VARCHAR(32) NOT NULL UNIQUE,src/Database.sql:9
+Roles,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:10
+Users,UserId,UUID,False,True,[],UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/Database.sql:14
+Users,Email,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL UNIQUE,src/Database.sql:15
+Users,PasswordHash,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:16
+Users,RoleId,INT,False,False,"[{""columns"": [""RoleId""], ""references"": ""Roles"", ""reference_columns"": [""RoleId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL,src/Database.sql:17
+Users,Status,VARCHAR(20),False,False,[],"VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (Status IN ('ACTIVE', 'BANNED', 'SUSPENDED'))",src/Database.sql:18
+Users,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:19
+RefreshTokens,TokenId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:24
+RefreshTokens,UserId,UUID,False,False,"[{""columns"": [""UserId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:25
+RefreshTokens,TokenHash,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL UNIQUE,src/Database.sql:26
+RefreshTokens,ExpiresAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL,src/Database.sql:27
+RefreshTokens,IsRevoked,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:28
+RefreshTokens,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:29
+VerificationEmail,VerificationEmailId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:34
+VerificationEmail,UserId,UUID,False,False,"[{""columns"": [""UserId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:35
+VerificationEmail,Email,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:36
+VerificationEmail,Token,VARCHAR(128),False,False,[],VARCHAR(128) NOT NULL,src/Database.sql:37
+VerificationEmail,FailedAttempts,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:38
+VerificationEmail,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:39
+VerificationEmail,ExpiresAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL,src/Database.sql:40
+VerificationEmail,IsVerified,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:41
+PlayerProfiles,UserId,UUID,False,True,"[{""columns"": [""UserId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID PRIMARY KEY,src/Database.sql:46
+PlayerProfiles,Avatar,VARCHAR(80),False,False,[],VARCHAR(80) NOT NULL DEFAULT 'initial',src/Database.sql:47
+PlayerProfiles,PlayerName,VARCHAR(18),False,False,[],VARCHAR(18) NOT NULL UNIQUE,src/Database.sql:48
+PlayerProfiles,Elo,INT,False,False,[],INT NOT NULL DEFAULT 100 CHECK (Elo >= 100),src/Database.sql:49
+PlayerProfiles,IsMale,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT TRUE,src/Database.sql:50
+PlayerProfiles,TimePlayedSeconds,BIGINT,False,False,[],BIGINT NOT NULL DEFAULT 0,src/Database.sql:51
+PlayerProfiles,Level,INT,False,False,[],INT NOT NULL DEFAULT 1 CHECK (Level >= 1),src/Database.sql:52
+PlayerProfiles,Exp,INT,False,False,[],INT NOT NULL DEFAULT 0 CHECK (Exp >= 0),src/Database.sql:53
+PlayerProfiles,WinStreak,INT,False,False,[],INT NOT NULL DEFAULT 0 CHECK (WinStreak >= 0),src/Database.sql:54
+PlayerProfiles,DayStreak,INT,False,False,[],INT NOT NULL DEFAULT 0 CHECK (DayStreak >= 0),src/Database.sql:55
+PlayerProfiles,WinCount,INT,False,False,[],INT NOT NULL DEFAULT 0 CHECK (WinCount >= 0),src/Database.sql:56
+PlayerProfiles,LoseCount,INT,False,False,[],INT NOT NULL DEFAULT 0 CHECK (LoseCount >= 0),src/Database.sql:57
+FriendRequests,RequestId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:64
+FriendRequests,SenderId,UUID,False,False,"[{""columns"": [""SenderId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:65
+FriendRequests,ReceiverId,UUID,False,False,"[{""columns"": [""ReceiverId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:66
+FriendRequests,Status,VARCHAR(20),False,False,[],"VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (Status IN ('PENDING', 'ACCEPTED', 'DECLINED'))",src/Database.sql:67
+FriendRequests,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:68
+FriendRequests,RespondedAt,TIMESTAMPTZ,True,False,[],TIMESTAMPTZ NULL,src/Database.sql:69
+Friendships,UserId1,UUID,False,True,"[{""columns"": [""UserId1""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:77
+Friendships,UserId2,UUID,False,True,"[{""columns"": [""UserId2""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:78
+Friendships,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:79
+BlockedUsers,UserId,UUID,False,True,"[{""columns"": [""UserId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}, {""columns"": [""BlockedUserId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:87
+BlockedUsers,BlockedUserId,UUID,False,True,"[{""columns"": [""BlockedUserId""], ""references"": ""Users"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:88
+BlockedUsers,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:89
+MatchHistory,MatchId,UUID,False,True,[],UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/Database.sql:99
+MatchHistory,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:100
+MatchHistory,MatchType,VARCHAR(25),False,False,[],VARCHAR(25) NOT NULL DEFAULT '1Vs1',src/Database.sql:101
+MatchHistory,TeamAScore,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:102
+MatchHistory,TeamBScore,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:103
+PlayerMatchHistory,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""NO ACTION""}]",UUID NOT NULL,src/Database.sql:107
+PlayerMatchHistory,MatchId,UUID,False,True,"[{""columns"": [""MatchId""], ""references"": ""MatchHistory"", ""reference_columns"": [""MatchId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:108
+PlayerMatchHistory,Status,VARCHAR(25),False,False,[],VARCHAR(25) NOT NULL DEFAULT 'WIN',src/Database.sql:109
+PlayerMatchHistory,IsTeamA,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT TRUE,src/Database.sql:110
+PlayerMatchHistory,ReceivedElo,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:111
+ReportPlayerInMatch,ReporterId,UUID,False,True,"[{""columns"": [""ReporterId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:118
+ReportPlayerInMatch,ReportedPlayerId,UUID,False,True,"[{""columns"": [""ReportedPlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:119
+ReportPlayerInMatch,MatchId,UUID,False,True,"[{""columns"": [""MatchId""], ""references"": ""MatchHistory"", ""reference_columns"": [""MatchId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:120
+ReportPlayerInMatch,Reason,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:121
+ReportPlayerInMatch,Status,VARCHAR(20),False,False,[],"VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (Status IN ('PENDING', 'CHECKING', 'ACCEPTED', 'DECLINED'))",src/Database.sql:122
+ReportPlayerInMatch,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:123
+ReportPlayerInMatch,UpdatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:124
+MatchHistoryReplay,MatchId,UUID,False,True,"[{""columns"": [""MatchId""], ""references"": ""MatchHistory"", ""reference_columns"": [""MatchId""], ""on_delete"": ""CASCADE""}]",UUID PRIMARY KEY,src/Database.sql:133
+MatchHistoryReplay,ReplayUrl,VARCHAR(1000),False,False,[],VARCHAR(1000) NOT NULL,src/Database.sql:134
+Currencies,CurrencyId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:141
+Currencies,CurrencyName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL UNIQUE,src/Database.sql:142
+Currencies,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:143
+PlayerCurrencies,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:147
+PlayerCurrencies,CurrencyId,INT,False,True,"[{""columns"": [""CurrencyId""], ""references"": ""Currencies"", ""reference_columns"": [""CurrencyId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL,src/Database.sql:148
+PlayerCurrencies,Amount,INT,False,False,[],INT NOT NULL DEFAULT 0 CHECK (Amount >= 0),src/Database.sql:149
+Cosmetics,CosmeticId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:156
+Cosmetics,CurrencyId,INT,False,False,"[{""columns"": [""CurrencyId""], ""references"": ""Currencies"", ""reference_columns"": [""CurrencyId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL,src/Database.sql:157
+Cosmetics,ItemCode,VARCHAR(50),False,False,[],VARCHAR(50) NOT NULL UNIQUE,src/Database.sql:158
+Cosmetics,CosmeticName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:159
+Cosmetics,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:160
+Cosmetics,Price,INT,False,False,[],INT NOT NULL DEFAULT 99999 CHECK (Price >= 0),src/Database.sql:161
+Cosmetics,Type,VARCHAR(25),False,False,[],VARCHAR(25) NOT NULL,src/Database.sql:162
+Cosmetics,Config,JSONB,False,False,[],JSONB NOT NULL DEFAULT '{}'::jsonb,src/Database.sql:163
+PlayerCosmetics,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:168
+PlayerCosmetics,CosmeticId,INT,False,True,"[{""columns"": [""CosmeticId""], ""references"": ""Cosmetics"", ""reference_columns"": [""CosmeticId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL,src/Database.sql:169
+PlayerCosmetics,Equipped,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:170
+Achievements,AchievementId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:179
+Achievements,AchievementCode,VARCHAR(50),False,False,[],VARCHAR(50) NOT NULL UNIQUE,src/Database.sql:180
+Achievements,AchievementName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:181
+Achievements,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:182
+Achievements,Type,VARCHAR(25),False,False,[],VARCHAR(25) NOT NULL,src/Database.sql:183
+Achievements,Target,INT,False,False,[],INT NOT NULL,src/Database.sql:184
+Achievements,Reward,JSONB,False,False,[],"JSONB NOT NULL DEFAULT '{""Exp"": 0, ""Currency"": 0}'::jsonb",src/Database.sql:185
+PlayerAchievements,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:189
+PlayerAchievements,AchievementId,INT,False,True,"[{""columns"": [""AchievementId""], ""references"": ""Achievements"", ""reference_columns"": [""AchievementId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL,src/Database.sql:190
+PlayerAchievements,Progress,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:191
+PlayerAchievements,IsClaimed,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:192
+PlayerAchievements,ClaimedAt,TIMESTAMPTZ,True,False,[],TIMESTAMPTZ NULL,src/Database.sql:193
+Missions,MissionId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:200
+Missions,MissionName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:201
+Missions,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:202
+Missions,Type,VARCHAR(25),False,False,[],VARCHAR(25) NOT NULL,src/Database.sql:203
+Missions,Target,INT,False,False,[],INT NOT NULL,src/Database.sql:204
+Missions,Reward,JSONB,False,False,[],"JSONB NOT NULL DEFAULT '{""Exp"": 0, ""Currency"": 0}'::jsonb",src/Database.sql:205
+Missions,Code,VARCHAR(50),True,False,[],VARCHAR(50),src/Database.sql:206
+Missions,Config,JSONB,False,False,[],JSONB NOT NULL DEFAULT '{}'::jsonb,src/Database.sql:207
+PlayerMissions,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:211
+PlayerMissions,MissionId,INT,False,True,"[{""columns"": [""MissionId""], ""references"": ""Missions"", ""reference_columns"": [""MissionId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL,src/Database.sql:212
+PlayerMissions,Progress,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:213
+PlayerMissions,IsClaimed,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:214
+PlayerMissions,ClaimedAt,TIMESTAMPTZ,True,False,[],TIMESTAMPTZ NULL,src/Database.sql:215
+PlayerMissions,PeriodKey,VARCHAR(8),False,False,[],VARCHAR(8) NOT NULL DEFAULT '',src/Database.sql:216
+Techniques,TechniqueId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:225
+Techniques,TechniqueName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL UNIQUE,src/Database.sql:226
+Techniques,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:227
+Lessons,LessonId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:231
+Lessons,LessonName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:232
+Lessons,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:233
+Lessons,Code,VARCHAR(50),True,False,[],VARCHAR(50),src/Database.sql:234
+Lessons,SortOrder,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:235
+Lessons,Type,VARCHAR(25),False,False,[],VARCHAR(25) NOT NULL,src/Database.sql:236
+Lessons,Target,INT,False,False,[],INT NOT NULL,src/Database.sql:237
+Lessons,Config,JSONB,False,False,[],JSONB NOT NULL DEFAULT '{}'::jsonb,src/Database.sql:238
+Lessons,Reward,JSONB,False,False,[],"JSONB NOT NULL DEFAULT '{""Exp"": 0, ""Currency"": 0}'::jsonb",src/Database.sql:239
+Drills,DrillId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:243
+Drills,TechniqueId,INT,False,False,"[{""columns"": [""TechniqueId""], ""references"": ""Techniques"", ""reference_columns"": [""TechniqueId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:244
+Drills,DrillName,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:245
+Drills,Description,VARCHAR(254),False,False,[],VARCHAR(254) NOT NULL,src/Database.sql:246
+Drills,Code,VARCHAR(50),True,False,[],VARCHAR(50),src/Database.sql:247
+LessonDrills,LessonId,INT,False,True,"[{""columns"": [""LessonId""], ""references"": ""Lessons"", ""reference_columns"": [""LessonId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:252
+LessonDrills,DrillId,INT,False,True,"[{""columns"": [""DrillId""], ""references"": ""Drills"", ""reference_columns"": [""DrillId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:253
+LessonDrills,Target,INT,False,False,[],INT NOT NULL,src/Database.sql:254
+PlayerTechniqueMastery,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:261
+PlayerTechniqueMastery,TechniqueId,INT,False,True,"[{""columns"": [""TechniqueId""], ""references"": ""Techniques"", ""reference_columns"": [""TechniqueId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:262
+PlayerTechniqueMastery,TotalAttempts,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:263
+PlayerTechniqueMastery,TotalErrors,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:264
+PlayerTechniqueMastery,MasteryScore,SMALLINT,True,False,[],SMALLINT GENERATED ALWAYS AS ( CASE WHEN TotalAttempts = 0 THEN 0 ELSE CAST(((TotalAttempts - TotalErrors) * 100) / TotalAttempts AS SMALLINT) END ) STORED,src/Database.sql:265
+PlayerTechniqueMastery,LastUpdatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:271
+PlayerTechniquesErrors,ErrorLogId,SERIAL,False,True,[],SERIAL PRIMARY KEY,src/Database.sql:278
+PlayerTechniquesErrors,PlayerId,UUID,False,False,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:279
+PlayerTechniquesErrors,TechniqueId,INT,False,False,"[{""columns"": [""TechniqueId""], ""references"": ""Techniques"", ""reference_columns"": [""TechniqueId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:280
+PlayerTechniquesErrors,MatchId,UUID,True,False,"[{""columns"": [""MatchId""], ""references"": ""MatchHistory"", ""reference_columns"": [""MatchId""], ""on_delete"": ""SET NULL""}]",UUID NULL,src/Database.sql:281
+PlayerTechniquesErrors,LessonId,INT,True,False,"[{""columns"": [""LessonId""], ""references"": ""Lessons"", ""reference_columns"": [""LessonId""], ""on_delete"": ""SET NULL""}]",INT NULL,src/Database.sql:282
+PlayerTechniquesErrors,ErrorType,VARCHAR(50),False,False,[],VARCHAR(50) NOT NULL,src/Database.sql:283
+PlayerTechniquesErrors,CoachingTip,TEXT,False,False,[],TEXT NOT NULL,src/Database.sql:284
+PlayerTechniquesErrors,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:285
+PlayerLessonDrills,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:293
+PlayerLessonDrills,LessonId,INT,False,True,"[{""columns"": [""LessonId""], ""references"": ""Lessons"", ""reference_columns"": [""LessonId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:294
+PlayerLessonDrills,DrillId,INT,False,True,"[{""columns"": [""DrillId""], ""references"": ""Drills"", ""reference_columns"": [""DrillId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL,src/Database.sql:295
+PlayerLessonDrills,Score,INT,False,False,[],INT NOT NULL DEFAULT 0,src/Database.sql:296
+PlayerLessonDrills,IsClaimedReward,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:297
+CosmeticPrices,CosmeticId,INT,False,True,"[{""columns"": [""CosmeticId""], ""references"": ""Cosmetics"", ""reference_columns"": [""CosmeticId""], ""on_delete"": ""CASCADE""}]",INT NOT NULL REFERENCES Cosmetics(CosmeticId) ON DELETE CASCADE,src/Database.sql:310
+CosmeticPrices,CurrencyId,INT,False,True,"[{""columns"": [""CurrencyId""], ""references"": ""Currencies"", ""reference_columns"": [""CurrencyId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL REFERENCES Currencies(CurrencyId),src/Database.sql:311
+CosmeticPrices,Price,INT,False,False,[],INT NOT NULL CHECK(Price >= 0),src/Database.sql:312
+GameProgress,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID PRIMARY KEY REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:316
+GameProgress,Data,JSONB,False,False,[],JSONB NOT NULL DEFAULT '{}'::jsonb,src/Database.sql:317
+GameProgress,Revision,BIGINT,False,False,[],BIGINT NOT NULL DEFAULT 0,src/Database.sql:318
+GameProgress,UpdatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:319
+GameCommands,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:322
+GameCommands,CommandId,VARCHAR(64),False,True,[],VARCHAR(64) NOT NULL,src/Database.sql:323
+GameCommands,Kind,VARCHAR(40),False,False,[],VARCHAR(40) NOT NULL,src/Database.sql:324
+GameCommands,Fingerprint,VARCHAR(64),False,False,[],VARCHAR(64) NOT NULL,src/Database.sql:325
+GameCommands,Result,JSONB,False,False,[],JSONB NOT NULL,src/Database.sql:326
+GameCommands,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:327
+TrainingSessions,AttemptId,UUID,False,True,[],UUID PRIMARY KEY,src/Database.sql:331
+TrainingSessions,PlayerId,UUID,False,False,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:332
+TrainingSessions,LessonId,INT,False,False,"[{""columns"": [""LessonId""], ""references"": ""Lessons"", ""reference_columns"": [""LessonId""], ""on_delete"": ""NO ACTION""}, {""columns"": [""LessonId"", ""DrillId""], ""references"": ""LessonDrills"", ""reference_columns"": [""LessonId"", ""DrillId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL REFERENCES Lessons(LessonId),src/Database.sql:333
+TrainingSessions,DrillId,INT,False,False,"[{""columns"": [""DrillId""], ""references"": ""Drills"", ""reference_columns"": [""DrillId""], ""on_delete"": ""NO ACTION""}, {""columns"": [""LessonId"", ""DrillId""], ""references"": ""LessonDrills"", ""reference_columns"": [""LessonId"", ""DrillId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL REFERENCES Drills(DrillId),src/Database.sql:334
+TrainingSessions,Data,JSONB,False,False,[],JSONB NOT NULL,src/Database.sql:335
+TrainingSessions,Completed,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:336
+TrainingSessions,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:337
+TrainingSessions,UpdatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:338
+AppActivitySessions,SessionId,UUID,False,True,[],UUID PRIMARY KEY,src/Database.sql:344
+AppActivitySessions,PlayerId,UUID,True,False,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:345
+AppActivitySessions,StartedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL,src/Database.sql:346
+AppActivitySessions,ElapsedSeconds,BIGINT,False,False,[],BIGINT NOT NULL DEFAULT 0 CHECK(ElapsedSeconds >= 0),src/Database.sql:347
+AppActivitySessions,CreditedThrough,TIMESTAMPTZ,True,False,[],TIMESTAMPTZ,src/Database.sql:348
+AppActivitySessions,Closed,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:349
+GameMatches,MatchId,UUID,False,True,[],UUID PRIMARY KEY,src/Database.sql:354
+GameMatches,OwnerId,UUID,True,False,"[{""columns"": [""OwnerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""SET NULL""}]",UUID REFERENCES PlayerProfiles(UserId) ON DELETE SET NULL,src/Database.sql:355
+GameMatches,Kind,VARCHAR(32),False,False,[],VARCHAR(32) NOT NULL,src/Database.sql:356
+GameMatches,Status,VARCHAR(20),False,False,[],"VARCHAR(20) NOT NULL DEFAULT 'STARTED' CHECK(Status IN ('STARTED','FINISHED','CANCELLED'))",src/Database.sql:357
+GameMatches,Data,JSONB,False,False,[],JSONB NOT NULL,src/Database.sql:358
+GameMatches,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:359
+GameMatches,UpdatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:360
+GameMatchPlayers,MatchId,UUID,False,True,"[{""columns"": [""MatchId""], ""references"": ""GameMatches"", ""reference_columns"": [""MatchId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES GameMatches(MatchId) ON DELETE CASCADE,src/Database.sql:363
+GameMatchPlayers,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:364
+GameMatchPlayers,Team,SMALLINT,False,False,[],"SMALLINT NOT NULL CHECK(Team IN (0,1))",src/Database.sql:365
+GameMatchPlayers,Accepted,BOOLEAN,False,False,[],BOOLEAN NOT NULL DEFAULT FALSE,src/Database.sql:366
+GameMatchPlayers,Report,JSONB,True,False,[],JSONB,src/Database.sql:367
+GameMatchPlayers,Fingerprint,VARCHAR(64),True,False,[],VARCHAR(64),src/Database.sql:368
+GameMatchPlayers,LastSeenAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:369
+CurrencyTransactions,TransactionId,BIGSERIAL,False,True,[],BIGSERIAL PRIMARY KEY,src/Database.sql:374
+CurrencyTransactions,PlayerId,UUID,False,False,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:375
+CurrencyTransactions,CurrencyId,INT,False,False,"[{""columns"": [""CurrencyId""], ""references"": ""Currencies"", ""reference_columns"": [""CurrencyId""], ""on_delete"": ""NO ACTION""}]",INT NOT NULL REFERENCES Currencies(CurrencyId),src/Database.sql:376
+CurrencyTransactions,CommandId,VARCHAR(64),False,False,[],VARCHAR(64) NOT NULL,src/Database.sql:377
+CurrencyTransactions,Delta,BIGINT,False,False,[],BIGINT NOT NULL,src/Database.sql:378
+CurrencyTransactions,BalanceAfter,BIGINT,False,False,[],BIGINT NOT NULL CHECK(BalanceAfter >= 0),src/Database.sql:379
+CurrencyTransactions,Reason,VARCHAR(80),False,False,[],VARCHAR(80) NOT NULL,src/Database.sql:380
+CurrencyTransactions,CreatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:381
+OnlineReplays,MatchId,UUID,False,True,"[{""columns"": [""MatchId""], ""references"": ""GameMatches"", ""reference_columns"": [""MatchId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES GameMatches(MatchId) ON DELETE CASCADE,src/Database.sql:385
+OnlineReplays,PlayerId,UUID,False,True,"[{""columns"": [""PlayerId""], ""references"": ""PlayerProfiles"", ""reference_columns"": [""UserId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,src/Database.sql:386
+OnlineReplays,ObjectKey,VARCHAR(500),False,False,[],VARCHAR(500) NOT NULL,src/Database.sql:387
+OnlineReplays,Metadata,JSONB,False,False,[],JSONB NOT NULL,src/Database.sql:388
+OnlineReplays,UpdatedAt,TIMESTAMPTZ,False,False,[],TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,src/Database.sql:389
+OnlineReplayChunks,MatchId,UUID,False,True,"[{""columns"": [""MatchId"", ""PlayerId""], ""references"": ""OnlineReplays"", ""reference_columns"": [""MatchId"", ""PlayerId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:393
+OnlineReplayChunks,PlayerId,UUID,False,True,"[{""columns"": [""MatchId"", ""PlayerId""], ""references"": ""OnlineReplays"", ""reference_columns"": [""MatchId"", ""PlayerId""], ""on_delete"": ""CASCADE""}]",UUID NOT NULL,src/Database.sql:394
+OnlineReplayChunks,ChunkIndex,INT,False,True,[],INT NOT NULL CHECK(ChunkIndex>=0 AND ChunkIndex<10000),src/Database.sql:395
+OnlineReplayChunks,ObjectKey,VARCHAR(500),False,False,[],VARCHAR(500) NOT NULL,src/Database.sql:396
+OnlineReplayChunks,ContentHash,VARCHAR(64),False,False,[],VARCHAR(64) NOT NULL,src/Database.sql:397
+OnlineReplayChunks,Metadata,JSONB,False,False,[],JSONB NOT NULL,src/Database.sql:398

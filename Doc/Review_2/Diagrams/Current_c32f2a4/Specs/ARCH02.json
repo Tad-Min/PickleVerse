@@ -1,0 +1,92 @@
+{
+  "id": "ARCH02",
+  "title": "Proposal target with outstanding components",
+  "nodes": [
+    {
+      "id": "clients",
+      "title": "Target clients",
+      "body": [
+        "Unity Windows / Android / iOS",
+        "Admin browser",
+        "Offline drill and sync contract"
+      ],
+      "x": 40,
+      "y": 160,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "trusted",
+      "title": "Target trusted services",
+      "body": [
+        "Dedicated legal match simulation",
+        "JWT backend and result transactions",
+        "Fleet and regional routing"
+      ],
+      "x": 760,
+      "y": 160,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "learning",
+      "title": "Target learning service",
+      "body": [
+        "Initial placement classifier",
+        "Technique classifier and evaluation",
+        "Validated drill recommendation"
+      ],
+      "x": 40,
+      "y": 560,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "ops",
+      "title": "Target operations",
+      "body": [
+        "PostgreSQL / Redis / object store",
+        "Metrics / CI / rollback / backup",
+        "Capacity and availability validation"
+      ],
+      "x": 760,
+      "y": 560,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "clients",
+      "target": "trusted",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "clients",
+      "target": "learning",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "trusted",
+      "target": "ops",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "learning",
+      "target": "ops",
+      "label": "",
+      "dashed": false
+    }
+  ],
+  "kind": "architecture",
+  "note": "Target only. Dedicated simulation, ML evaluation, offline sync and operational guarantees are not claimed as completed.",
+  "width": 1400,
+  "height": 801
+}

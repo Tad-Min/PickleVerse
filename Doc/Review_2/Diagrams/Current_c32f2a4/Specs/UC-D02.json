@@ -1,0 +1,130 @@
+{
+  "id": "UC-D02",
+  "title": "User goals UC07 to UC12",
+  "nodes": [
+    {
+      "id": "player",
+      "title": "Player",
+      "body": [],
+      "x": 30,
+      "y": 300,
+      "w": 200,
+      "h": 150,
+      "shape": "actor"
+    },
+    {
+      "id": "UC07",
+      "title": "UC07 Practice doubles positioning and movement",
+      "body": [
+        "F03 / Player"
+      ],
+      "x": 310,
+      "y": 175,
+      "w": 490,
+      "h": 185,
+      "shape": "ellipse"
+    },
+    {
+      "id": "UC08",
+      "title": "UC08 Review a completed drill without reward",
+      "body": [
+        "F03 / Player"
+      ],
+      "x": 845,
+      "y": 175,
+      "w": 490,
+      "h": 185,
+      "shape": "ellipse"
+    },
+    {
+      "id": "UC09",
+      "title": "UC09 Inspect progress and resume learning",
+      "body": [
+        "F11 / Player"
+      ],
+      "x": 310,
+      "y": 400,
+      "w": 490,
+      "h": 185,
+      "shape": "ellipse"
+    },
+    {
+      "id": "UC10",
+      "title": "UC10 Play a configurable bot match",
+      "body": [
+        "F05 / Player"
+      ],
+      "x": 845,
+      "y": 400,
+      "w": 490,
+      "h": 185,
+      "shape": "ellipse"
+    },
+    {
+      "id": "UC11",
+      "title": "UC11 Move sprint and execute shots",
+      "body": [
+        "F06 / Player"
+      ],
+      "x": 310,
+      "y": 625,
+      "w": 490,
+      "h": 185,
+      "shape": "ellipse"
+    },
+    {
+      "id": "UC12",
+      "title": "UC12 Pause request timeout and leave",
+      "body": [
+        "F06 / Player"
+      ],
+      "x": 845,
+      "y": 625,
+      "w": 490,
+      "h": 185,
+      "shape": "ellipse"
+    }
+  ],
+  "edges": [
+    {
+      "source": "player",
+      "target": "UC07",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "player",
+      "target": "UC08",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "player",
+      "target": "UC09",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "player",
+      "target": "UC10",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "player",
+      "target": "UC11",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "player",
+      "target": "UC12",
+      "label": "",
+      "dashed": false
+    }
+  ],
+  "kind": "usecase",
+  "note": "Goals are traceable to the SRS detailed specifications. Target/partial requirements are not claimed to be implemented.",
+  "width": 1400,
+  "height": 900
+}

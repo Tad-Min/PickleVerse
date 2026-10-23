@@ -1,0 +1,60 @@
+{
+  "id": "SM08",
+  "title": "Reward and command ledger",
+  "nodes": [
+    {
+      "id": "Ineligible",
+      "title": "Ineligible",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Eligible",
+      "title": "Eligible",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Claimed",
+      "title": "Claimed",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Ineligible",
+      "target": "Eligible",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "Eligible",
+      "target": "Claimed",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "Claimed",
+      "target": "Ineligible",
+      "label": "5",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Derived lifecycle/guard model; do not equate labels with a database enum. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 345
+}

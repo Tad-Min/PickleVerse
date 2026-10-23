@@ -1,0 +1,10 @@
+stateDiagram-v2
+    %% GAME-SM04 - Training attempt outcome
+    %% Source definition: My project/Assets/Scripts/Progression/TrainingModels.cs:49
+    New --> Active: TrainingEngine.Start
+    Active --> CompletedPassed: Complete
+    Active --> CompletedFailed: Complete
+    CompletedPassed --> Applied: Completion transaction
+    CompletedPassed --> Applied: Review completion
+    CompletedFailed --> Applied: Completion transaction
+    Active --> Active: Reject Complete

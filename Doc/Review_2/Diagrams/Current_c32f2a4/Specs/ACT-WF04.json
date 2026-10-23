@@ -1,0 +1,152 @@
+{
+  "id": "ACT-WF04",
+  "title": "WF04 Create a private team match",
+  "nodes": [
+    {
+      "id": "start",
+      "title": "Trigger",
+      "body": [
+        "Actor: Room host, Invited player"
+      ],
+      "x": 180,
+      "y": 145,
+      "w": 1000,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "step1",
+      "title": "1 Find a friend or share room code",
+      "body": [
+        "Responsibility: Host/guest and social or room code"
+      ],
+      "x": 180,
+      "y": 315,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step2",
+      "title": "2 Create selected room mode",
+      "body": [
+        "Responsibility: Host and Photon room"
+      ],
+      "x": 180,
+      "y": 485,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step3",
+      "title": "3 Join and assign valid teams",
+      "body": [
+        "Responsibility: Guest and Photon room"
+      ],
+      "x": 180,
+      "y": 655,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step4",
+      "title": "4 Confirm ready roster and start",
+      "body": [
+        "Responsibility: Host and canonical ready API"
+      ],
+      "x": 180,
+      "y": 825,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step5",
+      "title": "5 Finish and inspect authorized statistics",
+      "body": [
+        "Responsibility: Participants and result API"
+      ],
+      "x": 180,
+      "y": 995,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "end",
+      "title": "Business outcome",
+      "body": [
+        "A coded room starts with the declared 1v1 or 2v2 roster."
+      ],
+      "x": 180,
+      "y": 1165,
+      "w": 1000,
+      "h": 130,
+      "shape": "box"
+    },
+    {
+      "id": "exception",
+      "title": "Exception path",
+      "body": [
+        "Wrong/full room or unauthorized team/start command is rejected; the room stays",
+        "consistent.",
+        "Reject mutation; preserve state; show retry or policy outcome."
+      ],
+      "x": 180,
+      "y": 1335,
+      "w": 1000,
+      "h": 190,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "start",
+      "target": "step1",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step1",
+      "target": "step2",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step2",
+      "target": "step3",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step3",
+      "target": "step4",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step4",
+      "target": "step5",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step5",
+      "target": "end",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step2",
+      "target": "exception",
+      "label": "failure",
+      "dashed": true
+    }
+  ],
+  "kind": "activity",
+  "note": "Owner slot M3 is proposed, not a named commitment. Actors are identified in the trigger; API/service responsibilities are internal.",
+  "width": 1400,
+  "height": 1615
+}

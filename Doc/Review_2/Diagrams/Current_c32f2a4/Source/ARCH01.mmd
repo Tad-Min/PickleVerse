@@ -1,0 +1,8 @@
+flowchart LR
+  Unity["Unity uGUI client"] -->|"REST JWT"| API["ASP.NET Core net10 API"]
+  Unity -->|"commands and snapshots"| Fusion["Photon Fusion Shared peer authority"]
+  Web["React admin contract gap"] --> API
+  API --> PG["PostgreSQL durable state"]
+  API --> Redis["Redis queue and cache"]
+  API --> SMTP["SMTP OTP"]
+  API --> S3["S3 replay payload"]

@@ -1,0 +1,41 @@
+erDiagram
+  PlayerProfiles {
+    UUID UserId PK,FK "required"
+    VARCHAR_80 Avatar "required"
+    VARCHAR_18 PlayerName "required"
+    INT Elo "required"
+    BOOLEAN IsMale "required"
+    BIGINT TimePlayedSeconds "required"
+    INT Level "required"
+    INT Exp "required"
+    INT WinStreak "required"
+    INT DayStreak "required"
+    INT WinCount "required"
+    INT LoseCount "required"
+  }
+  Users ||--o| PlayerProfiles : "UserId"
+  GameProgress {
+    UUID PlayerId PK,FK "required"
+    JSONB Data "required"
+    BIGINT Revision "required"
+    TIMESTAMPTZ UpdatedAt "required"
+  }
+  PlayerProfiles ||--o| GameProgress : "PlayerId"
+  GameCommands {
+    UUID PlayerId PK,FK "required"
+    VARCHAR_64 CommandId PK "required"
+    VARCHAR_40 Kind "required"
+    VARCHAR_64 Fingerprint "required"
+    JSONB Result "required"
+    TIMESTAMPTZ CreatedAt "required"
+  }
+  PlayerProfiles ||--o{ GameCommands : "PlayerId"
+  AppActivitySessions {
+    UUID SessionId PK "required"
+    UUID PlayerId FK "nullable"
+    TIMESTAMPTZ StartedAt "required"
+    BIGINT ElapsedSeconds "required"
+    TIMESTAMPTZ CreditedThrough "nullable"
+    BOOLEAN Closed "required"
+  }
+  PlayerProfiles |o--o{ AppActivitySessions : "PlayerId"

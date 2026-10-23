@@ -1,0 +1,40 @@
+@startuml UC-08a
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam packageStyle rectangle
+skinparam usecase {
+  BorderColor #314C68
+  FontColor #102333
+}
+skinparam actor {
+  BorderColor #314C68
+  FontColor #102333
+}
+title UC-08a - Backend identity and profiles
+actor "Registered API user" as A_registered
+actor "Prospective player" as A_prospective
+actor "Public API viewer" as A_publicviewer
+rectangle "Independent backend API / partial source" {
+  usecase "BUC-01\nRegister and verify a player account\n<<PARTIAL BACKEND SOURCE>>" as BUC_01 #FFF1D6
+  usecase "BUC-02\nAuthenticate and maintain a secure player session\n<<PARTIAL BACKEND SOURCE>>" as BUC_02 #FFF1D6
+  usecase "BUC-03\nView own or another player profile\n<<PARTIAL BACKEND SOURCE>>" as BUC_03 #FFF1D6
+  usecase "BUC-04\nEdit player profile and record play duration\n<<PARTIAL BACKEND SOURCE>>" as BUC_04 #FFF1D6
+  usecase "BUC-05\nView the Elo leaderboard\n<<PARTIAL BACKEND SOURCE>>" as BUC_05 #FFF1D6
+}
+A_prospective -- BUC_01
+A_registered -- BUC_02
+A_registered -- BUC_03
+A_publicviewer -- BUC_03
+A_registered -- BUC_04
+A_registered -- BUC_05
+A_publicviewer -- BUC_05
+legend bottom
+  Green: source implemented; amber: partial / integration gap.
+  Purple: demo fixtures only; red: target with no game evidence.
+  Grey isolated use case: outside baseline; no implemented actor path.
+  Source coverage is not runtime acceptance or review approval.
+endlegend
+@enduml

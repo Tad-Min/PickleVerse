@@ -1,0 +1,40 @@
+@startuml UC-05
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam packageStyle rectangle
+skinparam usecase {
+  BorderColor #314C68
+  FontColor #102333
+}
+skinparam actor {
+  BorderColor #314C68
+  FontColor #102333
+}
+title UC-05 - Progression, history and replay
+actor "Player" as A_player
+rectangle "PickleVerse game / Progression, history and replay" {
+  usecase "G-UC40\nInspect profile, XP, level and match totals\n<<SOURCE IMPLEMENTED>>" as G_UC40 #E7F3EC
+  usecase "G-UC41\nView achievements and claim each reward once\n<<SOURCE IMPLEMENTED>>" as G_UC41 #E7F3EC
+  usecase "G-UC42\nTrack daily or weekly missions and claim\n<<SOURCE IMPLEMENTED>>" as G_UC42 #E7F3EC
+  usecase "G-UC43\nTrack the daily play streak\n<<PARTIAL / INTEGRATION GAP>>" as G_UC43 #FFF1D6
+  usecase "G-UC44\nInspect the latest twenty match records\n<<SOURCE IMPLEMENTED>>" as G_UC44 #E7F3EC
+  usecase "G-UC45\nRecord a local or online replay\n<<SOURCE IMPLEMENTED>>" as G_UC45 #E7F3EC
+  usecase "G-UC46\nPlay, pause, seek or change replay speed\n<<SOURCE IMPLEMENTED>>" as G_UC46 #E7F3EC
+}
+A_player -- G_UC40
+A_player -- G_UC41
+A_player -- G_UC42
+A_player -- G_UC43
+A_player -- G_UC44
+A_player -- G_UC45
+A_player -- G_UC46
+legend bottom
+  Green: source implemented; amber: partial / integration gap.
+  Purple: demo fixtures only; red: target with no game evidence.
+  Grey isolated use case: outside baseline; no implemented actor path.
+  Source coverage is not runtime acceptance or review approval.
+endlegend
+@enduml

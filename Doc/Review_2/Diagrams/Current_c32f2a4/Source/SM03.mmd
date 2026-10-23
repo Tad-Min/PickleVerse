@@ -1,0 +1,13 @@
+stateDiagram-v2
+  state "Ready" as S0
+  state "Active" as S1
+  state "Completed" as S2
+  state "Abandoned" as S3
+  [*] --> S0
+  S0 --> S1: 1 server attempt start
+  S1 --> S1: 2 valid checkpoint
+  S1 --> S2: 3 full valid trials submitted
+  S1 --> S3: 4 leave/replaced attempt
+  S1 --> S1: 5 reject foreign/non-monotonic trial
+  S2 --> S2: 6 idempotent completion/review has no first reward
+  S3 --> [*]

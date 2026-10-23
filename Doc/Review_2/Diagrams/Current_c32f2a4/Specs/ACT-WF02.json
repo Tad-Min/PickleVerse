@@ -1,0 +1,152 @@
+{
+  "id": "ACT-WF02",
+  "title": "WF02 Practice against an adaptive bot",
+  "nodes": [
+    {
+      "id": "start",
+      "title": "Trigger",
+      "body": [
+        "Actor: Player"
+      ],
+      "x": 180,
+      "y": 145,
+      "w": 1000,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "step1",
+      "title": "1 Choose bot difficulty and court",
+      "body": [
+        "Responsibility: Player and Unity mode setup"
+      ],
+      "x": 180,
+      "y": 315,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step2",
+      "title": "2 Run entry cinematic",
+      "body": [
+        "Responsibility: Unity camera and actors"
+      ],
+      "x": 180,
+      "y": 485,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step3",
+      "title": "3 Play serve and rally with legal inputs",
+      "body": [
+        "Responsibility: Player and Unity rules"
+      ],
+      "x": 180,
+      "y": 655,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step4",
+      "title": "4 Resolve points and match end",
+      "body": [
+        "Responsibility: Unity rules and result API"
+      ],
+      "x": 180,
+      "y": 825,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "step5",
+      "title": "5 Wait for end notice then show player result and statistics",
+      "body": [
+        "Responsibility: Unity player result presentation"
+      ],
+      "x": 180,
+      "y": 995,
+      "w": 1000,
+      "h": 115,
+      "shape": "box"
+    },
+    {
+      "id": "end",
+      "title": "Business outcome",
+      "body": [
+        "The player receives a legal match result and coaching evidence."
+      ],
+      "x": 180,
+      "y": 1165,
+      "w": 1000,
+      "h": 130,
+      "shape": "box"
+    },
+    {
+      "id": "exception",
+      "title": "Exception path",
+      "body": [
+        "Illegal kitchen/serve action is penalized; an aborted/unverified result cannot",
+        "award a duplicate reward.",
+        "Reject mutation; preserve state; show retry or policy outcome."
+      ],
+      "x": 180,
+      "y": 1335,
+      "w": 1000,
+      "h": 190,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "start",
+      "target": "step1",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step1",
+      "target": "step2",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step2",
+      "target": "step3",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step3",
+      "target": "step4",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step4",
+      "target": "step5",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step5",
+      "target": "end",
+      "label": "",
+      "dashed": false
+    },
+    {
+      "source": "step2",
+      "target": "exception",
+      "label": "failure",
+      "dashed": true
+    }
+  ],
+  "kind": "activity",
+  "note": "Owner slot M2 is proposed, not a named commitment. Actors are identified in the trigger; API/service responsibilities are internal.",
+  "width": 1400,
+  "height": 1615
+}

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1041" viewBox="0 0 1400 1041">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="1041" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ERD04  Current SQL schema 4</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.</text>
+<path d="M1040.0,344 V602.5 H250.0 V861" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M730,239.5 H695.0 V239.5 H660" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M350.0,686 V773.5 H250.0 V861" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,686 V773.5 H250.0 V861" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,419 V381.5 H350.0 V344" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1040.0,419 V381.5 H350.0 V344" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="135" width="620" height="209" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">MatchHistory</text>
+<text x="62" y="202" font-family="Arial" font-size="23" fill="#222c39">PK MatchId: UUID</text>
+<text x="62" y="231" font-family="Arial" font-size="23" fill="#222c39">CreatedAt: TIMESTAMPTZ</text>
+<text x="62" y="260" font-family="Arial" font-size="23" fill="#222c39">MatchType: VARCHAR(25)</text>
+<text x="62" y="289" font-family="Arial" font-size="23" fill="#222c39">TeamAScore: INT</text>
+<text x="62" y="318" font-family="Arial" font-size="23" fill="#222c39">TeamBScore: INT</text>
+<rect x="730" y="135" width="620" height="209" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerMatchHistory</text>
+<text x="752" y="202" font-family="Arial" font-size="23" fill="#222c39">PK FK PlayerId: UUID</text>
+<text x="752" y="231" font-family="Arial" font-size="23" fill="#222c39">PK FK MatchId: UUID</text>
+<text x="752" y="260" font-family="Arial" font-size="23" fill="#222c39">Status: VARCHAR(25)</text>
+<text x="752" y="289" font-family="Arial" font-size="23" fill="#222c39">IsTeamA: BOOLEAN</text>
+<text x="752" y="318" font-family="Arial" font-size="23" fill="#222c39">ReceivedElo: INT</text>
+<rect x="40" y="419" width="620" height="267" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="457" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">ReportPlayerInMatch</text>
+<text x="62" y="486" font-family="Arial" font-size="23" fill="#222c39">PK FK ReporterId: UUID</text>
+<text x="62" y="515" font-family="Arial" font-size="23" fill="#222c39">PK FK ReportedPlayerId: UUID</text>
+<text x="62" y="544" font-family="Arial" font-size="23" fill="#222c39">PK FK MatchId: UUID</text>
+<text x="62" y="573" font-family="Arial" font-size="23" fill="#222c39">Reason: VARCHAR(254)</text>
+<text x="62" y="602" font-family="Arial" font-size="23" fill="#222c39">Status: VARCHAR(20)</text>
+<text x="62" y="631" font-family="Arial" font-size="23" fill="#222c39">CreatedAt: TIMESTAMPTZ</text>
+<text x="62" y="660" font-family="Arial" font-size="23" fill="#222c39">UpdatedAt: TIMESTAMPTZ</text>
+<rect x="730" y="419" width="620" height="122" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="457" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">MatchHistoryReplay</text>
+<text x="752" y="486" font-family="Arial" font-size="23" fill="#222c39">PK FK MatchId: UUID</text>
+<text x="752" y="515" font-family="Arial" font-size="23" fill="#222c39">ReplayUrl: VARCHAR(1000)</text>
+<rect x="40" y="861" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="899" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerProfiles</text>
+<text x="62" y="928" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="62" y="957" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+</svg>

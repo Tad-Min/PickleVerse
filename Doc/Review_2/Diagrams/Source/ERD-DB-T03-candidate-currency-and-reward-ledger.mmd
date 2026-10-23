@@ -1,0 +1,42 @@
+%% ERD-DB-T03: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    currencies {
+        varchar_24 currency_code PK "NOT NULL"
+        varchar_80 display_name "NOT NULL"
+        boolean is_premium "NOT NULL"
+    }
+    reward_grants {
+        uuid reward_grant_id PK "NOT NULL"
+        uuid user_id FK "NOT NULL"
+        varchar_180 grant_key "NOT NULL"
+        varchar_32 source_kind "NOT NULL"
+        bigint xp_amount "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    player_wallets {
+        uuid user_id PK,FK "NOT NULL"
+        varchar_24 currency_code PK,FK "NOT NULL"
+        bigint balance "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    wallet_transactions {
+        uuid wallet_transaction_id PK "NOT NULL"
+        uuid user_id FK "NOT NULL"
+        varchar_24 currency_code FK "NOT NULL"
+        varchar_180 request_key "NOT NULL"
+        bigint amount "NOT NULL"
+        bigint balance_after "NOT NULL"
+        varchar_120 reason "NOT NULL"
+        uuid reward_grant_id FK "NULL allowed"
+        timestamptz created_at "NOT NULL"
+    }
+    app_users {
+        uuid user_id PK "NOT NULL; reference only"
+    }
+    app_users ||--o{ reward_grants : "user_id"
+    app_users ||--o{ player_wallets : "user_id"
+    currencies ||--o{ player_wallets : "currency_code"
+    player_wallets ||--o{ wallet_transactions : "user_id,currency_code"
+    reward_grants |o--o{ wallet_transactions : "reward_grant_id,user_id"

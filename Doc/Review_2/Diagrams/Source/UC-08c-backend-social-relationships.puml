@@ -1,0 +1,30 @@
+@startuml UC-08c
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam packageStyle rectangle
+skinparam usecase {
+  BorderColor #314C68
+  FontColor #102333
+}
+skinparam actor {
+  BorderColor #314C68
+  FontColor #102333
+}
+title UC-08c - Backend social relationships
+actor "Registered API user" as A_registered
+rectangle "Independent backend API / partial source" {
+  usecase "BUC-11\nRequest and respond to friendship\n<<PARTIAL BACKEND SOURCE>>" as BUC_11 #FFF1D6
+  usecase "BUC-12\nView and manage friends or block a player\n<<PARTIAL BACKEND SOURCE>>" as BUC_12 #FFF1D6
+}
+A_registered -- BUC_11
+A_registered -- BUC_12
+legend bottom
+  Green: source implemented; amber: partial / integration gap.
+  Purple: demo fixtures only; red: target with no game evidence.
+  Grey isolated use case: outside baseline; no implemented actor path.
+  Source coverage is not runtime acceptance or review approval.
+endlegend
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+actor "Player" as Player
+actor "Administrator" as Admin
+rectangle "PickleVerse" {
+  usecase "UC19\nRecover or resolve an interrupted match" as UC19
+  usecase "UC20\nReport a result and inspect rating" as UC20
+  usecase "UC21\nRead personal statistics history and replay" as UC21
+  usecase "UC22\nRecord and upload a replay" as UC22
+  usecase "UC23\nManage friends" as UC23
+  usecase "UC24\nRead global Elo standings" as UC24
+}
+Player --> UC19
+Player --> UC20
+Player --> UC21
+Player --> UC22
+Player --> UC23
+Player --> UC24
+@enduml

@@ -1,0 +1,238 @@
+{
+  "id": "ERD00",
+  "title": "Relational data domains at the pulled revision",
+  "nodes": [
+    {
+      "id": "d0",
+      "title": "Identity and tokens",
+      "body": [
+        "Roles / Users / RefreshTokens /",
+        "VerificationEmail"
+      ],
+      "x": 40,
+      "y": 150,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d1",
+      "title": "Player state and commands",
+      "body": [
+        "PlayerProfiles / GameProgress /",
+        "GameCommands /",
+        "AppActivitySessions"
+      ],
+      "x": 505,
+      "y": 150,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d2",
+      "title": "Social relationships",
+      "body": [
+        "FriendRequests / Friendships /",
+        "BlockedUsers"
+      ],
+      "x": 970,
+      "y": 150,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d3",
+      "title": "Historical results",
+      "body": [
+        "MatchHistory /",
+        "PlayerMatchHistory /",
+        "ReportPlayerInMatch /",
+        "MatchHistoryReplay"
+      ],
+      "x": 40,
+      "y": 360,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d4",
+      "title": "Wallet and ledger",
+      "body": [
+        "Currencies / PlayerCurrencies /",
+        "CurrencyTransactions"
+      ],
+      "x": 505,
+      "y": 360,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d5",
+      "title": "Cosmetic ownership",
+      "body": [
+        "Cosmetics / CosmeticPrices /",
+        "PlayerCosmetics"
+      ],
+      "x": 970,
+      "y": 360,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d6",
+      "title": "Achievements and missions",
+      "body": [
+        "Achievements /",
+        "PlayerAchievements / Missions /",
+        "PlayerMissions"
+      ],
+      "x": 40,
+      "y": 570,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d7",
+      "title": "Learning catalog",
+      "body": [
+        "Techniques / Drills / Lessons /",
+        "LessonDrills"
+      ],
+      "x": 505,
+      "y": 570,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d8",
+      "title": "Attempts and mastery",
+      "body": [
+        "PlayerTechniqueMastery /",
+        "PlayerTechniquesErrors /",
+        "PlayerLessonDrills /",
+        "TrainingSessions"
+      ],
+      "x": 970,
+      "y": 570,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d9",
+      "title": "Canonical online match",
+      "body": [
+        "GameMatches / GameMatchPlayers"
+      ],
+      "x": 40,
+      "y": 780,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    },
+    {
+      "id": "d10",
+      "title": "Online replay storage",
+      "body": [
+        "OnlineReplays /",
+        "OnlineReplayChunks"
+      ],
+      "x": 505,
+      "y": 780,
+      "w": 420,
+      "h": 155,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "d1",
+      "target": "d0",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d10",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d10",
+      "target": "d9",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d2",
+      "target": "d0",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d3",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d4",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d5",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d5",
+      "target": "d4",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d6",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d8",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d8",
+      "target": "d3",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d8",
+      "target": "d7",
+      "label": "FK",
+      "dashed": false
+    },
+    {
+      "source": "d9",
+      "target": "d1",
+      "label": "FK",
+      "dashed": false
+    }
+  ],
+  "kind": "erd",
+  "note": "Arrows point from referencing to referenced domain. This overview omits attributes; ERD01–11 and the CSV are complete.",
+  "width": 1400,
+  "height": 1025
+}

@@ -1,0 +1,1406 @@
+{
+  "head": "c32f2a4c0a546d0ed4f0df1b2c97e185ed831fb6",
+  "baseline": "d44e8c063d837442dab9bc3ecc29eed7cc929cfa",
+  "method": "Static inspection only. No Unity, build, tests, service/database/cloud calls or source edits.",
+  "counts": {
+    "tables": 37,
+    "columns": 208,
+    "foreign_keys": 54,
+    "ef_models": 27,
+    "controllers": 14,
+    "endpoints": 81,
+    "candidate_tables": 71
+  },
+  "changed_source_hashes": [
+    {
+      "status": "A",
+      "path": "Doc/PickleVerse_Project_Documentation.md",
+      "sha256": "efd17c2514465ae7e0753d7e227f3316d4c74af143b2eb8d888a17246f0e11ce"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Editor/MultiplayerBuildValidation.cs",
+      "sha256": "36bc50b34583ac1463e231d3566e2b49da83aa38cc24476b4d6f00afd52babb8"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Editor/MultiplayerCloudSetup.cs",
+      "sha256": "07d248330c2bfaa44391da5efd360582552d4e2989eb6c4534d93dea1c331514"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Editor/PhotonSetup/PhotonCloudCheck.cs",
+      "sha256": "a0d4be40f8ac0e2893dce65bde0e6032615b1ca971f57be63751a622766814d3"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Editor/PhotonSetup/PhotonProjectSetup.cs",
+      "sha256": "98d365ff797203ea3a45fe5c44a52516c1250f1de4ecc182c1f9f7f027ebfff1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Editor/PhotonSetup/PhotonReadyCheck.cs",
+      "sha256": "01cbd9d352e4c2e7f9d9adf58fb933f32ba9c823831c250b7fc3de87bebe1f41"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Editor/PhotonSetup/PickleVerse.PhotonSetup.Editor.asmdef",
+      "sha256": "6cc518e17b4abeb1b27d12be5780ef39e5b6103e13dd203f1394e5f2d364444e"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Editor/PickleVerse.Multiplayer.Editor.asmdef",
+      "sha256": "01e10cdc625943ca3a8a77c943791e1fddcd7df8ac52772fc1ec4e2a16448d19"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Editor/PipelineDisconnectWorkaround.cs",
+      "sha256": "6afa014a16c2cabaf8c555181af4e47741441bddb5cca15853e98363e3941bec"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Editor/PlayMultiplayerNetworkProbe.cs",
+      "sha256": "ee6a407d028f925405070db55d84e4396cb623087734adbf54e9df5113468be9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.User.cs",
+      "sha256": "586c5502b50c4bd32f4d24636baeb885bf8677f94a3f1cf7677cc98cee87e07c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.asmdef",
+      "sha256": "dc871c7f811e41204214ae9ddd2a303fa43f821667786498e5a7f5de1d5d6ccc"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.cs",
+      "sha256": "08d5c86f5ae472c550329f9192d1bd3d1d825dd86f2b0967c815b95586024d40"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/Fusion.Unity.Editor.AssemblyAttributes.cs",
+      "sha256": "488dfd560c57b59b29641e77843b83f85f2ed22d8bb0c94f5534f7ce519fe558"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/Fusion.Unity.Editor.asmdef",
+      "sha256": "589fdea5a48f830bd5de3a834d5601474b98ecdf8bcbdb0996c7f63039e4bcf1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/Fusion.Unity.Editor.cs",
+      "sha256": "96b6784234b696ef4bf4c77776ea868e08f781b6bc2a3b63b7471526bf9ab172"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionEditorAssetLibrary.cs",
+      "sha256": "5f7839cfb4b21b61c8c3bb4db3037c4dc87ddc3def29328a0badc34637472c86"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionEditorHubModeSelectionWindow.cs",
+      "sha256": "9c71a9137c72929ee93bfe804ac87552e5d41445f819f9c353fdf5ee6d100610"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionEditorHubPageSO.cs",
+      "sha256": "372a5506868e18f16e54636a9912248a06121893b3b41f880f0883fa9289ec27"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionEditorHubWindow.cs",
+      "sha256": "ccc51c90b83fc089ac76db18ece12b296373ef9d339597fbd2d366675bfe343c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionEditorHubWindowSdk.cs",
+      "sha256": "2b8436a315b0e3e63decf4ebe5a7890ec7b1949247dd3fa37414509f477d1fef"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionEditorSkin.cs",
+      "sha256": "1d29c7658ace4106907dedd1d2e2aabfa0df77c1d718aab64ea2f9f52fd99f51"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionHubWindow.cs",
+      "sha256": "cca99078cd9e18dcad4a32c393b6c5555a94f291ffa53faa9533c874f95b5894"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionPluginProjectSettings.cs",
+      "sha256": "e60122e0867b9528ce7d311e83114afb7a5b76e47b9e4bfb869c88c8f0b5cab9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionRunnerVisibilityControlsWindow.cs",
+      "sha256": "1eed4b0d924070c89239225eb1f5a9dbbfa7276c766d218e5a22d9e6fb1ee15e"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/FusionWeaverTriggerImporter.cs",
+      "sha256": "b663421978c0668fc162a6739340e5ba775e644554dc91cf9c6ccc457be5a90b"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/NetworkPrefabsInspector.cs",
+      "sha256": "1507c640a1b1b2056ff74f9164075fb9612de9650b563f6cd410933e2491bacf"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/NetworkProjectConfigImporter.cs",
+      "sha256": "0d9b8ea3eab671fccc1ceab9680adc412867f8a0855fedef0226c645090c8b3e"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Editor/NetworkProjectConfigImporterEditor.cs",
+      "sha256": "d3849eee5c8fe632426a96a3f9fda58de03dffedba80c3d2fcaae96cb7e91843"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Fusion.Unity.AssemblyAttributes.cs",
+      "sha256": "f7aecd25d6c60009f695d1af5091a5886ad212af952d59c1128330b9a0d40da9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Fusion.Unity.asmdef",
+      "sha256": "f9e9677976489f4b8ccc839ce7edfc5568243bebfa0b79a7d988ea9552646332"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Fusion.Unity.cs",
+      "sha256": "d10f8530f2a58e9085360cb8acfe56d66844daf8dd6b10691a36fb50f8a7a6d5"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/FusionAddressablePrefabsPreloader.cs",
+      "sha256": "b6082d4497b6ef46ebf630f65aee993b19c3ae76f6caf025cfddae17ab95d06c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/FusionBasicBillboard.cs",
+      "sha256": "6df6517ccd9b0dee265aed2f0173942dc6bddc3c60ca70238362be59f336ab83"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/FusionBootstrap.cs",
+      "sha256": "65c643318e6f77cb908614568aedc9f8e1669fec87507c65e66b83cf88fb5a53"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/FusionBootstrapDebugGUI.cs",
+      "sha256": "14e6d905e347cf2f180af026f12c009553cbbd144d316913722906fcbb3c2556"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/FusionMenuSceneInfo.cs",
+      "sha256": "ac85906970fd98822761d3720bb0a2e5e1869c6a97dc70f641d179d41c9e4cf8"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/NetworkCharacterController.cs",
+      "sha256": "9bcbe3aad95884ece9c7b6032be4efe4f9edd7d9f4e85c143f3777b8a5eae714"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/NetworkObjectProviderDefault.cs",
+      "sha256": "23af9ec73f1ec7edd27242a2c740a07aa87e3003e23609f0b312cda0883ab739"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/NetworkSceneManagerDefault.cs",
+      "sha256": "3c6d238f5c1572c112f1e65212f132c583c78c8f9ad50262d207cbc368a2eb6b"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionBehaviourStatisticsPage.cs",
+      "sha256": "c24ad45dce4557cf8ce0a7660cde79b9b72bff2aa84a24d48f5ee6425802e316"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionBehaviourStats.cs",
+      "sha256": "86bcf78a3679a9e215547a6d48e38d1c81b93cdcc3917c3bee54ca167826cee3"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatistics.cs",
+      "sha256": "9bf532f06ea054ee73bfff06727ec3c8e474a9c68cc1867ce18deedf4f209cab"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsConfig.cs",
+      "sha256": "e2a25f57c39884f3561813c57ddbe3095cb06b4de9bba22b8542816c932743c0"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsForecastObjectPage.cs",
+      "sha256": "33c43356baa793de1bf1ed0ced6bca3bd76a6dc84c44b35d71018f0088d6075f"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsForecastObjectStats.cs",
+      "sha256": "a246a8b3307e80ffdc6adfde6f9f77d5d9ffc9c531ee562f8d6cbf8ce2a7de29"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsMemoryPage.cs",
+      "sha256": "db4318d47bc5f0ca7c40f6941a4d4be462cdb370656fb19cb919219479a1edbf"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsNetworkObjectPage.cs",
+      "sha256": "d1726b41939b04c1707e59ad46e6c29943f3ae42da1a8d4746d784c5e60f4f9f"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsNetworkObjectStats.cs",
+      "sha256": "7b8dca85de1b0a1fe7cee6eb593f52f5eaba2f14797da5118b9ea3c9c96704d0"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsNetworkPage.cs",
+      "sha256": "53d17c3ed3544ce43ad93611c80fdc6f17599b8777b1dd98eba3922bbbafaca1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsRoot.cs",
+      "sha256": "ff4a55e45a0e7dc44ed8d320e800cb42396c31cf71e9f34d080247d0115c4086"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsSimulationPage.cs",
+      "sha256": "fdc2dd07fc1ca64779ae4a3245bea20d4121b6a7ddc582e99e789046d873cc0c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/LagCompensationStatisticsPage.cs",
+      "sha256": "707e0956f2a60ecff7dad9d58061ddf24d34ffb47bdd04c1388f1b6afb689700"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/LineChart.cs",
+      "sha256": "145fb4285dd2eda2ec8ffc191d81496815f940ec86c56d7649a01858beb36938"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/MultilineGraph.cs",
+      "sha256": "746659428de99031eedf42667195110768786071214447e2648392bb534f0ff9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/MultilineGraphLegendItem.cs",
+      "sha256": "12494293330955f7ae250dd41e2a525e4d2680c88fe1b5d3549f6e79779099d9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/MultipleOptionsPanel.cs",
+      "sha256": "8486cef8f13b07038a9de89216835b3d3e29fae9df97d8bf1405293d8a842b64"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/RadialChart.cs",
+      "sha256": "e8cfddea51d81a9db93aeef1378e2a4819e2673db9eddcd32f060d4f870e0ca1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Statistics/Scripts/TimeStatisticsPage.cs",
+      "sha256": "ee05bd8aa8e43dad958724f5c33e65239b1677ea5869243e8b0c9e27d39fd3be"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Utilities/RunnerVisibility/EnableOnSingleRunner.cs",
+      "sha256": "d939bb8cb1774bed82581c45fd5d7b87f4d3657d948e2c02fb438ca528e66daa"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Utilities/RunnerVisibility/RunnerAOIGizmos.cs",
+      "sha256": "eed3b7c1acb71811913a9c62ef51c37c29abbc8e8f4ca181a096fdba2e79e764"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Utilities/RunnerVisibility/RunnerEnableVisibility.cs",
+      "sha256": "6665e2de7aa4e555877032c22aba8e5d0024af053b99e2cf310365a1373671d9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Utilities/RunnerVisibility/RunnerLagCompensationGizmos.cs",
+      "sha256": "759910f0d5c95fcaa8eb7e432a29a9546cfb2499ab005e6ae6c6691ae31cab1f"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Utilities/RunnerVisibility/RunnerVisibilityLink.cs",
+      "sha256": "d4bea7a36e6035dbfc5bba6cdd43e1a900ec3d63637a0b625122b8f641bc1b68"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/Runtime/Utilities/RunnerVisibility/RunnerVisibilityLinksRoot.cs",
+      "sha256": "50f6ec61299e0aff45312ab41be6ba2e109bd743c3d7e8dacbdd6144caffd7d0"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/Fusion/package.json",
+      "sha256": "dc5c143df0b9cb7cb27442c0a66493a18a86dbfbf6b45265187534b75d9f285f"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonLibs/WebSocket/PhotonWebSocket.asmdef",
+      "sha256": "869212ed68c068910d4b1e98109f4e0c5c424edaa149fd1e09d2d6a6fa7fb369"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonLibs/WebSocket/SocketWebTcp.cs",
+      "sha256": "ff267fbaa1486c730926ba82f36d9fcdd3755a0bce8553a4ee3c8fe760943260"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonLibs/WebSocket/WebSocket.cs",
+      "sha256": "287547a7fd14d3e9ec1b0caaf338de3f30f2b034c68b97a0268db63f12824ef1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/AppSettings.cs",
+      "sha256": "af557fc54d250237ca74dbfa9db15613d340ea0590fff183edd4132c8e0ec957"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/AsyncExtensions.cs",
+      "sha256": "ebd671621689f3565c564fdb37f6f62d3c4f9974f3d99fa4946d4f9581acf94a"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/AuthenticationValues.cs",
+      "sha256": "bd0c9ad6ebfaf3ef71e64c88280fa1160149cf74665f0a16553ff00fb206ff9e"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Callbacks.cs",
+      "sha256": "cea54ab290b7586afcea5fd85c10d864d619af2f4bbab08886f9df21307c0ecb"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/ConnectionHandler.cs",
+      "sha256": "376a279e6a2b01ed0b1cab74b8b8b6e6bde851ff11f39d8d09625e8f270701be"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/CustomTypesUnity.cs",
+      "sha256": "7b83ea8202b796ca11cb720981a82f3b4aa624dd27105635f7bdd7a7736dce10"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/EnterRoomArgs.cs",
+      "sha256": "3686753337a905f571788873de7b30a8cd9b1747f7d4cc3150eaebb13261480c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Enums.cs",
+      "sha256": "7c1395ca45cd6c5c96942c45e8b2e95e588f7604a69f760538da04dec275f040"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/ErrorInfo.cs",
+      "sha256": "6eb0c2657b13ff1db536d1f3a6ef9befec4ac789c87647d744a43b1e383d3650"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/EventBetter.cs",
+      "sha256": "ab1e344adc6243f77c5f7a41a0890d14bf2c692b09ec8a0d3eece8f397955f69"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Extensions.cs",
+      "sha256": "347ff7af5d11faf60dcb30e200c25cf68f4c30c7fbd0157ff39de60da6d7da21"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/FindFriendsArgs.cs",
+      "sha256": "0cb9789bc53c7cdd54f385609f05efa42b6cb35b16dcf54b503e34900d6a65db"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/FriendInfo.cs",
+      "sha256": "3b9809cd67427f020c94177aee8b62cddfc765441b7abe8483c1440b88be999c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/JoinRandomRoomArgs.cs",
+      "sha256": "d13610841ccba49563130f00384888d9fb8932471a0fdd0d42ef01b50101752d"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Lobby.cs",
+      "sha256": "65c47fd68b8eaf1bbdc763a3a20cb8e1f97b0a5dea71512556950ced9384029f"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Log.cs",
+      "sha256": "5cd4a51fd193752a2d3c5efba3663e91a382001e80014f41299c624e835c0253"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/MatchmakingExtensions.cs",
+      "sha256": "6e08c193849cd16cded99ca0db0acfd7baff4f2f97e15036cb4b7e11f0cbf41f"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Photon.Realtime.asmdef",
+      "sha256": "9f1546a7a98f482460948cd880291c714dba0056262c626bd294a5bd98c07e19"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/PhotonPing.cs",
+      "sha256": "7d1ae18e4f177085de81adce464ecd4d4e1daae7efdef32cdc65ab5a87ef95de"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/PhotonUtilitiesUnity.cs",
+      "sha256": "5aa1e0cb38ecbe3316f4659472338ac9d8394fa9e00b9b79c49612ec0752de56"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Player.cs",
+      "sha256": "25cce0cbe1dde170ddc8a6000a6a33c574e2a62c2fbc306c7c1dea0823f17468"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/ProtocolPorts.cs",
+      "sha256": "5f611e57e4a060a046460a2af39335fc91541bcd38caa30f0778b906e8b96de7"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RaiseEventArgs.cs",
+      "sha256": "8c724b73a52902a28d82b675bdba8e1e8233707d95aea8d720afaf8d5f46af09"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RealtimeClient.cs",
+      "sha256": "de662b9685efbd8423665611842ecbcc3fd1e5c739abedf05c714693d2ad40f2"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RealtimeClientOps.cs",
+      "sha256": "5b86a4c55426bcb2186b29f7958a337b24fd027f87aec4b54e40623be84372a9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RealtimeClientVersion.cs",
+      "sha256": "3b78a4ce7c72d990ba670eff13ea52b7541b7ae134dd28e04d163dd75908ca0c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Region.cs",
+      "sha256": "7fc466c514702d1c65ae0bc166f83a4d21fd73915a3af2eb03089c9420c609bb"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RegionHandler.cs",
+      "sha256": "dfe2d335f699cf461e5a4d781ca6b64b95ad91bb2270d8d07d680ef097905772"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/Room.cs",
+      "sha256": "444b9618283e55c3346e4283dc5693dca22f938caea4827d39b735f0f6cfe3f1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RoomInfo.cs",
+      "sha256": "0d741cdfc365afd1f2af683bded92a1b092596dd136813061ca5068d5301b2d8"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Photon/PhotonRealtime/Code/RoomOptions.cs",
+      "sha256": "d67a9ed0fc1d4c37880d90cbe9477ded87112ec6cfce1e6d04f546291ab6f9df"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Entites/Multiplayer/RankedBotAccounts.cs",
+      "sha256": "4f69c7f063cb56e78415d208010631f1abecb2143782687a6a99cb52293d7050"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Entites/Multiplayer/RoomModels.cs",
+      "sha256": "b8b5376c717bd5cbb50d348b75a2767e0a4bb9e998206b2c2a5a94bfea3d374a"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Entites/Progression/ProgressionModels.cs",
+      "sha256": "100352dcb344a35aeb98d5f4f9a5629d992e1945934e8035e2165ab2168469bf"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Entites/Training/TrainingModels.cs",
+      "sha256": "56624c8efd822a1bb0f16625e53634876249d891c8a1f5713a147d668aed9de2"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/FrontEnd/AccountScreen.cs",
+      "sha256": "a5d2860d530a4477e5eff55824e800e03f7a219f03f8afd74dfe0a8aa0b43d62"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/FrontEnd/HomeLobbyPresentation.cs",
+      "sha256": "99d9d56555d031e1c2f8885ff4eeebd389ab9cb6fba65778d584edc5534d0ca9"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/FrontEnd/OfflineSocialMenu.cs",
+      "sha256": "c235d11f48e5d58e52182d28a77dca33d5d52aa9b61765f990376be314e531e2"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/FrontEnd/PickleVerse.FrontEnd.asmdef",
+      "sha256": "2bbbe06a30afe5d075cfb6bb8973f54a96f116473e222dcfb6219efed4bbf25b"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/FrontEnd/PlayerProgressionMenu.cs",
+      "sha256": "45f0b442751c42bb80750e55049543f77ea4f092c3a361701ed3d74d48e4dd3a"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/LocalMatch/BotMatch.Progression.cs",
+      "sha256": "c74e6416edfc86b90a8becb87e8bd5c92cfc9c7e4191b86c199ad96d11cf613e"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/LocalMatch/BotMatch.cs",
+      "sha256": "27527a562c27e368fe8baf1efffab10c5339a323b4b90ff277417958958b69df"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/LocalMatch/Editor/AnimationDurationTools.cs",
+      "sha256": "d7f97f868788f8acc809426a0cbf79f7f773bafc79b5f434d32fbfb67b8de472"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+      "sha256": "240178c2b299f6ed17a37fad2f86c3a1fa2f5f2326ab22e426c7715fe87488f3"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/LocalMatch/TutorialDirector.cs",
+      "sha256": "ba44414e5d1be216bc32dd3106018fbbddfc3b8241b613798c1f4a1d38b44f28"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/LocalMatch/TutorialProgress.cs",
+      "sha256": "0a3b0dcb361332aaeeafacd4ee4b23b3eedc48e2d98d975412383c330bc62fe8"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/CourtBootstrap.cs",
+      "sha256": "436013a7c53fec4e04e37c479f0eeec4896d15cdcfcc4bd07cf07904cf67668a"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/CourtCamera.cs",
+      "sha256": "32640c9e454b018aa92af2ff7ea6b71e1a126d05c18a8d94d46dbeb189896337"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/GroupMatchmaker.cs",
+      "sha256": "595f5d4c7b52f9375fbc0376484f9c20b0ecdfd70fc4395cc9c8b8a3badaface"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MatchReadyOverlay.cs",
+      "sha256": "c99130ce06a2e3cb84c99de19cdb4ed8616937405a77cc81801d83b5ec73c45b"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MatchRelayConnection.cs",
+      "sha256": "77e626c8566c0d466da60776a2ae77cb983791955b4ac9d19c3e82c0bca1ee3a"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Connection.cs",
+      "sha256": "020aa1ca7d9e42191143580cc14774f33fb77fdaac75fa2646d8ab3a8db802ca"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Loading.cs",
+      "sha256": "6a9fc1a898d43bb6957be4c1c88b4b5b553b27dbc652199a24006f0a71f7f572"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Matchmaking.cs",
+      "sha256": "c9b205464b80fd1e8cfb49b700a153b44fc7639574bcda5c4a3dc87546fff5fe"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Online.cs",
+      "sha256": "cf6476e291c23dd0335b8ce72850ed99725236f2158fbc0a545de2a4993660e2"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Ranked.cs",
+      "sha256": "6fa5a3d47ab8f585d362041e00a294061742166e32c3cefd81eafd88b6c1c352"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Ready.cs",
+      "sha256": "922086c3964d0dcd60215b8e985f3fb4a0185411fe07519691f52f82ad770234"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Room.cs",
+      "sha256": "0f22bf621b1d14d1f7cdf6faa84060c310c85c30d56ae0e25f85b9be0b481385"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.SignOut.cs",
+      "sha256": "44a5c29c086aa0f3687b288674cb1923cf7eeb60ae3aeeb3fd508bd32ec43210"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.cs",
+      "sha256": "39e32e4aeb3bb7b0cacbb33ad071e87e4032d60ec1f7ddd99450c230e1d3adc6"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerCinematic.cs",
+      "sha256": "0f10267bcaa535d1cbf13d726f3dc4bb92aedba7978aa95c7c57400744684523"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerCourtUI.cs",
+      "sha256": "1ccc06b57721349542c7a503b62f0f2ac7511247951cb2f246730c163107c4b2"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerResultScreen.cs",
+      "sha256": "e59eece58e29792f46fbb4b9ebfefd3fe3ee01135ab7c7b3876238c5a2fbd397"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerSettings.cs",
+      "sha256": "0914fcadc7d347f1d2eb1130c2cf1a478891d876db325c012ab18918fef8040a"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerSmokeChecks.cs",
+      "sha256": "4fb19c6e1e821ee7f23f30067a66a51994b11f135e2bc7fa332f91a26753435e"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/MultiplayerSmokeRunner.cs",
+      "sha256": "052691cea08098cb7a8c21d983641c25e02a560ac1f4f11e601b4d54b738d35a"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkMatch.Bots.cs",
+      "sha256": "76a40b78c3204d4f182da956fe118262a187dcfb97abedf5c47213b756349bd1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkMatch.Photon.cs",
+      "sha256": "dfe993041f4889e302fb13345e63ebdbbfe992e0ce1b0c1b2125a53c2ba31d65"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkMatch.Progression.cs",
+      "sha256": "99c073b1d1a57611b9d8e08139ad620cebad5af91dbafcc0ebbcbf10001b823d"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkMatch.Replay.cs",
+      "sha256": "6f591160c9df599b35a392991ff73d5486a3f9d68590612f8ba4eb9ecac8295e"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkMatch.cs",
+      "sha256": "1e6878ce53cb21aa16b0181c354b1a0df9e33f4c727aad99259af98a468aa370"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkPlayer.Photon.cs",
+      "sha256": "9fdb1ae6a241082c4441744df879c0acd92f25c7091456eaefb383660019bfa7"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/NetworkPlayer.cs",
+      "sha256": "caed1aa00bc8ceacc765c363a210abc233485bea54ae278198c0afa939a4e3ea"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/PhotonCallbacks.cs",
+      "sha256": "2ce831af44bf5436f563d3c3910134d06e7a0f50dc6f7a6bc91fab57cc5fff0d"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/PhotonCommandChannel.cs",
+      "sha256": "cecdeb9abd4e73eb59df939672de0f854816d16c2491590d86ab61f9b419b65a"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/PhotonGameplaySmokeRunner.cs",
+      "sha256": "92715d825b267e92ea15a60a2958631bb3c064a12258086fe0b10c8486f8d610"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/PhotonRoomState.cs",
+      "sha256": "241cfe00b8f3cfd47208cbb9e7eae9be4af465a9b4fce13c0f780018b5484aed"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/PhotonSession.cs",
+      "sha256": "a0c7a1f7a3f426ba96dd4b54196fc027c5271eb9cf44720460901c7a2753d142"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/PickleVerse.Multiplayer.asmdef",
+      "sha256": "e3e7e5a10ab97233ea8080c9a79b4723647f824e9833f0cfac099ba4ddccd7be"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Multiplayer/RankedFallbackSmokeRunner.cs",
+      "sha256": "af5bb676aaf455ad0fd44e11f426faa77e9818bb79eb365e6f6f0364a7c0c804"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/Services/MultiplayerInterfaces.cs",
+      "sha256": "2e30b1de1dc061af1a3e8e637fcb4bbc9cec8f62c98e77645f4ee7c23fc56f42"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/Services/MultiplayerSceneConfiguration.cs",
+      "sha256": "c449f1e2b0eb3c3656bb9535f83f4d51104e4acce7e5c5105eac76ef51045fd4"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/Services/PlayerIdentityService.cs",
+      "sha256": "4856954e0fbfc2473b03b7e7059d1a3e01a43207714ab0ecf21b2cbafbc6a3a8"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Multiplayer/SessionNetworkHandler.cs",
+      "sha256": "01225ee6f8bbbdb660cc8eace0c31f68c26f93b9f84980c862707b3a0cc944fb"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/PlayerController.cs",
+      "sha256": "33db1c2c93491f7c3741b0625bf7cbb385f7d408702c796ae45cdfa47121e8c9"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Progression/OnlineGameModels.cs",
+      "sha256": "fb84cf905ba3b5e4fa9ef2f85198d81c9dda3d7be06935a5516d86118c4b51ec"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Progression/PickleVerse.Progression.asmdef",
+      "sha256": "ffba49314b70a3406bdf50d9dcaf7766011bfbe7db1b59078c989c0db4de4a72"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Progression/ProgressionRuntime.cs",
+      "sha256": "d0cf5e6b9081b49f0732666415ed5d6cceef1052d8c0f16b6741917fd8d60749"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+      "sha256": "47c17a5e8b473eb259632237b87d640ab65cb56f69a172596989e7400e1e1fce"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Replays/LocalReplayRepository.cs",
+      "sha256": "6dc2b9e3f2243d1d8dc95f010414c209627e29efbf5124628b19d4c86211cccc"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Replays/OnlineReplayRepository.cs",
+      "sha256": "0614c496cf2dcd2ab6e07a1c64e3b9bbdef845e69291f52309669121a5a8a257"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Replays/PickleVerse.Replays.asmdef",
+      "sha256": "855f0a31b7c98d7057cf668e3768c8e3fb62ec0a28d1b7f833827c4a86e3cdf1"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Replays/ReplayRecorder.cs",
+      "sha256": "c9a0b30c67accfb4d3fcd8b28dba7bcf3cce306a79cd90be1c4c8201302f5381"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Replays/ReplayView.cs",
+      "sha256": "4d9eb6caa05e6c1341b4424cd1bb72223da574f2d620e4ab00659ac017f52fcb"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/AccountRuntime.cs",
+      "sha256": "ee1731f6144ad7d2f794bbfab8749582b241221da9cc220ba3db769634148471"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/AccountService.cs",
+      "sha256": "7b107fe0ea6c5414cdbb23ac7a0ce000593ecc2326475bf64c7d6aa8bcd27d98"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/AccountSmokeRunner.cs",
+      "sha256": "e3bf08c542c558eb18c17c32f6eb151c36eb47f383ed3510a5e7404b072ba601"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/Api/AccountModels.cs",
+      "sha256": "4528c2813796c2003fe50a823f894c78a2b455b0be95a9e511ff2f6b2d285420"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/Api/ApiClient.cs",
+      "sha256": "8996ef1bde27b7cd5c0794bba5328381eb7c204bfe1f00abc0b59fcbf00dd351"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/Api/BackendApiSettings.cs",
+      "sha256": "ef775dcedde212fd406e97c70a021d9d79a28b044e5273b99d92d788078afb3e"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/Api/UnityApiTransport.cs",
+      "sha256": "28ad27e43be546e6f064091a4d9acbf397364f90451906f6c366cc9c1304cfa4"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/AppActivityRuntime.cs",
+      "sha256": "6ca7b90d69ec673946558f2c5b4dabd81e1200ac06b6b94bb03d384e5c814d8c"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/PickleVerse.Services.asmdef",
+      "sha256": "4d1a4f2e1ee232e7261c9ee86b02f665633ea0066bd99bb818429a077a3595d7"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Services/Utilities/ApiUrl.cs",
+      "sha256": "e9799a258419488bd07c608a1389771f60707c7f86e59b275d9632fa8a1a1b73"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Settings/SceneLoading.cs",
+      "sha256": "eb2a98fb1cafc6c7e2193b63c9b8baa4d8bdcd265699c5f7f8104a1e6e0ed8c1"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Scripts/Shop/OnlinePlayerEconomy.cs",
+      "sha256": "b692d3f20efc72a892fb29f4bb78ffd8ddaefce9432a2dcad39ca3c1b11ffcd5"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Shop/PlayerEconomy.cs",
+      "sha256": "afc7a4888af1af4f901d1966a12cffdec8de5339177bb19564fcc9b2c31fcb24"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Scripts/Shop/WalletBar.cs",
+      "sha256": "accfca89e462a439d7af389a5159ba09e7b269d3c8086dae3f9ba1d02c8f7823"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Tests/Editor/MatchRelayConnectionTests.cs",
+      "sha256": "72849e1838f800d351993852fd1b17871952fb37120b69317b3d467dcdef3a0d"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Tests/Editor/MultiplayerAssignmentTests.cs",
+      "sha256": "2f628034ca97e052f12ec6f9bc4e9ca8850a81ff132280078cee83d6e0931abc"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Tests/Editor/MultiplayerQosTests.cs",
+      "sha256": "b913d2e045cf338d2d5c52c1c7217b73c6a9931655a77325fdfc2fa17185d7c2"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Tests/Editor/MultiplayerTicketCleanupTests.cs",
+      "sha256": "be797a3dad10d73ab0b49001ca5a4018163d195c8372bc81c010282853a342d6"
+    },
+    {
+      "status": "M",
+      "path": "My project/Assets/Tests/Editor/PickleVerse.Multiplayer.Tests.asmdef",
+      "sha256": "fa59aa6fb1757b933a84b292889655faf8058145ac53e9e89ff5de32ff56b4de"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Tests/Services/AccountServiceTests.cs",
+      "sha256": "495021049e555c4360074441723db115e395b4ce6a8acfafbf8f97c712b42478"
+    },
+    {
+      "status": "A",
+      "path": "My project/Assets/Tests/Services/PickleVerse.Services.Tests.asmdef",
+      "sha256": "51df088b8f2ad2c2bcd84a756cc070de9ceeb801d8ace7b1b334578a8b7b6241"
+    },
+    {
+      "status": "M",
+      "path": "My project/Packages/manifest.json",
+      "sha256": "861ca581fd5752eb6f3e3f65b10348972a0326449b8c3b54f9788dc254f8c66c"
+    },
+    {
+      "status": "M",
+      "path": "My project/Packages/packages-lock.json",
+      "sha256": "ccc88b9cb9babfbde96b26a08a250561b79503129f5b2b2925a9e3b5bd8428c4"
+    },
+    {
+      "status": "M",
+      "path": "README.md",
+      "sha256": "d230f8d9577c09979441fca9f934bbd1f5595db169afc77671bea70b9a94fef4"
+    },
+    {
+      "status": "M",
+      "path": "docker-compose.yml",
+      "sha256": "34fed2c6f5c3929f1d99a8718ee8d92550c8e314fc887918eabe18be3136064f"
+    },
+    {
+      "status": "A",
+      "path": "docs/sdd/admin-web/brainstorm.md",
+      "sha256": "9889bf0eeca53195c14e42e549d3cb7c76f7ee65be2722ea0e399bbb16674d44"
+    },
+    {
+      "status": "A",
+      "path": "docs/sdd/admin-web/brd.md",
+      "sha256": "b2bae3ee43c12a69ff32224386d0927ca719505a68d7bff2d6cd28b3f73c8be0"
+    },
+    {
+      "status": "A",
+      "path": "docs/sdd/admin-web/plan.md",
+      "sha256": "0bb8e7a1dacc61d0f601fc26bd36b9cfb903e8ec081e9a74ba4d37dc3488fc3b"
+    },
+    {
+      "status": "A",
+      "path": "docs/sdd/admin-web/review-report.md",
+      "sha256": "6716bd76f399adc9f8c870ff572f249226121bb9d5f418f5250cb539f86c5afd"
+    },
+    {
+      "status": "A",
+      "path": "docs/sdd/admin-web/security-report.md",
+      "sha256": "ec21b037e0c02d69804536d0aac52d84a98d135d4c1792ef83df903768eafd93"
+    },
+    {
+      "status": "A",
+      "path": "docs/sdd/constitution.md",
+      "sha256": "f2cba187650452362045ca13159fb5033c523c38178bbe8ca8680d370fc0d030"
+    },
+    {
+      "status": "A",
+      "path": "skills-lock.json",
+      "sha256": "b28997454a129f8bb7c3629ab5c55dab2dd7f5a369e42a84e512e577b58bc323"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/API.csproj",
+      "sha256": "655b5b5b48e9f6fb10239a5bbfc66bfd95dcef53f36f0c332aa39f75597bfa67"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/AchievementsController.cs",
+      "sha256": "357a15a60a4428de0589b1114d2ad734a2109df19ef6aa47fcb93619b2c3e027"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/AdminController.cs",
+      "sha256": "5343327ecb25af254c3bdb4e0908e71f561a54bf59a76340b2107e0cead590cd"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/AuthController.cs",
+      "sha256": "c184306d57f4f66f4380ffb413a86eb6556c5c2adcc6dbf80902a33857fc8fa7"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/EconomyController.cs",
+      "sha256": "32d99ca2d1edeaa271e0f2ebb2a587c6d68c54b75e6c6cdb0939c73642c0d10d"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/API/Controllers/GameController.cs",
+      "sha256": "17478fa85b904e883df861047e58b2d822e947704257c830afad1154a28da0a9"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/MatchesController.cs",
+      "sha256": "87260ef0d23dec8ecf672c147bc69d7c8a404819cf9dddac2e5a8dc93458bac1"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/MissionsController.cs",
+      "sha256": "ad238176cd8b5c73a07414e8ce2b995fdc8594c782c5d063741c32d6b95db29c"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/API/Controllers/OnlineReplaysController.cs",
+      "sha256": "e0897c673ec522934b4a89c60795394867934b78f1b10043f6fea98ceb10f086"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/API/Controllers/OnlineSocialController.cs",
+      "sha256": "1182093910583f72baf8163476c8861938941a23026a3045770a37f8f73c9a83"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/ProfilesController.cs",
+      "sha256": "ff7ac2aca7fd483acbc5122e133f3002e1127092348f15a534c5521b560743b2"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/ReplaysController.cs",
+      "sha256": "83114f942660a2cf17afa2f1be361c3b81d2bee683ac6a64c90934a2ce177e19"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Controllers/TrainingController.cs",
+      "sha256": "3f4fa00706c1609502666846adefccfbe68eda80772a456fea2644f20e1b2bf0"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Middlewares/GlobalExceptionHandler.cs",
+      "sha256": "62dd1ed580bc1b57cd575f70a5cadd77886ba122f0ee03c7e1c9c58fd99be45e"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/Program.cs",
+      "sha256": "149dea527f00800d0cc08c613fddba0279d7ed0d7bf26426702a5441b27d1e09"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/API/appsettings.json",
+      "sha256": "c480b6ffa195e87690d5dc304785935192b978d77fc81ad0a10f19a22b4761c7"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Entities/Models/Verificationemail.cs",
+      "sha256": "db33cfa89ef98b37b7a954b166884c006fd73f6c23c38a0e6a5b979918f46add"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/ActivityRankedChecks.cs",
+      "sha256": "742febd60db354563ea95ddbee2daad172b8d0869402db9f32027a88a3c53ade"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/ConfigurationChecks.cs",
+      "sha256": "f9fdd63e53f108ae273b1a90cb48856620250f87285ed2f7aed370a13184ea1e"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/GameChecks.cs",
+      "sha256": "9f05086025d12658765d7baf01d3c21ba0f5d9345031353cf8551cac379ef0c5"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/IntegrationChecks.csproj",
+      "sha256": "ad00ab60ed28f3b90582bbab914691e34ba230914dc6835d0c3a3c34f7f8fc55"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/OnlineMatchChecks.cs",
+      "sha256": "8cc083d2e2054fbded0cfef861cee59a5bd94e94e79f1c01b48cd4ba3d876df1"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/Program.cs",
+      "sha256": "b2a8ae66022ec2688f48d27c06a4dd68e21e3a3e3448287b57557897a6340112"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/RedisChecks.cs",
+      "sha256": "e6d94a00ed257b26c380e629f9bd3f97f4234ee8752582f554cb26a6efc3b955"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/SocialChecks.cs",
+      "sha256": "893f2172e3899dfa3e1c342e03a9607d29a8efe274f0afe2452f04f80704337b"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/TestRedis.cs",
+      "sha256": "ba092b8f4d0185cca4a1b89da4e8f63759a595367cf471541b27ae7602f7bcbb"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/IntegrationChecks/TestSettings.cs",
+      "sha256": "785d810969b42b2ed60b86c4af0683c12898f7dfd9360662e05f40ba3a71eff2"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Repositories/Context/PickleVerseContext.cs",
+      "sha256": "8ea77e9a50326ba87c9504f6fd7c85a4b73a338eb79cbaecdeed4c8c411c51f6"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Repositories/Implementations/PlayerProfileRepository.cs",
+      "sha256": "81acf33361550c3cd608a689d5694ddfe8eaf1d76f9958da43361e4989463372"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Repositories/Implementations/UserRepository.cs",
+      "sha256": "1fc30942fdf989ab04d958a078f2fcf78a963ec281d0cf658f3206d4cef9df5c"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Repositories/Interfaces/IUserRepository.cs",
+      "sha256": "7abb3c790124ee608ab90aa65000606ef82275ff740d6e6b73ec891bec6948bb"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Configuration/RedisSettings.cs",
+      "sha256": "b8fa57969c755adfde0b9750e2fc9fb78e0ac44009dcc62a6f350dabbb8476d4"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Configuration/ServerSettings.cs",
+      "sha256": "347cdc78f85c0e017ef67042e9f606cc5b3b2d0e0f112c658a51f9bf2291d431"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/DTOs/AllDTOs.cs",
+      "sha256": "f787784f4ec2b597a69ee64786ef5829bc4d798071c4b54b15129557a4719fab"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/GameCatalogService.cs",
+      "sha256": "f1fa03e04ffd0041101bed2fc294e788947a3d92cd00a269c819d8146dc6045f"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/GameModels.cs",
+      "sha256": "ff6f24b1e013f8a0273e0b77ea0b54684ffe0c71b225c52b9bf35ed817907c39"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/GameSql.cs",
+      "sha256": "8a79256aff609c53b02b50f76660ab9cd52e0252f7a461e0fb4be70a2c768984"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/LeaderboardCache.cs",
+      "sha256": "b54a2eeb44d79e796776e364bdeb2fb695af2aec553790ba69273543f7190579"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.Activity.cs",
+      "sha256": "3629e576b71b2340b4293268f2156aaf64e3dec48f0f24f1b0af52ee04e98245"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.Legacy.cs",
+      "sha256": "a1f808858b415f625ff18ea7b2aff08f7b00f60225c450f99e800ccb9b5bcb3b"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.Matches.cs",
+      "sha256": "2f3c936c9cb551191840bce9f524266ea259bf72c83a246640059cf88f05fa77"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.OnlineMatches.cs",
+      "sha256": "5e44e905c9dfe775a497a0bc385918ffef4d3d72e7648e3e30dcb1e913cb06e9"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.RankedSearch.cs",
+      "sha256": "e8c7408f4649cf35a53e59c8e36cbb2593cfb2d0cf07e2bd7f5db6e34079dc1d"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.Training.cs",
+      "sha256": "ba1c6c9e720879bf20f9b43e18631d3ef4ae1cc0869e12b263d5af9b8c032474"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineGameService.cs",
+      "sha256": "a07bf1539ac0178fb6f758bac7f0a10eae7836bbd991c72cdee9acc69498caa4"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineReplayService.cs",
+      "sha256": "2249c0cfdcb5c58815d2bd823ac7fc253c1a3e25b36bfab1ae48c43484a07d7b"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/OnlineSocialService.cs",
+      "sha256": "b4a6556d1ba19f6513f652955bc6a9e9bfced3d5a3236b7b230f5f20cc1b6336"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/ProgressionConfig.cs",
+      "sha256": "23acbe3371e0082b87ff0aa7ca55b5be8d6c75af85df32790b103ae428c56cf8"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Game/RedisGameState.cs",
+      "sha256": "64681f994f3d462243442c1f8ea39806b1aca46abd60ddb481c217f9ba9f3dca"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Implementations/AuthService.cs",
+      "sha256": "a57a5d7bbc896af5fdc3b7e7d4306e493c2ad716109f7cab65c28c4e1569a76d"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Implementations/FriendService.cs",
+      "sha256": "4782a88260e11c53357d355129069dc59487f43ac5b80759b9769f98b7d22e16"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Implementations/ProfileService.cs",
+      "sha256": "ebbb3d65379e73aeff2b0ebe63ad262488f41ff0f7178dc9f94f1e90b934ed6c"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Implementations/SmtpEmailSender.cs",
+      "sha256": "0efe6f3d892f53b37f848bf92032aee1cc80adac73598f81c555510215f9ee28"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Implementations/StorageService.cs",
+      "sha256": "7ad6f5851339b5648c4d655b97381b4341e6f75047f323e8959a293d84349ebd"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Interfaces/IAuthService.cs",
+      "sha256": "e4e80a356241edcb3b927ee6b0853f91ab1b1c63e415fbea9d6e880f4166b6e7"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Interfaces/IEmailSender.cs",
+      "sha256": "d023ef3b643b7d0d74d472dcb8d525325491391349fd85d8038ba9b4f3425b3e"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Interfaces/IStorageService.cs",
+      "sha256": "3b5a2bbff779f36034221c16b0487b0acb19d873c5b4d684c0cc2eac68ff7320"
+    },
+    {
+      "status": "A",
+      "path": "src/Backend/Services/Security/EmailOtpPolicy.cs",
+      "sha256": "e0c864e65a1facd50f1d5bd17cebd014a38d196ad60842ae6e953adcb96fc7ab"
+    },
+    {
+      "status": "M",
+      "path": "src/Backend/Services/Services.csproj",
+      "sha256": "80187d16e6fa75e5dc929a92f22bfe90f55fcb7a63b19dc25e6cebfacdffb65a"
+    },
+    {
+      "status": "M",
+      "path": "src/Database.sql",
+      "sha256": "ba97c1a44eed5e0015666f1327a6d4fb7ee4ae3180783fec2765aeed300ad0f6"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/package-lock.json",
+      "sha256": "2ca5ce5610aee26a8b2f008e68fcbe6226e010aa053fff086120e2a8d5ec126f"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/package.json",
+      "sha256": "826e2e6a50c6f6b178b9d47a0339e3ea2b45919d9bc8dd6f510afe1dc3121204"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/App.tsx",
+      "sha256": "678cd78bffc7582b7a64c93d07c00855d9ff6c86cb13fb9737ef8d4805a43431"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/api/adminApi.ts",
+      "sha256": "846f964a82b8e117fc04107ce088e3e427aab8eae31c3aeec8a33e13530644be"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/api/client.ts",
+      "sha256": "904d4083ba27a355defe3f59dabb3937aca7ef155f546dd4fc4096308030e685"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/components/layout/AdminLayout.tsx",
+      "sha256": "e496a89121f2cffda753f4e556abab99cc863eb300e9c98f82ae79de5d179102"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/components/layout/ProtectedRoute.tsx",
+      "sha256": "d00e8832b145bb867815c413bdd6bd4e9ba463cbdab00ec3fc97482260e20a1a"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/components/layout/Sidebar.tsx",
+      "sha256": "bf4f9ba273701592be1d3ec470b06ac87acc9bf9411ae66f383278982627342c"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/context/AuthContext.tsx",
+      "sha256": "1eb106ec762b6322c7760c8b6500398d4fd843b2e6b4b47cd5e911a1d1315b78"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/main.tsx",
+      "sha256": "04bc6c664005d207f6c9a42cac1a11810f6257a77604ecc9a2dfa1f0a68959ba"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/Analytics.tsx",
+      "sha256": "9eabf5e9b475fa38f7a77f5b981e850a4dd73fb93f2c9bc53b1d129b7f2a203a"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/CMS.tsx",
+      "sha256": "4b6851e0b4f0cd071f08630dd776d43a7ca149d8577fc06d80c303c28a0d3abe"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/Dashboard.tsx",
+      "sha256": "d047e09f0bc790d3154d9a39d76f16aa9b94e2b84939e7e6815d27c23a148dd3"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/Login.tsx",
+      "sha256": "7a4b576003af65edf3f0fdb3e6005153fc5d674900270585690d9bda57aad30c"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/Matches.tsx",
+      "sha256": "68120cb82502a638a4be02e9bb3b5404c3134047fc0e81e7fb44d8900f3ba926"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/Moderation.tsx",
+      "sha256": "8b8cf817d19a1df2b9c4520ebfd199b357a86364507aa313ec2a4a1ab623de87"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/pages/Users.tsx",
+      "sha256": "14f9d00df3995200e95af23ca40be798f643de0f98e30172b8fae09634b5e59f"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/types/api.ts",
+      "sha256": "d200ae0d792c60960725e605b293c9b4db58e2cedc1e97f8bee7203038d66fe7"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/src/vite-env.d.ts",
+      "sha256": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/tsconfig.json",
+      "sha256": "0e0730edc6a543e1a82b173174f4749a17d42e7408d2b5946f10889e578d4a86"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/tsconfig.node.json",
+      "sha256": "e2926034a7ed41a1431e4b8e60e58371af014a8856a3fcc583d3efa85440b996"
+    },
+    {
+      "status": "A",
+      "path": "src/Frontend/vite.config.ts",
+      "sha256": "6e4a453bc936c60ff7913c1c7a51aaa746f507f4c6025184e2a784865fcf90e4"
+    },
+    {
+      "status": "A",
+      "path": "src/Seed/UnityCatalog.json",
+      "sha256": "c038d5205d446be128ae7cb147b795aa7cc47b2f9a1cde1e88d033709c69db54"
+    }
+  ]
+}

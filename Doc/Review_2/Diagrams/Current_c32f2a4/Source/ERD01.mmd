@@ -1,0 +1,35 @@
+erDiagram
+  Roles {
+    SERIAL RoleId PK "required"
+    VARCHAR_32 RoleName "required"
+    VARCHAR_254 Description "required"
+  }
+  Users {
+    UUID UserId PK "required"
+    VARCHAR_254 Email "required"
+    VARCHAR_254 PasswordHash "required"
+    INT RoleId FK "required"
+    VARCHAR_20 Status "required"
+    TIMESTAMPTZ CreatedAt "required"
+  }
+  Roles ||--o{ Users : "RoleId"
+  RefreshTokens {
+    SERIAL TokenId PK "required"
+    UUID UserId FK "required"
+    VARCHAR_254 TokenHash "required"
+    TIMESTAMPTZ ExpiresAt "required"
+    BOOLEAN IsRevoked "required"
+    TIMESTAMPTZ CreatedAt "required"
+  }
+  Users ||--o{ RefreshTokens : "UserId"
+  VerificationEmail {
+    SERIAL VerificationEmailId PK "required"
+    UUID UserId FK "required"
+    VARCHAR_254 Email "required"
+    VARCHAR_128 Token "required"
+    INT FailedAttempts "required"
+    TIMESTAMPTZ CreatedAt "required"
+    TIMESTAMPTZ ExpiresAt "required"
+    BOOLEAN IsVerified "required"
+  }
+  Users ||--o{ VerificationEmail : "UserId"

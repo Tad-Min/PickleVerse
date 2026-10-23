@@ -1,0 +1,79 @@
+{
+  "id": "ERD10",
+  "title": "Current SQL schema 10",
+  "nodes": [
+    {
+      "id": "GameMatches",
+      "title": "GameMatches",
+      "body": [
+        "PK MatchId: UUID",
+        "FK OwnerId: UUID ?",
+        "Kind: VARCHAR(32)",
+        "Status: VARCHAR(20)",
+        "Data: JSONB",
+        "CreatedAt: TIMESTAMPTZ",
+        "UpdatedAt: TIMESTAMPTZ"
+      ],
+      "x": 40,
+      "y": 135,
+      "w": 620,
+      "h": 267,
+      "shape": "box"
+    },
+    {
+      "id": "GameMatchPlayers",
+      "title": "GameMatchPlayers",
+      "body": [
+        "PK FK MatchId: UUID",
+        "PK FK PlayerId: UUID",
+        "Team: SMALLINT",
+        "Accepted: BOOLEAN",
+        "Report: JSONB ?",
+        "Fingerprint: VARCHAR(64) ?",
+        "LastSeenAt: TIMESTAMPTZ"
+      ],
+      "x": 730,
+      "y": 135,
+      "w": 620,
+      "h": 267,
+      "shape": "box"
+    },
+    {
+      "id": "PlayerProfiles",
+      "title": "PlayerProfiles",
+      "body": [
+        "Referenced table — see other",
+        "ERD"
+      ],
+      "x": 40,
+      "y": 577,
+      "w": 420,
+      "h": 90,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "GameMatches",
+      "target": "PlayerProfiles",
+      "label": "OwnerId",
+      "dashed": true
+    },
+    {
+      "source": "GameMatchPlayers",
+      "target": "GameMatches",
+      "label": "MatchId",
+      "dashed": false
+    },
+    {
+      "source": "GameMatchPlayers",
+      "target": "PlayerProfiles",
+      "label": "PlayerId",
+      "dashed": true
+    }
+  ],
+  "kind": "erd",
+  "note": "37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.",
+  "width": 1400,
+  "height": 757
+}

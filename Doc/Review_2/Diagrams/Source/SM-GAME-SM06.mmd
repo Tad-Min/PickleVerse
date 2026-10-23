@@ -1,0 +1,10 @@
+stateDiagram-v2
+    %% GAME-SM06 - Match ready-check decision
+    %% Source definition: My project/Assets/Scripts/Entites/Multiplayer/MatchReadyPolicy.cs:6
+    Pending --> Accepted: AcceptMatchAsync
+    Pending --> Declined: DeclineMatchAsync or expiry
+    Waiting --> Rejected: Evaluate
+    Waiting --> Approved: Evaluate
+    Waiting --> Waiting: Evaluate
+    Rejected --> Pending: Resolve for accepteduser
+    Rejected --> [*]: Resolve for declined/pendinguser

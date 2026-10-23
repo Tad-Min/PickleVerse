@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1025" viewBox="0 0 1400 1025">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="1025" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ERD00  Relational data domains at the pulled revision</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">Arrows point from referencing to referenced domain. This overview omits attributes; ERD01–11 and the</text>
+<text x="40" y="101" font-family="Arial" font-size="20" fill="#546174">CSV are complete.</text>
+<path d="M505,227.5 H482.5 V227.5 H460" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M715.0,780 V542.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M505,857.5 H482.5 V857.5 H460" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M970,227.5 H715.0 V227.5 H460" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M250.0,360 V332.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M715.0,360 V332.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1180.0,360 V332.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M970,437.5 H947.5 V437.5 H925" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M250.0,570 V437.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1180.0,570 V437.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1180.0,570 V542.5 H250.0 V515" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M970,647.5 H947.5 V647.5 H925" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M250.0,780 V542.5 H715.0 V305" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="150" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="188" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Identity and tokens</text>
+<text x="62" y="217" font-family="Arial" font-size="23" fill="#222c39">Roles / Users / RefreshTokens /</text>
+<text x="62" y="246" font-family="Arial" font-size="23" fill="#222c39">VerificationEmail</text>
+<rect x="505" y="150" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="527" y="188" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Player state and commands</text>
+<text x="527" y="217" font-family="Arial" font-size="23" fill="#222c39">PlayerProfiles / GameProgress /</text>
+<text x="527" y="246" font-family="Arial" font-size="23" fill="#222c39">GameCommands /</text>
+<text x="527" y="275" font-family="Arial" font-size="23" fill="#222c39">AppActivitySessions</text>
+<rect x="970" y="150" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="992" y="188" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Social relationships</text>
+<text x="992" y="217" font-family="Arial" font-size="23" fill="#222c39">FriendRequests / Friendships /</text>
+<text x="992" y="246" font-family="Arial" font-size="23" fill="#222c39">BlockedUsers</text>
+<rect x="40" y="360" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="398" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Historical results</text>
+<text x="62" y="427" font-family="Arial" font-size="23" fill="#222c39">MatchHistory /</text>
+<text x="62" y="456" font-family="Arial" font-size="23" fill="#222c39">PlayerMatchHistory /</text>
+<text x="62" y="485" font-family="Arial" font-size="23" fill="#222c39">ReportPlayerInMatch /</text>
+<text x="62" y="514" font-family="Arial" font-size="23" fill="#222c39">MatchHistoryReplay</text>
+<rect x="505" y="360" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="527" y="398" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Wallet and ledger</text>
+<text x="527" y="427" font-family="Arial" font-size="23" fill="#222c39">Currencies / PlayerCurrencies /</text>
+<text x="527" y="456" font-family="Arial" font-size="23" fill="#222c39">CurrencyTransactions</text>
+<rect x="970" y="360" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="992" y="398" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Cosmetic ownership</text>
+<text x="992" y="427" font-family="Arial" font-size="23" fill="#222c39">Cosmetics / CosmeticPrices /</text>
+<text x="992" y="456" font-family="Arial" font-size="23" fill="#222c39">PlayerCosmetics</text>
+<rect x="40" y="570" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="608" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Achievements and missions</text>
+<text x="62" y="637" font-family="Arial" font-size="23" fill="#222c39">Achievements /</text>
+<text x="62" y="666" font-family="Arial" font-size="23" fill="#222c39">PlayerAchievements / Missions /</text>
+<text x="62" y="695" font-family="Arial" font-size="23" fill="#222c39">PlayerMissions</text>
+<rect x="505" y="570" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="527" y="608" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Learning catalog</text>
+<text x="527" y="637" font-family="Arial" font-size="23" fill="#222c39">Techniques / Drills / Lessons /</text>
+<text x="527" y="666" font-family="Arial" font-size="23" fill="#222c39">LessonDrills</text>
+<rect x="970" y="570" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="992" y="608" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Attempts and mastery</text>
+<text x="992" y="637" font-family="Arial" font-size="23" fill="#222c39">PlayerTechniqueMastery /</text>
+<text x="992" y="666" font-family="Arial" font-size="23" fill="#222c39">PlayerTechniquesErrors /</text>
+<text x="992" y="695" font-family="Arial" font-size="23" fill="#222c39">PlayerLessonDrills /</text>
+<text x="992" y="724" font-family="Arial" font-size="23" fill="#222c39">TrainingSessions</text>
+<rect x="40" y="780" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="818" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Canonical online match</text>
+<text x="62" y="847" font-family="Arial" font-size="23" fill="#222c39">GameMatches / GameMatchPlayers</text>
+<rect x="505" y="780" width="420" height="155" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="527" y="818" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Online replay storage</text>
+<text x="527" y="847" font-family="Arial" font-size="23" fill="#222c39">OnlineReplays /</text>
+<text x="527" y="876" font-family="Arial" font-size="23" fill="#222c39">OnlineReplayChunks</text>
+</svg>

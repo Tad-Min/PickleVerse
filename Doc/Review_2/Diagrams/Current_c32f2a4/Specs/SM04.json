@@ -1,0 +1,82 @@
+{
+  "id": "SM04",
+  "title": "Tutorial progress",
+  "nodes": [
+    {
+      "id": "NotStarted",
+      "title": "NotStarted",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "InProgress",
+      "title": "InProgress",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Completed",
+      "title": "Completed",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Skipped",
+      "title": "Skipped",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "NotStarted",
+      "target": "InProgress",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "InProgress",
+      "target": "Completed",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "InProgress",
+      "target": "Skipped",
+      "label": "4",
+      "dashed": false
+    },
+    {
+      "source": "Completed",
+      "target": "InProgress",
+      "label": "5",
+      "dashed": false
+    },
+    {
+      "source": "Skipped",
+      "target": "InProgress",
+      "label": "6",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Derived lifecycle/guard model; do not equate labels with a database enum. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 545
+}

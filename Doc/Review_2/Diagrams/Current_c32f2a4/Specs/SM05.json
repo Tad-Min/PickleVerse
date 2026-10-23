@@ -1,0 +1,154 @@
+{
+  "id": "SM05",
+  "title": "Skill queue and acceptance",
+  "nodes": [
+    {
+      "id": "Idle",
+      "title": "Idle",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Searching",
+      "title": "Searching",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Offered",
+      "title": "Offered",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Accepted",
+      "title": "Accepted",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Ready",
+      "title": "Ready",
+      "body": [],
+      "x": 495,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Cancelled",
+      "title": "Cancelled",
+      "body": [],
+      "x": 950,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Expired",
+      "title": "Expired",
+      "body": [],
+      "x": 40,
+      "y": 545,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Idle",
+      "target": "Searching",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "Searching",
+      "target": "Offered",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "Offered",
+      "target": "Accepted",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "Accepted",
+      "target": "Ready",
+      "label": "4",
+      "dashed": false
+    },
+    {
+      "source": "Offered",
+      "target": "Cancelled",
+      "label": "5",
+      "dashed": false
+    },
+    {
+      "source": "Accepted",
+      "target": "Cancelled",
+      "label": "6",
+      "dashed": false
+    },
+    {
+      "source": "Offered",
+      "target": "Expired",
+      "label": "7",
+      "dashed": false
+    },
+    {
+      "source": "Cancelled",
+      "target": "Searching",
+      "label": "8",
+      "dashed": false
+    },
+    {
+      "source": "Cancelled",
+      "target": "Idle",
+      "label": "9",
+      "dashed": false
+    },
+    {
+      "source": "Expired",
+      "target": "Idle",
+      "label": "10",
+      "dashed": false
+    },
+    {
+      "source": "Searching",
+      "target": "Idle",
+      "label": "11",
+      "dashed": false
+    },
+    {
+      "source": "Ready",
+      "target": "Idle",
+      "label": "12",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Derived lifecycle/guard model; do not equate labels with a database enum. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 745
+}

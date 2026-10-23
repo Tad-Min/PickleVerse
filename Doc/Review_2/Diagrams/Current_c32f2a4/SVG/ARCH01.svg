@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1116" viewBox="0 0 1400 1116">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="1116" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ARCH01  Architecture visible in current source</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">Current source is not proof of a deployed environment. Old UGS/NGO adapters remaining in the</text>
+<text x="40" y="101" font-family="Arial" font-size="20" fill="#546174">repository are not the active Fusion path.</text>
+<path d="M600,220.5 H680.0 V235.0 H760" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M320.0,296 V403.0 H320.0 V510" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1040.0,325 V417.5 H1040.0 V510" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M40,935 H15 V120 H1040.0 V145" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<path d="M1320,225 H1360 V935 H1320" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<rect x="40" y="145" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="183" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Unity client</text>
+<text x="62" y="212" font-family="Arial" font-size="23" fill="#222c39">Account UI and REST adapters</text>
+<text x="62" y="241" font-family="Arial" font-size="23" fill="#222c39">Training and progression snapshot</text>
+<text x="62" y="270" font-family="Arial" font-size="23" fill="#222c39">uGUI controls and match rendering</text>
+<rect x="760" y="145" width="560" height="180" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="183" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">ASP NET Core API net10</text>
+<text x="782" y="212" font-family="Arial" font-size="23" fill="#222c39">JWT and Admin RBAC</text>
+<text x="782" y="241" font-family="Arial" font-size="23" fill="#222c39">Shared C# rules and idempotent commands</text>
+<text x="782" y="270" font-family="Arial" font-size="23" fill="#222c39">Training / online results / social /</text>
+<text x="782" y="299" font-family="Arial" font-size="23" fill="#222c39">replay</text>
+<rect x="40" y="510" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="548" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Photon Fusion Shared</text>
+<text x="62" y="577" font-family="Arial" font-size="23" fill="#222c39">Peer StateAuthority simulation</text>
+<text x="62" y="606" font-family="Arial" font-size="23" fill="#222c39">Session and command transport</text>
+<text x="62" y="635" font-family="Arial" font-size="23" fill="#222c39">Dedicated server requirement remains open</text>
+<rect x="760" y="510" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="548" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PostgreSQL and Redis</text>
+<text x="782" y="577" font-family="Arial" font-size="23" fill="#222c39">37 SQL tables plus JSONB</text>
+<text x="782" y="606" font-family="Arial" font-size="23" fill="#222c39">Atomic durable commands and ledger</text>
+<text x="782" y="635" font-family="Arial" font-size="23" fill="#222c39">Transient queue and leaderboard cache</text>
+<rect x="40" y="875" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="913" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">React administration site</text>
+<text x="62" y="942" font-family="Arial" font-size="23" fill="#222c39">7 page modules in source</text>
+<text x="62" y="971" font-family="Arial" font-size="23" fill="#222c39">Login DTO mismatch blocks default flow</text>
+<text x="62" y="1000" font-family="Arial" font-size="23" fill="#222c39">Admin authorization enforced at API</text>
+<rect x="760" y="875" width="560" height="151" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="782" y="913" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">SMTP and S3</text>
+<text x="782" y="942" font-family="Arial" font-size="23" fill="#222c39">OTP email delivery</text>
+<text x="782" y="971" font-family="Arial" font-size="23" fill="#222c39">Authorized replay object storage</text>
+<text x="782" y="1000" font-family="Arial" font-size="23" fill="#222c39">Runtime configuration not verified</text>
+</svg>

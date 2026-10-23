@@ -1,0 +1,25 @@
+stateDiagram-v2
+  state "Intro" as S0
+  state "Cinematic" as S1
+  state "PreServe" as S2
+  state "Rally" as S3
+  state "Settling" as S4
+  state "BetweenPoints" as S5
+  state "BetweenGames" as S6
+  state "Timeout" as S7
+  state "MatchOver" as S8
+  [*] --> S0
+  S0 --> S1: 1 opening starts
+  S1 --> S2: 2 opening completes
+  S0 --> S2: 3 opening skipped/unavailable
+  S2 --> S3: 4 legal serve
+  S3 --> S4: 5 fault or point
+  S4 --> S5: 6 point settled
+  S5 --> S2: 7 next point
+  S4 --> S6: 8 game completed
+  S6 --> S2: 9 next game
+  S4 --> S8: 10 match completed
+  S2 --> S7: 11 legal timeout
+  S7 --> S2: 12 resume
+  S8 --> S0: 13 explicit replay/start new match only
+  S2 --> S2: 14 reject illegal serve

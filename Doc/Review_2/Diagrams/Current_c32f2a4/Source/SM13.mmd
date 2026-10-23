@@ -1,0 +1,18 @@
+stateDiagram-v2
+  state "PENDING" as S0
+  state "CHECKING" as S1
+  state "ACCEPTED" as S2
+  state "DECLINED" as S3
+  state "AppealedTarget" as S4
+  state "ClosedTarget" as S5
+  [*] --> S0
+  S0 --> S1: 1 authorized review begins
+  S1 --> S2: 2 valid accepted decision
+  S1 --> S3: 3 valid declined decision
+  S0 --> S2: 4 direct valid decision allowed by current setter
+  S0 --> S3: 5 direct valid decision allowed by current setter
+  S2 --> S4: 6 eligible appeal target
+  S4 --> S5: 7 appeal resolved target
+  S0 --> S0: 8 reject unauthorized decision
+  S3 --> [*]
+  S5 --> [*]

@@ -1,0 +1,18 @@
+stateDiagram-v2
+    %% GAME-SM02 - Online application flow
+    %% Source definition: My project/Assets/Scripts/Entites/Multiplayer/RoomModels.cs:8
+    Menu --> WaitingRoom: Open/Create/Join room
+    WaitingRoom --> Delay: FindAsync
+    Delay --> Searching: Clock tick
+    Searching --> Connecting: Match found
+    WaitingRoom --> Connecting: Host starts custom
+    Connecting --> Connecting: Accept ready check / load court
+    Connecting --> InMatch: MatchStarted callback
+    Connecting --> WaitingRoom: Ready rejected/resolved
+    Connecting --> Delay: Ready rejected and local accepted
+    Connecting --> Searching: RetryMatchAsync
+    InMatch --> Reconnecting: Disconnect / network failure
+    Reconnecting --> InMatch: Reconnect succeeds
+    Reconnecting --> WaitingRoom: Reconnect deadline or host unavailable
+    InMatch --> Results: ShowResult
+    Results --> WaitingRoom: ReturnToRoomAsync

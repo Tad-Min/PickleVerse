@@ -1,0 +1,66 @@
+%% ERD-DB-T07: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    drill_input_steps {
+        varchar_80 drill_code PK,FK "NOT NULL"
+        smallint step_number PK "NOT NULL"
+        smallint input_mask "NOT NULL"
+    }
+    drill_cosmetic_rewards {
+        varchar_80 drill_code PK,FK "NOT NULL"
+        varchar_80 item_code PK,FK "NOT NULL"
+        smallint required_stars "NOT NULL"
+    }
+    training_attempts {
+        uuid attempt_id PK "NOT NULL"
+        uuid user_id FK "NOT NULL"
+        varchar_100 client_attempt_id "NOT NULL"
+        varchar_80 drill_code FK "NOT NULL"
+        integer drill_version "NOT NULL"
+        varchar_16 status "NOT NULL"
+        boolean is_review "NOT NULL"
+        smallint total_trials "NOT NULL"
+        smallint required_successes "NOT NULL"
+        smallint completed_trials "NOT NULL"
+        smallint successes "NOT NULL"
+        integer contacts "NOT NULL"
+        numeric_14_3 duration_seconds "NOT NULL"
+        numeric_14_6 timing_total_seconds "NOT NULL"
+        numeric accuracy "NULL allowed"
+        numeric average_timing_seconds "NULL allowed"
+        smallint stars "NULL allowed"
+        jsonb checkpoint "NOT NULL"
+        timestamptz started_at "NOT NULL"
+        timestamptz ended_at "NULL allowed"
+        timestamptz updated_at "NOT NULL"
+    }
+    drill_reward_claims {
+        uuid user_id PK,FK "NOT NULL"
+        varchar_80 drill_code PK,FK "NOT NULL"
+        uuid attempt_id FK,UK "NOT NULL"
+        uuid reward_grant_id FK,UK "NOT NULL"
+        timestamptz claimed_at "NOT NULL"
+    }
+    drills {
+        varchar_80 drill_code PK "NOT NULL; reference only"
+        uuid created_by FK "NULL allowed; reference only"
+    }
+    cosmetic_items {
+        varchar_80 item_code PK "NOT NULL; reference only"
+        varchar_40 collection_code FK "NOT NULL; reference only"
+    }
+    app_users {
+        uuid user_id PK "NOT NULL; reference only"
+    }
+    reward_grants {
+        uuid reward_grant_id PK "NOT NULL; reference only"
+        uuid user_id FK "NOT NULL; reference only"
+    }
+    drills ||--o{ drill_input_steps : "drill_code"
+    drills ||--o{ drill_cosmetic_rewards : "drill_code"
+    cosmetic_items ||--o{ drill_cosmetic_rewards : "item_code"
+    app_users ||--o{ training_attempts : "user_id"
+    drills ||--o{ training_attempts : "drill_code"
+    training_attempts ||--o{ drill_reward_claims : "attempt_id,user_id,drill_code"
+    reward_grants ||--o{ drill_reward_claims : "reward_grant_id,user_id"

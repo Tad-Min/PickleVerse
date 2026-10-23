@@ -1,0 +1,98 @@
+{
+  "id": "SM06",
+  "title": "Private room",
+  "nodes": [
+    {
+      "id": "Created",
+      "title": "Created",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Joined",
+      "title": "Joined",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Ready",
+      "title": "Ready",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Playing",
+      "title": "Playing",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Closed",
+      "title": "Closed",
+      "body": [],
+      "x": 495,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Created",
+      "target": "Joined",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "Joined",
+      "target": "Ready",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "Ready",
+      "target": "Playing",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "Playing",
+      "target": "Closed",
+      "label": "5",
+      "dashed": false
+    },
+    {
+      "source": "Created",
+      "target": "Closed",
+      "label": "6",
+      "dashed": false
+    },
+    {
+      "source": "Joined",
+      "target": "Closed",
+      "label": "7",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Derived lifecycle/guard model; do not equate labels with a database enum. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 545
+}

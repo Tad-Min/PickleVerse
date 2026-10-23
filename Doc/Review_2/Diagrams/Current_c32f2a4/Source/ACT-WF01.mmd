@@ -1,0 +1,14 @@
+flowchart TD
+  Start((Start))
+  A1["Submit and verify account / Player, account API and SMTP"]
+  A2["Open tutorial and perform controls / Player and Unity tutorial"]
+  A3["Choose an unlocked drill / Player and catalog API"]
+  A4["Start server attempt and submit measurements / Unity trial telemetry and Game API"]
+  A5["Complete and refresh stars and first reward / Game API transaction and Unity refresh"]
+  Start --> A1
+  A1 --> A2
+  A2 --> A3
+  A3 --> A4
+  A4 --> A5
+  A5 --> End["A verified player completes a first drill and sees the persisted result."]
+  A2 -. "validation or dependency failure" .-> X["Expired OTP or invalid trial data is rejected; account/attempt can be retried without duplicate reward."]

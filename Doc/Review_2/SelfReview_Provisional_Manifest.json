@@ -1,0 +1,8 @@
+{
+  "status": "PROVISIONAL; official tagged run blocked until team freeze/tag",
+  "head": "c32f2a4c0a546d0ed4f0df1b2c97e185ed831fb6",
+  "raw_sha256": "ae9b2f3a0d5ccd284efaf82433b7ff57bce94f13ec4dd7c15a0dc99586dfbdbf",
+  "standard_prompt_sha256": "5ec8c71f87a80bed12aa6d0f019fe5a566b8ccf1e24551ccc82088c672eeb842",
+  "tool": "Codex GPT-6 family; exact UI model identifier not exposed",
+  "date": "2026-10-23"
+}

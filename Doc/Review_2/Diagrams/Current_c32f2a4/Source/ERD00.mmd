@@ -1,0 +1,25 @@
+flowchart LR
+  d0["Identity and tokens"]
+  d1["Player state and commands"]
+  d2["Social relationships"]
+  d3["Historical results"]
+  d4["Wallet and ledger"]
+  d5["Cosmetic ownership"]
+  d6["Achievements and missions"]
+  d7["Learning catalog"]
+  d8["Attempts and mastery"]
+  d9["Canonical online match"]
+  d10["Online replay storage"]
+  d1 --> d0
+  d10 --> d1
+  d10 --> d9
+  d2 --> d0
+  d3 --> d1
+  d4 --> d1
+  d5 --> d1
+  d5 --> d4
+  d6 --> d1
+  d8 --> d1
+  d8 --> d3
+  d8 --> d7
+  d9 --> d1

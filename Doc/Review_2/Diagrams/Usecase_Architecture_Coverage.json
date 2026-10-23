@@ -1,0 +1,2034 @@
+{
+  "baseline_head": "d44e8c063d837442dab9bc3ecc29eed7cc929cfa",
+  "analysis_date": "2026-10-23",
+  "notation": {
+    "usecase": "PlantUML true UML use cases with external actors and system boundaries",
+    "architecture": "Mermaid flowchart architecture; current/target separate"
+  },
+  "scope": "No game/backend changes; source-only audit, no tests, builds, service calls or deployment.",
+  "game_usecases_expected": 60,
+  "game_usecases_covered": 60,
+  "game_usecase_diagrams": [
+    {
+      "id": "UC-01",
+      "title": "Identity and lobby",
+      "ids": [
+        "G-UC01",
+        "G-UC02",
+        "G-UC03",
+        "G-UC04",
+        "G-UC05",
+        "G-UC06",
+        "G-UC58",
+        "G-UC60"
+      ]
+    },
+    {
+      "id": "UC-02a",
+      "title": "Tutorial and drill selection",
+      "ids": [
+        "G-UC07",
+        "G-UC08",
+        "G-UC09",
+        "G-UC10",
+        "G-UC11"
+      ]
+    },
+    {
+      "id": "UC-02b",
+      "title": "Drill practice and rewards",
+      "ids": [
+        "G-UC12",
+        "G-UC13",
+        "G-UC14",
+        "G-UC15",
+        "G-UC16",
+        "G-UC17",
+        "G-UC18",
+        "G-UC19"
+      ]
+    },
+    {
+      "id": "UC-02c",
+      "title": "Training insight and AI boundary",
+      "ids": [
+        "G-UC20",
+        "G-UC21",
+        "G-UC22",
+        "G-UC59"
+      ]
+    },
+    {
+      "id": "UC-03",
+      "title": "Bot matches and shared shot gameplay",
+      "ids": [
+        "G-UC23",
+        "G-UC24",
+        "G-UC25",
+        "G-UC26",
+        "G-UC27",
+        "G-UC28",
+        "G-UC29",
+        "G-UC30",
+        "G-UC56"
+      ]
+    },
+    {
+      "id": "UC-04",
+      "title": "Online matchmaking and private rooms",
+      "ids": [
+        "G-UC31",
+        "G-UC32",
+        "G-UC33",
+        "G-UC34",
+        "G-UC35",
+        "G-UC36",
+        "G-UC37",
+        "G-UC38",
+        "G-UC39"
+      ]
+    },
+    {
+      "id": "UC-05",
+      "title": "Progression, history and replay",
+      "ids": [
+        "G-UC40",
+        "G-UC41",
+        "G-UC42",
+        "G-UC43",
+        "G-UC44",
+        "G-UC45",
+        "G-UC46"
+      ]
+    },
+    {
+      "id": "UC-06",
+      "title": "Shop, collection and preferences",
+      "ids": [
+        "G-UC47",
+        "G-UC48",
+        "G-UC49",
+        "G-UC50",
+        "G-UC54",
+        "G-UC55",
+        "G-UC57"
+      ]
+    },
+    {
+      "id": "UC-07",
+      "title": "Social and leaderboard",
+      "ids": [
+        "G-UC51",
+        "G-UC52",
+        "G-UC53"
+      ]
+    }
+  ],
+  "usecases": [
+    {
+      "id": "G-UC01",
+      "title": "Use a local player profile",
+      "diagram": "UC-01",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Entites/Progression/ProgressionModels.cs",
+          "line": 85,
+          "excerpt": "[Serializable] public sealed class PlayerProfile"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/LocalPlayerStore.cs",
+          "line": 118,
+          "excerpt": "public static void WriteAtomic(string path, string value)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionRuntime.cs",
+          "line": 45,
+          "excerpt": "store = new LocalPlayerStore(Path.Combine(Application.persistentDataPath, \"LocalPlayers\"));"
+        }
+      ],
+      "notes": "Tự chọn/tạo player local, JSON tại persistentDataPath/LocalPlayers; không phải tài khoản backend."
+    },
+    {
+      "id": "G-UC02",
+      "title": "Initialize an online service identity",
+      "diagram": "UC-01",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/PlayerIdentityService.cs",
+          "line": 33,
+          "excerpt": "if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();"
+        }
+      ],
+      "notes": "Unity Authentication anonymous; không có form đăng ký/email/password hay map UserId backend trong game."
+    },
+    {
+      "id": "G-UC03",
+      "title": "Register or recover a shared account",
+      "diagram": "UC-01",
+      "status": "NO_GAME_EVIDENCE",
+      "original_status": "NO_GAME_EVIDENCE",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/PlayerIdentityService.cs",
+          "line": 33,
+          "excerpt": "if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();"
+        }
+      ],
+      "notes": "Không tìm thấy API HTTP/auth UI game. Backend phải được đối chiếu riêng; anonymous session không thay thế yêu cầu này."
+    },
+    {
+      "id": "G-UC04",
+      "title": "Edit the local display name",
+      "diagram": "UC-01",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionRuntime.cs",
+          "line": 115,
+          "excerpt": "public void SetName(string name)"
+        }
+      ],
+      "notes": "Tên local làm sạch, giới hạn18 ký tự; UI hiện có nằm trong form player. Chức năng sửa Elo/tiền riêng bị khóa Editor/Development Build."
+    },
+    {
+      "id": "G-UC05",
+      "title": "Complete onboarding self-assessment",
+      "diagram": "UC-01",
+      "status": "NO_GAME_EVIDENCE",
+      "original_status": "NO_GAME_EVIDENCE",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TutorialProgress.cs",
+          "line": 10,
+          "excerpt": "public const string CompletedKey=\"PKV.Tutorial.Basic.Completed.v1\",SkippedKey=\"PKV.Tutorial.Basic.Skipped.v1\";"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/EloPolicy.cs",
+          "line": 9,
+          "excerpt": "public static int Delta(int own, int opponent, bool won, int priorWins, int priorLosses)"
+        }
+      ],
+      "notes": "Có tutorial onboarding; chưa thấy self-assessment/classifier gán hạng khởi điểm. Elo local mặc định100."
+    },
+    {
+      "id": "G-UC06",
+      "title": "Choose a lobby character",
+      "diagram": "UC-01",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/FrontEnd/HomeLobbyPresentation.cs",
+          "line": 110,
+          "excerpt": "public void SelectFemale() { SetCharacter(false, true); }"
+        }
+      ],
+      "notes": "Giới tính/lựa chọn sảnh lưu PlayerPrefs; nhân vật được chọn nhảy. Nam AllNight; nữ luân phiên DanceWin/Boom."
+    },
+    {
+      "id": "G-UC58",
+      "title": "Navigate through a scene-loading screen",
+      "diagram": "UC-01",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Settings/SceneLoading.cs",
+          "line": 35,
+          "excerpt": "public static bool Load(string scene,Action request=null,Func<bool> pageReady=null)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Settings/SceneWarmup.cs",
+          "line": 18,
+          "excerpt": "public bool Ready(int preferredFps)"
+        }
+      ],
+      "notes": "Asyncscene80%,warm-up82–96%,networkreadinessgating,100%reveal. StableFPSkhôngbắtbuộcluôn60trênmáyyếuvìsettledfallback."
+    },
+    {
+      "id": "G-UC60",
+      "title": "Receive a classifier-based starting tier",
+      "diagram": "UC-01",
+      "status": "NO_GAME_EVIDENCE",
+      "original_status": "NO_GAME_EVIDENCE",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Entites/Progression/ProgressionModels.cs",
+          "line": 85,
+          "excerpt": "[Serializable] public sealed class PlayerProfile"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/EloPolicy.cs",
+          "line": 9,
+          "excerpt": "public static int Delta(int own, int opponent, bool won, int priorWins, int priorLosses)"
+        }
+      ],
+      "notes": "DefaultElo100vàmathpolicycó;khôngMLplacement/onboarding."
+    },
+    {
+      "id": "G-UC07",
+      "title": "Learn court rules and faults",
+      "diagram": "UC-02a",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TutorialCurriculum.cs",
+          "line": 17,
+          "excerpt": "public static readonly TutorialLesson[] Lessons={"
+        }
+      ],
+      "notes": "18 bước gồm sân/kitchen/serve-two-bounce/lưới/out/double-bounce/kitchen volley/movement/9 thao tác đánh/trang hoàn thành."
+    },
+    {
+      "id": "G-UC08",
+      "title": "Practice movement and running",
+      "diagram": "UC-02a",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TutorialDirector.cs",
+          "line": 108,
+          "excerpt": "Feedback=moved&&ran?\"Đã tới giới hạn sân. Thả phím hoặc đổi hướng; bạn có thể tiếp tục.\":\"Đã tới giới hạn sân. Đổi hướng để tiếp tục thử di chuyển và chạy.\";"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TouchShotGesture.cs",
+          "line": 17,
+          "excerpt": "public const string HelpText=\"<size=28><color=#83E6CD>ĐIỀU KHIỂN CẢM ỨNG</color></size>\\n\\nKéo cần bên trái để đi bộ; giữ nút CHẠY bên phải để chạy nhanh.\\nGiữ rồi thả DRIVE / DINK / VOLLEY để đánh.\\nKéo lên: DRIVE → SMASH • DINK → DROP • VOLLEY → RESET\\nKéo trái: CHÉO • Kéo phải: LỰC • Kéo xuống: HỦY\\nTrở về giữa để đánh thường. Có thể vừa di chuyển vừa đánh.\\n\\nGiao bóng bằng DRIVE; kéo trái/phải để giao chéo/mạnh.\\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\\nChỉnh kích thước, độ mờ, tay trái và bố trí trong Cài đặt.\";"
+        }
+      ],
+      "notes": "Kiểm tra chuyển động thực, giới hạn sân; đi/chạy tách biệt. Chưa đo điện thoại vật lý trong đợt đọc source."
+    },
+    {
+      "id": "G-UC09",
+      "title": "Practice nine shot input combinations",
+      "diagram": "UC-02a",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TutorialCurriculum.cs",
+          "line": 17,
+          "excerpt": "public static readonly TutorialLesson[] Lessons={"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/ShotInput.cs",
+          "line": 61,
+          "excerpt": "static bool Resolve(int b, int m, bool serve, out ShotIntent intent)"
+        }
+      ],
+      "notes": "Drive,Dink,Volley,3 biến thể Lực,3 biến thể Chéo; feed huấn luyện, tiếp xúc và kiểm tra cú đúng."
+    },
+    {
+      "id": "G-UC10",
+      "title": "Replay, skip or complete the tutorial",
+      "diagram": "UC-02a",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TutorialProgress.cs",
+          "line": 10,
+          "excerpt": "public const string CompletedKey=\"PKV.Tutorial.Basic.Completed.v1\",SkippedKey=\"PKV.Tutorial.Basic.Skipped.v1\";"
+        }
+      ],
+      "notes": "Next/Replay/Skip có trong TutorialDirector. Trạng thái tutorial lưu PlayerPrefs toàn cài đặt, chưa gắn player local/cloud."
+    },
+    {
+      "id": "G-UC11",
+      "title": "Browse and select unlocked drills",
+      "diagram": "UC-02a",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 11,
+          "excerpt": "public static readonly TrainingDrill[] Lessons = {"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 49,
+          "excerpt": "public static TrainingAttempt Start(PlayerProfile p,string id,bool retry=false)"
+        }
+      ],
+      "notes": "12 drill,4 tầng. Có prerequisite và hướng dẫn; số lượng proposal khoảng15 nên chưa khớp hoàn toàn."
+    },
+    {
+      "id": "G-UC12",
+      "title": "Practice serve, drive, dink and volley",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 11,
+          "excerpt": "public static readonly TrainingDrill[] Lessons = {"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 269,
+          "excerpt": "Feedback=TrainingCurriculum.ErrorName(error)+\" • \"+TrainingCurriculum.Tip(error);"
+        }
+      ],
+      "notes": "4 bài cơ bản: mỗi bài8 lượt,6 thành công để đạt."
+    },
+    {
+      "id": "G-UC13",
+      "title": "Practice modifiers, drop and reset",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 11,
+          "excerpt": "public static readonly TrainingDrill[] Lessons = {"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 269,
+          "excerpt": "Feedback=TrainingCurriculum.ErrorName(error)+\" • \"+TrainingCurriculum.Tip(error);"
+        }
+      ],
+      "notes": "3 bài kiểm soát:10 lượt,7 thành công để đạt."
+    },
+    {
+      "id": "G-UC14",
+      "title": "Practice smash, footwork and approach",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 11,
+          "excerpt": "public static readonly TrainingDrill[] Lessons = {"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 269,
+          "excerpt": "Feedback=TrainingCurriculum.ErrorName(error)+\" • \"+TrainingCurriculum.Tip(error);"
+        }
+      ],
+      "notes": "3 bài nâng cao:12 lượt,9 thành công để đạt; có vòng hồi vị/tiến lên."
+    },
+    {
+      "id": "G-UC15",
+      "title": "Practice doubles coordination",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 11,
+          "excerpt": "public static readonly TrainingDrill[] Lessons = {"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 269,
+          "excerpt": "Feedback=TrainingCurriculum.ErrorName(error)+\" • \"+TrainingCurriculum.Tip(error);"
+        }
+      ],
+      "notes": "2 drill dùng đồng đội AI: giữ khoảng cách và drop-transition; không phải bài huấn luyện online2người."
+    },
+    {
+      "id": "G-UC16",
+      "title": "Receive error feedback and corrective tips",
+      "diagram": "UC-02b",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 269,
+          "excerpt": "Feedback=TrainingCurriculum.ErrorName(error)+\" • \"+TrainingCurriculum.Tip(error);"
+        },
+        {
+          "path": "My project/Assets/Scripts/Entites/Training/TrainingModels.cs",
+          "line": 7,
+          "excerpt": "public enum TrainingSkill { Serve, Drive, Dink, Volley, Modifiers, Drop, Reset, Smash, Footwork, Approach, DoublesCover, DoublesTransition }"
+        }
+      ],
+      "notes": "11 nhóm lỗi rule-based; phản hồi ngay theo kết quả hành động. Không phải classifier ML hay AI service độc lập."
+    },
+    {
+      "id": "G-UC17",
+      "title": "Earn first-pass stars, XP and Tokenpad",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 63,
+          "excerpt": "a.stars=!a.passed?0:a.Accuracy>=.90&&a.Timing<=.16?3:a.Accuracy>=.80?2:1;"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 67,
+          "excerpt": "if(a.passed&&!a.review){_ = checked(p.coins+lesson.reward);ProgressionEngine.Grant(p,new RewardBundle(lesson.reward,0,lesson.xp));a.rewardTokenpad=lesson.reward;a.rewardXp=lesson.xp;}"
+        }
+      ],
+      "notes": "0 sao nếu chưa đủ required.3 sao nếu accuracy≥90% và timing trung bình≤0.16s;2 sao≥80%;còn lại1. Thưởng chỉ khi đạt và không review."
+    },
+    {
+      "id": "G-UC18",
+      "title": "Review a passed drill without rewards",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 49,
+          "excerpt": "public static TrainingAttempt Start(PlayerProfile p,string id,bool retry=false)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 67,
+          "excerpt": "if(a.passed&&!a.review){_ = checked(p.coins+lesson.reward);ProgressionEngine.Grant(p,new RewardBundle(lesson.reward,0,lesson.xp));a.rewardTokenpad=lesson.reward;a.rewardXp=lesson.xp;}"
+        }
+      ],
+      "notes": "review được đánh dấu khi bắt đầu và kiểm tra lại lúc hoàn thành; vẫn lưu sao/thống kê,không Tokenpad/XP."
+    },
+    {
+      "id": "G-UC19",
+      "title": "Pause or resume a drill",
+      "diagram": "UC-02b",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 300,
+          "excerpt": "public void SaveActive()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 42,
+          "excerpt": "public static string Recommended(TrainingProfile p)"
+        }
+      ],
+      "notes": "Checkpoint active attempt lưu qua runtime. Gợi ý ưu tiên bài dở dang."
+    },
+    {
+      "id": "G-UC20",
+      "title": "Inspect training progress and frequent errors",
+      "diagram": "UC-02c",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/FrontEnd/PlayerProgressionMenu.Training.cs",
+          "line": 24,
+          "excerpt": "void BuildTrainingProgress(PlayerProfile player,bool rebuild=true)"
+        }
+      ],
+      "notes": "UI tổng hợp record theo bài,accuracy,bestStars,time,errors,retries."
+    },
+    {
+      "id": "G-UC21",
+      "title": "Receive a next-drill recommendation",
+      "diagram": "UC-02c",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/TrainingModels.cs",
+          "line": 42,
+          "excerpt": "public static string Recommended(TrainingProfile p)"
+        }
+      ],
+      "notes": "Heuristic ưu tiên active→bài mở khóa chưa đạt→accuracy thấp/retry nhiều; chưa có engine ML cá nhân hóa từ telemetry trận."
+    },
+    {
+      "id": "G-UC22",
+      "title": "Train offline and synchronize progress",
+      "diagram": "UC-02c",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/LocalPlayerStore.cs",
+          "line": 118,
+          "excerpt": "public static void WriteAtomic(string path, string value)"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 300,
+          "excerpt": "public void SaveActive()"
+        }
+      ],
+      "notes": "Luyện tập/lưu local có bằng chứng; không có sync tiến trình lên backend/cloud khi reconnect."
+    },
+    {
+      "id": "G-UC59",
+      "title": "Receive ML-based telemetry classification",
+      "diagram": "UC-02c",
+      "status": "NO_GAME_EVIDENCE",
+      "original_status": "NO_GAME_EVIDENCE",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TrainingDirector.cs",
+          "line": 269,
+          "excerpt": "Feedback=TrainingCurriculum.ErrorName(error)+\" • \"+TrainingCurriculum.Tip(error);"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/PaddleContact.cs",
+          "line": 26,
+          "excerpt": "public static HitGrade Grade(float distance, float timingError) =>"
+        }
+      ],
+      "notes": "Rule-baseddrillfeedbackvàtiminggradecó;chưatìmmodelservice/classifier/featurepipelineđểđápứngyêucầuML."
+    },
+    {
+      "id": "G-UC23",
+      "title": "Choose bot difficulty, venue and lighting",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/FrontEnd/ModeSelectionMenu.cs",
+          "line": 224,
+          "excerpt": "public void StartBot()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Entites/Multiplayer/RoomModels.cs",
+          "line": 42,
+          "excerpt": "public CourtVenue venue;"
+        }
+      ],
+      "notes": "ModeSelection chuẩn bị launch settings.2 sân mới Professional/LowPoly cho lựa chọn hiện tại; nguồn có thêm default/legacy enum."
+    },
+    {
+      "id": "G-UC24",
+      "title": "Play a singles match against a bot",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/LocalBot.cs",
+          "line": 14,
+          "excerpt": "public void Step(BotMatch match, MatchActor actor, float dt, out Vector2 move, out bool run)"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/Rules/SinglesRules.cs",
+          "line": 29,
+          "excerpt": "public sealed class SinglesRules"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/BotMatch.Progression.cs",
+          "line": 31,
+          "excerpt": "if(botDifficulty==3&&!ranked){behaviorBot=GetComponent<BhTreeBot>()??gameObject.AddComponent<BhTreeBot>();behaviorBot.Initialize(this,player.elo);}"
+        }
+      ],
+      "notes": "Vòng local đầy đủ giao/rally/game/match,cinematic,điểm/lỗi. Bot thường là heuristics; lựa chọn BhTree lànhánh riêng."
+    },
+    {
+      "id": "G-UC25",
+      "title": "Play an Elo-adapted behavior-tree bot",
+      "diagram": "UC-03",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/BhTreeBot.cs",
+          "line": 26,
+          "excerpt": "public void Initialize(BotMatch match,int elo)"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/BhTreeBot.cs",
+          "line": 15,
+          "excerpt": "public int Tier => Elo < 500 ? 0 : Elo < 2000 ? 1 : 2;"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/BotMatch.Progression.cs",
+          "line": 31,
+          "excerpt": "if(botDifficulty==3&&!ranked){behaviorBot=GetComponent<BhTreeBot>()??gameObject.AddComponent<BhTreeBot>();behaviorBot.Initialize(this,player.elo);}"
+        }
+      ],
+      "notes": "Có Unity Behavior graph được chạy thủ công theo tick,3 tier từ Elo. Chưa chứng minh tự học/đổi tier trong cùng trận; graph phải tồn tại."
+    },
+    {
+      "id": "G-UC26",
+      "title": "Move, run and hit at the same time",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/ShotInput.cs",
+          "line": 5,
+          "excerpt": "public enum ShotKind { Drive, Dink, Volley, Drop, Smash, Reset, Serve }"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/NetworkPlayer.cs",
+          "line": 262,
+          "excerpt": "[ServerRpc] void ShotServerRpc(int kind, bool attack, bool crossCourt,Vector2 axes,bool run)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/NetworkPlayer.cs",
+          "line": 275,
+          "excerpt": "void Reconcile(PlayerFrame old, PlayerFrame frame)"
+        }
+      ],
+      "notes": "Shared MatchActor/MatchMovement cùng local input resolver; online gửi input lên host và prediction/reconcile."
+    },
+    {
+      "id": "G-UC27",
+      "title": "Serve and execute shot types or modifiers",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/ShotInput.cs",
+          "line": 5,
+          "excerpt": "public enum ShotKind { Drive, Dink, Volley, Drop, Smash, Reset, Serve }"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/ShotInput.cs",
+          "line": 61,
+          "excerpt": "static bool Resolve(int b, int m, bool serve, out ShotIntent intent)"
+        }
+      ],
+      "notes": "Serve,Drive,Dink,Volley,Drop,Smash,Reset; power/cross. Parser tối đa2bit thao tác,không thể power+cross đồng thời; Serve chỉDrive base."
+    },
+    {
+      "id": "G-UC28",
+      "title": "Receive Perfect or Good contact grading",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/PaddleContact.cs",
+          "line": 18,
+          "excerpt": "public const float TimingWindow = .065f;"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/PaddleContact.cs",
+          "line": 26,
+          "excerpt": "public static HitGrade Grade(float distance, float timingError) =>"
+        }
+      ],
+      "notes": "Hoàn hảo distance≤.145m và timing±.030s; cửa sổ hợp lệ±.065s; đánh giá không quyết định gate toàn bộ cú hợp lệ."
+    },
+    {
+      "id": "G-UC29",
+      "title": "Pause, get help, time out or leave a match",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/Rules/SinglesRules.cs",
+          "line": 29,
+          "excerpt": "public sealed class SinglesRules"
+        },
+        {
+          "path": "My project/Assets/Scripts/Settings/GameSettings.cs",
+          "line": 11,
+          "excerpt": "public sealed class SettingsData"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/PickleballRules.cs",
+          "line": 8,
+          "excerpt": "[Serializable] public sealed class PickleballRules"
+        }
+      ],
+      "notes": "Local pause;online không dừng thời gian cho cả trận khi mở settings.2time-out/game trên rules local vàonline;forfeit theo lifecycle."
+    },
+    {
+      "id": "G-UC30",
+      "title": "View entrance and win/loss presentations",
+      "diagram": "UC-03",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/BotMatchVictory.cs",
+          "line": 101,
+          "excerpt": "winnerTitle.text = PlayerWon ? \"Thắng\" : \"Thua\";"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerCinematic.cs",
+          "line": 14,
+          "excerpt": "public const float IntroDuration=9.5f;"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerCinematic.cs",
+          "line": 86,
+          "excerpt": "if(match.Finished.Value && !ShowingOutcome && ui.EndAnnouncementFinished && (!ui.announcements||!ui.announcements.Busy))BeginOutcome(match);"
+        }
+      ],
+      "notes": "Online/local chờ thông báo kết thúc;focus đội/người chơi local.2v2 hiển thị2người cùngđội;Continue tới thống kê online."
+    },
+    {
+      "id": "G-UC56",
+      "title": "Use touch movement, sprint and shot gestures",
+      "diagram": "UC-03",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TouchShotGesture.cs",
+          "line": 24,
+          "excerpt": "public int Mask => Direction == TouchShotDirection.Cancel ? 0 : Direction == TouchShotDirection.Up ?"
+        },
+        {
+          "path": "My project/Assets/Scripts/LocalMatch/TouchShotGesture.cs",
+          "line": 17,
+          "excerpt": "public const string HelpText=\"<size=28><color=#83E6CD>ĐIỀU KHIỂN CẢM ỨNG</color></size>\\n\\nKéo cần bên trái để đi bộ; giữ nút CHẠY bên phải để chạy nhanh.\\nGiữ rồi thả DRIVE / DINK / VOLLEY để đánh.\\nKéo lên: DRIVE → SMASH • DINK → DROP • VOLLEY → RESET\\nKéo trái: CHÉO • Kéo phải: LỰC • Kéo xuống: HỦY\\nTrở về giữa để đánh thường. Có thể vừa di chuyển vừa đánh.\\n\\nGiao bóng bằng DRIVE; kéo trái/phải để giao chéo/mạnh.\\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\\nChỉnh kích thước, độ mờ, tay trái và bố trí trong Cài đặt.\";"
+        }
+      ],
+      "notes": "Lêncombo,tráichéo,phảilực,xuốnghủy;độc lậpdi chuyển/chạy/đánh. Editor/môphỏngvàAPKtestcóbáocáo;chưađoA32thật."
+    },
+    {
+      "id": "G-UC31",
+      "title": "Find an Elo-based singles match",
+      "diagram": "UC-04",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Matchmaking.cs",
+          "line": 23,
+          "excerpt": "public async Task FindAsync()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/EloPolicy.cs",
+          "line": 53,
+          "excerpt": "public const double PrioritySeconds = 30, DeadlineSeconds = 360;"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/EloPolicy.cs",
+          "line": 9,
+          "excerpt": "public static int Delta(int own, int opponent, bool won, int priorWins, int priorLosses)"
+        }
+      ],
+      "notes": "UGS Matchmaker/Session thực;ưu tiên30s,mở±120,deadline360s fallbackbot. Trường hợp2máyInternet chưa được tái nghiệm thu trong đợt read-only."
+    },
+    {
+      "id": "G-UC32",
+      "title": "Form a party and find a doubles match",
+      "diagram": "UC-04",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Matchmaking.cs",
+          "line": 23,
+          "excerpt": "public async Task FindAsync()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/RoomService.cs",
+          "line": 24,
+          "excerpt": "public Task SelectCustomAsync(PlayMode mode) => Switch(mode, true);"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/PickleballRules.cs",
+          "line": 8,
+          "excerpt": "[Serializable] public sealed class PickleballRules"
+        }
+      ],
+      "notes": "Có room captain,group matchmaker,roster/team;sourcecho2v2.Nghiệmthuđồngthời4máy/networkmới làbằngchứng vận hành."
+    },
+    {
+      "id": "G-UC33",
+      "title": "Accept or decline a found match",
+      "diagram": "UC-04",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Ready.cs",
+          "line": 49,
+          "excerpt": "public async Task AcceptMatchAsync()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Ready.cs",
+          "line": 121,
+          "excerpt": "async Task ResolveReadyAsync(string reason)"
+        }
+      ],
+      "notes": "Ready check theo session properties;ngườiaccepttìmtiếpkhireject,ngườideclinekhôngtìmlại tự động theo policy."
+    },
+    {
+      "id": "G-UC34",
+      "title": "Create a private singles or doubles room",
+      "diagram": "UC-04",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/FrontEnd/ModeSelectionMenu.cs",
+          "line": 103,
+          "excerpt": "public void OpenRooms()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/RoomService.cs",
+          "line": 24,
+          "excerpt": "public Task SelectCustomAsync(PlayMode mode) => Switch(mode, true);"
+        }
+      ],
+      "notes": "Entry custom đãchuyển ModeSelection→Tạo phòng;UI ởPlayMultiplayer nhậnRoomLaunchRequest."
+    },
+    {
+      "id": "G-UC35",
+      "title": "Join a room using its code",
+      "diagram": "UC-04",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/RoomService.cs",
+          "line": 26,
+          "excerpt": "public Task JoinAsync(string code) => backend.ExecuteAsync(() =>"
+        }
+      ],
+      "notes": "Mã phòng quaUnity Session;khôngtươngđươnginvitefriendlistserver."
+    },
+    {
+      "id": "G-UC36",
+      "title": "Manage teams, remove members and start",
+      "diagram": "UC-04",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/RoomService.cs",
+          "line": 24,
+          "excerpt": "public Task SelectCustomAsync(PlayMode mode) => Switch(mode, true);"
+        }
+      ],
+      "notes": "RoomService chỉđổiđội khiCustom;host start/kick. Cần kiểmtramãchi tiếtvàrolepermissiontrongbackend/onlineaudit."
+    },
+    {
+      "id": "G-UC37",
+      "title": "Play and synchronize an online match",
+      "diagram": "UC-04",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/NetworkPlayer.cs",
+          "line": 262,
+          "excerpt": "[ServerRpc] void ShotServerRpc(int kind, bool attack, bool crossCourt,Vector2 axes,bool run)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/NetworkPlayer.cs",
+          "line": 275,
+          "excerpt": "void Reconcile(PlayerFrame old, PlayerFrame frame)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/PickleballRules.cs",
+          "line": 8,
+          "excerpt": "[Serializable] public sealed class PickleballRules"
+        }
+      ],
+      "notes": "Host xácthựcRPC,tínhbóng/luật,kếtquả quaNetworkVariables;clientprediction/reconciliation cho movement. Đâylàhost/serverauthority,khôngchứngminhdedicatedheadlessproduction."
+    },
+    {
+      "id": "G-UC38",
+      "title": "Reconnect after a connection loss",
+      "diagram": "UC-04",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Ranked.cs",
+          "line": 13,
+          "excerpt": "public async Task PersistProgressionResultsAsync(string json)"
+        }
+      ],
+      "notes": "CólifecycleReconnect vàpendingresult;MultiplayerSettings.reconnectSeconds30. Khôngchứngminhhostmigration/khôiphụcmọisựcố."
+    },
+    {
+      "id": "G-UC39",
+      "title": "View match statistics and Elo changes",
+      "diagram": "UC-04",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/NetworkMatch.Progression.cs",
+          "line": 56,
+          "excerpt": "void PublishProgressionResults()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/MultiplayerApp.Ranked.cs",
+          "line": 13,
+          "excerpt": "public async Task PersistProgressionResultsAsync(string json)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/EloPolicy.cs",
+          "line": 9,
+          "excerpt": "public static int Delta(int own, int opponent, bool won, int priorWins, int priorLosses)"
+        }
+      ],
+      "notes": "Host publish kếtquả,sessionlưutạmprogressionResults,clientápdụnglocalprofile. Chưa có authoritativeaccountDB/Eloglobal."
+    },
+    {
+      "id": "G-UC40",
+      "title": "Inspect profile, XP, level and match totals",
+      "diagram": "UC-05",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Entites/Progression/ProgressionModels.cs",
+          "line": 85,
+          "excerpt": "[Serializable] public sealed class PlayerProfile"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionEngine.cs",
+          "line": 60,
+          "excerpt": "public static void Grant(PlayerProfile p, RewardBundle reward)"
+        }
+      ],
+      "notes": "ĐếmactiveSeconds khi focus/unpaused,lưu30s;levelXP cầnlevel×10,migrationcurrency."
+    },
+    {
+      "id": "G-UC41",
+      "title": "View achievements and claim each reward once",
+      "diagram": "UC-05",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionConfig.cs",
+          "line": 12,
+          "excerpt": "public void SetDefaults()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionEngine.cs",
+          "line": 46,
+          "excerpt": "bool ClaimDefinition(PlayerProfile p, ProgressDefinition d)"
+        }
+      ],
+      "notes": "10 achievement mặc định;tổngdefinitions có thể override ResourcesConfig. Claim kiểmtratargetvàclaimed."
+    },
+    {
+      "id": "G-UC42",
+      "title": "Track daily or weekly missions and claim",
+      "diagram": "UC-05",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionConfig.cs",
+          "line": 12,
+          "excerpt": "public void SetDefaults()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionEngine.cs",
+          "line": 46,
+          "excerpt": "bool ClaimDefinition(PlayerProfile p, ProgressDefinition d)"
+        }
+      ],
+      "notes": "7daily,10weekly mặc định;UTC resetngày/tuầnthứHai;allcompletedbonus."
+    },
+    {
+      "id": "G-UC43",
+      "title": "Track the daily play streak",
+      "diagram": "UC-05",
+      "status": "AS_IS_PARTIAL",
+      "original_status": "AS_IS_PARTIAL",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Progression/DailyStreakEngine.cs",
+          "line": 18,
+          "excerpt": "public static void Apply(PlayerProfile p, MatchResult r)"
+        }
+      ],
+      "notes": "DailyStreakEngine ghi ngày có trận hoàn tất/khôngforfeit;UI hiểnthịchuỗi. Khôngthấygrantrewardriêngtheomốcdaily-streaktrongengine."
+    },
+    {
+      "id": "G-UC44",
+      "title": "Inspect the latest twenty match records",
+      "diagram": "UC-05",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/FrontEnd/PlayerProgressionMenu.cs",
+          "line": 240,
+          "excerpt": "void AddHistory(MatchResult result)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionEngine.cs",
+          "line": 98,
+          "excerpt": "if (p.history.Count > 20) p.history.RemoveRange(20, p.history.Count - 20);"
+        }
+      ],
+      "notes": "MatchResultlưuscore từnggame,đốithủ,Elo,outcome,forfeit;customđượclưunhưngkhôngeligiblemissionXP."
+    },
+    {
+      "id": "G-UC45",
+      "title": "Record a local or online replay",
+      "diagram": "UC-05",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Replays/ReplayRecorder.cs",
+          "line": 63,
+          "excerpt": "nextSample+=1d/30;if(nextSample<Time.realtimeSinceStartupAsDouble)nextSample=Time.realtimeSinceStartupAsDouble+1d/30;Capture();"
+        },
+        {
+          "path": "My project/Assets/Scripts/Replays/LocalReplayRepository.cs",
+          "line": 58,
+          "excerpt": "public void WriteChunk(ReplayMetadata m,ReplayChunk chunk)"
+        }
+      ],
+      "notes": "30Hz,skeleton+ball+score;JSON.GZchunk,asyncwrites;khôngvideorecording/cloudS3."
+    },
+    {
+      "id": "G-UC46",
+      "title": "Play, pause, seek or change replay speed",
+      "diagram": "UC-05",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Replays/ReplayView.cs",
+          "line": 141,
+          "excerpt": "void BuildControls()"
+        }
+      ],
+      "notes": "Seek,tạm dừng,0.5×/1×/2×,trởlạihistory;dữliệulocalcóthểkhônghoàntất."
+    },
+    {
+      "id": "G-UC47",
+      "title": "Browse paddles and inspect a 3D preview",
+      "diagram": "UC-06",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Shop/ShopScreen.cs",
+          "line": 97,
+          "excerpt": "public async void ConfirmPurchase()"
+        },
+        {
+          "path": "My project/Assets/Scripts/Shop/ShopCatalog.cs",
+          "line": 7,
+          "excerpt": "[Serializable] public sealed class PaddleOffer"
+        }
+      ],
+      "notes": "Cosmeticpaddlecatalog;3Drotate/zoom/reset;khônggánthànhnhiệmvụbắtbuộcproposalchưađổi."
+    },
+    {
+      "id": "G-UC48",
+      "title": "Buy a cosmetic using virtual currency",
+      "diagram": "UC-06",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Shop/PlayerEconomy.cs",
+          "line": 50,
+          "excerpt": "public Task<PurchaseResult> PurchaseAsync(string itemId,ShopCurrency currency,string requestId)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Shop/ProfilePlayerEconomy.cs",
+          "line": 10,
+          "excerpt": "public sealed class ProfileEconomyStorage : IEconomyStorage"
+        }
+      ],
+      "notes": "Purchaseconfirmation,insufficientfunds,alreadyowned,requestIdidempotent;transactionlocalJSON;khôngserver-authoritativeeconomy."
+    },
+    {
+      "id": "G-UC49",
+      "title": "Inspect the collection and equip a paddle",
+      "diagram": "UC-06",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Shop/PlayerEconomy.cs",
+          "line": 43,
+          "excerpt": "public Task<EquipStatus> EquipPaddleAsync(string itemId)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Shop/ShopScreen.cs",
+          "line": 41,
+          "excerpt": "status.text=collectionMode?\"Skin chỉ thay đổi diện mạo • Không thay đổi sức mạnh\":\"Tokenpad nhận từ trận đấu • Skin chỉ thay đổi diện mạo\";"
+        }
+      ],
+      "notes": "Chỉdùngitemowned;skinđổidiệnmạo,khôngthaystrength/hitbox."
+    },
+    {
+      "id": "G-UC50",
+      "title": "Top up Elite Token with real money",
+      "diagram": "UC-06",
+      "status": "OUTSIDE_BASELINE",
+      "original_status": "NO_GAME_EVIDENCE",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Shop/PlayerEconomy.cs",
+          "line": 50,
+          "excerpt": "public Task<PurchaseResult> PurchaseAsync(string itemId,ShopCurrency currency,string requestId)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Progression/ProgressionEngine.cs",
+          "line": 60,
+          "excerpt": "public static void Grant(PlayerProfile p, RewardBundle reward)"
+        }
+      ],
+      "notes": "ElitekhôngđượctặngtừProgression. ChưathấyIAP/MoMo/VNPay/verifiedreceipttronggame;khôngđưavàophạmvibắtbuộc."
+    },
+    {
+      "id": "G-UC54",
+      "title": "Change audio, graphics and FPS preferences",
+      "diagram": "UC-06",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Settings/GameSettings.cs",
+          "line": 11,
+          "excerpt": "public sealed class SettingsData"
+        },
+        {
+          "path": "My project/Assets/Scripts/Settings/GameSettings.cs",
+          "line": 75,
+          "excerpt": "public static void Commit(SettingsData settings)"
+        }
+      ],
+      "notes": "Master/music/effects,quality,MSAA,shadows,renderScale,30/60/120FPS,vsync;mobilepolicycóthểhạnchếruntime."
+    },
+    {
+      "id": "G-UC55",
+      "title": "Rebind keys and customize touch controls",
+      "diagram": "UC-06",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Settings/GameSettings.cs",
+          "line": 83,
+          "excerpt": "public static bool TryBind(SettingsData data,GameAction action,Key key,out string error)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Settings/GameSettings.cs",
+          "line": 11,
+          "excerpt": "public sealed class SettingsData"
+        }
+      ],
+      "notes": "Phímkhôngtrùng,Escreserve;scale/opacity/lefthanded/deadzone/touchpositionspersist."
+    },
+    {
+      "id": "G-UC57",
+      "title": "Control the lobby music playlist",
+      "diagram": "UC-06",
+      "status": "AS_IS",
+      "original_status": "AS_IS",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Settings/GameSettings.cs",
+          "line": 11,
+          "excerpt": "public sealed class SettingsData"
+        }
+      ],
+      "notes": "MusicPlayer/MusicUI cóplaylist,state,time,previous/next;menu/cataloquetrainingphátnhạc,trậnđấudừngnhạc."
+    },
+    {
+      "id": "G-UC51",
+      "title": "Search and add or remove demo friends",
+      "diagram": "UC-07",
+      "status": "DEMO_ONLY",
+      "original_status": "DEMO_ONLY",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Social/OfflineSocialDirectory.cs",
+          "line": 11,
+          "excerpt": "// Development fixtures, deliberately independent of saved progression and online services."
+        },
+        {
+          "path": "My project/Assets/Scripts/Social/OfflineSocialDirectory.cs",
+          "line": 59,
+          "excerpt": "public bool AddFriend(string playerId, string friendId)"
+        },
+        {
+          "path": "My project/Assets/Scripts/Social/OfflineSocialDirectory.cs",
+          "line": 95,
+          "excerpt": "// This memory-only session never writes friends or fixture data to player JSON."
+        }
+      ],
+      "notes": "Fixtures30người,6seedfriends,bộnhớphiên;khôngfriendrequest/accept/persistent/onlinepresence."
+    },
+    {
+      "id": "G-UC52",
+      "title": "Inspect the demo Elo leaderboard",
+      "diagram": "UC-07",
+      "status": "DEMO_ONLY",
+      "original_status": "DEMO_ONLY",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Social/OfflineSocialDirectory.cs",
+          "line": 71,
+          "excerpt": "public IReadOnlyList<LeaderboardEntry> Leaderboard(PlayerProfile current, string query=\"\")"
+        },
+        {
+          "path": "My project/Assets/Scripts/Social/OfflineSocialDirectory.cs",
+          "line": 95,
+          "excerpt": "// This memory-only session never writes friends or fixture data to player JSON."
+        }
+      ],
+      "notes": "Fixture+localprofile,sắpEloID;khôngBXHproductiontừbackend."
+    },
+    {
+      "id": "G-UC53",
+      "title": "Invite or challenge an account friend",
+      "diagram": "UC-07",
+      "status": "NO_GAME_EVIDENCE",
+      "original_status": "NO_GAME_EVIDENCE",
+      "evidence": [
+        {
+          "path": "My project/Assets/Scripts/Social/OfflineSocialDirectory.cs",
+          "line": 95,
+          "excerpt": "// This memory-only session never writes friends or fixture data to player JSON."
+        },
+        {
+          "path": "My project/Assets/Scripts/Multiplayer/Services/RoomService.cs",
+          "line": 26,
+          "excerpt": "public Task JoinAsync(string code) => backend.ExecuteAsync(() =>"
+        }
+      ],
+      "notes": "Roomcodeđãcó;chưacólờimờitheofriendidentity/presence/notification."
+    }
+  ],
+  "backend_usecases_status": "26 goal use cases cover all49 source endpoints; partial source-only, no game adapter",
+  "architecture_diagrams": [
+    "ARCH-01",
+    "ARCH-02"
+  ],
+  "overview_diagram": "UC-00",
+  "outside_baseline_ids": [
+    "G-UC50"
+  ],
+  "validation": {
+    "unique_game_ids": true,
+    "all60_covered": true,
+    "max_game_usecases_per_domain_diagram": 9,
+    "include_extend_assertions": 0,
+    "all49_backend_routes_covered": true,
+    "unique_backend_goal_ids": true,
+    "max_backend_goals_per_diagram": 5
+  },
+  "backend_usecases_expected": 26,
+  "backend_usecases_covered": 26,
+  "backend_routes_expected": 49,
+  "backend_routes_covered": 49,
+  "backend_usecase_diagrams": [
+    {
+      "id": "UC-08a",
+      "title": "Backend identity and profiles",
+      "ids": [
+        "BUC-01",
+        "BUC-02",
+        "BUC-03",
+        "BUC-04",
+        "BUC-05"
+      ]
+    },
+    {
+      "id": "UC-08b",
+      "title": "Backend learning and coaching",
+      "ids": [
+        "BUC-06",
+        "BUC-07",
+        "BUC-08",
+        "BUC-09",
+        "BUC-10"
+      ]
+    },
+    {
+      "id": "UC-08c",
+      "title": "Backend social relationships",
+      "ids": [
+        "BUC-11",
+        "BUC-12"
+      ]
+    },
+    {
+      "id": "UC-08d",
+      "title": "Backend economy and reward claims",
+      "ids": [
+        "BUC-13",
+        "BUC-14",
+        "BUC-15",
+        "BUC-16",
+        "BUC-17"
+      ]
+    },
+    {
+      "id": "UC-08e",
+      "title": "Backend matches, reports and replay",
+      "ids": [
+        "BUC-18",
+        "BUC-19",
+        "BUC-20",
+        "BUC-21"
+      ]
+    },
+    {
+      "id": "UC-08f",
+      "title": "Backend administration goals",
+      "ids": [
+        "BUC-22",
+        "BUC-23",
+        "BUC-24",
+        "BUC-25",
+        "BUC-26"
+      ]
+    }
+  ],
+  "backend_usecases": [
+    {
+      "id": "BUC-01",
+      "title": "Register and verify a player account",
+      "diagram": "UC-08a",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Auth/register",
+          "action": "Register",
+          "evidence": "src/Backend/API/Controllers/AuthController.cs:28"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Auth/verify-email",
+          "action": "VerifyEmail",
+          "evidence": "src/Backend/API/Controllers/AuthController.cs:44"
+        }
+      ],
+      "implementation_notes": [
+        "B-01: game has no backend registration adapter.",
+        "B-06: register sets Isverified=true; verify lookup uses Guid.Empty and ignores request email for identity; delivery not evidenced."
+      ]
+    },
+    {
+      "id": "BUC-02",
+      "title": "Authenticate and maintain a secure player session",
+      "diagram": "UC-08a",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Auth/login",
+          "action": "Login",
+          "evidence": "src/Backend/API/Controllers/AuthController.cs:36"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Auth/refresh-token",
+          "action": "RefreshToken",
+          "evidence": "src/Backend/API/Controllers/AuthController.cs:52"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Auth/logout",
+          "action": "Logout",
+          "evidence": "src/Backend/API/Controllers/AuthController.cs:61"
+        }
+      ],
+      "implementation_notes": [
+        "B-06/B-07: email/suspension enforcement, raw refresh storage and rotation need work.",
+        "Current source supports BCrypt/JWT but is not game sign-in integration; no runtime validation performed."
+      ]
+    },
+    {
+      "id": "BUC-03",
+      "title": "View own or another player profile",
+      "diagram": "UC-08a",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Profiles/me",
+          "action": "GetMyProfile",
+          "evidence": "src/Backend/API/Controllers/ProfilesController.cs:29"
+        },
+        {
+          "method": "GET",
+          "path": "/api/Profiles/{playerId}",
+          "action": "GetProfileById",
+          "evidence": "src/Backend/API/Controllers/ProfilesController.cs:38"
+        }
+      ],
+      "implementation_notes": [
+        "B-01: local PlayerProfile is not this EF Playerprofile.",
+        "GET by id is public by declaration; public-profile visibility policy must be approved."
+      ]
+    },
+    {
+      "id": "BUC-04",
+      "title": "Edit player profile and record play duration",
+      "diagram": "UC-08a",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "PUT",
+          "path": "/api/Profiles/me",
+          "action": "UpdateProfile",
+          "evidence": "src/Backend/API/Controllers/ProfilesController.cs:47"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Profiles/sync-time",
+          "action": "SyncTime",
+          "evidence": "src/Backend/API/Controllers/ProfilesController.cs:57"
+        }
+      ],
+      "implementation_notes": [
+        "Current SyncTime accepts caller duration; trusted-session/idempotency design is not established.",
+        "Game preferences/profile are currently separate local data."
+      ]
+    },
+    {
+      "id": "BUC-05",
+      "title": "View the Elo leaderboard",
+      "diagram": "UC-08a",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Profiles/leaderboard",
+          "action": "GetLeaderboard",
+          "evidence": "src/Backend/API/Controllers/ProfilesController.cs:66"
+        }
+      ],
+      "implementation_notes": [
+        "Backend repository query exists, but Menu uses memory-only demo leaderboard (B-01).",
+        "Rating policy differs from local Elo (B-05); global ranking has not been verified."
+      ]
+    },
+    {
+      "id": "BUC-06",
+      "title": "Browse available lessons and drills",
+      "diagram": "UC-08b",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Training/lessons",
+          "action": "GetLessons",
+          "evidence": "src/Backend/API/Controllers/TrainingController.cs:29"
+        }
+      ],
+      "implementation_notes": [
+        "API source uses sequential prior-lesson completion; current local catalog uses12 coded drills and prerequisites.",
+        "RequiredLevel/Order/publish fields are not fully modeled (B-12)."
+      ]
+    },
+    {
+      "id": "BUC-07",
+      "title": "Submit a drill attempt and award first-completion progress",
+      "diagram": "UC-08b",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Training/submit-drill",
+          "action": "SubmitDrill",
+          "evidence": "src/Backend/API/Controllers/TrainingController.cs:38"
+        }
+      ],
+      "implementation_notes": [
+        "B-10: Score is caller supplied/unbounded; source grants Score*50 XP and keeps best score only.",
+        "Local TrainingEngine has richer attempt/error/first-pass Tokenpad policy, not synced here."
+      ]
+    },
+    {
+      "id": "BUC-08",
+      "title": "View technique mastery",
+      "diagram": "UC-08b",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/AiCoaching/mastery",
+          "action": "GetMastery",
+          "evidence": "src/Backend/API/Controllers/AiCoachingController.cs:29"
+        }
+      ],
+      "implementation_notes": [
+        "SQL generated MasteryScore exists; current log-error increments attempts and errors together.",
+        "No game→API telemetry adapter found (B-14)."
+      ]
+    },
+    {
+      "id": "BUC-09",
+      "title": "Receive personalized drill recommendations",
+      "diagram": "UC-08b",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/AiCoaching/recommendation",
+          "action": "GetRecommendation",
+          "evidence": "src/Backend/API/Controllers/AiCoachingController.cs:38"
+        }
+      ],
+      "implementation_notes": [
+        "Source uses deterministic lowest-mastery plus Take(3), not a trained ML model (B-14).",
+        "Local next-drill algorithm is separate and chooses prerequisites/incomplete/weak accuracy."
+      ]
+    },
+    {
+      "id": "BUC-10",
+      "title": "Record a technique error and coaching observation",
+      "diagram": "UC-08b",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/AiCoaching/log-error",
+          "action": "LogTechniqueError",
+          "evidence": "src/Backend/API/Controllers/AiCoachingController.cs:47"
+        }
+      ],
+      "implementation_notes": [
+        "Current API accepts client ErrorType and CoachingTip and increments attempts/errors together.",
+        "Classifier, per-shot trusted pipeline and deduplication remain target (B-14)."
+      ]
+    },
+    {
+      "id": "BUC-11",
+      "title": "Request and respond to friendship",
+      "diagram": "UC-08c",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Friends/request",
+          "action": "SendFriendRequest",
+          "evidence": "src/Backend/API/Controllers/FriendsController.cs:29"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Friends/respond",
+          "action": "RespondFriendRequest",
+          "evidence": "src/Backend/API/Controllers/FriendsController.cs:38"
+        }
+      ],
+      "implementation_notes": [
+        "Backend source exists; game social list is DEMO memory fixtures with no API integration.",
+        "No online friend invitation/presence notification workflow established."
+      ]
+    },
+    {
+      "id": "BUC-12",
+      "title": "View and manage friends or block a player",
+      "diagram": "UC-08c",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Friends",
+          "action": "GetFriends",
+          "evidence": "src/Backend/API/Controllers/FriendsController.cs:47"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/Friends/{friendId}",
+          "action": "RemoveFriend",
+          "evidence": "src/Backend/API/Controllers/FriendsController.cs:55"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Friends/block/{targetUserId}",
+          "action": "BlockUser",
+          "evidence": "src/Backend/API/Controllers/FriendsController.cs:64"
+        }
+      ],
+      "implementation_notes": [
+        "Current Unity OfflineSocialDirectory edits are memory-only and reset on new session (B-01).",
+        "Pending request listing, unblock and game invite integration are not declared endpoint goals here."
+      ]
+    },
+    {
+      "id": "BUC-13",
+      "title": "Browse store catalog and currency balances",
+      "diagram": "UC-08d",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Economy/currencies",
+          "action": "GetCurrencies",
+          "evidence": "src/Backend/API/Controllers/EconomyController.cs:29"
+        },
+        {
+          "method": "GET",
+          "path": "/api/Economy/shop",
+          "action": "GetShopItems",
+          "evidence": "src/Backend/API/Controllers/EconomyController.cs:37"
+        }
+      ],
+      "implementation_notes": [
+        "Backend currency int ids differ from game Tokenpad/Elite enums/local balances.",
+        "Game store uses local ProfilePlayerEconomy rather than these endpoints."
+      ]
+    },
+    {
+      "id": "BUC-14",
+      "title": "Purchase a cosmetic with virtual currency",
+      "diagram": "UC-08d",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Economy/buy",
+          "action": "BuyCosmetic",
+          "evidence": "src/Backend/API/Controllers/EconomyController.cs:45"
+        }
+      ],
+      "implementation_notes": [
+        "Source performs read/check/debit/add/SaveChanges; no request id, concurrency token or ledger is exposed in the27-table model.",
+        "Not a real-money/IAP flow; verified payments are outside demonstrated scope."
+      ]
+    },
+    {
+      "id": "BUC-15",
+      "title": "View inventory and equip a cosmetic",
+      "diagram": "UC-08d",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Economy/my-inventory",
+          "action": "GetMyCosmetics",
+          "evidence": "src/Backend/API/Controllers/EconomyController.cs:54"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Economy/equip",
+          "action": "EquipCosmetic",
+          "evidence": "src/Backend/API/Controllers/EconomyController.cs:62"
+        }
+      ],
+      "implementation_notes": [
+        "API source validates ownership; online paddle RPC currently validates catalog existence only and trusts local inventory (B-16).",
+        "No current DB constraint itself guarantees one equipped item per type."
+      ]
+    },
+    {
+      "id": "BUC-16",
+      "title": "View and claim an achievement",
+      "diagram": "UC-08d",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Achievements",
+          "action": "GetMyAchievements",
+          "evidence": "src/Backend/API/Controllers/AchievementsController.cs:29"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Achievements/{achievementId}/claim",
+          "action": "ClaimReward",
+          "evidence": "src/Backend/API/Controllers/AchievementsController.cs:37"
+        }
+      ],
+      "implementation_notes": [
+        "Claim ownership is derived from the authenticated account; gameplay-event integration still requires validation.",
+        "B-11: achievement claim currently grants fixed100XP and does not process reward currency JSON."
+      ]
+    },
+    {
+      "id": "BUC-17",
+      "title": "View and claim a mission reward",
+      "diagram": "UC-08d",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Missions",
+          "action": "GetMyMissions",
+          "evidence": "src/Backend/API/Controllers/MissionsController.cs:29"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Missions/{missionId}/claim",
+          "action": "ClaimReward",
+          "evidence": "src/Backend/API/Controllers/MissionsController.cs:37"
+        }
+      ],
+      "implementation_notes": [
+        "B-11: current PlayerMissions PK has no period identifier; claim grants fixed50XP.",
+        "No match completion integration to increment mission/achievement methods observed."
+      ]
+    },
+    {
+      "id": "BUC-18",
+      "title": "Commit a completed match and rating change",
+      "diagram": "UC-08e",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Matches/finish",
+          "action": "FinishMatch",
+          "evidence": "src/Backend/API/Controllers/MatchesController.cs:29"
+        }
+      ],
+      "implementation_notes": [
+        "B-04: current endpoint permits any authenticated caller, receives arbitrary player list/scores and generates new Guid each call.",
+        "B-05: backend K32 differs from game custom Elo; runtime not retested."
+      ]
+    },
+    {
+      "id": "BUC-19",
+      "title": "View personal match history",
+      "diagram": "UC-08e",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Matches/my-history",
+          "action": "GetMyMatchHistory",
+          "evidence": "src/Backend/API/Controllers/MatchesController.cs:37"
+        }
+      ],
+      "implementation_notes": [
+        "Backend MatchItem differs from richer local MatchResult; no game integration.",
+        "Current DB lacks external id/start/end/reason/game-by-game result fields (B-17)."
+      ]
+    },
+    {
+      "id": "BUC-20",
+      "title": "Report another participant in a match",
+      "diagram": "UC-08e",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Matches/report",
+          "action": "ReportPlayer",
+          "evidence": "src/Backend/API/Controllers/MatchesController.cs:46"
+        }
+      ],
+      "implementation_notes": [
+        "Source checks match existence but not both users membership; SQL only verifies profiles/match exist.",
+        "Moderation status/role-policy mismatches are static gaps (B-03/B-09)."
+      ]
+    },
+    {
+      "id": "BUC-21",
+      "title": "Store and view a match replay",
+      "diagram": "UC-08e",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Replays/save",
+          "action": "SaveReplay",
+          "evidence": "src/Backend/API/Controllers/ReplaysController.cs:22"
+        },
+        {
+          "method": "GET",
+          "path": "/api/Replays/{matchId}",
+          "action": "GetReplay",
+          "evidence": "src/Backend/API/Controllers/ReplaysController.cs:30"
+        }
+      ],
+      "implementation_notes": [
+        "B-13: save lacks participant binding; read endpoint is public; basename retrieval loses upload prefix.",
+        "Unity local gzip replay format differs from backend single JSON payload."
+      ]
+    },
+    {
+      "id": "BUC-22",
+      "title": "Review player accounts and assign roles",
+      "diagram": "UC-08f",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Admin/users",
+          "action": "GetUsers",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:23"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/users/assign-role",
+          "action": "AssignRole",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:30"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/users/{userId}/verify-email",
+          "action": "ManualVerifyUserEmail",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:62"
+        }
+      ],
+      "implementation_notes": [
+        "B-03: only [Authorize], no Admin policy.",
+        "ManualVerifyUserEmail sets user status rather than verification row; no audit table in27-table model."
+      ]
+    },
+    {
+      "id": "BUC-23",
+      "title": "Restrict a player account or reset rating",
+      "diagram": "UC-08f",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Admin/users/ban",
+          "action": "BanUser",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:38"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/users/{userId}/unban",
+          "action": "UnbanUser",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:46"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/users/{playerId}/reset-elo",
+          "action": "ResetPlayerElo",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:54"
+        }
+      ],
+      "implementation_notes": [
+        "B-03/B-09: role gate and enum mapping are missing.",
+        "bannedUntil is accepted by DTO/service but not persisted as account sanction metadata."
+      ]
+    },
+    {
+      "id": "BUC-24",
+      "title": "Create training and reward catalog content",
+      "diagram": "UC-08f",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "POST",
+          "path": "/api/Admin/cms/lessons",
+          "action": "CreateLesson",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:71"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/cms/drills",
+          "action": "CreateDrill",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:78"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/cms/cosmetics",
+          "action": "CreateCosmetic",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:85"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/cms/missions",
+          "action": "CreateMission",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:92"
+        }
+      ],
+      "implementation_notes": [
+        "Current routes create only; edit/delete/publish/unpublish not evidenced.",
+        "B-12: Lesson Reward non-JSON string, ignored RequiredLevel/Order, hardcoded target values."
+      ]
+    },
+    {
+      "id": "BUC-25",
+      "title": "Inspect recent matches and resolve behavior reports",
+      "diagram": "UC-08f",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Admin/matches/recent",
+          "action": "GetRecentMatches",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:100"
+        },
+        {
+          "method": "GET",
+          "path": "/api/Admin/reports",
+          "action": "GetReports",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:108"
+        },
+        {
+          "method": "POST",
+          "path": "/api/Admin/reports/review",
+          "action": "ReviewReport",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:115"
+        }
+      ],
+      "implementation_notes": [
+        "Source has recent-completed-match list, not live active-match fleet monitoring.",
+        "B-03/B-09: authorization and RESOLVED/DISMISSED vs CHECK mismatch; no appeals endpoint/UI demonstrated."
+      ]
+    },
+    {
+      "id": "BUC-26",
+      "title": "View operational and technique-error analytics",
+      "diagram": "UC-08f",
+      "status": "AS_IS_PARTIAL",
+      "source_status": "Partial: backend source implementation; Unity adapter not found; runtime acceptance not verified",
+      "endpoint_refs": [
+        {
+          "method": "GET",
+          "path": "/api/Admin/analytics/summary",
+          "action": "GetAnalyticsSummary",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:124"
+        },
+        {
+          "method": "GET",
+          "path": "/api/Admin/analytics/error-heatmap",
+          "action": "GetAiErrorHeatmap",
+          "evidence": "src/Backend/API/Controllers/AdminController.cs:131"
+        }
+      ],
+      "implementation_notes": [
+        "B-15: ActiveUsersToday=totalUsers; counts and time use top1000 lists.",
+        "No admin frontend, retention pipeline, live health monitoring or empirical NFR evidence found."
+      ]
+    }
+  ]
+}

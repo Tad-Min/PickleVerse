@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="545" viewBox="0 0 1400 545">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="545" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">SM03  Training attempt</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">Derived lifecycle/guard model; do not equate labels with a database enum. Numbered arrows map to the</text>
+<text x="40" y="101" font-family="Arial" font-size="20" fill="#546174">transition register in the SDD; rejected/self transitions are listed there.</text>
+<path d="M445,200.0 H470.0 V200.0 H495" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<text x="475.0" y="194.0" font-family="Arial" font-size="20" fill="#253d5a">1</text>
+<path d="M900,200.0 H925.0 V200.0 H950" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<text x="930.0" y="194.0" font-family="Arial" font-size="20" fill="#253d5a">3</text>
+<path d="M697.5,255 V300.0 H242.5 V345" fill="none" stroke="#7a8795" stroke-width="2"  marker-end="url(#arrow)"/>
+<text x="475.0" y="294.0" font-family="Arial" font-size="20" fill="#253d5a">4</text>
+<rect x="40" y="145" width="405" height="110" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="183" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Ready</text>
+<rect x="495" y="145" width="405" height="110" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="517" y="183" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Active</text>
+<rect x="950" y="145" width="405" height="110" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="972" y="183" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Completed</text>
+<rect x="40" y="345" width="405" height="110" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="383" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Abandoned</text>
+</svg>

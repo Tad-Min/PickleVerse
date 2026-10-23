@@ -1,0 +1,24 @@
+stateDiagram-v2
+  state "Menu" as S0
+  state "WaitingRoom" as S1
+  state "Delay" as S2
+  state "Searching" as S3
+  state "Connecting" as S4
+  state "InMatch" as S5
+  state "Reconnecting" as S6
+  state "Results" as S7
+  [*] --> S0
+  S0 --> S1: 1 open/join valid room
+  S1 --> S2: 2 begin eligible search
+  S2 --> S3: 3 queue begins
+  S3 --> S4: 4 assigned match ready offer
+  S4 --> S5: 5 court and required peers ready
+  S5 --> S7: 6 match result shown
+  S5 --> S6: 7 connection interrupted
+  S6 --> S5: 8 rejoin succeeds
+  S6 --> S1: 9 grace fails
+  S3 --> S1: 10 cancel search
+  S4 --> S1: 11 ready offer cancelled
+  S7 --> S1: 12 return to room
+  S1 --> S0: 13 return or sign out
+  S2 --> S1: 14 search setup fails

@@ -1,0 +1,472 @@
+﻿baseline,table,column,sql_type,nullable,PK,FK,UK_single_column,reference,on_delete,definition,source
+candidate,app_users,user_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:9
+candidate,app_users,username,VARCHAR(32),False,False,False,False,,,"VARCHAR(32) NOT NULL CHECK (username ~ '^[A-Za-z0-9_]{3,32}$')",src/NOREADDATABSE.sql:10
+candidate,app_users,email,VARCHAR(254),True,False,False,False,,,VARCHAR(254),src/NOREADDATABSE.sql:11
+candidate,app_users,password_hash,TEXT,True,False,False,False,,,TEXT,src/NOREADDATABSE.sql:12
+candidate,app_users,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'banned', 'deleted'))",src/NOREADDATABSE.sql:13
+candidate,app_users,email_verified_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:15
+candidate,app_users,last_login_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:16
+candidate,app_users,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:17
+candidate,app_users,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:18
+candidate,roles,role_code,VARCHAR(24),False,True,False,False,,,VARCHAR(24) PRIMARY KEY,src/NOREADDATABSE.sql:29
+candidate,roles,display_name,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:30
+candidate,user_roles,user_id,UUID,False,True,True,False,app_users(user_id),CASCADE,UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:33
+candidate,user_roles,role_code,VARCHAR(24),False,True,True,False,roles(role_code),NO ACTION,VARCHAR(24) NOT NULL REFERENCES roles(role_code),src/NOREADDATABSE.sql:34
+candidate,user_roles,granted_by,UUID,True,False,True,False,app_users(user_id),NO ACTION,UUID REFERENCES app_users(user_id),src/NOREADDATABSE.sql:35
+candidate,user_roles,granted_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:36
+candidate,player_identities,user_id,UUID,False,False,True,False,app_users(user_id),CASCADE,UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:42
+candidate,player_identities,provider,VARCHAR(32),False,True,False,False,,,VARCHAR(32) NOT NULL CHECK (length(btrim(provider)) > 0),src/NOREADDATABSE.sql:43
+candidate,player_identities,external_id,VARCHAR(160),False,True,False,False,,,VARCHAR(160) NOT NULL CHECK (length(btrim(external_id)) > 0),src/NOREADDATABSE.sql:44
+candidate,player_identities,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:45
+candidate,auth_sessions,session_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:52
+candidate,auth_sessions,user_id,UUID,False,False,True,False,app_users(user_id),CASCADE,UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:53
+candidate,auth_sessions,refresh_token_hash,BYTEA,False,False,False,True,,,BYTEA NOT NULL UNIQUE CHECK (octet_length(refresh_token_hash) = 32),src/NOREADDATABSE.sql:54
+candidate,auth_sessions,device_label,VARCHAR(120),True,False,False,False,,,VARCHAR(120),src/NOREADDATABSE.sql:55
+candidate,auth_sessions,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:56
+candidate,auth_sessions,expires_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL,src/NOREADDATABSE.sql:57
+candidate,auth_sessions,revoked_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:58
+candidate,player_profiles,user_id,UUID,False,True,True,False,app_users(user_id),CASCADE,UUID PRIMARY KEY REFERENCES app_users(user_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:66
+candidate,player_profiles,display_name,VARCHAR(18),False,False,False,False,,,VARCHAR(18) NOT NULL CHECK (length(btrim(display_name)) BETWEEN 1 AND 18),src/NOREADDATABSE.sql:67
+candidate,player_profiles,avatar_code,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL DEFAULT 'initial',src/NOREADDATABSE.sql:68
+candidate,player_profiles,character_variant,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'male' CHECK (character_variant IN ('male', 'female'))",src/NOREADDATABSE.sql:69
+candidate,player_profiles,locale,VARCHAR(16),False,False,False,False,,,VARCHAR(16) NOT NULL DEFAULT 'vi-VN',src/NOREADDATABSE.sql:71
+candidate,player_profiles,settings,JSONB,False,False,False,False,,,JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(settings) = 'object'),src/NOREADDATABSE.sql:72
+candidate,player_profiles,profile_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 2 CHECK (profile_version > 0),src/NOREADDATABSE.sql:73
+candidate,player_profiles,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:74
+candidate,player_profiles,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:75
+candidate,player_progression,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID PRIMARY KEY REFERENCES app_users(user_id),src/NOREADDATABSE.sql:80
+candidate,player_progression,total_xp,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (total_xp >= 0),src/NOREADDATABSE.sql:81
+candidate,player_progression,active_seconds,"NUMERIC(18,3)",False,False,False,False,,,"NUMERIC(18,3) NOT NULL DEFAULT 0 CHECK (active_seconds >= 0)",src/NOREADDATABSE.sql:82
+candidate,player_progression,ranked_win_streak,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (ranked_win_streak >= 0),src/NOREADDATABSE.sql:83
+candidate,player_progression,ranked_loss_streak,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (ranked_loss_streak >= 0),src/NOREADDATABSE.sql:84
+candidate,player_progression,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:85
+candidate,player_rating_states,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:91
+candidate,player_rating_states,rating_system,VARCHAR(16),False,True,False,False,,,"VARCHAR(16) NOT NULL CHECK (rating_system IN ('elo', 'glicko2'))",src/NOREADDATABSE.sql:92
+candidate,player_rating_states,play_mode,VARCHAR(16),False,True,False,False,,,"VARCHAR(16) NOT NULL CHECK (play_mode IN ('singles', 'doubles'))",src/NOREADDATABSE.sql:93
+candidate,player_rating_states,rating,"NUMERIC(12,3)",False,False,False,False,,,"NUMERIC(12,3) NOT NULL",src/NOREADDATABSE.sql:94
+candidate,player_rating_states,rating_deviation,"NUMERIC(10,3)",True,False,False,False,,,"NUMERIC(10,3)",src/NOREADDATABSE.sql:95
+candidate,player_rating_states,volatility,"NUMERIC(12,8)",True,False,False,False,,,"NUMERIC(12,8)",src/NOREADDATABSE.sql:96
+candidate,player_rating_states,reliability_percent,"NUMERIC(5,2)",False,False,False,False,,,"NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (reliability_percent BETWEEN 0 AND 100)",src/NOREADDATABSE.sql:97
+candidate,player_rating_states,rated_matches,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (rated_matches >= 0),src/NOREADDATABSE.sql:98
+candidate,player_rating_states,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:99
+candidate,currencies,currency_code,VARCHAR(24),False,True,False,False,,,VARCHAR(24) PRIMARY KEY,src/NOREADDATABSE.sql:111
+candidate,currencies,display_name,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:112
+candidate,currencies,is_premium,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:113
+candidate,reward_grants,reward_grant_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:116
+candidate,reward_grants,user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:117
+candidate,reward_grants,grant_key,VARCHAR(180),False,False,False,False,,,VARCHAR(180) NOT NULL CHECK (length(btrim(grant_key)) > 0),src/NOREADDATABSE.sql:118
+candidate,reward_grants,source_kind,VARCHAR(32),False,False,False,False,,,"VARCHAR(32) NOT NULL CHECK (source_kind IN ('match', 'drill', 'achievement', 'daily_mission', 'weekly_mission', 'period_bonus', 'daily_streak', 'admin_adjustment'))",src/NOREADDATABSE.sql:119
+candidate,reward_grants,xp_amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (xp_amount >= 0),src/NOREADDATABSE.sql:122
+candidate,reward_grants,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:123
+candidate,player_wallets,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:128
+candidate,player_wallets,currency_code,VARCHAR(24),False,True,True,False,currencies(currency_code),NO ACTION,VARCHAR(24) NOT NULL REFERENCES currencies(currency_code),src/NOREADDATABSE.sql:129
+candidate,player_wallets,balance,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (balance >= 0),src/NOREADDATABSE.sql:130
+candidate,player_wallets,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:131
+candidate,wallet_transactions,wallet_transaction_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:135
+candidate,wallet_transactions,user_id,UUID,False,False,True,False,"player_wallets(user_id,currency_code); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:136
+candidate,wallet_transactions,currency_code,VARCHAR(24),False,False,True,False,"player_wallets(user_id,currency_code)",NO ACTION,VARCHAR(24) NOT NULL,src/NOREADDATABSE.sql:137
+candidate,wallet_transactions,request_key,VARCHAR(180),False,False,False,False,,,VARCHAR(180) NOT NULL CHECK (length(btrim(request_key)) > 0),src/NOREADDATABSE.sql:138
+candidate,wallet_transactions,amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (amount <> 0),src/NOREADDATABSE.sql:139
+candidate,wallet_transactions,balance_after,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (balance_after >= 0),src/NOREADDATABSE.sql:140
+candidate,wallet_transactions,reason,VARCHAR(120),False,False,False,False,,,VARCHAR(120) NOT NULL,src/NOREADDATABSE.sql:141
+candidate,wallet_transactions,reward_grant_id,UUID,True,False,True,False,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:142
+candidate,wallet_transactions,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:143
+candidate,item_collections,collection_code,VARCHAR(40),False,True,False,False,,,VARCHAR(40) PRIMARY KEY,src/NOREADDATABSE.sql:156
+candidate,item_collections,display_name,VARCHAR(100),False,False,False,False,,,VARCHAR(100) NOT NULL,src/NOREADDATABSE.sql:157
+candidate,cosmetic_items,item_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) PRIMARY KEY,src/NOREADDATABSE.sql:160
+candidate,cosmetic_items,collection_code,VARCHAR(40),False,False,True,False,item_collections(collection_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES item_collections(collection_code),src/NOREADDATABSE.sql:161
+candidate,cosmetic_items,display_name,VARCHAR(120),False,False,False,False,,,VARCHAR(120) NOT NULL,src/NOREADDATABSE.sql:162
+candidate,cosmetic_items,description,TEXT,False,False,False,False,,,TEXT NOT NULL DEFAULT '',src/NOREADDATABSE.sql:163
+candidate,cosmetic_items,equipment_slot,VARCHAR(24),False,False,False,False,,,"VARCHAR(24) NOT NULL CHECK (equipment_slot IN ('paddle', 'avatar', 'outfit'))",src/NOREADDATABSE.sql:164
+candidate,cosmetic_items,unity_asset_key,TEXT,True,False,False,False,,,TEXT,src/NOREADDATABSE.sql:165
+candidate,cosmetic_items,thumbnail_key,TEXT,True,False,False,False,,,TEXT,src/NOREADDATABSE.sql:166
+candidate,cosmetic_items,is_default,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:167
+candidate,cosmetic_items,is_active,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT true,src/NOREADDATABSE.sql:168
+candidate,cosmetic_items,release_order,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (release_order >= 0),src/NOREADDATABSE.sql:169
+candidate,cosmetic_items,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:170
+candidate,cosmetic_items,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:171
+candidate,item_prices,item_code,VARCHAR(80),False,True,True,False,cosmetic_items(item_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:177
+candidate,item_prices,currency_code,VARCHAR(24),False,True,True,False,currencies(currency_code),NO ACTION,VARCHAR(24) NOT NULL REFERENCES currencies(currency_code),src/NOREADDATABSE.sql:178
+candidate,item_prices,price,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (price > 0),src/NOREADDATABSE.sql:179
+candidate,shop_purchases,purchase_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:184
+candidate,shop_purchases,user_id,UUID,False,False,True,False,"app_users(user_id); wallet_transactions(wallet_transaction_id,user_id,currency_code)",NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:185
+candidate,shop_purchases,request_id,VARCHAR(160),False,False,False,False,,,VARCHAR(160) NOT NULL CHECK (length(btrim(request_id)) > 0),src/NOREADDATABSE.sql:186
+candidate,shop_purchases,item_code,VARCHAR(80),False,False,True,False,cosmetic_items(item_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:187
+candidate,shop_purchases,currency_code,VARCHAR(24),False,False,True,False,"currencies(currency_code); wallet_transactions(wallet_transaction_id,user_id,currency_code)",NO ACTION; NO ACTION,VARCHAR(24) NOT NULL REFERENCES currencies(currency_code),src/NOREADDATABSE.sql:188
+candidate,shop_purchases,paid_amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (paid_amount > 0),src/NOREADDATABSE.sql:189
+candidate,shop_purchases,wallet_transaction_id,UUID,False,False,True,True,"wallet_transactions(wallet_transaction_id,user_id,currency_code)",NO ACTION,UUID NOT NULL UNIQUE,src/NOREADDATABSE.sql:190
+candidate,shop_purchases,purchased_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:191
+candidate,player_inventory,user_id,UUID,False,True,True,False,"app_users(user_id); shop_purchases(purchase_id,user_id,item_code); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:199
+candidate,player_inventory,item_code,VARCHAR(80),False,True,True,False,"cosmetic_items(item_code); shop_purchases(purchase_id,user_id,item_code)",NO ACTION; NO ACTION,VARCHAR(80) NOT NULL REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:200
+candidate,player_inventory,acquisition_kind,VARCHAR(24),False,False,False,False,,,"VARCHAR(24) NOT NULL CHECK (acquisition_kind IN ('default', 'purchase', 'reward', 'admin'))",src/NOREADDATABSE.sql:201
+candidate,player_inventory,purchase_id,UUID,True,False,True,False,"shop_purchases(purchase_id,user_id,item_code)",NO ACTION,UUID,src/NOREADDATABSE.sql:202
+candidate,player_inventory,reward_grant_id,UUID,True,False,True,False,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:203
+candidate,player_inventory,acquired_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:204
+candidate,player_equipment,user_id,UUID,False,True,True,False,"player_inventory(user_id,item_code)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:214
+candidate,player_equipment,equipment_slot,VARCHAR(24),False,True,True,False,"cosmetic_items(item_code,equipment_slot)",NO ACTION,VARCHAR(24) NOT NULL,src/NOREADDATABSE.sql:215
+candidate,player_equipment,item_code,VARCHAR(80),False,False,True,False,"player_inventory(user_id,item_code); cosmetic_items(item_code,equipment_slot)",NO ACTION; NO ACTION,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:216
+candidate,player_equipment,equipped_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:217
+candidate,techniques,technique_code,VARCHAR(40),False,True,False,False,,,VARCHAR(40) PRIMARY KEY,src/NOREADDATABSE.sql:225
+candidate,techniques,display_name,VARCHAR(120),False,False,False,False,,,VARCHAR(120) NOT NULL,src/NOREADDATABSE.sql:226
+candidate,techniques,description,TEXT,False,False,False,False,,,TEXT NOT NULL DEFAULT '',src/NOREADDATABSE.sql:227
+candidate,lessons,lesson_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) PRIMARY KEY,src/NOREADDATABSE.sql:230
+candidate,lessons,title,VARCHAR(160),False,False,False,False,,,VARCHAR(160) NOT NULL,src/NOREADDATABSE.sql:231
+candidate,lessons,description,TEXT,False,False,False,False,,,TEXT NOT NULL DEFAULT '',src/NOREADDATABSE.sql:232
+candidate,lessons,tier,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (tier BETWEEN 0 AND 3),src/NOREADDATABSE.sql:233
+candidate,lessons,sort_order,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (sort_order >= 0),src/NOREADDATABSE.sql:234
+candidate,lessons,content_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 1 CHECK (content_version > 0),src/NOREADDATABSE.sql:235
+candidate,lessons,is_published,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:236
+candidate,lessons,created_by,UUID,True,False,True,False,app_users(user_id),NO ACTION,UUID REFERENCES app_users(user_id),src/NOREADDATABSE.sql:237
+candidate,lessons,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:238
+candidate,lessons,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:239
+candidate,drills,drill_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) PRIMARY KEY,src/NOREADDATABSE.sql:242
+candidate,drills,title,VARCHAR(160),False,False,False,False,,,VARCHAR(160) NOT NULL,src/NOREADDATABSE.sql:243
+candidate,drills,explanation,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:244
+candidate,drills,coaching_text,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:245
+candidate,drills,tier,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (tier BETWEEN 0 AND 3),src/NOREADDATABSE.sql:246
+candidate,drills,trial_count,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (trial_count > 0),src/NOREADDATABSE.sql:247
+candidate,drills,required_successes,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (required_successes > 0 AND required_successes <= trial_count),src/NOREADDATABSE.sql:248
+candidate,drills,first_completion_xp,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (first_completion_xp >= 0),src/NOREADDATABSE.sql:249
+candidate,drills,first_completion_tokenpad,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (first_completion_tokenpad >= 0),src/NOREADDATABSE.sql:250
+candidate,drills,configuration,JSONB,False,False,False,False,,,JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(configuration) = 'object'),src/NOREADDATABSE.sql:251
+candidate,drills,content_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 1 CHECK (content_version > 0),src/NOREADDATABSE.sql:252
+candidate,drills,is_published,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:253
+candidate,drills,created_by,UUID,True,False,True,False,app_users(user_id),NO ACTION,UUID REFERENCES app_users(user_id),src/NOREADDATABSE.sql:254
+candidate,drills,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:255
+candidate,drills,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:256
+candidate,lesson_drills,lesson_code,VARCHAR(80),False,True,True,False,lessons(lesson_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES lessons(lesson_code),src/NOREADDATABSE.sql:259
+candidate,lesson_drills,drill_code,VARCHAR(80),False,True,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:260
+candidate,lesson_drills,sort_order,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (sort_order >= 0),src/NOREADDATABSE.sql:261
+candidate,drill_techniques,drill_code,VARCHAR(80),False,True,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:267
+candidate,drill_techniques,technique_code,VARCHAR(40),False,True,True,False,techniques(technique_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES techniques(technique_code),src/NOREADDATABSE.sql:268
+candidate,drill_techniques,is_primary,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:269
+candidate,drill_prerequisites,drill_code,VARCHAR(80),False,True,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:275
+candidate,drill_prerequisites,prerequisite_drill_code,VARCHAR(80),False,True,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:276
+candidate,drill_prerequisites,required_stars,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 1 CHECK (required_stars BETWEEN 1 AND 3),src/NOREADDATABSE.sql:277
+candidate,drill_input_steps,drill_code,VARCHAR(80),False,True,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:283
+candidate,drill_input_steps,step_number,SMALLINT,False,True,False,False,,,SMALLINT NOT NULL CHECK (step_number > 0),src/NOREADDATABSE.sql:284
+candidate,drill_input_steps,input_mask,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (input_mask BETWEEN 1 AND 31),src/NOREADDATABSE.sql:285
+candidate,drill_cosmetic_rewards,drill_code,VARCHAR(80),False,True,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:290
+candidate,drill_cosmetic_rewards,item_code,VARCHAR(80),False,True,True,False,cosmetic_items(item_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:291
+candidate,drill_cosmetic_rewards,required_stars,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 1 CHECK (required_stars BETWEEN 1 AND 3),src/NOREADDATABSE.sql:292
+candidate,training_attempts,attempt_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:299
+candidate,training_attempts,user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:300
+candidate,training_attempts,client_attempt_id,VARCHAR(100),False,False,False,False,,,VARCHAR(100) NOT NULL CHECK (length(btrim(client_attempt_id)) > 0),src/NOREADDATABSE.sql:301
+candidate,training_attempts,drill_code,VARCHAR(80),False,False,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:302
+candidate,training_attempts,drill_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (drill_version > 0),src/NOREADDATABSE.sql:303
+candidate,training_attempts,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'completed', 'abandoned'))",src/NOREADDATABSE.sql:304
+candidate,training_attempts,is_review,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:305
+candidate,training_attempts,total_trials,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (total_trials > 0),src/NOREADDATABSE.sql:306
+candidate,training_attempts,required_successes,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (required_successes BETWEEN 1 AND total_trials),src/NOREADDATABSE.sql:307
+candidate,training_attempts,completed_trials,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 0 CHECK (completed_trials BETWEEN 0 AND total_trials),src/NOREADDATABSE.sql:308
+candidate,training_attempts,successes,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 0 CHECK (successes BETWEEN 0 AND completed_trials),src/NOREADDATABSE.sql:309
+candidate,training_attempts,contacts,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (contacts >= 0),src/NOREADDATABSE.sql:310
+candidate,training_attempts,duration_seconds,"NUMERIC(14,3)",False,False,False,False,,,"NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (duration_seconds >= 0)",src/NOREADDATABSE.sql:311
+candidate,training_attempts,timing_total_seconds,"NUMERIC(14,6)",False,False,False,False,,,"NUMERIC(14,6) NOT NULL DEFAULT 0 CHECK (timing_total_seconds >= 0)",src/NOREADDATABSE.sql:312
+candidate,training_attempts,accuracy,NUMERIC,True,False,False,False,,,NUMERIC GENERATED ALWAYS AS (CASE WHEN completed_trials = 0 THEN 0 ELSE successes::numeric / completed_trials END) STORED,src/NOREADDATABSE.sql:313
+candidate,training_attempts,average_timing_seconds,NUMERIC,True,False,False,False,,,NUMERIC GENERATED ALWAYS AS (CASE WHEN contacts = 0 THEN 1 ELSE timing_total_seconds / contacts END) STORED,src/NOREADDATABSE.sql:315
+candidate,training_attempts,stars,SMALLINT,True,False,False,False,,,"SMALLINT GENERATED ALWAYS AS (CASE WHEN status <> 'completed' OR successes < required_successes THEN 0 WHEN successes::numeric / total_trials >= 0.90 AND contacts > 0 AND timing_total_seconds / nullif(contacts,0) <= 0.16 THEN 3 WHEN successes::numeric / total_trials >= 0.80 THEN 2 ELSE 1 END) STORED",src/NOREADDATABSE.sql:317
+candidate,training_attempts,checkpoint,JSONB,False,False,False,False,,,JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(checkpoint) = 'object'),src/NOREADDATABSE.sql:322
+candidate,training_attempts,started_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:323
+candidate,training_attempts,ended_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:324
+candidate,training_attempts,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:325
+candidate,drill_reward_claims,user_id,UUID,False,True,True,False,"training_attempts(attempt_id,user_id,drill_code); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:338
+candidate,drill_reward_claims,drill_code,VARCHAR(80),False,True,True,False,"training_attempts(attempt_id,user_id,drill_code)",NO ACTION,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:339
+candidate,drill_reward_claims,attempt_id,UUID,False,False,True,True,"training_attempts(attempt_id,user_id,drill_code)",NO ACTION,UUID NOT NULL UNIQUE,src/NOREADDATABSE.sql:340
+candidate,drill_reward_claims,reward_grant_id,UUID,False,False,True,True,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID NOT NULL UNIQUE,src/NOREADDATABSE.sql:341
+candidate,drill_reward_claims,claimed_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:342
+candidate,player_technique_mastery,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:349
+candidate,player_technique_mastery,technique_code,VARCHAR(40),False,True,True,False,techniques(technique_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES techniques(technique_code),src/NOREADDATABSE.sql:350
+candidate,player_technique_mastery,mastery_percent,"NUMERIC(5,2)",False,False,False,False,,,"NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (mastery_percent BETWEEN 0 AND 100)",src/NOREADDATABSE.sql:351
+candidate,player_technique_mastery,sample_count,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (sample_count >= 0),src/NOREADDATABSE.sql:352
+candidate,player_technique_mastery,evaluator_version,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:353
+candidate,player_technique_mastery,evaluated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:354
+candidate,player_tutorial_progress,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:359
+candidate,player_tutorial_progress,tutorial_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) NOT NULL DEFAULT 'basic',src/NOREADDATABSE.sql:360
+candidate,player_tutorial_progress,content_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 1 CHECK (content_version > 0),src/NOREADDATABSE.sql:361
+candidate,player_tutorial_progress,last_step,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (last_step >= 0),src/NOREADDATABSE.sql:362
+candidate,player_tutorial_progress,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'skipped'))",src/NOREADDATABSE.sql:363
+candidate,player_tutorial_progress,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:364
+candidate,onboarding_assessments,assessment_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:368
+candidate,onboarding_assessments,user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:369
+candidate,onboarding_assessments,self_assessed_tier,VARCHAR(24),True,False,False,False,,,"VARCHAR(24) CHECK (self_assessed_tier IN ('beginner', 'casual', 'intermediate', 'advanced'))",src/NOREADDATABSE.sql:370
+candidate,onboarding_assessments,answers,JSONB,False,False,False,False,,,JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(answers) = 'object'),src/NOREADDATABSE.sql:371
+candidate,onboarding_assessments,rating_system,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'elo' CHECK (rating_system IN ('elo', 'glicko2'))",src/NOREADDATABSE.sql:372
+candidate,onboarding_assessments,estimated_rating,"NUMERIC(12,3)",True,False,False,False,,,"NUMERIC(12,3) CHECK (estimated_rating > 0)",src/NOREADDATABSE.sql:373
+candidate,onboarding_assessments,classifier_version,VARCHAR(80),True,False,False,False,,,VARCHAR(80),src/NOREADDATABSE.sql:374
+candidate,onboarding_assessments,completed_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:375
+candidate,progress_definitions,definition_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) PRIMARY KEY,src/NOREADDATABSE.sql:381
+candidate,progress_definitions,title,VARCHAR(180),False,False,False,False,,,VARCHAR(180) NOT NULL,src/NOREADDATABSE.sql:382
+candidate,progress_definitions,scope,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL CHECK (scope IN ('achievement', 'daily', 'weekly'))",src/NOREADDATABSE.sql:383
+candidate,progress_definitions,metric_code,VARCHAR(40),False,False,False,False,,,"VARCHAR(40) NOT NULL CHECK (metric_code IN ('matches', 'wins', 'points', 'returns', 'serves', 'bot_matches', 'human_matches', 'human_wins', 'ranked_wins', 'doubles_wins', 'best_win_streak', 'higher_rated_wins'))",src/NOREADDATABSE.sql:384
+candidate,progress_definitions,target_value,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (target_value > 0),src/NOREADDATABSE.sql:387
+candidate,progress_definitions,reward_xp,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (reward_xp >= 0),src/NOREADDATABSE.sql:388
+candidate,progress_definitions,badge_asset_key,TEXT,True,False,False,False,,,TEXT,src/NOREADDATABSE.sql:389
+candidate,progress_definitions,is_active,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT true,src/NOREADDATABSE.sql:390
+candidate,progress_definitions,content_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 1 CHECK (content_version > 0),src/NOREADDATABSE.sql:391
+candidate,progress_definitions,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:392
+candidate,progress_definitions,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:393
+candidate,definition_currency_rewards,definition_code,VARCHAR(80),False,True,True,False,progress_definitions(definition_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES progress_definitions(definition_code),src/NOREADDATABSE.sql:397
+candidate,definition_currency_rewards,currency_code,VARCHAR(24),False,True,True,False,currencies(currency_code),NO ACTION,VARCHAR(24) NOT NULL REFERENCES currencies(currency_code),src/NOREADDATABSE.sql:398
+candidate,definition_currency_rewards,amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (amount > 0),src/NOREADDATABSE.sql:399
+candidate,definition_cosmetic_rewards,definition_code,VARCHAR(80),False,True,True,False,progress_definitions(definition_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES progress_definitions(definition_code),src/NOREADDATABSE.sql:403
+candidate,definition_cosmetic_rewards,item_code,VARCHAR(80),False,True,True,False,cosmetic_items(item_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:404
+candidate,progress_periods,period_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:409
+candidate,progress_periods,scope,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL CHECK (scope IN ('achievement', 'daily', 'weekly'))",src/NOREADDATABSE.sql:410
+candidate,progress_periods,start_date,DATE,False,False,False,False,,,DATE NOT NULL,src/NOREADDATABSE.sql:411
+candidate,progress_periods,end_date,DATE,True,False,False,False,,,DATE,src/NOREADDATABSE.sql:412
+candidate,progress_periods,bonus_xp,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (bonus_xp >= 0),src/NOREADDATABSE.sql:413
+candidate,progress_periods,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:414
+candidate,period_definitions,period_id,UUID,False,True,True,False,"progress_periods(period_id,scope)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:422
+candidate,period_definitions,definition_code,VARCHAR(80),False,True,True,False,"progress_definitions(definition_code,scope)",NO ACTION,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:423
+candidate,period_definitions,scope,VARCHAR(16),False,False,True,False,"progress_periods(period_id,scope); progress_definitions(definition_code,scope)",NO ACTION; NO ACTION,VARCHAR(16) NOT NULL,src/NOREADDATABSE.sql:424
+candidate,period_definitions,target_snapshot,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (target_snapshot > 0),src/NOREADDATABSE.sql:425
+candidate,period_definitions,reward_xp_snapshot,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (reward_xp_snapshot >= 0),src/NOREADDATABSE.sql:426
+candidate,period_definition_rewards,period_id,UUID,False,True,True,False,"period_definitions(period_id,definition_code)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:433
+candidate,period_definition_rewards,definition_code,VARCHAR(80),False,True,True,False,"period_definitions(period_id,definition_code)",NO ACTION,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:434
+candidate,period_definition_rewards,currency_code,VARCHAR(24),False,True,True,False,currencies(currency_code),NO ACTION,VARCHAR(24) NOT NULL REFERENCES currencies(currency_code),src/NOREADDATABSE.sql:435
+candidate,period_definition_rewards,amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (amount > 0),src/NOREADDATABSE.sql:436
+candidate,period_definition_cosmetics,period_id,UUID,False,True,True,False,"period_definitions(period_id,definition_code)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:441
+candidate,period_definition_cosmetics,definition_code,VARCHAR(80),False,True,True,False,"period_definitions(period_id,definition_code)",NO ACTION,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:442
+candidate,period_definition_cosmetics,item_code,VARCHAR(80),False,True,True,False,cosmetic_items(item_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:443
+candidate,period_bonus_rewards,period_id,UUID,False,True,True,False,progress_periods(period_id),NO ACTION,UUID NOT NULL REFERENCES progress_periods(period_id),src/NOREADDATABSE.sql:449
+candidate,period_bonus_rewards,currency_code,VARCHAR(24),False,True,True,False,currencies(currency_code),NO ACTION,VARCHAR(24) NOT NULL REFERENCES currencies(currency_code),src/NOREADDATABSE.sql:450
+candidate,period_bonus_rewards,amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL CHECK (amount > 0),src/NOREADDATABSE.sql:451
+candidate,player_definition_progress,user_id,UUID,False,True,True,False,"app_users(user_id); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:455
+candidate,player_definition_progress,period_id,UUID,False,True,True,False,"period_definitions(period_id,definition_code)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:456
+candidate,player_definition_progress,definition_code,VARCHAR(80),False,True,True,False,"period_definitions(period_id,definition_code)",NO ACTION,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:457
+candidate,player_definition_progress,progress_value,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (progress_value >= 0),src/NOREADDATABSE.sql:458
+candidate,player_definition_progress,completed_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:459
+candidate,player_definition_progress,claimed_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:460
+candidate,player_definition_progress,reward_grant_id,UUID,True,False,True,True,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID UNIQUE,src/NOREADDATABSE.sql:461
+candidate,player_definition_progress,updated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:462
+candidate,player_period_bonus_claims,user_id,UUID,False,True,True,False,"app_users(user_id); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:471
+candidate,player_period_bonus_claims,period_id,UUID,False,True,True,False,progress_periods(period_id),NO ACTION,UUID NOT NULL REFERENCES progress_periods(period_id),src/NOREADDATABSE.sql:472
+candidate,player_period_bonus_claims,reward_grant_id,UUID,False,False,True,True,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID NOT NULL UNIQUE,src/NOREADDATABSE.sql:473
+candidate,player_period_bonus_claims,claimed_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:474
+candidate,player_daily_activity,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:479
+candidate,player_daily_activity,activity_date,DATE,False,True,False,False,,,DATE NOT NULL,src/NOREADDATABSE.sql:480
+candidate,player_daily_activity,completed_matches,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (completed_matches >= 0),src/NOREADDATABSE.sql:481
+candidate,player_daily_activity,completed_drills,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (completed_drills >= 0),src/NOREADDATABSE.sql:482
+candidate,player_daily_activity,active_seconds,"NUMERIC(14,3)",False,False,False,False,,,"NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (active_seconds >= 0)",src/NOREADDATABSE.sql:483
+candidate,streak_reward_definitions,streak_reward_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) PRIMARY KEY,src/NOREADDATABSE.sql:488
+candidate,streak_reward_definitions,consecutive_days,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (consecutive_days > 0),src/NOREADDATABSE.sql:489
+candidate,streak_reward_definitions,xp_amount,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (xp_amount >= 0),src/NOREADDATABSE.sql:490
+candidate,streak_reward_definitions,tokenpad_amount,BIGINT,False,False,False,False,,,BIGINT NOT NULL DEFAULT 0 CHECK (tokenpad_amount >= 0),src/NOREADDATABSE.sql:491
+candidate,streak_reward_definitions,is_active,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT true,src/NOREADDATABSE.sql:492
+candidate,player_streak_reward_claims,user_id,UUID,False,True,True,False,"app_users(user_id); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:495
+candidate,player_streak_reward_claims,streak_reward_code,VARCHAR(80),False,True,True,False,streak_reward_definitions(streak_reward_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES streak_reward_definitions(streak_reward_code),src/NOREADDATABSE.sql:496
+candidate,player_streak_reward_claims,streak_start_date,DATE,False,True,False,False,,,DATE NOT NULL,src/NOREADDATABSE.sql:497
+candidate,player_streak_reward_claims,qualifying_date,DATE,False,False,False,False,,,DATE NOT NULL,src/NOREADDATABSE.sql:498
+candidate,player_streak_reward_claims,reward_grant_id,UUID,False,False,True,True,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID NOT NULL UNIQUE,src/NOREADDATABSE.sql:499
+candidate,player_streak_reward_claims,claimed_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:500
+candidate,friendships,user_low_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:508
+candidate,friendships,user_high_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:509
+candidate,friendships,requested_by,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:510
+candidate,friendships,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'removed'))",src/NOREADDATABSE.sql:511
+candidate,friendships,requested_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:512
+candidate,friendships,responded_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:513
+candidate,player_blocks,blocker_user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:523
+candidate,player_blocks,blocked_user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:524
+candidate,player_blocks,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:525
+candidate,rooms,room_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:531
+candidate,rooms,room_code,VARCHAR(16),False,False,False,True,,,"VARCHAR(16) NOT NULL UNIQUE CHECK (room_code ~ '^[A-Z0-9]{4,16}$')",src/NOREADDATABSE.sql:532
+candidate,rooms,external_session_id,VARCHAR(160),True,False,False,True,,,VARCHAR(160) UNIQUE,src/NOREADDATABSE.sql:533
+candidate,rooms,host_user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:534
+candidate,rooms,play_mode,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL CHECK (play_mode IN ('singles', 'doubles'))",src/NOREADDATABSE.sql:535
+candidate,rooms,room_kind,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL CHECK (room_kind IN ('custom', 'quick_match'))",src/NOREADDATABSE.sql:536
+candidate,rooms,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'searching', 'in_match', 'closed'))",src/NOREADDATABSE.sql:537
+candidate,rooms,region,VARCHAR(40),True,False,False,False,,,VARCHAR(40),src/NOREADDATABSE.sql:538
+candidate,rooms,protocol_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 6 CHECK (protocol_version > 0),src/NOREADDATABSE.sql:539
+candidate,rooms,revision,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (revision >= 0),src/NOREADDATABSE.sql:540
+candidate,rooms,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:541
+candidate,rooms,closed_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:542
+candidate,room_members,room_id,UUID,False,True,True,False,rooms(room_id),CASCADE,UUID NOT NULL REFERENCES rooms(room_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:548
+candidate,room_members,user_id,UUID,False,True,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:549
+candidate,room_members,team_number,SMALLINT,True,False,False,False,,,"SMALLINT CHECK (team_number IN (0, 1))",src/NOREADDATABSE.sql:550
+candidate,room_members,team_seat,SMALLINT,True,False,False,False,,,SMALLINT CHECK (team_seat BETWEEN 1 AND 2),src/NOREADDATABSE.sql:551
+candidate,room_members,group_key,VARCHAR(100),True,False,False,False,,,VARCHAR(100),src/NOREADDATABSE.sql:552
+candidate,room_members,is_ready,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:553
+candidate,room_members,joined_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:554
+candidate,room_members,left_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:555
+candidate,room_invitations,invitation_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:563
+candidate,room_invitations,room_id,UUID,False,False,True,False,"room_members(room_id,user_id)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:564
+candidate,room_invitations,inviter_user_id,UUID,False,False,True,False,"room_members(room_id,user_id)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:565
+candidate,room_invitations,invitee_user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:566
+candidate,room_invitations,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled', 'expired'))",src/NOREADDATABSE.sql:567
+candidate,room_invitations,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:568
+candidate,room_invitations,expires_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL,src/NOREADDATABSE.sql:569
+candidate,room_invitations,responded_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:570
+candidate,bot_profiles,bot_profile_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:582
+candidate,bot_profiles,bot_code,VARCHAR(80),False,False,False,True,,,VARCHAR(80) NOT NULL UNIQUE,src/NOREADDATABSE.sql:583
+candidate,bot_profiles,display_name,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:584
+candidate,bot_profiles,difficulty,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 2),src/NOREADDATABSE.sql:585
+candidate,bot_profiles,behavior_version,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL DEFAULT 'unity-rule-v1',src/NOREADDATABSE.sql:586
+candidate,bot_profiles,configuration,JSONB,False,False,False,False,,,JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(configuration) = 'object'),src/NOREADDATABSE.sql:587
+candidate,bot_profiles,is_active,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT true,src/NOREADDATABSE.sql:588
+candidate,matches,match_id,UUID,False,True,True,False,"match_teams(match_id,team_number)",NO ACTION,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:591
+candidate,matches,external_match_id,VARCHAR(120),True,False,False,True,,,VARCHAR(120) UNIQUE,src/NOREADDATABSE.sql:592
+candidate,matches,room_id,UUID,True,False,True,False,rooms(room_id),NO ACTION,UUID REFERENCES rooms(room_id),src/NOREADDATABSE.sql:593
+candidate,matches,match_kind,VARCHAR(24),False,False,False,False,,,"VARCHAR(24) NOT NULL CHECK (match_kind IN ('bot_practice', 'ranked_singles', 'ranked_bot', 'matched_doubles', 'custom'))",src/NOREADDATABSE.sql:594
+candidate,matches,play_mode,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL CHECK (play_mode IN ('singles', 'doubles'))",src/NOREADDATABSE.sql:596
+candidate,matches,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'running', 'completed', 'interrupted', 'cancelled'))",src/NOREADDATABSE.sql:597
+candidate,matches,region,VARCHAR(40),True,False,False,False,,,VARCHAR(40),src/NOREADDATABSE.sql:598
+candidate,matches,is_night,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:599
+candidate,matches,target_points,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 11 CHECK (target_points > 0),src/NOREADDATABSE.sql:600
+candidate,matches,best_of_games,SMALLINT,False,False,False,False,,,"SMALLINT NOT NULL DEFAULT 3 CHECK (best_of_games IN (1, 3, 5))",src/NOREADDATABSE.sql:601
+candidate,matches,winner_team_number,SMALLINT,True,False,True,False,"match_teams(match_id,team_number)",NO ACTION,"SMALLINT CHECK (winner_team_number IN (0, 1))",src/NOREADDATABSE.sql:602
+candidate,matches,end_reason,VARCHAR(160),True,False,False,False,,,VARCHAR(160),src/NOREADDATABSE.sql:603
+candidate,matches,started_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:604
+candidate,matches,ended_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:605
+candidate,matches,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:606
+candidate,match_teams,match_id,UUID,False,True,True,False,matches(match_id),CASCADE,UUID NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:618
+candidate,match_teams,team_number,SMALLINT,False,True,False,False,,,"SMALLINT NOT NULL CHECK (team_number IN (0, 1))",src/NOREADDATABSE.sql:619
+candidate,match_teams,display_name,VARCHAR(100),True,False,False,False,,,VARCHAR(100),src/NOREADDATABSE.sql:620
+candidate,match_participants,participant_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:627
+candidate,match_participants,match_id,UUID,False,False,True,False,"match_teams(match_id,team_number)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:628
+candidate,match_participants,team_number,SMALLINT,False,False,True,False,"match_teams(match_id,team_number)",NO ACTION,SMALLINT NOT NULL,src/NOREADDATABSE.sql:629
+candidate,match_participants,team_seat,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (team_seat BETWEEN 1 AND 2),src/NOREADDATABSE.sql:630
+candidate,match_participants,user_id,UUID,True,False,True,False,"app_users(user_id); reward_grants(reward_grant_id,user_id)",NO ACTION; NO ACTION,UUID REFERENCES app_users(user_id),src/NOREADDATABSE.sql:631
+candidate,match_participants,bot_profile_id,UUID,True,False,True,False,bot_profiles(bot_profile_id),NO ACTION,UUID REFERENCES bot_profiles(bot_profile_id),src/NOREADDATABSE.sql:632
+candidate,match_participants,actor_external_id,VARCHAR(160),False,False,False,False,,,VARCHAR(160) NOT NULL,src/NOREADDATABSE.sql:633
+candidate,match_participants,display_name_snapshot,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:634
+candidate,match_participants,rating_snapshot,"NUMERIC(12,3)",False,False,False,False,,,"NUMERIC(12,3) NOT NULL DEFAULT 100 CHECK (rating_snapshot >= 0)",src/NOREADDATABSE.sql:635
+candidate,match_participants,paddle_item_code,VARCHAR(80),True,False,True,False,cosmetic_items(item_code),NO ACTION,VARCHAR(80) REFERENCES cosmetic_items(item_code),src/NOREADDATABSE.sql:636
+candidate,match_participants,outcome,VARCHAR(16),True,False,False,False,,,"VARCHAR(16) CHECK (outcome IN ('won', 'lost', 'interrupted'))",src/NOREADDATABSE.sql:637
+candidate,match_participants,is_forfeit,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:638
+candidate,match_participants,points_scored,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (points_scored >= 0),src/NOREADDATABSE.sql:639
+candidate,match_participants,valid_returns,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (valid_returns >= 0),src/NOREADDATABSE.sql:640
+candidate,match_participants,valid_serves,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (valid_serves >= 0),src/NOREADDATABSE.sql:641
+candidate,match_participants,reward_grant_id,UUID,True,False,True,True,"reward_grants(reward_grant_id,user_id)",NO ACTION,UUID UNIQUE,src/NOREADDATABSE.sql:642
+candidate,match_participants,result_applied_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:643
+candidate,match_games,match_id,UUID,False,True,True,False,matches(match_id),NO ACTION,UUID NOT NULL REFERENCES matches(match_id),src/NOREADDATABSE.sql:658
+candidate,match_games,game_number,SMALLINT,False,True,False,False,,,SMALLINT NOT NULL CHECK (game_number > 0),src/NOREADDATABSE.sql:659
+candidate,match_games,team_0_score,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (team_0_score >= 0),src/NOREADDATABSE.sql:660
+candidate,match_games,team_1_score,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 0 CHECK (team_1_score >= 0),src/NOREADDATABSE.sql:661
+candidate,match_games,is_completed,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:662
+candidate,match_games,winner_team_number,SMALLINT,True,False,False,False,,,SMALLINT GENERATED ALWAYS AS (CASE WHEN NOT is_completed THEN NULL WHEN team_0_score > team_1_score THEN 0 ELSE 1 END) STORED,src/NOREADDATABSE.sql:663
+candidate,rating_events,rating_event_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:669
+candidate,rating_events,user_id,UUID,False,False,True,False,"player_rating_states(user_id,rating_system,play_mode); match_participants(match_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:670
+candidate,rating_events,rating_system,VARCHAR(16),False,False,True,False,"player_rating_states(user_id,rating_system,play_mode)",NO ACTION,VARCHAR(16) NOT NULL,src/NOREADDATABSE.sql:671
+candidate,rating_events,play_mode,VARCHAR(16),False,False,True,False,"player_rating_states(user_id,rating_system,play_mode)",NO ACTION,VARCHAR(16) NOT NULL,src/NOREADDATABSE.sql:672
+candidate,rating_events,match_id,UUID,True,False,True,False,"match_participants(match_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:673
+candidate,rating_events,event_key,VARCHAR(160),False,False,False,False,,,VARCHAR(160) NOT NULL,src/NOREADDATABSE.sql:674
+candidate,rating_events,rating_before,"NUMERIC(12,3)",False,False,False,False,,,"NUMERIC(12,3) NOT NULL",src/NOREADDATABSE.sql:675
+candidate,rating_events,rating_after,"NUMERIC(12,3)",False,False,False,False,,,"NUMERIC(12,3) NOT NULL",src/NOREADDATABSE.sql:676
+candidate,rating_events,rating_delta,NUMERIC,True,False,False,False,,,NUMERIC GENERATED ALWAYS AS (rating_after - rating_before) STORED,src/NOREADDATABSE.sql:677
+candidate,rating_events,deviation_after,"NUMERIC(10,3)",True,False,False,False,,,"NUMERIC(10,3)",src/NOREADDATABSE.sql:678
+candidate,rating_events,volatility_after,"NUMERIC(12,8)",True,False,False,False,,,"NUMERIC(12,8)",src/NOREADDATABSE.sql:679
+candidate,rating_events,reliability_after,"NUMERIC(5,2)",False,False,False,False,,,"NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (reliability_after BETWEEN 0 AND 100)",src/NOREADDATABSE.sql:680
+candidate,rating_events,reason,VARCHAR(120),False,False,False,False,,,VARCHAR(120) NOT NULL,src/NOREADDATABSE.sql:681
+candidate,rating_events,algorithm_version,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:682
+candidate,rating_events,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:683
+candidate,technique_errors,error_code,VARCHAR(40),False,True,False,False,,,VARCHAR(40) PRIMARY KEY,src/NOREADDATABSE.sql:699
+candidate,technique_errors,display_name,VARCHAR(120),False,False,False,False,,,VARCHAR(120) NOT NULL,src/NOREADDATABSE.sql:700
+candidate,technique_errors,description,TEXT,False,False,False,False,,,TEXT NOT NULL DEFAULT '',src/NOREADDATABSE.sql:701
+candidate,coaching_tips,tip_code,VARCHAR(80),False,True,False,False,,,VARCHAR(80) PRIMARY KEY,src/NOREADDATABSE.sql:704
+candidate,coaching_tips,locale,VARCHAR(16),False,False,False,False,,,VARCHAR(16) NOT NULL DEFAULT 'vi-VN',src/NOREADDATABSE.sql:705
+candidate,coaching_tips,tip_text,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:706
+candidate,coaching_tips,is_active,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT true,src/NOREADDATABSE.sql:707
+candidate,error_tips,error_code,VARCHAR(40),False,True,True,False,technique_errors(error_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES technique_errors(error_code),src/NOREADDATABSE.sql:710
+candidate,error_tips,tip_code,VARCHAR(80),False,True,True,False,coaching_tips(tip_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES coaching_tips(tip_code),src/NOREADDATABSE.sql:711
+candidate,error_tips,priority,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 1 CHECK (priority > 0),src/NOREADDATABSE.sql:712
+candidate,training_attempt_errors,attempt_id,UUID,False,True,True,False,training_attempts(attempt_id),NO ACTION,UUID NOT NULL REFERENCES training_attempts(attempt_id),src/NOREADDATABSE.sql:717
+candidate,training_attempt_errors,error_code,VARCHAR(40),False,True,True,False,technique_errors(error_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES technique_errors(error_code),src/NOREADDATABSE.sql:718
+candidate,training_attempt_errors,occurrences,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (occurrences > 0),src/NOREADDATABSE.sql:719
+candidate,shot_telemetry,shot_id,BIGINT,False,True,False,False,,,BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,src/NOREADDATABSE.sql:724
+candidate,shot_telemetry,match_id,UUID,True,False,True,False,"match_participants(match_id,participant_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:725
+candidate,shot_telemetry,participant_id,UUID,True,False,True,False,"match_participants(match_id,participant_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:726
+candidate,shot_telemetry,attempt_id,UUID,True,False,True,False,training_attempts(attempt_id),NO ACTION,UUID REFERENCES training_attempts(attempt_id),src/NOREADDATABSE.sql:727
+candidate,shot_telemetry,trial_number,SMALLINT,True,False,False,False,,,SMALLINT,src/NOREADDATABSE.sql:728
+candidate,shot_telemetry,shot_sequence,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (shot_sequence > 0),src/NOREADDATABSE.sql:729
+candidate,shot_telemetry,technique_code,VARCHAR(40),False,False,True,False,techniques(technique_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES techniques(technique_code),src/NOREADDATABSE.sql:730
+candidate,shot_telemetry,occurred_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL,src/NOREADDATABSE.sql:731
+candidate,shot_telemetry,elapsed_seconds,"NUMERIC(14,6)",False,False,False,False,,,"NUMERIC(14,6) NOT NULL CHECK (elapsed_seconds >= 0)",src/NOREADDATABSE.sql:732
+candidate,shot_telemetry,timing_error_seconds,"NUMERIC(10,6)",True,False,False,False,,,"NUMERIC(10,6)",src/NOREADDATABSE.sql:733
+candidate,shot_telemetry,contact_x,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:734
+candidate,shot_telemetry,contact_y,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:734
+candidate,shot_telemetry,contact_z,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:734
+candidate,shot_telemetry,actor_x,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:735
+candidate,shot_telemetry,actor_z,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:735
+candidate,shot_telemetry,landing_x,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:736
+candidate,shot_telemetry,landing_z,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4)",src/NOREADDATABSE.sql:736
+candidate,shot_telemetry,ball_peak_height,"NUMERIC(10,4)",True,False,False,False,,,"NUMERIC(10,4) CHECK (ball_peak_height >= 0)",src/NOREADDATABSE.sql:737
+candidate,shot_telemetry,is_cross_court,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:738
+candidate,shot_telemetry,is_power,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:739
+candidate,shot_telemetry,bounce_count,SMALLINT,True,False,False,False,,,SMALLINT CHECK (bounce_count >= 0),src/NOREADDATABSE.sql:740
+candidate,shot_telemetry,was_in_kitchen,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:741
+candidate,shot_telemetry,hit_target,BOOLEAN,True,False,False,False,,,BOOLEAN,src/NOREADDATABSE.sql:742
+candidate,shot_telemetry,result_code,VARCHAR(24),False,False,False,False,,,"VARCHAR(24) NOT NULL CHECK (result_code IN ('valid', 'miss', 'net', 'out', 'rule_fault', 'pending'))",src/NOREADDATABSE.sql:743
+candidate,shot_errors,shot_id,BIGINT,False,True,True,False,shot_telemetry(shot_id),CASCADE,BIGINT NOT NULL REFERENCES shot_telemetry(shot_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:754
+candidate,shot_errors,error_code,VARCHAR(40),False,True,True,False,technique_errors(error_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES technique_errors(error_code),src/NOREADDATABSE.sql:755
+candidate,shot_errors,confidence,"NUMERIC(5,4)",False,False,False,False,,,"NUMERIC(5,4) NOT NULL DEFAULT 1 CHECK (confidence BETWEEN 0 AND 1)",src/NOREADDATABSE.sql:756
+candidate,coaching_feedback,feedback_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:761
+candidate,coaching_feedback,user_id,UUID,False,False,True,False,"app_users(user_id); match_participants(match_id,user_id); training_attempts(attempt_id,user_id)",NO ACTION; NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:762
+candidate,coaching_feedback,match_id,UUID,True,False,True,False,"match_participants(match_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:763
+candidate,coaching_feedback,attempt_id,UUID,True,False,True,False,"training_attempts(attempt_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:764
+candidate,coaching_feedback,summary,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:765
+candidate,coaching_feedback,evaluator_kind,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL CHECK (evaluator_kind IN ('rule', 'classifier', 'hybrid'))",src/NOREADDATABSE.sql:766
+candidate,coaching_feedback,evaluator_version,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:767
+candidate,coaching_feedback,processing_ms,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (processing_ms >= 0),src/NOREADDATABSE.sql:768
+candidate,coaching_feedback,generated_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:769
+candidate,feedback_errors,feedback_id,UUID,False,True,True,False,coaching_feedback(feedback_id),CASCADE,UUID NOT NULL REFERENCES coaching_feedback(feedback_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:779
+candidate,feedback_errors,error_code,VARCHAR(40),False,True,True,False,technique_errors(error_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES technique_errors(error_code),src/NOREADDATABSE.sql:780
+candidate,feedback_errors,occurrences,INTEGER,False,False,False,False,,,INTEGER NOT NULL CHECK (occurrences > 0),src/NOREADDATABSE.sql:781
+candidate,feedback_tips,feedback_id,UUID,False,True,True,False,coaching_feedback(feedback_id),CASCADE,UUID NOT NULL REFERENCES coaching_feedback(feedback_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:786
+candidate,feedback_tips,tip_code,VARCHAR(80),False,True,True,False,coaching_tips(tip_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES coaching_tips(tip_code),src/NOREADDATABSE.sql:787
+candidate,feedback_tips,tip_text_snapshot,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:788
+candidate,feedback_tips,sort_order,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (sort_order > 0),src/NOREADDATABSE.sql:789
+candidate,drill_recommendations,recommendation_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:795
+candidate,drill_recommendations,user_id,UUID,False,False,True,False,"app_users(user_id); coaching_feedback(feedback_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:796
+candidate,drill_recommendations,drill_code,VARCHAR(80),False,False,True,False,drills(drill_code),NO ACTION,VARCHAR(80) NOT NULL REFERENCES drills(drill_code),src/NOREADDATABSE.sql:797
+candidate,drill_recommendations,feedback_id,UUID,True,False,True,False,"coaching_feedback(feedback_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:798
+candidate,drill_recommendations,priority,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL CHECK (priority > 0),src/NOREADDATABSE.sql:799
+candidate,drill_recommendations,reason,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:800
+candidate,drill_recommendations,recommender_version,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:801
+candidate,drill_recommendations,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'completed', 'dismissed'))",src/NOREADDATABSE.sql:802
+candidate,drill_recommendations,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:803
+candidate,recommendation_errors,recommendation_id,UUID,False,True,True,False,drill_recommendations(recommendation_id),CASCADE,UUID NOT NULL REFERENCES drill_recommendations(recommendation_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:810
+candidate,recommendation_errors,error_code,VARCHAR(40),False,True,True,False,technique_errors(error_code),NO ACTION,VARCHAR(40) NOT NULL REFERENCES technique_errors(error_code),src/NOREADDATABSE.sql:811
+candidate,match_replays,replay_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:818
+candidate,match_replays,match_id,UUID,False,False,True,False,"match_participants(match_id,user_id)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:819
+candidate,match_replays,owner_user_id,UUID,False,False,True,False,"match_participants(match_id,user_id)",NO ACTION,UUID NOT NULL,src/NOREADDATABSE.sql:820
+candidate,match_replays,format_version,INTEGER,False,False,False,False,,,INTEGER NOT NULL DEFAULT 1 CHECK (format_version > 0),src/NOREADDATABSE.sql:821
+candidate,match_replays,sample_rate,SMALLINT,False,False,False,False,,,SMALLINT NOT NULL DEFAULT 30 CHECK (sample_rate BETWEEN 1 AND 120),src/NOREADDATABSE.sql:822
+candidate,match_replays,duration_seconds,"NUMERIC(14,3)",False,False,False,False,,,"NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (duration_seconds >= 0)",src/NOREADDATABSE.sql:823
+candidate,match_replays,is_complete,BOOLEAN,False,False,False,False,,,BOOLEAN NOT NULL DEFAULT false,src/NOREADDATABSE.sql:824
+candidate,match_replays,storage_prefix,TEXT,False,False,False,False,,,TEXT NOT NULL CHECK (length(btrim(storage_prefix)) > 0),src/NOREADDATABSE.sql:825
+candidate,match_replays,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:826
+candidate,replay_chunks,replay_id,UUID,False,True,True,False,match_replays(replay_id),CASCADE,UUID NOT NULL REFERENCES match_replays(replay_id) ON DELETE CASCADE,src/NOREADDATABSE.sql:832
+candidate,replay_chunks,chunk_number,INTEGER,False,True,False,False,,,INTEGER NOT NULL CHECK (chunk_number >= 0),src/NOREADDATABSE.sql:833
+candidate,replay_chunks,storage_key,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:834
+candidate,replay_chunks,start_seconds,"NUMERIC(14,6)",False,False,False,False,,,"NUMERIC(14,6) NOT NULL CHECK (start_seconds >= 0)",src/NOREADDATABSE.sql:835
+candidate,replay_chunks,end_seconds,"NUMERIC(14,6)",False,False,False,False,,,"NUMERIC(14,6) NOT NULL CHECK (end_seconds >= start_seconds)",src/NOREADDATABSE.sql:836
+candidate,replay_chunks,size_bytes,BIGINT,True,False,False,False,,,BIGINT CHECK (size_bytes > 0),src/NOREADDATABSE.sql:837
+candidate,replay_chunks,sha256,BYTEA,True,False,False,False,,,BYTEA CHECK (octet_length(sha256) = 32),src/NOREADDATABSE.sql:838
+candidate,player_reports,report_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:846
+candidate,player_reports,reporter_user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:847
+candidate,player_reports,reported_user_id,UUID,False,False,True,False,"app_users(user_id); match_participants(match_id,user_id)",NO ACTION; NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:848
+candidate,player_reports,match_id,UUID,True,False,True,False,"match_participants(match_id,user_id)",NO ACTION,UUID,src/NOREADDATABSE.sql:849
+candidate,player_reports,reason_code,VARCHAR(24),False,False,False,False,,,"VARCHAR(24) NOT NULL CHECK (reason_code IN ('cheating', 'abuse', 'disconnect', 'other'))",src/NOREADDATABSE.sql:850
+candidate,player_reports,description,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:851
+candidate,player_reports,status,VARCHAR(16),False,False,False,False,,,"VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'resolved', 'dismissed'))",src/NOREADDATABSE.sql:852
+candidate,player_reports,reviewed_by,UUID,True,False,True,False,app_users(user_id),NO ACTION,UUID REFERENCES app_users(user_id),src/NOREADDATABSE.sql:853
+candidate,player_reports,reviewed_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:854
+candidate,player_reports,resolution,TEXT,True,False,False,False,,,TEXT,src/NOREADDATABSE.sql:855
+candidate,player_reports,created_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:856
+candidate,moderation_actions,action_id,UUID,False,True,False,False,,,UUID PRIMARY KEY DEFAULT gen_random_uuid(),src/NOREADDATABSE.sql:864
+candidate,moderation_actions,target_user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:865
+candidate,moderation_actions,actor_user_id,UUID,False,False,True,False,app_users(user_id),NO ACTION,UUID NOT NULL REFERENCES app_users(user_id),src/NOREADDATABSE.sql:866
+candidate,moderation_actions,report_id,UUID,True,False,True,False,player_reports(report_id),NO ACTION,UUID REFERENCES player_reports(report_id),src/NOREADDATABSE.sql:867
+candidate,moderation_actions,action_code,VARCHAR(24),False,False,False,False,,,"VARCHAR(24) NOT NULL CHECK (action_code IN ('warning', 'suspend', 'ban', 'unban', 'reset_progress', 'restore_progress'))",src/NOREADDATABSE.sql:868
+candidate,moderation_actions,reason,TEXT,False,False,False,False,,,TEXT NOT NULL,src/NOREADDATABSE.sql:869
+candidate,moderation_actions,effective_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:870
+candidate,moderation_actions,expires_at,TIMESTAMPTZ,True,False,False,False,,,TIMESTAMPTZ,src/NOREADDATABSE.sql:871
+candidate,audit_logs,audit_id,BIGINT,False,True,False,False,,,BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,src/NOREADDATABSE.sql:876
+candidate,audit_logs,actor_user_id,UUID,True,False,True,False,app_users(user_id),NO ACTION,UUID REFERENCES app_users(user_id),src/NOREADDATABSE.sql:877
+candidate,audit_logs,action_code,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:878
+candidate,audit_logs,entity_type,VARCHAR(80),False,False,False,False,,,VARCHAR(80) NOT NULL,src/NOREADDATABSE.sql:879
+candidate,audit_logs,entity_key,VARCHAR(180),False,False,False,False,,,VARCHAR(180) NOT NULL,src/NOREADDATABSE.sql:880
+candidate,audit_logs,request_id,VARCHAR(160),True,False,False,False,,,VARCHAR(160),src/NOREADDATABSE.sql:881
+candidate,audit_logs,details,JSONB,False,False,False,False,,,JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(details) = 'object'),src/NOREADDATABSE.sql:882
+candidate,audit_logs,occurred_at,TIMESTAMPTZ,False,False,False,False,,,TIMESTAMPTZ NOT NULL DEFAULT now(),src/NOREADDATABSE.sql:883

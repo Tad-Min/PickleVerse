@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1267" viewBox="0 0 1400 1267">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="1267" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">ERD09  Current SQL schema 9</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.</text>
+<path d="M350.0,373 V675.0 H250.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,373 V675.0 H705.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,431 V704.0 H250.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,431 V704.0 H705.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,431 V704.0 H1160.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,431 V759.0 H250.0 V1087" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,657 V817.0 H250.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,657 V872.0 H250.0 V1087" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M350.0,657 V872.0 H705.0 V1087" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,802 V889.5 H250.0 V977" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,802 V944.5 H250.0 V1087" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,802 V944.5 H705.0 V1087" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<path d="M1040.0,802 V944.5 H1160.0 V1087" fill="none" stroke="#7a8795" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<rect x="40" y="135" width="620" height="238" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerTechniqueMastery</text>
+<text x="62" y="202" font-family="Arial" font-size="23" fill="#222c39">PK FK PlayerId: UUID</text>
+<text x="62" y="231" font-family="Arial" font-size="23" fill="#222c39">PK FK TechniqueId: INT</text>
+<text x="62" y="260" font-family="Arial" font-size="23" fill="#222c39">TotalAttempts: INT</text>
+<text x="62" y="289" font-family="Arial" font-size="23" fill="#222c39">TotalErrors: INT</text>
+<text x="62" y="318" font-family="Arial" font-size="23" fill="#222c39">MasteryScore: SMALLINT ?</text>
+<text x="62" y="347" font-family="Arial" font-size="23" fill="#222c39">LastUpdatedAt: TIMESTAMPTZ</text>
+<rect x="730" y="135" width="620" height="296" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="173" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerTechniquesErrors</text>
+<text x="752" y="202" font-family="Arial" font-size="23" fill="#222c39">PK ErrorLogId: SERIAL</text>
+<text x="752" y="231" font-family="Arial" font-size="23" fill="#222c39">FK PlayerId: UUID</text>
+<text x="752" y="260" font-family="Arial" font-size="23" fill="#222c39">FK TechniqueId: INT</text>
+<text x="752" y="289" font-family="Arial" font-size="23" fill="#222c39">FK MatchId: UUID ?</text>
+<text x="752" y="318" font-family="Arial" font-size="23" fill="#222c39">FK LessonId: INT ?</text>
+<text x="752" y="347" font-family="Arial" font-size="23" fill="#222c39">ErrorType: VARCHAR(50)</text>
+<text x="752" y="376" font-family="Arial" font-size="23" fill="#222c39">CoachingTip: TEXT</text>
+<text x="752" y="405" font-family="Arial" font-size="23" fill="#222c39">CreatedAt: TIMESTAMPTZ</text>
+<rect x="40" y="448" width="620" height="209" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="486" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerLessonDrills</text>
+<text x="62" y="515" font-family="Arial" font-size="23" fill="#222c39">PK FK PlayerId: UUID</text>
+<text x="62" y="544" font-family="Arial" font-size="23" fill="#222c39">PK FK LessonId: INT</text>
+<text x="62" y="573" font-family="Arial" font-size="23" fill="#222c39">PK FK DrillId: INT</text>
+<text x="62" y="602" font-family="Arial" font-size="23" fill="#222c39">Score: INT</text>
+<text x="62" y="631" font-family="Arial" font-size="23" fill="#222c39">IsClaimedReward: BOOLEAN</text>
+<rect x="730" y="506" width="620" height="296" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="752" y="544" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">TrainingSessions</text>
+<text x="752" y="573" font-family="Arial" font-size="23" fill="#222c39">PK AttemptId: UUID</text>
+<text x="752" y="602" font-family="Arial" font-size="23" fill="#222c39">FK PlayerId: UUID</text>
+<text x="752" y="631" font-family="Arial" font-size="23" fill="#222c39">FK LessonId: INT</text>
+<text x="752" y="660" font-family="Arial" font-size="23" fill="#222c39">FK DrillId: INT</text>
+<text x="752" y="689" font-family="Arial" font-size="23" fill="#222c39">Data: JSONB</text>
+<text x="752" y="718" font-family="Arial" font-size="23" fill="#222c39">Completed: BOOLEAN</text>
+<text x="752" y="747" font-family="Arial" font-size="23" fill="#222c39">CreatedAt: TIMESTAMPTZ</text>
+<text x="752" y="776" font-family="Arial" font-size="23" fill="#222c39">UpdatedAt: TIMESTAMPTZ</text>
+<rect x="40" y="977" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="1015" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">PlayerProfiles</text>
+<text x="62" y="1044" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="62" y="1073" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+<rect x="495" y="977" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="517" y="1015" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Techniques</text>
+<text x="517" y="1044" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="517" y="1073" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+<rect x="950" y="977" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="972" y="1015" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">MatchHistory</text>
+<text x="972" y="1044" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="972" y="1073" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+<rect x="40" y="1087" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="62" y="1125" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Lessons</text>
+<text x="62" y="1154" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="62" y="1183" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+<rect x="495" y="1087" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="517" y="1125" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Drills</text>
+<text x="517" y="1154" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="517" y="1183" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+<rect x="950" y="1087" width="420" height="90" rx="10" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="972" y="1125" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">LessonDrills</text>
+<text x="972" y="1154" font-family="Arial" font-size="23" fill="#222c39">Referenced table — see other</text>
+<text x="972" y="1183" font-family="Arial" font-size="23" fill="#222c39">ERD</text>
+</svg>

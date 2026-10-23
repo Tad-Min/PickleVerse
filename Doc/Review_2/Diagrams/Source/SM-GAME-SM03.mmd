@@ -1,0 +1,13 @@
+stateDiagram-v2
+    %% GAME-SM03 - Training presentation/session phase
+    %% Source definition: My project/Assets/Scripts/LocalMatch/TrainingDirector.cs:13
+    [*] --> Catalogue: Open training
+    Catalogue --> Briefing: Select lesson
+    Briefing --> Practice: StartLesson
+    Practice --> Recovery: Candidate valid target
+    Practice --> Recovery: Fail(error)
+    Recovery --> Recovery: Wait recovery/announcement
+    Recovery --> Practice: Next trial
+    Recovery --> Finished: Last trial consumed
+    Finished --> Practice: Retry
+    Finished --> Briefing: NextLesson

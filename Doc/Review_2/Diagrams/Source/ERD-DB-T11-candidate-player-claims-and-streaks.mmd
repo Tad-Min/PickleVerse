@@ -1,0 +1,67 @@
+%% ERD-DB-T11: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    player_definition_progress {
+        uuid user_id PK,FK "NOT NULL"
+        uuid period_id PK,FK "NOT NULL"
+        varchar_80 definition_code PK,FK "NOT NULL"
+        bigint progress_value "NOT NULL"
+        timestamptz completed_at "NULL allowed"
+        timestamptz claimed_at "NULL allowed"
+        uuid reward_grant_id FK,UK "NULL allowed"
+        timestamptz updated_at "NOT NULL"
+    }
+    player_period_bonus_claims {
+        uuid user_id PK,FK "NOT NULL"
+        uuid period_id PK,FK "NOT NULL"
+        uuid reward_grant_id FK,UK "NOT NULL"
+        timestamptz claimed_at "NOT NULL"
+    }
+    player_daily_activity {
+        uuid user_id PK,FK "NOT NULL"
+        date activity_date PK "NOT NULL"
+        integer completed_matches "NOT NULL"
+        integer completed_drills "NOT NULL"
+        numeric_14_3 active_seconds "NOT NULL"
+    }
+    streak_reward_definitions {
+        varchar_80 streak_reward_code PK "NOT NULL"
+        smallint consecutive_days "NOT NULL"
+        integer xp_amount "NOT NULL"
+        bigint tokenpad_amount "NOT NULL"
+        boolean is_active "NOT NULL"
+    }
+    player_streak_reward_claims {
+        uuid user_id PK,FK "NOT NULL"
+        varchar_80 streak_reward_code PK,FK "NOT NULL"
+        date streak_start_date PK "NOT NULL"
+        date qualifying_date "NOT NULL"
+        uuid reward_grant_id FK,UK "NOT NULL"
+        timestamptz claimed_at "NOT NULL"
+    }
+    app_users {
+        uuid user_id PK "NOT NULL; reference only"
+    }
+    period_definitions {
+        uuid period_id PK,FK "NOT NULL; reference only"
+        varchar_80 definition_code PK,FK "NOT NULL; reference only"
+        varchar_16 scope FK "NOT NULL; reference only"
+    }
+    reward_grants {
+        uuid reward_grant_id PK "NOT NULL; reference only"
+        uuid user_id FK "NOT NULL; reference only"
+    }
+    progress_periods {
+        uuid period_id PK "NOT NULL; reference only"
+    }
+    app_users ||--o{ player_definition_progress : "user_id"
+    period_definitions ||--o{ player_definition_progress : "period_id,definition_code"
+    reward_grants |o--o{ player_definition_progress : "reward_grant_id,user_id"
+    app_users ||--o{ player_period_bonus_claims : "user_id"
+    progress_periods ||--o{ player_period_bonus_claims : "period_id"
+    reward_grants ||--o{ player_period_bonus_claims : "reward_grant_id,user_id"
+    app_users ||--o{ player_daily_activity : "user_id"
+    app_users ||--o{ player_streak_reward_claims : "user_id"
+    streak_reward_definitions ||--o{ player_streak_reward_claims : "streak_reward_code"
+    reward_grants ||--o{ player_streak_reward_claims : "reward_grant_id,user_id"

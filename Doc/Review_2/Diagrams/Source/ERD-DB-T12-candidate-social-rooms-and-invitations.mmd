@@ -1,0 +1,64 @@
+%% ERD-DB-T12: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    friendships {
+        uuid user_low_id PK,FK "NOT NULL"
+        uuid user_high_id PK,FK "NOT NULL"
+        uuid requested_by FK "NOT NULL"
+        varchar_16 status "NOT NULL"
+        timestamptz requested_at "NOT NULL"
+        timestamptz responded_at "NULL allowed"
+    }
+    player_blocks {
+        uuid blocker_user_id PK,FK "NOT NULL"
+        uuid blocked_user_id PK,FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    rooms {
+        uuid room_id PK "NOT NULL"
+        varchar_16 room_code UK "NOT NULL"
+        varchar_160 external_session_id UK "NULL allowed"
+        uuid host_user_id FK "NOT NULL"
+        varchar_16 play_mode "NOT NULL"
+        varchar_16 room_kind "NOT NULL"
+        varchar_16 status "NOT NULL"
+        varchar_40 region "NULL allowed"
+        integer protocol_version "NOT NULL"
+        integer revision "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz closed_at "NULL allowed"
+    }
+    room_members {
+        uuid room_id PK,FK "NOT NULL"
+        uuid user_id PK,FK "NOT NULL"
+        smallint team_number "NULL allowed"
+        smallint team_seat "NULL allowed"
+        varchar_100 group_key "NULL allowed"
+        boolean is_ready "NOT NULL"
+        timestamptz joined_at "NOT NULL"
+        timestamptz left_at "NULL allowed"
+    }
+    room_invitations {
+        uuid invitation_id PK "NOT NULL"
+        uuid room_id FK "NOT NULL"
+        uuid inviter_user_id FK "NOT NULL"
+        uuid invitee_user_id FK "NOT NULL"
+        varchar_16 status "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz expires_at "NOT NULL"
+        timestamptz responded_at "NULL allowed"
+    }
+    app_users {
+        uuid user_id PK "NOT NULL; reference only"
+    }
+    app_users ||--o{ friendships : "user_low_id"
+    app_users ||--o{ friendships : "user_high_id"
+    app_users ||--o{ friendships : "requested_by"
+    app_users ||--o{ player_blocks : "blocker_user_id"
+    app_users ||--o{ player_blocks : "blocked_user_id"
+    app_users ||--o{ rooms : "host_user_id"
+    rooms ||--o{ room_members : "room_id"
+    app_users ||--o{ room_members : "user_id"
+    app_users ||--o{ room_invitations : "invitee_user_id"
+    room_members ||--o{ room_invitations : "room_id,inviter_user_id"

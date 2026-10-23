@@ -1,0 +1,97 @@
+{
+  "id": "ERD01",
+  "title": "Current SQL schema 1",
+  "nodes": [
+    {
+      "id": "Roles",
+      "title": "Roles",
+      "body": [
+        "PK RoleId: SERIAL",
+        "RoleName: VARCHAR(32)",
+        "Description: VARCHAR(254)"
+      ],
+      "x": 40,
+      "y": 135,
+      "w": 620,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "Users",
+      "title": "Users",
+      "body": [
+        "PK UserId: UUID",
+        "Email: VARCHAR(254)",
+        "PasswordHash: VARCHAR(254)",
+        "FK RoleId: INT",
+        "Status: VARCHAR(20)",
+        "CreatedAt: TIMESTAMPTZ"
+      ],
+      "x": 730,
+      "y": 135,
+      "w": 620,
+      "h": 238,
+      "shape": "box"
+    },
+    {
+      "id": "RefreshTokens",
+      "title": "RefreshTokens",
+      "body": [
+        "PK TokenId: SERIAL",
+        "FK UserId: UUID",
+        "TokenHash: VARCHAR(254)",
+        "ExpiresAt: TIMESTAMPTZ",
+        "IsRevoked: BOOLEAN",
+        "CreatedAt: TIMESTAMPTZ"
+      ],
+      "x": 40,
+      "y": 361,
+      "w": 620,
+      "h": 238,
+      "shape": "box"
+    },
+    {
+      "id": "VerificationEmail",
+      "title": "VerificationEmail",
+      "body": [
+        "PK VerificationEmailId: SERIAL",
+        "FK UserId: UUID",
+        "Email: VARCHAR(254)",
+        "Token: VARCHAR(128)",
+        "FailedAttempts: INT",
+        "CreatedAt: TIMESTAMPTZ",
+        "ExpiresAt: TIMESTAMPTZ",
+        "IsVerified: BOOLEAN"
+      ],
+      "x": 730,
+      "y": 448,
+      "w": 620,
+      "h": 296,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Users",
+      "target": "Roles",
+      "label": "RoleId",
+      "dashed": false
+    },
+    {
+      "source": "RefreshTokens",
+      "target": "Users",
+      "label": "UserId",
+      "dashed": false
+    },
+    {
+      "source": "VerificationEmail",
+      "target": "Users",
+      "label": "UserId",
+      "dashed": false
+    }
+  ],
+  "kind": "erd",
+  "note": "37 tables / 208 columns / 54 declared foreign keys. Dashed link: table shown on another page.",
+  "width": 1400,
+  "height": 834
+}

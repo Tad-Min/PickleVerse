@@ -1,0 +1,76 @@
+{
+  "id": "SM12",
+  "title": "Lesson publication target",
+  "nodes": [
+    {
+      "id": "Draft",
+      "title": "Draft",
+      "body": [],
+      "x": 40,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Validated",
+      "title": "Validated",
+      "body": [],
+      "x": 495,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Published",
+      "title": "Published",
+      "body": [],
+      "x": 950,
+      "y": 145,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    },
+    {
+      "id": "Withdrawn",
+      "title": "Withdrawn",
+      "body": [],
+      "x": 40,
+      "y": 345,
+      "w": 405,
+      "h": 110,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "Draft",
+      "target": "Validated",
+      "label": "1",
+      "dashed": false
+    },
+    {
+      "source": "Validated",
+      "target": "Published",
+      "label": "2",
+      "dashed": false
+    },
+    {
+      "source": "Published",
+      "target": "Withdrawn",
+      "label": "3",
+      "dashed": false
+    },
+    {
+      "source": "Withdrawn",
+      "target": "Draft",
+      "label": "4",
+      "dashed": false
+    }
+  ],
+  "kind": "state",
+  "note": "Target lifecycle, incomplete implementation; declared SQL states retained where applicable. Numbered arrows map to the transition register in the SDD; rejected/self transitions are listed there.",
+  "width": 1400,
+  "height": 545
+}

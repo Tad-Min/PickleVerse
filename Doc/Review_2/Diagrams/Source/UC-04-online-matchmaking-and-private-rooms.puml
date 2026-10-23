@@ -1,0 +1,59 @@
+@startuml UC-04
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam packageStyle rectangle
+skinparam usecase {
+  BorderColor #314C68
+  FontColor #102333
+}
+skinparam actor {
+  BorderColor #314C68
+  FontColor #102333
+}
+title UC-04 - Online matchmaking and private rooms
+actor "Online player" as A_online
+actor "Room captain" as A_captain
+actor "Other human player" as A_other
+actor "Unity Gaming Services" as A_ugs
+rectangle "PickleVerse game / Online matchmaking and private rooms" {
+  usecase "G-UC31\nFind an Elo-based singles match\n<<PARTIAL / INTEGRATION GAP>>" as G_UC31 #FFF1D6
+  usecase "G-UC32\nForm a party and find a doubles match\n<<PARTIAL / INTEGRATION GAP>>" as G_UC32 #FFF1D6
+  usecase "G-UC33\nAccept or decline a found match\n<<SOURCE IMPLEMENTED>>" as G_UC33 #E7F3EC
+  usecase "G-UC34\nCreate a private singles or doubles room\n<<SOURCE IMPLEMENTED>>" as G_UC34 #E7F3EC
+  usecase "G-UC35\nJoin a room using its code\n<<SOURCE IMPLEMENTED>>" as G_UC35 #E7F3EC
+  usecase "G-UC36\nManage teams, remove members and start\n<<SOURCE IMPLEMENTED>>" as G_UC36 #E7F3EC
+  usecase "G-UC37\nPlay and synchronize an online match\n<<PARTIAL / INTEGRATION GAP>>" as G_UC37 #FFF1D6
+  usecase "G-UC38\nReconnect after a connection loss\n<<PARTIAL / INTEGRATION GAP>>" as G_UC38 #FFF1D6
+  usecase "G-UC39\nView match statistics and Elo changes\n<<PARTIAL / INTEGRATION GAP>>" as G_UC39 #FFF1D6
+}
+A_online -- G_UC31
+A_ugs -- G_UC31
+A_online -- G_UC32
+A_ugs -- G_UC32
+A_other -- G_UC32
+A_online -- G_UC33
+A_ugs -- G_UC33
+A_other -- G_UC33
+A_captain -- G_UC34
+A_ugs -- G_UC34
+A_online -- G_UC35
+A_ugs -- G_UC35
+A_other -- G_UC35
+A_captain -- G_UC36
+A_online -- G_UC37
+A_ugs -- G_UC37
+A_other -- G_UC37
+A_online -- G_UC38
+A_ugs -- G_UC38
+A_online -- G_UC39
+A_captain --|> A_online
+legend bottom
+  Green: source implemented; amber: partial / integration gap.
+  Purple: demo fixtures only; red: target with no game evidence.
+  Grey isolated use case: outside baseline; no implemented actor path.
+  Source coverage is not runtime acceptance or review approval.
+endlegend
+@enduml

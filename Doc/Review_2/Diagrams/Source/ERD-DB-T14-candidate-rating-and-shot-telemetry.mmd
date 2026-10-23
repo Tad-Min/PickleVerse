@@ -1,0 +1,84 @@
+%% ERD-DB-T14: CANDIDATE ONLY — not current EF / not deployed evidence
+%% Solid relationship means declared SQL FK; current source inspection only.
+%% Nullable column comment means optional parent; child lower bound always 0.
+erDiagram
+    rating_events {
+        uuid rating_event_id PK "NOT NULL"
+        uuid user_id FK "NOT NULL"
+        varchar_16 rating_system FK "NOT NULL"
+        varchar_16 play_mode FK "NOT NULL"
+        uuid match_id FK "NULL allowed"
+        varchar_160 event_key "NOT NULL"
+        numeric_12_3 rating_before "NOT NULL"
+        numeric_12_3 rating_after "NOT NULL"
+        numeric rating_delta "NULL allowed"
+        numeric_10_3 deviation_after "NULL allowed"
+        numeric_12_8 volatility_after "NULL allowed"
+        numeric_5_2 reliability_after "NOT NULL"
+        varchar_120 reason "NOT NULL"
+        varchar_80 algorithm_version "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    shot_telemetry {
+        bigint shot_id PK "NOT NULL"
+        uuid match_id FK "NULL allowed"
+        uuid participant_id FK "NULL allowed"
+        uuid attempt_id FK "NULL allowed"
+        smallint trial_number "NULL allowed"
+        integer shot_sequence "NOT NULL"
+        varchar_40 technique_code FK "NOT NULL"
+        timestamptz occurred_at "NOT NULL"
+        numeric_14_6 elapsed_seconds "NOT NULL"
+        numeric_10_6 timing_error_seconds "NULL allowed"
+        numeric_10_4 contact_x "NULL allowed"
+        numeric_10_4 contact_y "NULL allowed"
+        numeric_10_4 contact_z "NULL allowed"
+        numeric_10_4 actor_x "NULL allowed"
+        numeric_10_4 actor_z "NULL allowed"
+        numeric_10_4 landing_x "NULL allowed"
+        numeric_10_4 landing_z "NULL allowed"
+        numeric_10_4 ball_peak_height "NULL allowed"
+        boolean is_cross_court "NOT NULL"
+        boolean is_power "NOT NULL"
+        smallint bounce_count "NULL allowed"
+        boolean was_in_kitchen "NOT NULL"
+        boolean hit_target "NULL allowed"
+        varchar_24 result_code "NOT NULL"
+    }
+    shot_errors {
+        bigint shot_id PK,FK "NOT NULL"
+        varchar_40 error_code PK,FK "NOT NULL"
+        numeric_5_4 confidence "NOT NULL"
+    }
+    player_rating_states {
+        uuid user_id PK,FK "NOT NULL; reference only"
+        varchar_16 rating_system PK "NOT NULL; reference only"
+        varchar_16 play_mode PK "NOT NULL; reference only"
+    }
+    match_participants {
+        uuid participant_id PK "NOT NULL; reference only"
+        uuid match_id FK "NOT NULL; reference only"
+        smallint team_number FK "NOT NULL; reference only"
+        uuid user_id FK "NULL allowed; reference only"
+        uuid bot_profile_id FK "NULL allowed; reference only"
+        varchar_80 paddle_item_code FK "NULL allowed; reference only"
+        uuid reward_grant_id FK,UK "NULL allowed; reference only"
+    }
+    training_attempts {
+        uuid attempt_id PK "NOT NULL; reference only"
+        uuid user_id FK "NOT NULL; reference only"
+        varchar_80 drill_code FK "NOT NULL; reference only"
+    }
+    techniques {
+        varchar_40 technique_code PK "NOT NULL; reference only"
+    }
+    technique_errors {
+        varchar_40 error_code PK "NOT NULL; reference only"
+    }
+    player_rating_states ||--o{ rating_events : "user_id,rating_system,play_mode"
+    match_participants |o--o{ rating_events : "match_id,user_id"
+    training_attempts |o--o{ shot_telemetry : "attempt_id"
+    techniques ||--o{ shot_telemetry : "technique_code"
+    match_participants |o--o{ shot_telemetry : "match_id,participant_id"
+    shot_telemetry ||--o{ shot_errors : "shot_id"
+    technique_errors ||--o{ shot_errors : "error_code"

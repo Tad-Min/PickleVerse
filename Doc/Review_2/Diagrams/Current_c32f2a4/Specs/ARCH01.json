@@ -1,0 +1,127 @@
+{
+  "id": "ARCH01",
+  "title": "Architecture visible in current source",
+  "nodes": [
+    {
+      "id": "unity",
+      "title": "Unity client",
+      "body": [
+        "Account UI and REST adapters",
+        "Training and progression snapshot",
+        "uGUI controls and match rendering"
+      ],
+      "x": 40,
+      "y": 145,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "api",
+      "title": "ASP NET Core API net10",
+      "body": [
+        "JWT and Admin RBAC",
+        "Shared C# rules and idempotent commands",
+        "Training / online results / social /",
+        "replay"
+      ],
+      "x": 760,
+      "y": 145,
+      "w": 560,
+      "h": 180,
+      "shape": "box"
+    },
+    {
+      "id": "photon",
+      "title": "Photon Fusion Shared",
+      "body": [
+        "Peer StateAuthority simulation",
+        "Session and command transport",
+        "Dedicated server requirement remains open"
+      ],
+      "x": 40,
+      "y": 510,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "db",
+      "title": "PostgreSQL and Redis",
+      "body": [
+        "37 SQL tables plus JSONB",
+        "Atomic durable commands and ledger",
+        "Transient queue and leaderboard cache"
+      ],
+      "x": 760,
+      "y": 510,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "web",
+      "title": "React administration site",
+      "body": [
+        "7 page modules in source",
+        "Login DTO mismatch blocks default flow",
+        "Admin authorization enforced at API"
+      ],
+      "x": 40,
+      "y": 875,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    },
+    {
+      "id": "ext",
+      "title": "SMTP and S3",
+      "body": [
+        "OTP email delivery",
+        "Authorized replay object storage",
+        "Runtime configuration not verified"
+      ],
+      "x": 760,
+      "y": 875,
+      "w": 560,
+      "h": 151,
+      "shape": "box"
+    }
+  ],
+  "edges": [
+    {
+      "source": "unity",
+      "target": "api",
+      "label": "HTTPS JSON + JWT",
+      "dashed": false
+    },
+    {
+      "source": "unity",
+      "target": "photon",
+      "label": "session / commands",
+      "dashed": false
+    },
+    {
+      "source": "api",
+      "target": "db",
+      "label": "SQL + Redis",
+      "dashed": false
+    },
+    {
+      "source": "web",
+      "target": "api",
+      "label": "REST; contract gap",
+      "dashed": false
+    },
+    {
+      "source": "api",
+      "target": "ext",
+      "label": "mail / objects",
+      "dashed": false
+    }
+  ],
+  "kind": "architecture",
+  "note": "Current source is not proof of a deployed environment. Old UGS/NGO adapters remaining in the repository are not the active Fusion path.",
+  "width": 1400,
+  "height": 1116
+}

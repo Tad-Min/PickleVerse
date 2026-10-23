@@ -1,0 +1,23 @@
+flowchart LR
+  G["TARGET Unity desktop/mobile + REST/sync adapter"]
+  A["TARGET React/Vite admin web"]
+  API["TARGET application API + RBAC + authoritative rewards"]
+  MM["TARGET skill matchmaking + dedicated allocation"]
+  GS["TARGET trusted Unity headless match server"]
+  AI["TARGET FastAPI / ML telemetry feedback + recommendations"]
+  DB[("TARGET PostgreSQL authoritative records")]
+  R[("TARGET Redis queue / sessions / cache")]
+  S[("TARGET object storage / replay")]
+  G -. "account / content / progress sync" .-> API
+  A -. "admin role requests" .-> API
+  G -. "input / snapshots" .-> GS
+  API -. "queue" .-> MM
+  MM -. "allocate / health" .-> GS
+  MM -. "session / queue" .-> R
+  GS -. "trusted result / telemetry" .-> API
+  API -. "feedback / recommendation" .-> AI
+  API -. "transactions" .-> DB
+  AI -. "features / telemetry" .-> DB
+  API -. "assets / replay" .-> S
+%% ALL TARGET. No deployed integration or reviewer approval is implied.
+%% .NET source vs proposal Spring Boot/FastAPI requires explicit BM03/ADR reconciliation.

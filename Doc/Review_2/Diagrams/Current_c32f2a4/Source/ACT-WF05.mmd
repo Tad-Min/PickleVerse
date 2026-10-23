@@ -1,0 +1,14 @@
+flowchart TD
+  Start((Start))
+  A1["Refresh server progress / Player and state API"]
+  A2["Inspect stars and error aggregates / Player and Unity progress UI"]
+  A3["Open suggested drill or replay / Player and Unity drill/replay"]
+  A4["Claim eligible mission/achievement reward / Player and command API"]
+  A5["Refresh wallet and continuation target / Game API and Unity snapshot"]
+  Start --> A1
+  A1 --> A2
+  A2 --> A3
+  A3 --> A4
+  A4 --> A5
+  A5 --> End["The player sees next practice, history and exactly-once rewards."]
+  A2 -. "validation or dependency failure" .-> X["A repeated claim does not credit again; offline practice/sync is a required gap and must be demonstrated after implementation."]

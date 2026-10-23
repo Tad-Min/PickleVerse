@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8" fill="none" stroke="#556477" stroke-width="1.4"/></marker></defs>
+<rect width="1400" height="900" fill="white"/>
+<text x="40" y="48" font-family="Arial" font-weight="bold" font-size="30">UC-D01  User goals UC01 to UC06</text>
+<text x="40" y="78" font-family="Arial" font-size="20" fill="#546174">Goals are traceable to the SRS detailed specifications. Target/partial requirements are not claimed</text>
+<text x="40" y="101" font-family="Arial" font-size="20" fill="#546174">to be implemented.</text>
+<rect x="290" y="122" width="1090" height="720" rx="5" fill="none" stroke="#a8b4c3" stroke-width="2"/>
+<text x="315" y="150" font-family="Arial" font-size="21" fill="#546174">PickleVerse system boundary</text>
+<path d="M230,355 H275 V267.5 H310" fill="none" stroke="#7a8795" stroke-width="2"  />
+<path d="M230,355 H270 V157 H1090.0 V175" fill="none" stroke="#7a8795" stroke-width="2"  />
+<path d="M230,355 H275 V492.5 H310" fill="none" stroke="#7a8795" stroke-width="2"  />
+<path d="M230,355 H270 V382 H1090.0 V400" fill="none" stroke="#7a8795" stroke-width="2"  />
+<path d="M230,355 H275 V717.5 H310" fill="none" stroke="#7a8795" stroke-width="2"  />
+<path d="M230,355 H270 V607 H1090.0 V625" fill="none" stroke="#7a8795" stroke-width="2"  />
+<circle cx="130.0" cy="322" r="20" fill="white" stroke="#344c68" stroke-width="3"/><path d="M130.0,342 V395 M88.0,362 H172.0 M130.0,395 L95.0,430 M130.0,395 L165.0,430" stroke="#344c68" fill="none" stroke-width="3"/>
+<text x="52" y="460" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">Player</text>
+<ellipse cx="555.0" cy="267.5" rx="245.0" ry="92.5" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="555.0" y="246.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">UC01 Register and verify</text>
+<text x="555.0" y="273.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">account</text>
+<text x="555.0" y="300.0" text-anchor="middle" font-family="Arial" font-size="22" fill="#222c39">F01 / Player</text>
+<ellipse cx="1090.0" cy="267.5" rx="245.0" ry="92.5" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="1090.0" y="246.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">UC02 Sign in refresh and sign</text>
+<text x="1090.0" y="273.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">out</text>
+<text x="1090.0" y="300.0" text-anchor="middle" font-family="Arial" font-size="22" fill="#222c39">F01 / Player</text>
+<ellipse cx="555.0" cy="492.5" rx="245.0" ry="92.5" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="555.0" y="471.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">UC03 Assess initial skill and</text>
+<text x="555.0" y="498.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">choose character</text>
+<text x="555.0" y="525.0" text-anchor="middle" font-family="Arial" font-size="22" fill="#222c39">F01 / Player</text>
+<ellipse cx="1090.0" cy="492.5" rx="245.0" ry="92.5" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="1090.0" y="471.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">UC04 Complete replay or skip</text>
+<text x="1090.0" y="498.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">tutorial</text>
+<text x="1090.0" y="525.0" text-anchor="middle" font-family="Arial" font-size="22" fill="#222c39">F02 / Player</text>
+<ellipse cx="555.0" cy="717.5" rx="245.0" ry="92.5" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="555.0" y="696.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">UC05 Select a drill and view</text>
+<text x="555.0" y="723.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">instructions</text>
+<text x="555.0" y="750.0" text-anchor="middle" font-family="Arial" font-size="22" fill="#222c39">F03 / Player</text>
+<ellipse cx="1090.0" cy="717.5" rx="245.0" ry="92.5" fill="#f6f9fd" stroke="#344c68" stroke-width="2"/>
+<text x="1090.0" y="696.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">UC06 Practice foundational and</text>
+<text x="1090.0" y="723.0" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="24" fill="#132b47">advanced techniques</text>
+<text x="1090.0" y="750.0" text-anchor="middle" font-family="Arial" font-size="22" fill="#222c39">F03 / Player</text>
+</svg>
