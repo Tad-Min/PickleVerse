@@ -29,7 +29,7 @@ Photon; thời gian hoạt động tính từ lúc mở app. Xem thay đổi sch
 
 `src/Backend/API/appsettings.json` quản lý SMTP (Host/Port/FromName), OTP (10 phút / gửi lại sau 60 giây / 5 lần sai), token (2 giờ / 14 ngày), Matchmaking (bot sau 360 giây / xác nhận 120 giây), OnlineMatch (mất kết nối 35 giây / heartbeat 8 giây) và toàn bộ EXP/phần thưởng progression. API kiểm tra cấu hình khi khởi động; sau khi sửa chạy `docker compose up -d --build backend-api`.
 
-SMTP Username/Password/FromEmail lấy từ `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` trong `.env`, không commit giá trị bí mật. Unity chỉ nhận cấu hình gameplay công khai qua catalog API.
+Khi chạy Docker, SMTP Username/Password/FromEmail lấy từ `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` trong `.env` và ghi đè các giá trị tương ứng trong `appsettings.json`. Sau khi đổi Google App Password, cập nhật `SMTP_APP_PASSWORD` trong `.env` rồi chạy `docker compose up -d backend-api` để tạo lại container với mật khẩu mới; `docker compose restart` không nạp lại `.env`. Không commit giá trị bí mật. Unity chỉ nhận cấu hình gameplay công khai qua catalog API.
 
 Schema mới có **37 bảng / 208 cột**, đã bỏ `GameSettings` và `RankedSearches`; danh mục game và dữ liệu người chơi tiếp tục lưu database. Với database cũ, triển khai API mới rồi sao lưu và bỏ riêng bảng `GameSettings`; giữ nguyên volume và dữ liệu khác. Chi tiết ở [mục cấu hình API trong tài liệu tổng hợp](Doc/PickleVerse_Project_Documentation.md#doc-server-configuration).
 
