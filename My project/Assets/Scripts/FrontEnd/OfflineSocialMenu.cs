@@ -13,7 +13,7 @@ using UnityEngine.InputSystem;
 namespace PickleVerse.FrontEnd
 {
     [DefaultExecutionOrder(20)]
-    public sealed class OfflineSocialMenu : MonoBehaviour
+    public sealed partial class OfflineSocialMenu : MonoBehaviour
     {
         public PlayerProgressionMenu ui;
         public UnityEngine.UI.Button friendsButton, leaderboardButton, friendsTab, leaderboardTab, listButton, directoryButton, myPositionButton, closeButton;
@@ -29,9 +29,11 @@ namespace PickleVerse.FrontEnd
         Rect lastDrawerSafe;
         Vector2 lastDrawerScreen;
         bool leaderboard, directory, opened, priorInteraction;
+        long listRevision;
+        PickleVerse.Settings.UiListPages listPages;
         CanvasGroup menuInteraction;
         GameObject priorSelection;
-        static readonly Color Ink=new Color(.025f,.065f,.095f), Surface=new Color(.045f,.115f,.15f), Card=new Color(.075f,.16f,.20f), Mint=new Color(.45f,.86f,.77f), Lime=new Color(.79f,.96f,.45f), White=new Color(.94f,.97f,.96f), Muted=new Color(.63f,.75f,.79f);
+        static readonly Color Ink=PickleVerse.Settings.LobbyPanelStyle.Background, Surface=PickleVerse.Settings.LobbyPanelStyle.Surface, Card=PickleVerse.Settings.LobbyPanelStyle.Card, Mint=PickleVerse.Settings.ScreenUiTheme.Mint, Lime=PickleVerse.Settings.ScreenUiTheme.Gold, White=PickleVerse.Settings.ScreenUiTheme.Text, Muted=PickleVerse.Settings.ScreenUiTheme.Muted;
         [Serializable] sealed class OnlinePlayer {public string id,name,relationship;public int elo,position,requestId;}
         [Serializable] sealed class OnlinePage {public List<OnlinePlayer> players=new List<OnlinePlayer>();public int total,myPosition,playerCount,friendCount,offset;public bool hasMore;}
         OnlinePage page=new OnlinePage();
@@ -45,9 +47,10 @@ namespace PickleVerse.FrontEnd
             ui=GetComponent<PlayerProgressionMenu>();
             if(!friendsButton || !leaderboardButton) ConfigureWelcomeCard();
             if(!modal) BuildShell();
+            ConfigureOverlay();
+            ApplyPresentation();
             var subtitle=window.Find("Subtitle")?.GetComponent<TMP_Text>();
             if(subtitle)subtitle.text="BẠN BÈ / XẾP HẠNG ELO · ONLINE";
-            ConfigureOverlay();
             var safe=transform.Find("HomeSafeArea");
             menuInteraction=safe.GetComponent<CanvasGroup>();
             if(!menuInteraction) menuInteraction=safe.gameObject.AddComponent<CanvasGroup>();
@@ -60,27 +63,29 @@ namespace PickleVerse.FrontEnd
             myPositionButton.onClick.AddListener(ShowMyPosition);
             closeButton.onClick.AddListener(Close);
             search.onValueChanged.AddListener(_=> { feedback.text="";searchAt=Time.unscaledTime+.3f; });
-            ProgressionRuntime.Changed+=Refresh;
+            ProgressionRuntime.Changed+=ProgressionChanged;
             modal.gameObject.SetActive(false);
         }
-        void OnDestroy() { ProgressionRuntime.Changed-=Refresh;PickleVerse.Settings.FrontEndModalInput.Release(this); }
+        void OnDestroy() { ProgressionRuntime.Changed-=ProgressionChanged;PickleVerse.Settings.FrontEndModalInput.Release(this); }
+        void ProgressionChanged(){listRevision++;Refresh();}
         void OnDisable()
         {
-            fetchGeneration++;page=new OnlinePage();
+            fetchGeneration++;loading=false;searchAt=-1;page=new OnlinePage();listRevision++;
             if(!opened)return;
             opened=false;drawerProgress=0;PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction)menuInteraction.interactable=priorInteraction;
-            if(modal)modal.gameObject.SetActive(false);
+            if(modal)modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
         }
         void Update()
         {
             if(!opened&&(!drawerMode||drawerProgress<=0)) return;
             ApplySafeArea();
+            LayoutPresentation();
             if(drawerMode)
             {
                 float next=Mathf.MoveTowards(drawerProgress,opened?1:0,Time.unscaledDeltaTime/.24f);
                 if(next!=drawerProgress){drawerProgress=next;PlaceDrawer();}
-                if(!opened&&drawerProgress<=0)modal.gameObject.SetActive(false);
+                if(!opened&&drawerProgress<=0)modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
             }
             if(opened&&Keyboard.current?.escapeKey.wasPressedThisFrame==true) Close();
             if(opened&&searchAt>=0&&Time.unscaledTime>=searchAt){searchAt=-1;_=FetchAsync(0);}
@@ -99,8 +104,9 @@ namespace PickleVerse.FrontEnd
                 opened=true;
             }
             leaderboard=ranking; directory=false;
-            search.SetTextWithoutNotify(""); feedback.text="";
-            modal.gameObject.SetActive(true); modal.SetAsLastSibling(); ConfigureOverlay(); ApplySafeArea();ConfigureDrawerLayout(); Refresh();
+            search.SetTextWithoutNotify("");searchAt=-1;feedback.text="";
+            modal.SetAsLastSibling();ConfigureOverlay();ApplySafeArea();ConfigureDrawerLayout();Refresh();
+            modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Show();
             EventSystem.current?.SetSelectedGameObject(closeButton.gameObject);
             _=FetchAsync(0);
         }
@@ -108,8 +114,8 @@ namespace PickleVerse.FrontEnd
         {
             if(!opened) return;
             opened=false;
-            fetchGeneration++;loading=false;
-            if(!drawerMode)modal.gameObject.SetActive(false);
+            fetchGeneration++;loading=false;searchAt=-1;
+            if(!drawerMode)modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
             PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction) menuInteraction.interactable=priorInteraction;
             if(EventSystem.current && priorSelection && priorSelection.activeInHierarchy)
@@ -129,27 +135,7 @@ namespace PickleVerse.FrontEnd
         public void ConfigureDrawerLayout()
         {
             if(!drawerMode||!window||!modalSafe)return;
-            var canvas=ui.GetComponent<Canvas>();
-            bool touch=Application.isMobilePlatform||Touchscreen.current!=null;
-            float dp=touch?HomeMenuShell.DpUnits(DeviceDpi,Mathf.Min(Screen.width,Screen.height),canvas.scaleFactor):1;
-            window.anchorMin=window.anchorMax=new Vector2(0,.5f);window.pivot=new Vector2(0,.5f);
-            window.sizeDelta=new Vector2(Mathf.Min(modalSafe.rect.width-24,Mathf.Max(540,270*dp)),modalSafe.rect.height-32);
-            float target=touch?Mathf.Max(44,44*dp):44;
-            float factor=touch?Mathf.Max(1,dp*.75f):1;
-            Top((RectTransform)friendsTab.transform,104,target);Top((RectTransform)leaderboardTab.transform,104,target);
-            var close=(RectTransform)closeButton.transform;close.anchorMin=close.anchorMax=Vector2.one;close.pivot=Vector2.one;
-            close.sizeDelta=Vector2.one*target;close.anchoredPosition=new Vector2(-12,-12);
-            Top((RectTransform)selfName.transform.parent,118+target,90);
-            float searchTop=220+target;
-            foreach(var r in new[]{(RectTransform)search.transform,(RectTransform)listButton.transform,(RectTransform)directoryButton.transform,(RectTransform)myPositionButton.transform})Top(r,searchTop,target);
-            var scrollRoot=(RectTransform)scroll.transform;float top=searchTop+target+14;
-            scrollRoot.anchorMin=new Vector2(.02f,0);scrollRoot.anchorMax=new Vector2(.98f,1);scrollRoot.offsetMin=new Vector2(0,42);scrollRoot.offsetMax=new Vector2(0,-top);
-            Top(count.rectTransform,75,22);count.rectTransform.anchorMin=new Vector2(.77f,1);count.rectTransform.anchorMax=new Vector2(.98f,1);
-            title.fontSizeMax=28*factor;selfName.fontSizeMax=22*factor;selfId.fontSizeMax=13*factor;selfElo.fontSizeMax=18*factor;selfPosition.fontSizeMax=16*factor;
-            foreach(var button in new[]{friendsTab,leaderboardTab,listButton,directoryButton,myPositionButton})button.GetComponentInChildren<TMP_Text>().fontSizeMax=16*factor;
-            search.textComponent.fontSizeMax=17*factor;
-            ((TMP_Text)search.placeholder).fontSizeMax=15*factor;
-            PlaceDrawer();
+            LayoutPresentation();PlaceDrawer();return;
         }
         static void Top(RectTransform rect,float top,float height)
         {
@@ -163,11 +149,11 @@ namespace PickleVerse.FrontEnd
             if(drawerShade){var c=drawerShade.color;c.a=.36f*eased;drawerShade.color=c;}
         }
         void SetDirectory(bool value)
-        { directory=value; search.SetTextWithoutNotify(""); feedback.text="";_=FetchAsync(0); }
+        { directory=value; search.SetTextWithoutNotify("");searchAt=-1;feedback.text="";_=FetchAsync(0); }
         async Task FetchAsync(int offset,bool focusSelf=false)
         {
             int generation=++fetchGeneration;loading=true;
-            if(offset==0)page=new OnlinePage();Refresh();
+            if(offset==0)page=new OnlinePage();listRevision++;Refresh();
             try
             {
                 string view=leaderboard?"leaderboard":directory?"directory":"friends";
@@ -175,7 +161,7 @@ namespace PickleVerse.FrontEnd
                 if(!this||!opened||generation!=fetchGeneration)return;
                 foreach(var player in result.players)player.id=Guid.Parse(player.id).ToString("N");
                 if(offset>0&&!focusSelf)result.players=page.players.Concat(result.players).GroupBy(p=>p.id).Select(g=>g.Last()).ToList();
-                page=result;loading=false;Refresh();
+                page=result;loading=false;listRevision++;Refresh();
                 if(focusSelf)FocusSelf();
             }
             catch(Exception error){if(this&&opened&&generation==fetchGeneration){loading=false;Refresh();feedback.text=error.Message;feedback.richText=false;}}
@@ -192,6 +178,15 @@ namespace PickleVerse.FrontEnd
             listButton.gameObject.SetActive(!leaderboard); directoryButton.gameObject.SetActive(!leaderboard);
             myPositionButton.gameObject.SetActive(leaderboard);
             Select(listButton,!directory); Select(directoryButton,directory);
+            if(listPages==null)listPages=new PickleVerse.Settings.UiListPages(scroll,content);
+            var listPage=listPages.Select(leaderboard?"Ranking":directory?"Directory":"Friends");
+            if(content!=listPage.content){content=listPage.content;socialRows=null;}
+            // Touch density changes row metrics; keep cached pages only while that geometry is unchanged.
+            string filter=search.text+"|"+Screen.width+"x"+Screen.height+"|"+(Touchscreen.current!=null)+"|"+DeviceDpi+"|"+loading+"|"+mutating;
+            if(listPage.revision==listRevision&&listPage.filter==filter)
+            {
+                selfRow=listPage.context as RectTransform;count.text=listPage.count;scroll.verticalNormalizedPosition=1;return;
+            }
             ClearRows(); selfRow=null;
             if(leaderboard)
             {
@@ -208,40 +203,43 @@ namespace PickleVerse.FrontEnd
                 var more=Row("LoadMore",55,Card);var button=Button("LoadMoreButton",more,"XEM THÊM",Vector2.zero,Vector2.one,Surface,Mint,16);
                 button.onClick.AddListener(()=>_=FetchAsync(page.offset+50));
             }
-            if(content.childCount==0)
+            if(SocialRows.ActiveCount==0)
             {
                 var empty=Row("Empty",88,Card);
                 Caption("EmptyText",empty,loading?"Đang tải danh sách…":string.IsNullOrWhiteSpace(search.text)?"Danh sách đang trống. Bấm TÌM BẠN để gửi lời mời.":"Không tìm thấy tên hoặc ID phù hợp.",17,Muted,Vector2.zero,Vector2.one);
             }
-            UnityEngine.Canvas.ForceUpdateCanvases(); UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+            listPage.revision=listRevision;listPage.filter=filter;listPage.context=selfRow;listPage.count=count.text;
+            UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(content);
             scroll.verticalNormalizedPosition=1;
         }
         void AddPlayer(SocialPlayer player,int position,bool self)
         {
             bool touch=Application.isMobilePlatform||Touchscreen.current!=null;
             float dp=touch?HomeMenuShell.DpUnits(DeviceDpi,Mathf.Min(Screen.width,Screen.height),ui.GetComponent<Canvas>().scaleFactor):1;
-            var row=Row(player.Id,drawerMode?Mathf.Max(90,64*dp):82,self?new Color(.10f,.25f,.27f):Card);
+            var row=Row(player.Id,drawerMode?Mathf.Max(100,54*Mathf.Min(dp,2)):100,self?new Color(.10f,.25f,.27f):Card);
             if(self) selfRow=row;
-            Caption("Position",row,leaderboard?$"#{position}":"•",21,position<=3 && leaderboard?Lime:Mint,new Vector2(.01f,0),new Vector2(.08f,1));
-            var face=ui.Panel("Avatar",row,self?Mint:Surface,new Vector2(.09f,.16f),new Vector2(.15f,.84f));
+            Caption("Position",row,leaderboard?$"{position:00}":"•",16,position<=3 && leaderboard?Lime:Mint,new Vector2(.01f,0),new Vector2(.085f,1));
+            var face=ui.Panel("Avatar",row,self?Mint:Surface,new Vector2(.09f,.27f),new Vector2(.185f,.77f));
             Caption("Initial",face,player.Name.Substring(0,1).ToUpperInvariant(),23,self?Ink:Mint,Vector2.zero,Vector2.one);
-            var name=Caption("Name",row,player.Name+(self?"  (BẠN)":""),20,self?Lime:White,new Vector2(.17f,.45f),new Vector2(.58f,.96f),TextAlignmentOptions.MidlineLeft);
+            var name=Caption("Name",row,player.Name+(self?"  (BẠN)":""),19,self?Lime:White,new Vector2(.21f,.49f),new Vector2(.67f,.90f),TextAlignmentOptions.MidlineLeft);
             name.richText=false;
-            Caption("Id",row,player.Id,13,Muted,new Vector2(.17f,.04f),new Vector2(.58f,.43f),TextAlignmentOptions.MidlineLeft).richText=false;
-            Caption("Rank",row,EloPolicy.Rank(player.Elo),17,Mint,new Vector2(.59f,.47f),new Vector2(.78f,.94f));
-            Caption("Elo",row,player.Elo.ToString("N0")+" ELO",16,White,new Vector2(.59f,.05f),new Vector2(.78f,.49f));
+            Caption("Id",row,player.Id,11,Muted,new Vector2(.21f,.13f),new Vector2(.64f,.48f),TextAlignmentOptions.MidlineLeft).richText=false;
+            Caption("Rank",row,EloPolicy.Rank(player.Elo),12,Mint,new Vector2(.68f,.65f),new Vector2(.97f,.94f));
+            Caption("Elo",row,player.Elo.ToString("N0")+" ELO",14,White,new Vector2(.68f,.35f),new Vector2(.97f,.67f));
             if(leaderboard)
-                Caption("Tag",row,self?"BẠN":"",12,self?Lime:Muted,new Vector2(.80f,0),new Vector2(.98f,1));
+                Caption("Tag",row,self?"BẠN":"",10,self?Lime:Muted,new Vector2(.68f,.05f),new Vector2(.97f,.33f));
             else
             {
                 var entry=page.players.Single(p=>p.id==player.Id);string relation=entry.relationship;
                 string label=relation=="friend"?"XÓA BẠN":relation=="outgoing"?"ĐÃ GỬI":relation=="incoming"?"ĐỒNG Ý":"KẾT BẠN";
-                var action=Button("FriendAction",row,label,new Vector2(.80f,relation=="incoming"?.48f:drawerMode?.15f:.23f),new Vector2(.975f,drawerMode?.85f:.83f),Mint,Ink,14);
+                var action=Button("FriendAction",row,label,new Vector2(.68f,relation=="incoming"?.25f:.08f),new Vector2(.975f,.48f),Mint,Ink,12);
+                var elo=row.Find("Elo") as RectTransform;elo.anchorMin=new Vector2(.68f,.52f);elo.anchorMax=new Vector2(.97f,.75f);
+                var rank=row.Find("Rank") as RectTransform;rank.anchorMin=new Vector2(.68f,.75f);rank.anchorMax=new Vector2(.97f,.97f);
                 action.interactable=!mutating&&relation!="outgoing";
                 action.onClick.AddListener(()=>ChangeFriend(entry,relation=="friend"?"remove":relation=="incoming"?"accept":"request"));
                 if(relation=="incoming")
                 {
-                    var decline=Button("Decline",row,"TỪ CHỐI",new Vector2(.80f,.08f),new Vector2(.975f,.43f),Surface,Muted,12);
+                    var decline=Button("Decline",row,"TỪ CHỐI",new Vector2(.68f,.02f),new Vector2(.975f,.23f),Surface,Muted,11);
                     decline.interactable=!mutating;decline.onClick.AddListener(()=>ChangeFriend(entry,"decline"));
                 }
             }
@@ -251,7 +249,7 @@ namespace PickleVerse.FrontEnd
             if(mutating)return;mutating=true;Refresh();
             try
             {
-                await AccountRuntime.Ensure().Account.SendAuthorizedAsync<PickleVerse.Services.Api.ApiMessage>("POST","api/Game/social",new{PlayerId=player.id,Action=action,RequestId=player.requestId});
+                await AccountRuntime.Ensure().Account.SendAuthorizedAsync<PickleVerse.Services.Api.ApiMessage>("POST","api/Game/social",new{PlayerId=Guid.Parse(player.id),Action=action,RequestId=player.requestId});
                 await FetchAsync(0);
                 if(!this)return;
                 feedback.text=action=="request"?"Đã gửi lời mời kết bạn.":"Danh sách đã được cập nhật.";
@@ -262,7 +260,7 @@ namespace PickleVerse.FrontEnd
         }
         public void ShowMyPosition()
         {
-            search.SetTextWithoutNotify("");_=FetchAsync(Math.Max(0,(page.myPosition-1)/50*50),true);
+            search.SetTextWithoutNotify("");searchAt=-1;_=FetchAsync(Math.Max(0,(page.myPosition-1)/50*50),true);
         }
         void FocusSelf()
         {
@@ -273,13 +271,12 @@ namespace PickleVerse.FrontEnd
         }
         void ClearRows()
         {
-            foreach(Transform row in content.Cast<Transform>().ToArray())
-            { row.gameObject.SetActive(false); row.SetParent(null); if(Application.isPlaying) Destroy(row.gameObject); else DestroyImmediate(row.gameObject); }
+            SocialRows.ReleaseAll();
         }
         RectTransform Row(string name,float height,Color color)
         {
-            var row=ui.Panel(name,content,color);
-            var layout=row.gameObject.AddComponent<UnityEngine.UI.LayoutElement>(); layout.minHeight=layout.preferredHeight=height;
+            var row=SocialRows.Take(name=="Empty"?"Empty":leaderboard?"Ranking":"Friend",name,height);
+            row.GetComponent<UnityEngine.UI.Image>().color=color==Card?Color.white:new Color(1,1.08f,1.1f);
             return row;
         }
         TMP_Text Caption(string name,Transform parent,string value,int size,Color color,Vector2 min,Vector2 max,TextAlignmentOptions align=TextAlignmentOptions.Center)
@@ -296,7 +293,7 @@ namespace PickleVerse.FrontEnd
             return button;
         }
         static void Select(UnityEngine.UI.Button button,bool selected)
-        { button.GetComponent<UnityEngine.UI.Image>().color=selected?Mint:Card; button.GetComponentInChildren<TMP_Text>().color=selected?Ink:White; }
+        { PickleVerse.Settings.LobbyPanelStyle.Tab(button,selected); }
 
         // Author once through Unity APIs; reuse these bindings in both Editor and Player builds.
         public void BuildShell()

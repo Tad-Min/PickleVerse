@@ -13,6 +13,12 @@ namespace PickleVerse.Shop
         bool collectionMode;
         Color accentColor;
         bool? compact;
+        bool stateOwned,stateEquipped;
+        void Awake()
+        {
+            PickleVerse.Settings.LobbyPanelStyle.SurfaceStyle((RectTransform)transform,true,true);
+            PickleVerse.Settings.LobbyPanelStyle.Button(button);
+        }
         void LateUpdate()
         {
             bool narrow=((RectTransform)transform).rect.height<230;
@@ -22,7 +28,11 @@ namespace PickleVerse.Shop
             Place(title.rectTransform,narrow?.37f:.06f,narrow?.43f:.22f,.94f,narrow?.72f:.34f);
             Place(price.rectTransform,narrow?.37f:.06f,narrow?.24f:.12f,.94f,narrow?.44f:.22f);
             Place(action.rectTransform,narrow?.37f:.06f,narrow?.065f:.025f,.94f,narrow?.25f:.10f);
-            title.fontSize=24;collection.fontSize=11;price.fontSize=12;action.fontSize=11;
+            title.fontSize=narrow?23:26;collection.fontSize=11;price.fontSize=13;action.fontSize=12;
+            title.enableAutoSizing=collection.enableAutoSizing=price.enableAutoSizing=action.enableAutoSizing=false;
+            title.color=PickleVerse.Settings.ScreenUiTheme.Text;collection.color=PickleVerse.Settings.ScreenUiTheme.Gold;
+            price.color=PickleVerse.Settings.ScreenUiTheme.Muted;action.color=PickleVerse.Settings.ScreenUiTheme.Mint;
+            if(collectionMode)SetState(stateOwned,stateEquipped);
         }
         static void Place(RectTransform r,float x,float y,float right,float top){r.anchorMin=new Vector2(x,y);r.anchorMax=new Vector2(right,top);r.offsetMin=r.offsetMax=Vector2.zero;}
         public void Bind(ShopScreen screen,int index,bool owned)
@@ -35,6 +45,7 @@ namespace PickleVerse.Shop
         public void SetOwned(bool owned){SetState(owned,false);}
         public void SetState(bool owned,bool equipped)
         {
+            stateOwned=owned;stateEquipped=equipped;
             action.text=collectionMode?(equipped?"ĐANG SỬ DỤNG  •  XEM 3D":owned?"ĐÃ SỞ HỮU  •  XEM 3D":"CHƯA SỞ HỮU  •  XEM 3D"):owned?"ĐÃ SỞ HỮU  •  XEM 3D":"XEM CHI TIẾT  →";
             if(!collectionMode)return;
             thumbnail.color=owned?Color.white:new Color(.28f,.30f,.33f,1);

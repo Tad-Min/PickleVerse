@@ -26,7 +26,7 @@ namespace PickleVerse.Shop
         public PaddleOffer[] Items=>collectionMode?PlayerEconomy.Catalog.CollectionItems:PlayerEconomy.Catalog.paddles;
         public PaddleOffer Offer=>Items[Selected];
         async void Awake()
-        {economy=PlayerEconomy.Service;economy.Changed+=Refresh;confirmation.SetActive(false);if(Items.Length>0)Select(0);wallet=await economy.ReadAsync();if(this)Refresh(wallet);}
+        {ShopPanelPresentation.Install(this);economy=PlayerEconomy.Service;economy.Changed+=Refresh;confirmation.SetActive(false);if(Items.Length>0)Select(0);wallet=await economy.ReadAsync();if(this)Refresh(wallet);}
         void Start(){if(browser)browser.FocusTab();else if(EventSystem.current)EventSystem.current.SetSelectedGameObject(cardBorders[0].gameObject);}
         void Update()
         {
