@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button } from '../../../shared/components/ui';
+import { isMockMode } from '../../../api/mockMode';
 import { Shield, Lock, User, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -48,6 +49,14 @@ export const Login: React.FC = () => {
           <h1 className="text-2xl font-bold text-foreground font-display">PickleVerse Portal</h1>
           <p className="text-xs text-muted-foreground mt-1">Cổng đăng nhập hệ thống Quản trị & Điều hành</p>
         </div>
+
+        {isMockMode && (
+          <div className="mb-5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2.5 text-xs text-cyan-200">
+            <div className="font-semibold">Chế độ xem thử — không kết nối backend</div>
+            <div className="mt-1">Tài khoản: <code>admin@pickleverse.local</code></div>
+            <div>Mật khẩu: <code>Admin123!</code></div>
+          </div>
+        )}
 
         {/* Error Notification */}
         {error && (
