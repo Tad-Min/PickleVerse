@@ -11,6 +11,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { isMockMode } from '../../api/mockMode';
 
 interface NavItem {
   name: string;
@@ -83,13 +84,19 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={logout}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-md transition-colors border border-rose-500/20"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Đăng xuất</span>
-        </button>
+        {isMockMode ? (
+          <div className="w-full text-center px-3 py-2 text-[11px] font-medium text-cyan-300 bg-cyan-500/10 rounded-md border border-cyan-500/20">
+            Chế độ xem thử — không cần đăng nhập
+          </div>
+        ) : (
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-md transition-colors border border-rose-500/20"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Đăng xuất</span>
+          </button>
+        )}
       </div>
     </aside>
   );

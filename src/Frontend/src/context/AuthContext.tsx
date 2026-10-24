@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { adminApi } from '../api/adminApi';
+import { isMockMode } from '../api/mockMode';
 import { UserSession } from '../types/api';
 
 interface AuthContextType {
@@ -18,6 +19,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    if (isMockMode) {
+      setUser({
+        userId: 'demo-admin-001',
+        username: 'CourtAdmin',
+        email: 'admin@pickleverse.local',
+        role: 'Admin',
+        token: 'pickleverse-local-demo-token',
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const storedToken = localStorage.getItem('pickleverse_token');
       const storedUser = localStorage.getItem('pickleverse_user');
@@ -71,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    if (isMockMode) return;
     localStorage.removeItem('pickleverse_token');
     localStorage.removeItem('pickleverse_user');
     setUser(null);
