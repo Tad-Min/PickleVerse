@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '../api/adminApi';
-import { MatchItemDto } from '../types/api';
+import { adminApi } from '../../../api/adminApi';
+import { MatchItemDto } from '../../../types/api';
 import {
   RotateCw,
   Trophy,

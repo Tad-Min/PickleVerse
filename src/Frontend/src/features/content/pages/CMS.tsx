@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { adminApi } from '../api/adminApi';
+import { adminApi } from '../../../api/adminApi';
 import {
   CreateLessonRequest,
   CreateDrillRequest,
   CreateCosmeticRequest,
   CreateMissionRequest,
-} from '../types/api';
+} from '../../../types/api';
 import { BookOpen, Target, ShoppingBag, Award, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const CMS: React.FC = () => {

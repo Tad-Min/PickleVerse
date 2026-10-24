@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '../api/adminApi';
-import { AdminReportDto, ReviewReportRequest } from '../types/api';
+import { adminApi } from '../../../api/adminApi';
+import { AdminReportDto, ReviewReportRequest } from '../../../types/api';
 import { ShieldAlert, CheckCircle2, XCircle, Filter, X, AlertTriangle } from 'lucide-react';
 
 export const Moderation: React.FC = () => {
