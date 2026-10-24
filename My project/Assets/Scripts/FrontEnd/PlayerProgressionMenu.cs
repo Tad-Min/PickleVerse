@@ -107,10 +107,13 @@ namespace PickleVerse.FrontEnd
         public void Close()
         {
             if(!modal) return;
-            opened=false;modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
+            opened = false;
+            modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
             PickleVerse.Settings.FrontEndModalInput.Release(this);
-            if(menuInteraction) menuInteraction.interactable=priorMenuInteraction;
-            if(EventSystem.current && priorSelection && priorSelection.activeInHierarchy) EventSystem.current.SetSelectedGameObject(priorSelection);
+            if(menuInteraction) 
+                menuInteraction.interactable = priorMenuInteraction;
+            if(EventSystem.current && priorSelection && priorSelection.activeInHierarchy) 
+                EventSystem.current.SetSelectedGameObject(priorSelection);
         }
         void ApplySafeArea()
         {
