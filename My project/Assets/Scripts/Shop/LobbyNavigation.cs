@@ -23,6 +23,8 @@ namespace PickleVerse.Shop
         bool[] colliderEnabled;
         GameObject previousSelection;
         bool suspended;
+        AudioListener transitionAudio;
+        string audioDestination;
         static readonly ProfilerMarker restoreLighting=new ProfilerMarker("Lobby.Return.Lighting");
         static readonly ProfilerMarker restoreComponents=new ProfilerMarker("Lobby.Return.Components");
         public bool Busy {get;private set;}
@@ -37,10 +39,11 @@ namespace PickleVerse.Shop
             instance=root.AddComponent<LobbyNavigation>();return instance;
         }
         void Awake(){SceneManager.sceneUnloaded+=SceneUnloaded;}
-        void OnDestroy(){SceneManager.sceneUnloaded-=SceneUnloaded;if(instance==this)instance=null;}
+        void OnDestroy(){EndAudioHandoff();SceneManager.sceneUnloaded-=SceneUnloaded;if(instance==this)instance=null;}
         void SceneUnloaded(Scene scene)
         {
             if(scene!=lobby)return;
+            EndAudioHandoff();
             StopAllCoroutines();Busy=false;
             lobby=default;roots=null;behaviours=null;behaviourEnabled=null;renderers=null;rendererEnabled=null;
             colliders=null;colliderEnabled=null;previousSelection=null;suspended=false;
@@ -83,12 +86,13 @@ namespace PickleVerse.Shop
             var load=SceneManager.LoadSceneAsync(destination,LoadSceneMode.Additive);PickleVerse.Settings.SceneLoading.Track(load);load.allowSceneActivation=false;
             while(load.progress<.9f)yield return null;
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
-            SuspendComponents();
+            BeginAudioHandoff(destination);SuspendComponents();
             suspended=true;load.allowSceneActivation=true;yield return load;
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(destination));completed=true;
             }
             finally
             {
+                EndAudioHandoff();
                 Busy=false;
                 if(!completed&&lobby.IsValid()&&lobby.isLoaded&&behaviours!=null)
                 {SceneManager.SetActiveScene(lobby);ResumeComponents();suspended=false;}
@@ -103,6 +107,7 @@ namespace PickleVerse.Shop
             load.allowSceneActivation=false;
             while(load.progress<.9f)yield return null;
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
+            BeginAudioHandoff(destination);
             foreach(var root in outgoing.GetRootGameObjects())root.SetActive(false);
             load.allowSceneActivation=true;yield return load;
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(destination));
@@ -133,6 +138,28 @@ namespace PickleVerse.Shop
             if(outgoing!=lobby&&outgoing.IsValid()&&outgoing.isLoaded)yield return SceneManager.UnloadSceneAsync(outgoing);
             }
             finally{Busy=false;}
+        }
+        void BeginAudioHandoff(string destination)
+        {
+            if(!transitionAudio)
+            {
+                var output=new GameObject("Scene Transition Audio",typeof(AudioListener));
+                output.transform.SetParent(transform,false);transitionAudio=output.GetComponent<AudioListener>();
+            }
+            if(Camera.main)transitionAudio.transform.SetPositionAndRotation(Camera.main.transform.position,Camera.main.transform.rotation);
+            audioDestination=destination;transitionAudio.enabled=true;
+            SceneManager.sceneLoaded-=AudioSceneLoaded;SceneManager.sceneLoaded+=AudioSceneLoaded;
+        }
+        void AudioSceneLoaded(Scene scene,LoadSceneMode mode)
+        {
+            // sceneLoaded runs after the destination listeners are enabled and before
+            // its first rendered frame, so there is neither a silent gap nor two listeners.
+            if(scene.name==audioDestination)EndAudioHandoff();
+        }
+        void EndAudioHandoff()
+        {
+            SceneManager.sceneLoaded-=AudioSceneLoaded;audioDestination=null;
+            if(transitionAudio)transitionAudio.enabled=false;
         }
         void CacheComponents()
         {

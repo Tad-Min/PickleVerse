@@ -35,7 +35,10 @@ namespace PickleVerse.Multiplayer.UI
         public UnityEngine.UI.Button invite,inviteCopy,inviteClose,retry;
         RoomLaunchAction launchAction;
         string launchCode;
+        string launchRegion;
+        RoomFriendInvitePanel friendInvites;
         bool initializing;
+        public bool IsInitializing=>initializing;
         float nextClockUpdate;
         int arrangedSeats;
         IRoomService rooms;
@@ -49,6 +52,7 @@ namespace PickleVerse.Multiplayer.UI
             var app = MultiplayerApp.Ensure(); app.RoomSceneName = gameObject.scene.name;
             rooms = app.RoomService; matchmaking = app.MatchmakingService; state = rooms.State; identity = app.IdentityService;
             state.Changed += Refresh;
+            friendInvites=RoomFriendInvitePanel.Attach(this);
             Bind(back, Back);
             Bind(singles, () => Run(rooms.SelectSinglesAsync));
             Bind(doubles, () => Run(rooms.SelectDoublesAsync));
@@ -58,11 +62,11 @@ namespace PickleVerse.Multiplayer.UI
             Bind(swap, () => Run(rooms.SwapTeamAsync));
             Bind(play, () => Run(PlayAsync));
             Bind(invite,ShowInvite);Bind(inviteClose,CloseInvite);
-            Bind(inviteCopy,()=>{GUIUtility.systemCopyBuffer=state.RoomCode;var label=inviteCopy.GetComponentInChildren<TMP_Text>();if(label)label.text="ĐÃ SAO CHÉP";});
             Bind(retry,()=>Run(InitializeRoom));
             foreach (var slot in customSlots) Bind(slot.kick, () => { if (!string.IsNullOrEmpty(slot.playerId)) Run(() => rooms.KickAsync(slot.playerId)); });
-            foreach(var slot in customSlots){var button=slot.name?slot.name.transform.parent.Find("BtnInvite")?.GetComponent<UnityEngine.UI.Button>():null;Bind(button,ShowInvite);}
-            launchAction=RoomLaunchRequest.Consume(out launchCode);
+            foreach(var slot in duoSlots.Concat(customSlots).Where(slot=>slot!=null))
+            {var button=slot.name?slot.name.transform.parent.Find("BtnInvite")?.GetComponent<UnityEngine.UI.Button>():null;Bind(button,ShowInvite);}
+            launchAction=RoomLaunchRequest.Consume(out launchCode,out launchRegion);
             if(!Environment.GetCommandLineArgs().Contains("-pkvCase"))await InitializeRoom();
             if(this)Refresh();
         }
@@ -86,11 +90,11 @@ namespace PickleVerse.Multiplayer.UI
                 await rooms.SelectCustomAsync(mode);
                 if(state.Custom&&state.Mode==mode&&!string.IsNullOrEmpty(state.RoomCode))launchAction=RoomLaunchAction.None;
             }
-            else if(launchAction==RoomLaunchAction.Join){await rooms.JoinAsync(launchCode);if(!string.IsNullOrEmpty(state.RoomCode))launchAction=RoomLaunchAction.None;}
+            else if(launchAction==RoomLaunchAction.Join){await MultiplayerApp.Instance.ExecuteAsync(()=>MultiplayerApp.Instance.JoinRoomAsync(launchCode,launchRegion));if(!string.IsNullOrEmpty(state.RoomCode))launchAction=RoomLaunchAction.None;}
             }
             finally{initializing=false;if(this)Refresh();}
         }
-        public void ShowInvite(){if(!inviteDialog||string.IsNullOrEmpty(state?.RoomCode))return;inviteCode.text=state.RoomCode;if(inviteCopy){var label=inviteCopy.GetComponentInChildren<TMP_Text>();if(label)label.text="SAO CHÉP MÃ";}inviteDialog.SetActive(true);inviteDialog.transform.SetAsLastSibling();Refresh();if(EventSystem.current&&inviteCopy)EventSystem.current.SetSelectedGameObject(inviteCopy.gameObject);}
+        public void ShowInvite(){if(!inviteDialog||string.IsNullOrEmpty(state?.RoomCode))return;friendInvites.Open();Refresh();}
         public void CloseInvite(){if(!inviteDialog)return;inviteDialog.SetActive(false);Refresh();if(EventSystem.current&&invite&&invite.gameObject.activeInHierarchy)EventSystem.current.SetSelectedGameObject(invite.gameObject);}
         void Bind(UnityEngine.UI.Button button, UnityAction action)
         {
@@ -183,10 +187,9 @@ namespace PickleVerse.Multiplayer.UI
                 var silhouette = portrait.parent.GetComponent<UnityEngine.UI.Image>();
                 if (silhouette) silhouette.color = local ? Color.clear : Color.white;
             }
-            // The future Invite placeholder fills an empty custom seat. Hide it
-            // when occupied so its white background cannot cover the player's name.
+            // Both doubles and custom empty seats open the room invitation dialog.
             var invite=slot.name ? slot.name.transform.parent.Find("BtnInvite") : null;
-            if(invite){invite.gameObject.SetActive(member==null);var inviteButton=invite.GetComponent<UnityEngine.UI.Button>();if(inviteButton)inviteButton.interactable=!state.Busy&&state.State==FlowState.WaitingRoom&&!(inviteDialog&&inviteDialog.activeSelf);}
+            if(invite){invite.gameObject.SetActive(member==null);var inviteButton=invite.GetComponent<UnityEngine.UI.Button>();if(inviteButton)inviteButton.interactable=!state.Busy&&!initializing&&!returningToModes&&state.State==FlowState.WaitingRoom&&!string.IsNullOrEmpty(state.RoomCode)&&!(inviteDialog&&inviteDialog.activeSelf);}
             if (slot.kick) { slot.kick.gameObject.SetActive(state.Custom && state.IsCaptain && member != null && member.id != state.PlayerId); slot.kick.interactable = !state.Busy && state.State == FlowState.WaitingRoom && !(inviteDialog&&inviteDialog.activeSelf); }
         }
         static void SelectMode(UnityEngine.UI.Button button, bool selected)

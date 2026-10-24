@@ -82,6 +82,7 @@ builder.Services.AddRateLimiter(options =>
 });
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<Services.Game.OnlineSocialService>();
+builder.Services.AddScoped<RoomInvitationService>();
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 // 4. Register Repositories & Unit of Work

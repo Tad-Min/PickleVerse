@@ -8,11 +8,10 @@ namespace PickleVerse.Shop
     {
         public PaddleAppearance appearance;
         IPlayerEconomy economy;int generation;
-        async void OnEnable()
+        void OnEnable()
         {
-            int run=++generation;economy=PlayerEconomy.Service;economy.Changed+=Refresh;
-            try{var state=await economy.ReadAsync();if(this&&isActiveAndEnabled&&generation==run)Refresh(state);}
-            catch(Exception e){Debug.LogWarning("Paddle selection unavailable: "+e.Message);}
+            economy=PlayerEconomy.Service;economy.Changed+=Refresh;
+            RefreshNow();
         }
         void Refresh(PlayerEconomyState state){if(appearance)appearance.Apply(state.equippedPaddle);}
         void OnDisable(){generation++;if(economy!=null)economy.Changed-=Refresh;economy=null;}
@@ -24,6 +23,19 @@ namespace PickleVerse.Shop
             // AddComponent invokes OnEnable before serialized references are assigned.
             binding.RefreshNow();return binding;
         }
-        async void RefreshNow(){try{var state=await PlayerEconomy.Service.ReadAsync();if(this&&isActiveAndEnabled)Refresh(state);}catch(Exception e){Debug.LogWarning(e.Message);}}
+        async void RefreshNow()
+        {
+            int run=++generation;
+            var provider=economy??PlayerEconomy.Service;
+            // Lobby characters are enabled before login. The Changed subscription supplies
+            // the real selection when the authenticated inventory has finished loading.
+            if(provider is OnlinePlayerEconomy)
+            {
+                var runtime=PickleVerse.Progression.ProgressionRuntime.Instance;
+                if(!runtime||!runtime.Ready){Refresh(new PlayerEconomyState());return;}
+            }
+            try{var state=await provider.ReadAsync();if(this&&isActiveAndEnabled&&generation==run)Refresh(state);}
+            catch(Exception e){if(this&&isActiveAndEnabled&&generation==run)Debug.LogWarning("Paddle selection unavailable: "+e.Message);}
+        }
     }
 }

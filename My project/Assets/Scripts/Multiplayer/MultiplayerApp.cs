@@ -44,6 +44,7 @@ namespace PickleVerse.Multiplayer
         public readonly Dictionary<ulong,string> ClientIdentities=new Dictionary<ulong,string>();
         readonly SearchClock clock=new SearchClock();
         readonly ModeNavigationGuard navigation=new ModeNavigationGuard();
+        readonly RoomOperationGate roomOperations=new RoomOperationGate();
         readonly HashSet<string> ignored=new HashSet<string>();
         PhotonSession browser;
         int operation;
@@ -76,37 +77,52 @@ namespace PickleVerse.Multiplayer
             if(!Settings||!StatePrefab)throw new InvalidOperationException("Thiếu cấu hình Photon.");
             await identity.InitializeAsync(profile,Settings.environment);Gender=ProgressionRuntime.Instance.Snapshot.isMale?"Male":"Female";MultiplayerSceneConfiguration.Validate();
         }
-        public async Task PlayAsync(string profile){navigation.Open();await InitializeAsync(profile);await LeaveRoomAsync();Mode=PlayMode.Singles;SetState(FlowState.WaitingRoom,"Đấu đơn • Bấm Tìm trận khi sẵn sàng.");}
+        public async Task PlayAsync(string profile)
+        {
+            navigation.Open();int page=navigation.Epoch;
+            await InitializeAsync(profile);if(!navigation.IsCurrent(page))return;
+            await LeaveRoomAsync();if(!navigation.IsCurrent(page))return;
+            Mode=PlayMode.Singles;SetState(FlowState.WaitingRoom,"Đấu đơn • Bấm Tìm trận khi sẵn sàng.");
+        }
         public Task SelectModeAsync(PlayMode mode)=>SwitchRoomAsync(mode,false);
         public Task CreateCustomAsync(PlayMode mode)=>SwitchRoomAsync(mode,true);
-        public async Task SwitchRoomAsync(PlayMode mode,bool custom)
+        public Task SwitchRoomAsync(PlayMode mode,bool custom)=>roomOperations.Run(()=>SwitchRoomCoreAsync(mode,custom));
+        async Task SwitchRoomCoreAsync(PlayMode mode,bool custom)
         {
             if(State!=FlowState.WaitingRoom)throw new InvalidOperationException("Hủy tìm trận trước khi đổi phòng.");
             if(mode!=PlayMode.Singles&&mode!=PlayMode.Doubles)throw new InvalidOperationException("Chế độ không hợp lệ.");
-            await LeaveRoomAsync();Mode=mode;
+            int generation=operation,page=navigation.Epoch;
+            await LeaveAttachedRoomAsync();if(generation!=operation||!navigation.IsCurrent(page))return;Mode=mode;
             if(custom||mode==PlayMode.Doubles)
             {
-                var session=PhotonSession.Create("Photon Party");int generation=operation;
+                var session=PhotonSession.Create("Photon Party");
                 try
                 {
                     await session.StartAsync(Guid.NewGuid().ToString("N").Substring(0,8).ToUpperInvariant(),PlayerId,Settings.photonRegion,new PhotonRoomData{party=true,custom=custom,mode=mode,phase="idle"},StatePrefab);
+                    if(generation!=operation||!navigation.IsCurrent(page)){await session.LeaveAsync();return;}
                     await session.ReserveAsync(new List<RoomMember>{Self()});
-                    if(generation!=operation){await session.LeaveAsync();return;}AttachRoom(session);
+                    if(generation!=operation||!navigation.IsCurrent(page)){await session.LeaveAsync();return;}AttachRoom(session);
                 }
                 catch{await session.LeaveAsync();throw;}
             }
             SetState(FlowState.WaitingRoom,custom?"Chia sẻ mã phòng để mời bạn bè.":"Sẵn sàng tìm trận.");
         }
-        public async Task JoinRoomAsync(string code)
+        public Task JoinRoomAsync(string code)=>JoinRoomAsync(code,null);
+        public Task JoinRoomAsync(string code,string region)=>roomOperations.Run(()=>JoinRoomCoreAsync(code,region));
+        async Task JoinRoomCoreAsync(string code,string region)
         {
-            if(Searching)throw new InvalidOperationException("Hủy tìm trận trước.");await InitializeAsync(PlayerId);await LeaveRoomAsync();
-            var session=PhotonSession.Create("Photon Party");int generation=operation;
+            if(Searching)throw new InvalidOperationException("Hủy tìm trận trước.");
+            int generation=operation,page=navigation.Epoch;
+            await InitializeAsync(PlayerId);if(generation!=operation||!navigation.IsCurrent(page))return;
+            await LeaveAttachedRoomAsync();if(generation!=operation||!navigation.IsCurrent(page))return;
+            var session=PhotonSession.Create("Photon Party");
             try
             {
-                await session.JoinAsync(code.Trim().ToUpperInvariant(),PlayerId,Settings.photonRegion,true);
+                await session.JoinAsync(code.Trim().ToUpperInvariant(),PlayerId,string.IsNullOrEmpty(region)?Settings.photonRegion:region,true);
+                if(generation!=operation||!navigation.IsCurrent(page)){await session.LeaveAsync();return;}
                 if(!session.Data.party||session.Data.phase!="idle")throw new InvalidOperationException("Phòng đang tìm hoặc đang chơi.");
                 await session.ReserveAsync(new List<RoomMember>{Self()});
-                if(generation!=operation){await session.LeaveAsync();return;}Mode=session.Data.mode;AttachRoom(session);SetState(FlowState.WaitingRoom,"Đã tham gia phòng.");
+                if(generation!=operation||!navigation.IsCurrent(page)){await session.LeaveAsync();return;}Mode=session.Data.mode;AttachRoom(session);SetState(FlowState.WaitingRoom,"Đã tham gia phòng.");
             }
             catch{await session.LeaveAsync();throw;}
         }
@@ -123,8 +139,18 @@ namespace PickleVerse.Multiplayer
         public Task KickAsync(string id){if(!Custom||!IsCaptain||State!=FlowState.WaitingRoom)throw new InvalidOperationException("Không có quyền mời ra.");Room.Lobby.Kick(id);return Task.CompletedTask;}
         public async Task LeaveRoomAsync()
         {
+            await roomOperations.DrainAsync();
+            await LeaveAttachedRoomAsync();
+        }
+        async Task LeaveAttachedRoomAsync()
+        {
             if(Searching)await CancelSearchAsync();var room=Room;
-            if(room!=null){if(room.IsHost){room.Lobby.Command("close","");await Task.Delay(300);}await room.LeaveAsync();if(Room==room){room.Changed-=RoomChanged;Room=null;}}
+            if(room==null)return;
+            // Our own close notification must not look like an unexpected host departure
+            // and cancel the mode switch that is deliberately leaving this party.
+            room.Changed-=RoomChanged;Room=null;
+            if(room.IsHost&&room.Lobby){room.Lobby.Command("close","");await Task.Delay(300);}
+            await room.LeaveAsync();
         }
         void RoomChanged()
         {

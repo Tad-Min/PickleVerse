@@ -40,6 +40,11 @@ static class GameChecks
                 "Unity seed is repeatable: 10 achievements and 17 missions");
             check(catalog.lessons.Length==12 && catalog.lessons.Count(l=>l.prerequisites.Length==0)==4,
                 "online catalog has every Unity lesson and the original four entry lessons");
+            check(catalog.lessons.Single(l=>l.id=="serve").title=="Giao bóng đúng ô"
+                && catalog.lessons.Single(l=>l.id=="drive").title=="Drive về cuối sân"
+                && catalog.definitions.Single(d=>d.id=="D.Serve10").title=="Giao bóng hợp lệ 10 lần"
+                && catalog.definitions.Single(d=>d.id=="A.Win5").title=="Thắng 5 trận",
+                "UTF-8 catalog text survives SQL initialization and PostgreSQL reads");
             check(catalog.cosmetics.Length==3 && catalog.cosmetics.Single(c=>c.id=="paddle.thot").tokenpadPrice==900
                 && catalog.cosmetics.Single(c=>c.id=="paddle.thot").elitePrice==250 && catalog.cosmetics.Single(c=>c.id=="paddle.gemstone").elitePrice==650,
                 "online cosmetics retain both original currency prices");
@@ -53,6 +58,8 @@ static class GameChecks
             "new account owns only its default paddle with no imported local money");
         check(GameJson.Read<GameSnapshot>(GameJson.Write(state)).catalog.lessons.Length==12,
             "snapshot JSON preserves nested Unity fields and enum names");
+        check(GameJson.Read<GameSnapshot>(GameJson.Write(state)).catalog.lessons.Single(l=>l.id=="serve").title=="Giao bóng đúng ô",
+            "snapshot JSON preserves Vietnamese diacritics end to end");
         check(GameJson.Payload(new{team=0,winner=true})!=GameJson.Payload(new{team=1,winner=false}),
             "fingerprints include get-only values rather than collapsing distinct payloads");
         await Rejected(()=>Call(s=>s.Claim(id,new GameCommand {RequestId=Guid.NewGuid().ToString("N"),Code="A.Win5"})),

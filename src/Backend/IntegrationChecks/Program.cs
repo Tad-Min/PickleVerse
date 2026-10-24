@@ -72,6 +72,20 @@ try
         await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
         await command.ExecuteNonQueryAsync();
     }
+    if (args.Contains("--check-catalog-text"))
+    {
+        int scriptIndex=Array.IndexOf(args,"--check-catalog-text")+1;
+        if(scriptIndex>=args.Length)throw new ArgumentException("Pass the generated UTF-8 repair SQL path after --check-catalog-text.");
+        await CatalogTextChecks.Run(options,args[scriptIndex],Check);
+        Console.WriteLine($"SUCCESS: {checks} catalog text checks; disposable PostgreSQL database removed.");
+        return;
+    }
+    if (args.Contains("--check-room-invitations"))
+    {
+        await RoomInvitationChecks.Run(options,time,Check);
+        Console.WriteLine($"SUCCESS: {checks} room invitation checks; disposable PostgreSQL database and isolated Redis keys removed.");
+        return;
+    }
     if (args.Contains("--check-redis"))
     {
         await RedisChecks.Run(options,time,Check);

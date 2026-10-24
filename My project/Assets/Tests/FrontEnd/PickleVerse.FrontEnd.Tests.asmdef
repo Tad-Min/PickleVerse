@@ -1,0 +1,14 @@
+{
+  "name": "PickleVerse.FrontEnd.Tests",
+  "references": [
+    "PickleVerse.FrontEnd",
+    "PickleVerse.Settings",
+    "Unity.ugui",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "autoReferenced": false
+}

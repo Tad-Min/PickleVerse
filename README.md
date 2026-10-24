@@ -17,6 +17,14 @@ Bảng `AppActivitySessions` khởi tạo rỗng; 10 tài khoản bot kèm hồ 
 Volume database đã tồn tại được giữ nguyên; Compose không chạy lại init script.
 Không chạy toàn bộ file khởi tạo lên database đang có dữ liệu, không cần xóa volume hiện tại.
 
+Nếu chữ tiếng Việt trong danh mục đã bị lưu thành `?`, chạy
+`./scripts/Repair-CatalogText.ps1` để xem trước, rồi thêm `-Apply` để phục hồi từ
+`src/Database.sql`. Script sao lưu sáu bảng danh mục trước khi sửa, chỉ cập nhật
+văn bản bị hỏng; giữ nguyên cấu hình gameplay và dữ liệu người chơi.
+File SQL được chuyển bằng `docker cp` và đọc qua `psql --file`, tránh mất dấu do
+pipe `Get-Content ... | docker exec -i ... psql` trên Windows. Với database mới,
+dùng init script của Compose hoặc `psql -f` như trên.
+
 Hướng dẫn chạy Docker dev, cấu trúc service Unity và kết quả kiểm thử:
 [Unity – Backend Integration](Doc/PickleVerse_Project_Documentation.md#doc-unity-backend-integration).
 
@@ -42,3 +50,11 @@ Unity đăng ký/poll hàng chờ qua API; API trả phòng Photon được ghé
 Leaderboard dùng Redis Sorted Set, cache 15 giây; Elo/kết quả/thời gian app vẫn lưu PostgreSQL. Redis có AOF và volume riêng, không thay thế PostgreSQL. Database cũ cần backup rồi bỏ riêng `RankedSearches` sau khi triển khai API mới; giữ `AppActivitySessions` và các volume. Không chạy lại `Database.sql` trên database có dữ liệu.
 
 Xem [chi tiết Redis](Doc/PickleVerse_Project_Documentation.md#doc-redis-matchmaking).
+
+## Mời bạn bè vào phòng
+
+Trong phòng Doubles hoặc Custom, chọn **Mời bạn bè**, tìm tên/ID rồi bấm **Mời**.
+Người nhận phải có quan hệ bạn bè và đang ở lobby; thông báo có **Chấp nhận/Từ chối**,
+chấp nhận sẽ vào đúng phòng Fusion. Lời mời có hiệu lực 60 giây, cập nhật khoảng 3 giây.
+Presence và lời mời dùng Redis, không cần thêm bảng Rooms.
+Xem [triển khai và kết quả kiểm tra](Doc/Proccess/Friend_Room_Invitations_20261025.md).

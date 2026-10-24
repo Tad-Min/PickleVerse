@@ -39,6 +39,7 @@ namespace PickleVerse.Multiplayer
         public PhotonCommandChannel Channel{get;private set;}
         public void BindChannel(PhotonCommandChannel channel){Channel=channel;}
         string sessionName="",sessionRegion="";
+        Task leaving;
         public string Id=>Runner&&Runner.IsRunning?Runner.SessionInfo.Name:sessionName;
         public string Region=>Runner&&Runner.IsRunning?Runner.SessionInfo.Region:sessionRegion;
         public string Code=>Id;
@@ -160,9 +161,10 @@ namespace PickleVerse.Multiplayer
             double until=Time.realtimeSinceStartupAsDouble+seconds;
             while(!condition()){if(Time.realtimeSinceStartupAsDouble>=until)throw new TimeoutException(message);await Task.Delay(50);}
         }
-        public async Task LeaveAsync()
+        public Task LeaveAsync()=>leaving??(leaving=LeaveCoreAsync());
+        async Task LeaveCoreAsync()
         {
-            if(Closing)return;Closing=true;
+            Closing=true;
             var runner=Runner;
             try{if(runner)await runner.Shutdown();}
             finally{if(runner){sessions.Remove(runner);UnityEngine.Object.Destroy(runner.gameObject);}Lobby=null;}

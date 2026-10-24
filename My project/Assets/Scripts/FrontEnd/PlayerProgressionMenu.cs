@@ -108,7 +108,10 @@ namespace PickleVerse.FrontEnd
         {
             if(!modal) return;
             opened = false;
-            modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Hide();
+            // AccountScreen can close an authored menu before this component's Awake.
+            var presentation=modal.GetComponent<PickleVerse.Settings.UiModalPresentation>();
+            if(presentation) presentation.Hide();
+            else modal.gameObject.SetActive(false);
             PickleVerse.Settings.FrontEndModalInput.Release(this);
             if(menuInteraction) 
                 menuInteraction.interactable = priorMenuInteraction;
@@ -265,7 +268,9 @@ namespace PickleVerse.FrontEnd
             var replayLabel=PickleVerse.Replays.ReplayStorage.Availability(result.playerId,result.id);
             var replayRect=Panel("WatchReplay",row,Card);var replayControl=replayRect.GetComponent<Button>()??replayRect.gameObject.AddComponent<Button>();
             replayRect.anchorMin=new Vector2(.53f,0);replayRect.anchorMax=new Vector2(.98f,.27f);replayRect.offsetMin=replayRect.offsetMax=Vector2.zero;
-            replayRect.GetComponent<Image>().color=Card;
+            var replayImage=replayRect.GetComponent<Image>();replayImage.color=Card;
+            // Panel is decorative by default; this child must intercept the row's Detail click.
+            replayImage.raycastTarget=true;replayControl.targetGraphic=replayImage;
             var replayButton=replayControl;StyleButton(replayButton,Card);replayButton.interactable=replayLabel.StartsWith("Xem replay",StringComparison.Ordinal);
             Text("Label",replayRect,replayLabel,13,Mint,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,TextAlignmentOptions.Center);
             replayButton.onClick.AddListener(()=>{float prior=scroll.verticalNormalizedPosition;Close();PickleVerse.Replays.ReplayLaunch.Select(result.playerId,result.id,()=>{PickleVerse.Shop.LobbyNavigation.ReturnToLobby();StartCoroutine(RestoreHistory(prior));});PickleVerse.Shop.LobbyNavigation.OpenReplay();});
