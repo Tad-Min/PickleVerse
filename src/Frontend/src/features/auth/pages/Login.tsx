@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
+import { Button } from '../../../shared/components/ui';
 import { Shield, Lock, User, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -98,7 +99,7 @@ export const Login: React.FC = () => {
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={submitting}
             className="w-full mt-2 py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -111,7 +112,7 @@ export const Login: React.FC = () => {
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
-          </button>
+          </Button>
         </form>
 
         {/* Security Notice */}

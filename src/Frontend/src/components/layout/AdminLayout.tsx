@@ -29,7 +29,7 @@ export const AdminLayout: React.FC = () => {
             </button>
             <div className="h-4 w-[1px] bg-border"></div>
             <div className="text-xs text-muted-foreground">
-              Server API: <span className="text-foreground font-mono text-[11px]">http://localhost:5000</span>
+              Server API: <span className="text-foreground font-mono text-[11px]">http://localhost:8080</span>
             </div>
           </div>
         </header>
