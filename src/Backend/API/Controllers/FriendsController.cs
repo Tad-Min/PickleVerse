@@ -31,7 +31,8 @@ namespace API.Controllers
         {
             var senderId = GetCurrentUserId();
             var success = await _friendService.SendFriendRequestAsync(senderId, request.ReceiverId);
-            if (!success) return BadRequest(new { message = "Gửi lời mời kết bạn thất bại (đã kết bạn hoặc người này bị chặn)." });
+            if (!success)
+                return BadRequest(new { message = "Gửi lời mời kết bạn thất bại (đã kết bạn hoặc người này bị chặn)." });
             return Ok(new { message = "Đã gửi lời mời kết bạn!" });
         }
 
@@ -40,7 +41,8 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             var success = await _friendService.RespondFriendRequestAsync(userId, request);
-            if (!success) return BadRequest(new { message = "Xử lý yêu cầu kết bạn thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Xử lý yêu cầu kết bạn thất bại." });
             return Ok(new { message = request.Accept ? "Đã chấp nhận lời mời kết bạn!" : "Đã từ chối lời mời kết bạn." });
         }
 
@@ -57,7 +59,8 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             var success = await _friendService.UnfriendAsync(userId, friendId);
-            if (!success) return BadRequest(new { message = "Hủy kết bạn thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Hủy kết bạn thất bại." });
             return Ok(new { message = "Đã hủy kết bạn thành công." });
         }
 
@@ -66,7 +69,8 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             var success = await _friendService.BlockUserAsync(userId, targetUserId);
-            if (!success) return BadRequest(new { message = "Chặn người dùng thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Chặn người dùng thất bại." });
             return Ok(new { message = "Đã chặn người dùng này thành công." });
         }
     }

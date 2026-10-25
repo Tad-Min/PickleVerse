@@ -3,11 +3,13 @@ using System.Collections.Generic;
 
 namespace PickleVerse.Progression
 {
-    [Serializable] public sealed class RuntimeMatchmakingSettings
+    [Serializable]
+    public sealed class RuntimeMatchmakingSettings
     {
         public int botFallbackSeconds, readyConfirmationSeconds;
     }
-    [Serializable] public sealed class RuntimeOnlineMatchSettings
+    [Serializable]
+    public sealed class RuntimeOnlineMatchSettings
     {
         public int disconnectTimeoutSeconds, heartbeatSeconds;
     }
@@ -16,13 +18,20 @@ namespace PickleVerse.Progression
     public enum MatchKind { BotPractice, RankedSingles, RankedBot, MatchedDoubles, Custom }
     public enum MatchOutcome { Won, Lost, Interrupted }
 
-    [Serializable] public struct RewardBundle
+    [Serializable]
+    public struct RewardBundle
     {
         public int coins, gems, xp;
-        public RewardBundle(int coins, int gems, int xp) { this.coins = coins; this.gems = gems; this.xp = xp; }
+        public RewardBundle(int coins, int gems, int xp)
+        {
+            this.coins = coins;
+            this.gems = gems;
+            this.xp = xp;
+        }
         public override string ToString() => $"{coins} TOKENPAD  ·  {xp} XP";
     }
-    [Serializable] public sealed class ProgressDefinition
+    [Serializable]
+    public sealed class ProgressDefinition
     {
         public string id, title;
         public ProgressScope scope;
@@ -30,9 +39,17 @@ namespace PickleVerse.Progression
         public int target;
         public RewardBundle reward;
         public ProgressDefinition(string id, string title, ProgressScope scope, ProgressMetric metric, int target, RewardBundle reward)
-        { this.id = id; this.title = title; this.scope = scope; this.metric = metric; this.target = target; this.reward = reward; }
+        {
+            this.id = id;
+            this.title = title;
+            this.scope = scope;
+            this.metric = metric;
+            this.target = target;
+            this.reward = reward;
+        }
     }
-    [Serializable] public sealed class ProgressCounters
+    [Serializable]
+    public sealed class ProgressCounters
     {
         public long matches, wins, points, returns, serves, botMatches, humanMatches, humanWins, rankedWins, doublesWins, higherRatedWins;
         public int streak, bestStreak;
@@ -55,26 +72,35 @@ namespace PickleVerse.Progression
             }
         }
     }
-    [Serializable] public sealed class MissionPeriod
+    [Serializable]
+    public sealed class MissionPeriod
     {
         public string key = "";
         public ProgressCounters counters = new ProgressCounters();
         public List<string> claimed = new List<string>();
         public bool bonusClaimed;
     }
-    [Serializable] public sealed class OpponentInfo
+    [Serializable]
+    public sealed class OpponentInfo
     {
         public string id, name;
         public int elo;
     }
-    [Serializable] public sealed class GameScore
+    [Serializable]
+    public sealed class GameScore
     {
         public int own, opponent;
         public bool completed;
         public GameScore() { }
-        public GameScore(int own, int opponent, bool completed) { this.own = own; this.opponent = opponent; this.completed = completed; }
+        public GameScore(int own, int opponent, bool completed)
+        {
+            this.own = own;
+            this.opponent = opponent;
+            this.completed = completed;
+        }
     }
-    [Serializable] public sealed class MatchResult
+    [Serializable]
+    public sealed class MatchResult
     {
         public string id, playerId, reason = "";
         public long startedUtcTicks, endedUtcTicks;
@@ -90,9 +116,11 @@ namespace PickleVerse.Progression
         public string KindLabel => kind == MatchKind.BotPractice ? "Đấu bot" : kind == MatchKind.RankedBot ? "Rank · Bot" : kind == MatchKind.RankedSingles ? "Rank · 1v1" : kind == MatchKind.MatchedDoubles ? "Tìm trận · 2v2" : "Phòng riêng";
         public string OutcomeLabel => outcome == MatchOutcome.Interrupted ? "Gián đoạn" : localForfeit ? "Thua · Bỏ trận" : outcome == MatchOutcome.Won ? "Thắng" : "Thua";
     }
-    [Serializable] public sealed class PlayerProfile
+    [Serializable]
+    public sealed class PlayerProfile
     {
-        [NonSerialized] public bool online;
+        [NonSerialized]
+        public bool online;
         public int version = 1;
         public string id, playerName, avatarId = "initial";
         public long createdUtcTicks, totalXp, coins, gems, wins, losses;

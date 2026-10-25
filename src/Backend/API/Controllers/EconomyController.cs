@@ -16,10 +16,10 @@ namespace API.Controllers
         private readonly IEconomyService _economyService;
         private readonly Services.Game.OnlineGameService _game;
 
-        public EconomyController(IEconomyService economyService,Services.Game.OnlineGameService game)
+        public EconomyController(IEconomyService economyService, Services.Game.OnlineGameService game)
         {
             _economyService = economyService;
-            _game=game;
+            _game = game;
         }
 
         private Guid GetCurrentUserId()
@@ -48,7 +48,7 @@ namespace API.Controllers
         public async Task<IActionResult> BuyCosmetic([FromBody] BuyCosmeticRequest request)
         {
             var userId = GetCurrentUserId();
-            return Ok(await _game.LegacyCosmetic(userId,request.CosmeticId,true,true,Request.Headers["Idempotency-Key"].FirstOrDefault()??Guid.NewGuid().ToString("N")));
+            return Ok(await _game.LegacyCosmetic(userId, request.CosmeticId, true, true, Request.Headers["Idempotency-Key"].FirstOrDefault() ?? Guid.NewGuid().ToString("N")));
         }
 
         [HttpGet("my-inventory")]
@@ -63,7 +63,7 @@ namespace API.Controllers
         public async Task<IActionResult> EquipCosmetic([FromBody] EquipCosmeticRequest request)
         {
             var userId = GetCurrentUserId();
-            return Ok(await _game.LegacyCosmetic(userId,request.CosmeticId,false,request.Equip,Request.Headers["Idempotency-Key"].FirstOrDefault()??Guid.NewGuid().ToString("N")));
+            return Ok(await _game.LegacyCosmetic(userId, request.CosmeticId, false, request.Equip, Request.Headers["Idempotency-Key"].FirstOrDefault() ?? Guid.NewGuid().ToString("N")));
         }
     }
 }

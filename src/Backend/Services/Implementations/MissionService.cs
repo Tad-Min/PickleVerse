@@ -73,7 +73,8 @@ namespace Services.Implementations
         public async Task<(bool Success, string Message, int ExpGained)> ClaimRewardAsync(Guid playerId, int missionId)
         {
             var mission = await _unitOfWork.Missions.GetByIdAsync(missionId);
-            if (mission == null) return (false, "Nhiệm vụ không tồn tại.", 0);
+            if (mission == null)
+                return (false, "Nhiệm vụ không tồn tại.", 0);
 
             var pm = await _unitOfWork.Missions.GetPlayerMissionAsync(playerId, missionId);
 

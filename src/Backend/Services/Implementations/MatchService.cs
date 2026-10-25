@@ -51,7 +51,8 @@ namespace Services.Implementations
             foreach (var p in request.Players)
             {
                 var prof = await _unitOfWork.Profiles.GetByUserIdAsync(p.PlayerId);
-                if (prof != null) playerProfiles.Add(prof);
+                if (prof != null)
+                    playerProfiles.Add(prof);
             }
 
             var teamAPlayers = request.Players.Where(p => p.IsTeamA).Select(p => p.PlayerId).ToList();
@@ -136,7 +137,8 @@ namespace Services.Implementations
         public async Task<bool> ReportPlayerAsync(Guid reporterId, ReportPlayerRequest request)
         {
             var match = await _unitOfWork.Matches.GetMatchByIdAsync(request.MatchId);
-            if (match == null) return false;
+            if (match == null)
+                return false;
 
             var existingReport = await _unitOfWork.Matches.GetReportAsync(reporterId, request.ReportedPlayerId, request.MatchId);
 

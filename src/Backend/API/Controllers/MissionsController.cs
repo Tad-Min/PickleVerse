@@ -16,10 +16,10 @@ namespace API.Controllers
         private readonly IMissionService _missionService;
         private readonly Services.Game.OnlineGameService _game;
 
-        public MissionsController(IMissionService missionService,Services.Game.OnlineGameService game)
+        public MissionsController(IMissionService missionService, Services.Game.OnlineGameService game)
         {
             _missionService = missionService;
-            _game=game;
+            _game = game;
         }
 
         private Guid GetCurrentUserId()
@@ -41,7 +41,7 @@ namespace API.Controllers
         public async Task<IActionResult> ClaimReward(int missionId)
         {
             var userId = GetCurrentUserId();
-            return Ok(await _game.LegacyClaim(userId,missionId,false,Request.Headers["Idempotency-Key"].FirstOrDefault()??Guid.NewGuid().ToString("N")));
+            return Ok(await _game.LegacyClaim(userId, missionId, false, Request.Headers["Idempotency-Key"].FirstOrDefault() ?? Guid.NewGuid().ToString("N")));
         }
     }
 }

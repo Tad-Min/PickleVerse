@@ -16,10 +16,10 @@ namespace API.Controllers
         private readonly IAchievementService _achievementService;
         private readonly Services.Game.OnlineGameService _game;
 
-        public AchievementsController(IAchievementService achievementService,Services.Game.OnlineGameService game)
+        public AchievementsController(IAchievementService achievementService, Services.Game.OnlineGameService game)
         {
             _achievementService = achievementService;
-            _game=game;
+            _game = game;
         }
 
         private Guid GetCurrentUserId()
@@ -41,7 +41,7 @@ namespace API.Controllers
         public async Task<IActionResult> ClaimReward(int achievementId)
         {
             var userId = GetCurrentUserId();
-            return Ok(await _game.LegacyClaim(userId,achievementId,true,Request.Headers["Idempotency-Key"].FirstOrDefault()??Guid.NewGuid().ToString("N")));
+            return Ok(await _game.LegacyClaim(userId, achievementId, true, Request.Headers["Idempotency-Key"].FirstOrDefault() ?? Guid.NewGuid().ToString("N")));
         }
     }
 }

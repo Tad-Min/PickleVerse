@@ -25,19 +25,25 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         var keyboard = Keyboard.current;
-        if (rb == null || keyboard == null) return;
+        if (rb == null || keyboard == null)
+            return;
         var networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsValid && !networkObject.HasStateAuthority) return;
+        if (networkObject != null && networkObject.IsValid && !networkObject.HasStateAuthority)
+            return;
         Vector2 moveInput = Vector2.zero;
-        if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) moveInput.y = 1.0f;
-        if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) moveInput.y = -1.0f;
-        if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) moveInput.x = 1.0f;
-        if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) moveInput.x = -1.0f;
+        if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed)
+            moveInput.y = 1.0f;
+        if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed)
+            moveInput.y = -1.0f;
+        if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
+            moveInput.x = 1.0f;
+        if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
+            moveInput.x = -1.0f;
 
         Vector3 direction = transform.forward * moveInput.y + transform.right * moveInput.x;
         direction = Vector3.ClampMagnitude(direction, 1f);
         Vector3 movement = direction * Speed * Time.fixedDeltaTime;
-        rb.MovePosition(rb.position +  movement);
+        rb.MovePosition(rb.position + movement);
 
     }
 }

@@ -21,6 +21,9 @@ namespace PickleVerse.Progression
             }
             return hit;
         }
-        public void Reset() { decided = false; }
+        public void Reset()
+        {
+            decided = false;
+        }
     }
 }

@@ -27,19 +27,26 @@ namespace PickleVerse.Multiplayer
             kind = shot.kind == LocalKind.Serve || shot.kind == LocalKind.Drive ? ShotKind.Groundstroke :
                 shot.kind == LocalKind.Dink ? ShotKind.Dink : shot.kind == LocalKind.Volley ? ShotKind.Volley :
                 shot.kind == LocalKind.Drop ? ShotKind.Drop : shot.kind == LocalKind.Smash ? ShotKind.Smash : ShotKind.ResetVolley,
-            attack = shot.power, crossCourt = shot.cross
+            attack = shot.power,
+            crossCourt = shot.cross
         };
         public bool CanContact(MatchActor actor, Vector3 previous, Vector3 ball, int bounces, float radius)
         {
-            if (!actor.ContactActive || ball.z * actor.end <= .05f) return false;
+            if (!actor.ContactActive || ball.z * actor.end <= .05f)
+                return false;
             var shot = actor.Intent;
-            if (shot.AfterBounce && bounces == 0 || shot.BeforeBounce && bounces != 0) return false;
-            if (shot.kind == LocalKind.Smash && ball.y < 1.65f) return false;
+            if (shot.AfterBounce && bounces == 0 || shot.BeforeBounce && bounces != 0)
+                return false;
+            if (shot.kind == LocalKind.Smash && ball.y < 1.65f)
+                return false;
             return actor.CanContact(previous, ball, radius, out _);
         }
         public Vector3 Target(MatchActor actor, LocalIntent shot, Vector3 ball, float serverX) => ShotTrajectory.Target(actor, shot, ball, serverX);
         public Vector3 Launch(MatchActor actor, LocalIntent shot, Vector3 ball, float serverX) => ShotTrajectory.Launch(shot, ball, Target(actor, shot, ball, serverX));
         public static float SegmentDistance(Vector3 a, Vector3 b, Vector3 point)
-        { var d = b - a; return Vector3.Distance(point, a + d * Mathf.Clamp01(Vector3.Dot(point - a, d) / Mathf.Max(.000001f, d.sqrMagnitude))); }
+        {
+            var d = b - a;
+            return Vector3.Distance(point, a + d * Mathf.Clamp01(Vector3.Dot(point - a, d) / Mathf.Max(.000001f, d.sqrMagnitude)));
+        }
     }
 }

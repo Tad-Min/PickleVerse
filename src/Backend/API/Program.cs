@@ -17,7 +17,7 @@ using Services.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(new ServerSettings(builder.Configuration));
 builder.Services.AddSingleton(new RedisSettings(builder.Configuration));
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>ConnectionMultiplexer.Connect(sp.GetRequiredService<RedisSettings>().ConnectionString));
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(sp.GetRequiredService<RedisSettings>().ConnectionString));
 builder.Services.AddSingleton<RedisGameState>();
 builder.Services.AddSingleton<LeaderboardCache>();
 
@@ -50,7 +50,8 @@ builder.Services.AddDbContext<PickleVerseContext>(options =>
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PickleVerseAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PickleVerseClient";
-if (jwtKey.Length < 32) throw new InvalidOperationException("Jwt:Key must contain at least 32 characters.");
+if (jwtKey.Length < 32)
+    throw new InvalidOperationException("Jwt:Key must contain at least 32 characters.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -145,7 +146,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // Docker dev exposes HTTP; deployed environments must terminate TLS.
-if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 
 app.UseCors("AdminWebPolicy");
 app.UseRateLimiter();
@@ -153,14 +155,19 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/health/ready", async (PickleVerseContext db,IConnectionMultiplexer redis,CancellationToken ct) =>
+app.MapGet("/health/ready", async (PickleVerseContext db, IConnectionMultiplexer redis, CancellationToken ct) =>
 {
     try
     {
-        if(!await db.Database.CanConnectAsync(ct))return Results.StatusCode(503);
-        await redis.GetDatabase().PingAsync();return Results.Ok(new { status="ready" });
+        if (!await db.Database.CanConnectAsync(ct))
+            return Results.StatusCode(503);
+        await redis.GetDatabase().PingAsync();
+        return Results.Ok(new { status = "ready" });
     }
-    catch(RedisException){return Results.StatusCode(503);}
+    catch (RedisException)
+    {
+        return Results.StatusCode(503);
+    }
 });
 
 app.Run();

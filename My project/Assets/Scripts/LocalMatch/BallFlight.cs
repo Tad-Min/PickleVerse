@@ -18,6 +18,12 @@ namespace PickleVerse.LocalMatch
             position += velocity * dt + Vector3.down * (.5f * Gravity * dt * dt);
             velocity.y -= Gravity * dt;
         }
-        public static void Rebound(ref Vector3 p, ref Vector3 v) { p.y = Court.BallRadius; v.y = Mathf.Abs(v.y) * Restitution; v.x *= .84f; v.z *= .84f; }
+        public static void Rebound(ref Vector3 p, ref Vector3 v)
+        {
+            p.y = Court.BallRadius;
+            v.y = Mathf.Abs(v.y) * Restitution;
+            v.x *= .84f;
+            v.z *= .84f;
+        }
     }
 }

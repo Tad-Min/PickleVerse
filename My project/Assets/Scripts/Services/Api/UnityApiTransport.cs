@@ -26,7 +26,8 @@ namespace PickleVerse.Services.Api
                 request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
                 request.SetRequestHeader("Content-Type", "application/json; charset=utf-8");
             }
-            if (!string.IsNullOrEmpty(bearerToken)) request.SetRequestHeader("Authorization", "Bearer " + bearerToken);
+            if (!string.IsNullOrEmpty(bearerToken))
+                request.SetRequestHeader("Authorization", "Bearer " + bearerToken);
             var completion = new TaskCompletionSource<ApiHttpResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
             pending.Add(request, completion);
             StartCoroutine(Send(request, completion, cancellation));
@@ -35,23 +36,39 @@ namespace PickleVerse.Services.Api
         IEnumerator Send(UnityWebRequest request, TaskCompletionSource<ApiHttpResponse> completion, CancellationToken cancellation)
         {
             UnityWebRequestAsyncOperation operation;
-            try { operation = request.SendWebRequest(); }
+            try
+            {
+                operation = request.SendWebRequest();
+            }
             catch (Exception)
             {
                 completion.TrySetException(new ApiException(0, "Không thể kết nối API. Vui lòng kiểm tra kết nối và máy chủ."));
-                pending.Remove(request); request.Dispose(); yield break;
+                pending.Remove(request);
+                request.Dispose();
+                yield break;
             }
-            while (!operation.isDone && !cancellation.IsCancellationRequested) yield return null;
-            if (cancellation.IsCancellationRequested) { request.Abort(); completion.TrySetCanceled(cancellation); }
+            while (!operation.isDone && !cancellation.IsCancellationRequested)
+                yield return null;
+            if (cancellation.IsCancellationRequested)
+            {
+                request.Abort();
+                completion.TrySetCanceled(cancellation);
+            }
             else if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.DataProcessingError)
                 completion.TrySetException(new ApiException(0, "Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.", "connection_failed"));
             else completion.TrySetResult(new ApiHttpResponse(request.responseCode, request.downloadHandler.text));
-            pending.Remove(request); request.Dispose();
+            pending.Remove(request);
+            request.Dispose();
         }
         void OnDestroy()
         {
             StopAllCoroutines();
-            foreach (var item in pending) { item.Key.Abort(); item.Value.TrySetCanceled(); item.Key.Dispose(); }
+            foreach (var item in pending)
+            {
+                item.Key.Abort();
+                item.Value.TrySetCanceled();
+                item.Key.Dispose();
+            }
             pending.Clear();
         }
     }

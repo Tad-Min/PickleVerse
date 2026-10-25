@@ -4,10 +4,10 @@ using Services.Game;
 
 static class CatalogTextChecks
 {
-    public static async Task Run(DbContextOptions<PickleVerseContext> options,string repairPath,Action<bool,string> check)
+    public static async Task Run(DbContextOptions<PickleVerseContext> options, string repairPath, Action<bool, string> check)
     {
-        await using var context=new PickleVerseContext(options);
-        var sql=new GameSql(context);
+        await using var context = new PickleVerseContext(options);
+        var sql = new GameSql(context);
         // Keep administrator edits to valid text, thresholds and rewards while repairing damaged text.
         await sql.Run("""
             UPDATE lessons SET config=jsonb_set(jsonb_set(config,'{reward}','987'),'{explanation}','"Bài tập riêng đã chỉnh"') WHERE code='drive';
@@ -23,8 +23,8 @@ static class CatalogTextChecks
                 'cosmetics',(SELECT jsonb_agg(to_jsonb(t) ORDER BY cosmeticid) FROM cosmetics t),
                 'players',(SELECT jsonb_agg(to_jsonb(t) ORDER BY userid) FROM playerprofiles t),
                 'users',(SELECT jsonb_agg(to_jsonb(t) ORDER BY userid) FROM users t))::text
-            """,r=>r.GetString(0))).Single();
-        string before=await Snapshot();
+            """, r => r.GetString(0))).Single();
+        string before = await Snapshot();
         await sql.Run("""
             UPDATE lessons SET lessonname='??',description='??',config=config||'{"title":"??","coaching":"??"}'::jsonb;
             UPDATE lessons SET config=config||'{"explanation":"??"}'::jsonb WHERE code<>'drive';
@@ -34,14 +34,14 @@ static class CatalogTextChecks
             UPDATE achievements SET achievementname='??',description='??';
             UPDATE cosmetics SET cosmeticname='??',description='??',config=config||'{"title":"??","description":"??","collection":"??"}'::jsonb;
             """);
-        check(before!=await Snapshot(),"fixture reproduces damaged database catalog text");
-        string repair=string.Join('\n',(await File.ReadAllLinesAsync(repairPath)).Where(line=>!line.StartsWith('\\')));
+        check(before != await Snapshot(), "fixture reproduces damaged database catalog text");
+        string repair = string.Join('\n', (await File.ReadAllLinesAsync(repairPath)).Where(line => !line.StartsWith('\\')));
         await sql.Run(repair);
-        check(before==await Snapshot(),"repair restores all six catalogs while preserving valid custom text, gameplay config and player data");
+        check(before == await Snapshot(), "repair restores all six catalogs while preserving valid custom text, gameplay config and player data");
         await sql.Run(repair);
-        check(before==await Snapshot(),"catalog text repair can be run again without changing healthy data");
-        var catalog=await new GameCatalogService(sql,TestSettings.Load()).Load();
-        check(catalog.lessons.Single(l=>l.id=="serve").title=="Giao bóng đúng ô",
+        check(before == await Snapshot(), "catalog text repair can be run again without changing healthy data");
+        var catalog = await new GameCatalogService(sql, TestSettings.Load()).Load();
+        check(catalog.lessons.Single(l => l.id == "serve").title == "Giao bóng đúng ô",
             "API catalog reads repaired Vietnamese text from PostgreSQL");
     }
 }

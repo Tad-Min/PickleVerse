@@ -13,6 +13,6 @@ namespace PickleVerse.Multiplayer
         public GameObject landingMarkerPrefab, aimMarkerPrefab;
         public float contactAssistRadius = .45f;
         public float cameraHeight = 5.3f, cameraDistance = 4.21f, cameraPitch = 31f, cameraFieldOfView = 60f;
-        public Material ballMaterial,trailMaterial,teamAMaterial,teamBMaterial;
+        public Material ballMaterial, trailMaterial, teamAMaterial, teamBMaterial;
     }
 }

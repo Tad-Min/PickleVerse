@@ -49,43 +49,46 @@ namespace PickleVerse.Social
 
         HashSet<string> FriendsFor(string playerId)
         {
-            if (string.IsNullOrEmpty(playerId)) throw new ArgumentException("Player ID is required.");
+            if (string.IsNullOrEmpty(playerId))
+                throw new ArgumentException("Player ID is required.");
             if (!friends.TryGetValue(playerId, out var list))
-                friends.Add(playerId, list=new HashSet<string>(SeedFriends, StringComparer.Ordinal));
+                friends.Add(playerId, list = new HashSet<string>(SeedFriends, StringComparer.Ordinal));
             return list;
         }
         public int FriendCount(string playerId) => FriendsFor(playerId).Count;
         public bool IsFriend(string playerId, string friendId) => FriendsFor(playerId).Contains(friendId);
         public bool AddFriend(string playerId, string friendId)
         {
-            if (playerId==friendId || !players.Any(p=>p.Id==friendId)) return false;
+            if (playerId == friendId || !players.Any(p => p.Id == friendId))
+                return false;
             return FriendsFor(playerId).Add(friendId);
         }
         public bool RemoveFriend(string playerId, string friendId) => FriendsFor(playerId).Remove(friendId);
-        public IReadOnlyList<SocialPlayer> Search(string query) => players.Where(p=>Matches(p,query)).ToArray();
-        public IReadOnlyList<SocialPlayer> GetFriends(string playerId, string query="")
+        public IReadOnlyList<SocialPlayer> Search(string query) => players.Where(p => Matches(p, query)).ToArray();
+        public IReadOnlyList<SocialPlayer> GetFriends(string playerId, string query = "")
         {
-            var list=FriendsFor(playerId);
-            return players.Where(p=>list.Contains(p.Id) && Matches(p,query)).ToArray();
+            var list = FriendsFor(playerId);
+            return players.Where(p => list.Contains(p.Id) && Matches(p, query)).ToArray();
         }
-        public IReadOnlyList<LeaderboardEntry> Leaderboard(PlayerProfile current, string query="")
+        public IReadOnlyList<LeaderboardEntry> Leaderboard(PlayerProfile current, string query = "")
         {
             // Fixtures have hyphens in their IDs; local player IDs are strictly alphanumeric.
             // Equal Elo is ordered by ID for stable, unique positions. Filtering keeps global positions.
-            return players.Concat(new[]{SocialPlayer.From(current)})
-                .OrderByDescending(p=>p.Elo).ThenBy(p=>p.Id, StringComparer.Ordinal)
-                .Select((p,i)=>new LeaderboardEntry(i+1,p)).Where(e=>Matches(e.Player,query)).ToArray();
+            return players.Concat(new[] { SocialPlayer.From(current) })
+                .OrderByDescending(p => p.Elo).ThenBy(p => p.Id, StringComparer.Ordinal)
+                .Select((p, i) => new LeaderboardEntry(i + 1, p)).Where(e => Matches(e.Player, query)).ToArray();
         }
         static bool Matches(SocialPlayer player, string query)
         {
-            string key=SearchKey(query);
-            return key.Length==0 || SearchKey(player.Name).Contains(key) || SearchKey(player.Id).Contains(key);
+            string key = SearchKey(query);
+            return key.Length == 0 || SearchKey(player.Name).Contains(key) || SearchKey(player.Id).Contains(key);
         }
         static string SearchKey(string text)
         {
-            var result=new StringBuilder();
-            foreach(char c in (text??"").Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD))
-                if(CharUnicodeInfo.GetUnicodeCategory(c)!=UnicodeCategory.NonSpacingMark) result.Append(c=='đ'?'d':c);
+            var result = new StringBuilder();
+            foreach (char c in (text ?? "").Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD))
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    result.Append(c == 'đ' ? 'd' : c);
             return result.ToString();
         }
     }
@@ -96,6 +99,9 @@ namespace PickleVerse.Social
         public static OfflineSocialDirectory Directory { get; private set; } = new OfflineSocialDirectory();
         // Also resets fixtures when entering Play with domain reload disabled.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Reset() { Directory=new OfflineSocialDirectory(); }
+        static void Reset()
+        {
+            Directory = new OfflineSocialDirectory();
+        }
     }
 }

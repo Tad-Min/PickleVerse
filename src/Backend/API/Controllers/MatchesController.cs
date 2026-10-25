@@ -30,7 +30,7 @@ namespace API.Controllers
         [Obsolete("Use a server-created match and its validated completion endpoint.")]
         public IActionResult FinishMatch([FromBody] FinishMatchRequest request)
         {
-            return StatusCode(410,new{message="API cho client tự ghi Elo đã ngừng sử dụng. Hãy hoàn tất trận đã được cấp mã qua api/Game."});
+            return StatusCode(410, new { message = "API cho client tự ghi Elo đã ngừng sử dụng. Hãy hoàn tất trận đã được cấp mã qua api/Game." });
         }
 
         [Authorize]
@@ -48,7 +48,8 @@ namespace API.Controllers
         {
             var reporterId = GetCurrentUserId();
             var success = await _matchService.ReportPlayerAsync(reporterId, request);
-            if (!success) return BadRequest(new { message = "Gửi báo cáo tố cáo thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Gửi báo cáo tố cáo thất bại." });
             return Ok(new { message = "Đã gửi đơn tố cáo. Ban quản trị sẽ sớm xem xét bằng chứng!" });
         }
     }

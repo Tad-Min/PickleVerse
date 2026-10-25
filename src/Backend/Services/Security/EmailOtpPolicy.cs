@@ -13,7 +13,8 @@ public static class EmailOtpPolicy
 
     public static bool Matches(Guid userId, string code, string storedHash, string signingKey)
     {
-        if (code.Length != 6 || code.Any(c => c < '0' || c > '9') || storedHash.Length != 64) return false;
+        if (code.Length != 6 || code.Any(c => c < '0' || c > '9') || storedHash.Length != 64)
+            return false;
         return CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(Hash(userId, code, signingKey)),
             Encoding.ASCII.GetBytes(storedHash));
     }

@@ -23,14 +23,15 @@ namespace API.Controllers
         [Obsolete("Use authenticated, chunked api/Game/replays endpoints.")]
         public IActionResult SaveReplay([FromBody] SaveReplayRequest request)
         {
-            return StatusCode(410,new{message="Hãy dùng api/Game/replays để lưu replay theo tài khoản và từng chunk."});
+            return StatusCode(410, new { message = "Hãy dùng api/Game/replays để lưu replay theo tài khoản và từng chunk." });
         }
 
         [HttpGet("{matchId}")]
-        [Authorize,Obsolete("Use authenticated api/Game/replays/{matchId}.")]
+        [Authorize]
+        [Obsolete("Use authenticated api/Game/replays/{matchId}.")]
         public IActionResult GetReplay(Guid matchId)
         {
-            return StatusCode(410,new{message="Hãy dùng api/Game/replays/{matchId} để đọc replay thuộc tài khoản."});
+            return StatusCode(410, new { message = "Hãy dùng api/Game/replays/{matchId} để đọc replay thuộc tài khoản." });
         }
     }
 }

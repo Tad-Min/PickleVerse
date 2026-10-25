@@ -56,7 +56,8 @@ namespace Services.Implementations
         public async Task<MatchReplayResponse?> GetReplayAsync(Guid matchId)
         {
             var replay = await _unitOfWork.Matches.GetTelemetryReplayAsync(matchId);
-            if (replay == null) return null;
+            if (replay == null)
+                return null;
 
             string? content = null;
             var uri = new Uri(replay.Replayurl);

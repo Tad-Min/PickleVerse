@@ -6,10 +6,14 @@ namespace PickleVerse.Multiplayer
         async void Start()
         {
             var app = MultiplayerApp.Instance;
-            if(app==null || !app.Network||!app.Network.IsRunning) { UnityEngine.SceneManagement.SceneManager.LoadScene(app?.RoomSceneName ?? "PlayMultiplayer"); return; }
-            if(app.Network.IsSharedModeMasterClient)
+            if (app == null || !app.Network || !app.Network.IsRunning)
             {
-                await app.Network.SpawnAsync(app.Settings.matchPrefab,onBeforeSpawned:(runner,obj)=>obj.GetComponent<NetworkMatch>().SetRoster(app.Roster));
+                UnityEngine.SceneManagement.SceneManager.LoadScene(app?.RoomSceneName ?? "PlayMultiplayer");
+                return;
+            }
+            if (app.Network.IsSharedModeMasterClient)
+            {
+                await app.Network.SpawnAsync(app.Settings.matchPrefab, onBeforeSpawned: (runner, obj) => obj.GetComponent<NetworkMatch>().SetRoster(app.Roster));
             }
         }
     }

@@ -21,11 +21,12 @@ namespace Services.Implementations
 
         readonly LeaderboardCache? _leaderboard;
         readonly PickleVerseContext? _context;
-        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger,LeaderboardCache? leaderboard=null,PickleVerseContext? context=null)
+        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger, LeaderboardCache? leaderboard = null, PickleVerseContext? context = null)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
-            _leaderboard=leaderboard;_context=context;
+            _leaderboard = leaderboard;
+            _context = context;
         }
 
         public async Task<PlayerProfileResponse?> GetMyProfileAsync(Guid userId)
@@ -33,7 +34,8 @@ namespace Services.Implementations
             try
             {
                 var profile = await _unitOfWork.Profiles.GetByUserIdAsync(userId);
-                if (profile == null) return null;
+                if (profile == null)
+                    return null;
 
                 return MapToResponse(profile);
             }
@@ -49,7 +51,8 @@ namespace Services.Implementations
             try
             {
                 var profile = await _unitOfWork.Profiles.GetByUserIdAsync(playerId);
-                if (profile == null) return null;
+                if (profile == null)
+                    return null;
 
                 return MapToResponse(profile);
             }
@@ -104,7 +107,8 @@ namespace Services.Implementations
         {
             try
             {
-                if (playedSeconds <= 0) return false;
+                if (playedSeconds <= 0)
+                    return false;
 
                 var profile = await _unitOfWork.Profiles.GetByUserIdAsync(userId);
                 if (profile == null)
@@ -132,16 +136,20 @@ namespace Services.Implementations
         {
             try
             {
-                top=Math.Clamp(top,1,1000);
-                if(_leaderboard!=null&&_context!=null)
+                top = Math.Clamp(top, 1, 1000);
+                if (_leaderboard != null && _context != null)
                 {
                     try
                     {
-                        var key=await _leaderboard.Snapshot(new GameSql(_context));var ids=await _leaderboard.Top(key,top);
-                        var cachedProfiles=await _context.Playerprofiles.AsNoTracking().Include(p=>p.User).Where(p=>ids.Contains(p.Userid)).ToListAsync();
-                        return ids.Select(id=>cachedProfiles.FirstOrDefault(p=>p.Userid==id)).Where(p=>p!=null).Select(p=>MapToResponse(p!)).ToList();
+                        var key = await _leaderboard.Snapshot(new GameSql(_context));
+                        var ids = await _leaderboard.Top(key, top);
+                        var cachedProfiles = await _context.Playerprofiles.AsNoTracking().Include(p => p.User).Where(p => ids.Contains(p.Userid)).ToListAsync();
+                        return ids.Select(id => cachedProfiles.FirstOrDefault(p => p.Userid == id)).Where(p => p != null).Select(p => MapToResponse(p!)).ToList();
                     }
-                    catch(StackExchange.Redis.RedisException error){_logger.LogWarning(error,"Leaderboard cache unavailable; reading PostgreSQL.");}
+                    catch (StackExchange.Redis.RedisException error)
+                    {
+                        _logger.LogWarning(error, "Leaderboard cache unavailable; reading PostgreSQL.");
+                    }
                 }
                 var profiles = await _unitOfWork.Profiles.GetLeaderboardAsync(top);
                 return profiles.Select(MapToResponse).ToList();

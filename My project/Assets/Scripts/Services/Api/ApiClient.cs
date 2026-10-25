@@ -13,13 +13,20 @@ namespace PickleVerse.Services.Api
         public long StatusCode { get; }
         public string Code { get; }
         public ApiException(long status, string message, string code = "") : base(message)
-        { StatusCode = status; Code = code ?? ""; }
+        {
+            StatusCode = status;
+            Code = code ?? "";
+        }
     }
     public sealed class ApiHttpResponse
     {
         public long StatusCode { get; }
         public string Body { get; }
-        public ApiHttpResponse(long statusCode, string body) { StatusCode = statusCode; Body = body ?? ""; }
+        public ApiHttpResponse(long statusCode, string body)
+        {
+            StatusCode = statusCode;
+            Body = body ?? "";
+        }
     }
     public interface IApiTransport
     {
@@ -30,23 +37,33 @@ namespace PickleVerse.Services.Api
         readonly IApiTransport transport;
         static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver(), NullValueHandling = NullValueHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.None, MaxDepth = 64
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            NullValueHandling = NullValueHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.None,
+            MaxDepth = 64
         };
-        public ApiClient(IApiTransport transport) { this.transport = transport ?? throw new ArgumentNullException(nameof(transport)); }
+        public ApiClient(IApiTransport transport)
+        {
+            this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        }
         public async Task<T> SendAsync<T>(string method, string path, object body = null, string token = null, CancellationToken cancellation = default)
         {
             cancellation.ThrowIfCancellationRequested();
             var response = await transport.SendAsync(method, path, body == null ? null : JsonConvert.SerializeObject(body, Settings), token, cancellation);
             cancellation.ThrowIfCancellationRequested();
-            if (response.StatusCode < 200 || response.StatusCode >= 300) throw ParseError(response);
+            if (response.StatusCode < 200 || response.StatusCode >= 300)
+                throw ParseError(response);
             try
             {
                 var result = JsonConvert.DeserializeObject<T>(response.Body, Settings);
-                if (result == null) throw new JsonSerializationException();
+                if (result == null)
+                    throw new JsonSerializationException();
                 return result;
             }
-            catch (JsonException) { throw new ApiException(response.StatusCode, "Dữ liệu máy chủ trả về không hợp lệ.", "invalid_response"); }
+            catch (JsonException)
+            {
+                throw new ApiException(response.StatusCode, "Dữ liệu máy chủ trả về không hợp lệ.", "invalid_response");
+            }
         }
         public static ApiException ParseError(ApiHttpResponse response)
         {
@@ -61,7 +78,8 @@ namespace PickleVerse.Services.Api
                 message = (string)body["message"] ?? (string)body["title"] ?? message;
                 code = (string)body["code"] ?? "";
                 var errors = body["errors"] as JObject;
-                if (errors != null) message = string.Join("\n", errors.Properties().SelectMany(p => p.Value.Values<string>()).Take(4));
+                if (errors != null)
+                    message = string.Join("\n", errors.Properties().SelectMany(p => p.Value.Values<string>()).Take(4));
             }
             catch (JsonException) { }
             return new ApiException(response.StatusCode, message, code);

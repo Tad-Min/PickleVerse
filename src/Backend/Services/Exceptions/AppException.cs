@@ -7,13 +7,13 @@ namespace Services.Exceptions
     {
         public HttpStatusCode StatusCode { get; }
 
-        public AppException(string message, HttpStatusCode statusCode = HttpStatusCode.BadRequest) 
+        public AppException(string message, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
             : base(message)
         {
             StatusCode = statusCode;
         }
 
-        public AppException(string message, Exception innerException, HttpStatusCode statusCode = HttpStatusCode.BadRequest) 
+        public AppException(string message, Exception innerException, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
             : base(message, innerException)
         {
             StatusCode = statusCode;
@@ -22,7 +22,7 @@ namespace Services.Exceptions
 
     public class NotFoundException : AppException
     {
-        public NotFoundException(string message) 
+        public NotFoundException(string message)
             : base(message, HttpStatusCode.NotFound)
         {
         }
@@ -30,7 +30,7 @@ namespace Services.Exceptions
 
     public class BadRequestException : AppException
     {
-        public BadRequestException(string message) 
+        public BadRequestException(string message)
             : base(message, HttpStatusCode.BadRequest)
         {
         }
@@ -38,7 +38,7 @@ namespace Services.Exceptions
 
     public class UnauthorizedException : AppException
     {
-        public UnauthorizedException(string message) 
+        public UnauthorizedException(string message)
             : base(message, HttpStatusCode.Unauthorized)
         {
         }
@@ -46,7 +46,7 @@ namespace Services.Exceptions
 
     public class ForbiddenException : AppException
     {
-        public ForbiddenException(string message) 
+        public ForbiddenException(string message)
             : base(message, HttpStatusCode.Forbidden)
         {
         }

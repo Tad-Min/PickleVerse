@@ -31,7 +31,8 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             var profile = await _profileService.GetMyProfileAsync(userId);
-            if (profile == null) return NotFound(new { message = "Không tìm thấy hồ sơ người chơi." });
+            if (profile == null)
+                return NotFound(new { message = "Không tìm thấy hồ sơ người chơi." });
             return Ok(profile);
         }
 
@@ -39,7 +40,8 @@ namespace API.Controllers
         public async Task<IActionResult> GetProfileById(Guid playerId)
         {
             var profile = await _profileService.GetProfileByIdAsync(playerId);
-            if (profile == null) return NotFound(new { message = "Không tìm thấy hồ sơ người chơi." });
+            if (profile == null)
+                return NotFound(new { message = "Không tìm thấy hồ sơ người chơi." });
             return Ok(profile);
         }
 
@@ -49,7 +51,8 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             var success = await _profileService.UpdateProfileAsync(userId, request);
-            if (!success) return BadRequest(new { message = "Cập nhật hồ sơ thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Cập nhật hồ sơ thất bại." });
             return Ok(new { message = "Cập nhật hồ sơ thành công." });
         }
 
@@ -57,7 +60,7 @@ namespace API.Controllers
         [HttpPost("sync-time")]
         public IActionResult SyncTime([FromBody] SyncTimeRequest request)
         {
-            return StatusCode(410,new { message = "Dùng api/Game/activity/open và activity/checkpoint để đồng bộ phiên mở app, tránh cộng thời gian trùng." });
+            return StatusCode(410, new { message = "Dùng api/Game/activity/open và activity/checkpoint để đồng bộ phiên mở app, tránh cộng thời gian trùng." });
         }
 
         [HttpGet("leaderboard")]

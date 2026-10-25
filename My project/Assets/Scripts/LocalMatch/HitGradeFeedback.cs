@@ -21,10 +21,15 @@ namespace PickleVerse.LocalMatch
 
         public void Prepare()
         {
-            if(root)return;
+            if (root)
+                return;
             Build();
-            label.text="Hoàn hảo";label.fontSize=42;label.ForceMeshUpdate();
-            label.text="Tốt";label.fontSize=34;label.ForceMeshUpdate();
+            label.text = "Hoàn hảo";
+            label.fontSize = 42;
+            label.ForceMeshUpdate();
+            label.text = "Tốt";
+            label.fontSize = 34;
+            label.ForceMeshUpdate();
             Clear();
         }
 
@@ -32,21 +37,32 @@ namespace PickleVerse.LocalMatch
         {
             TMP_FontAsset font = null;
             foreach (var text in FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (text.font && text.font.HasCharacters("Hoàn hảoTốt")) { font = text.font; break; }
+                if (text.font && text.font.HasCharacters("Hoàn hảoTốt"))
+                {
+                    font = text.font;
+                    break;
+                }
             root = new GameObject("Local hit rating", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(CanvasGroup));
-            var canvas = root.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 15;
+            var canvas = root.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 15;
             var scaler = root.GetComponent<UnityEngine.UI.CanvasScaler>();
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280, 720); scaler.matchWidthOrHeight = .5f;
-            opacity = root.GetComponent<CanvasGroup>(); opacity.blocksRaycasts = opacity.interactable = false;
+            scaler.referenceResolution = new Vector2(1280, 720);
+            scaler.matchWidthOrHeight = .5f;
+            opacity = root.GetComponent<CanvasGroup>();
+            opacity.blocksRaycasts = opacity.interactable = false;
             var go = new GameObject("Contact grade", typeof(RectTransform), typeof(TextMeshProUGUI));
             go.transform.SetParent(root.transform, false);
-            label = go.GetComponent<TMP_Text>(); panel = (RectTransform)go.transform;
-            panel.anchorMin = panel.anchorMax = new Vector2(.5f, .63f); panel.pivot = new Vector2(.5f, .5f);
+            label = go.GetComponent<TMP_Text>();
+            panel = (RectTransform)go.transform;
+            panel.anchorMin = panel.anchorMax = new Vector2(.5f, .63f);
+            panel.pivot = new Vector2(.5f, .5f);
             panel.sizeDelta = new Vector2(380, 80);
             label.font = font ? font : TMP_Settings.defaultFontAsset;
             label.fontStyle = FontStyles.Bold | FontStyles.Italic;
-            label.alignment = TextAlignmentOptions.Center; label.raycastTarget = false;
+            label.alignment = TextAlignmentOptions.Center;
+            label.raycastTarget = false;
             label.textWrappingMode = TextWrappingModes.NoWrap;
             textMaterial = new Material(label.fontSharedMaterial);
             textMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, .16f);
@@ -56,27 +72,46 @@ namespace PickleVerse.LocalMatch
         }
         public void Show(HitGrade grade)
         {
-            if (grade == HitGrade.None) return;
-            if (!root) Prepare();
-            enabled=true;
-            LastGrade = grade; ShowCount++; age = 0;
+            if (grade == HitGrade.None)
+                return;
+            if (!root)
+                Prepare();
+            enabled = true;
+            LastGrade = grade;
+            ShowCount++;
+            age = 0;
             label.text = grade == HitGrade.Perfect ? "Hoàn hảo" : "Tốt";
             label.fontSize = grade == HitGrade.Perfect ? 42 : 34;
-            root.SetActive(true); label.ForceMeshUpdate(); Render();
+            root.SetActive(true);
+            label.ForceMeshUpdate();
+            Render();
         }
-        void Update() { Advance(Time.deltaTime); }
+        void Update()
+        {
+            Advance(Time.deltaTime);
+        }
         public void Advance(float dt)
         {
-            if (!Visible) return;
+            if (!Visible)
+                return;
             age += Mathf.Max(0, dt);
-            if (age >= Lifetime) { Clear(); return; }
+            if (age >= Lifetime)
+            {
+                Clear();
+                return;
+            }
             Render();
         }
         void Render()
         {
             // Referee/lesson banners take priority over this short contact cue.
             bool covered = false;
-            foreach (var notice in announcements) if (notice && notice.Busy) { covered = true; break; }
+            foreach (var notice in announcements)
+                if (notice && notice.Busy)
+                {
+                    covered = true;
+                    break;
+                }
             float entry = Mathf.Clamp01(age / .09f), exit = Mathf.Clamp01((Lifetime - age) / .2f);
             opacity.alpha = covered ? 0 : entry * exit;
             panel.localScale = Vector3.one * Mathf.Lerp(1.16f, 1, Mathf.SmoothStep(0, 1, entry));
@@ -105,8 +140,23 @@ namespace PickleVerse.LocalMatch
             }
             label.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
         }
-        public void Clear() { if (root) root.SetActive(false);enabled=false; }
-        void OnDisable() { if(root)root.SetActive(false); }
-        void OnDestroy() { if (root) Destroy(root); if (textMaterial) Destroy(textMaterial); }
+        public void Clear()
+        {
+            if (root)
+                root.SetActive(false);
+            enabled = false;
+        }
+        void OnDisable()
+        {
+            if (root)
+                root.SetActive(false);
+        }
+        void OnDestroy()
+        {
+            if (root)
+                Destroy(root);
+            if (textMaterial)
+                Destroy(textMaterial);
+        }
     }
 }

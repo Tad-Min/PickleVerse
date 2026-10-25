@@ -41,13 +41,22 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
             ?? throw new AppException("Máy chủ chưa khởi tạo vai trò Player.", HttpStatusCode.ServiceUnavailable);
         var user = new User
         {
-            Userid = Guid.NewGuid(), Email = email, Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Roleid = role.Roleid, Status = "ACTIVE", Createdat = UtcNow
+            Userid = Guid.NewGuid(),
+            Email = email,
+            Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Roleid = role.Roleid,
+            Status = "ACTIVE",
+            Createdat = UtcNow
         };
         var profile = new Playerprofile
         {
-            Userid = user.Userid, Playername = DefaultPlayerName(), Avatar = "initial",
-            Elo = 100, Ismale = request.IsMale, Level = 1, Daystreak = 1
+            Userid = user.Userid,
+            Playername = DefaultPlayerName(),
+            Avatar = "initial",
+            Elo = 100,
+            Ismale = request.IsMale,
+            Level = 1,
+            Daystreak = 1
         };
         var code = EmailOtpPolicy.Generate();
         unitOfWork.Users.PrepareCreate(user);
@@ -62,49 +71,73 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
                 break;
             }
             catch (DbUpdateException ex) when (attempt < 2 && ex.InnerException is PostgresException
-                { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "playerprofiles_playername_key" })
+            { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "playerprofiles_playername_key" })
             {
                 await unitOfWork.RollbackTransactionAsync();
                 profile.Playername = DefaultPlayerName();
             }
-            catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
         // Failed delivery leaves an unverified account that resend-otp can recover.
         await emailSender.SendVerificationCodeAsync(email, code);
-        return new AuthResponse { Success = true, Code = "verification_required", Message = "Đã đăng ký. Hãy nhập mã được gửi tới email để kích hoạt tài khoản.",
-            OtpLifetimeMinutes=settings.Otp.LifetimeMinutes, OtpResendCooldownSeconds=settings.Otp.ResendCooldownSeconds };
+        return new AuthResponse
+        {
+            Success = true,
+            Code = "verification_required",
+            Message = "Đã đăng ký. Hãy nhập mã được gửi tới email để kích hoạt tài khoản.",
+            OtpLifetimeMinutes = settings.Otp.LifetimeMinutes,
+            OtpResendCooldownSeconds = settings.Otp.ResendCooldownSeconds
+        };
     }
 
     Verificationemail NewVerification(User user, string code) => new()
     {
-        Userid = user.Userid, Email = user.Email, Token = EmailOtpPolicy.Hash(user.Userid, code, SigningKey),
-        Createdat = UtcNow, Expiresat = UtcNow.AddMinutes(settings.Otp.LifetimeMinutes), Isverified = false
+        Userid = user.Userid,
+        Email = user.Email,
+        Token = EmailOtpPolicy.Hash(user.Userid, code, SigningKey),
+        Createdat = UtcNow,
+        Expiresat = UtcNow.AddMinutes(settings.Otp.LifetimeMinutes),
+        Isverified = false
     };
 
     public async Task<bool> VerifyEmailAsync(VerifyEmailRequest request)
     {
         var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
-        if (user == null || !Active(user)) return false;
+        if (user == null || !Active(user))
+            return false;
         await unitOfWork.BeginTransactionAsync();
         try
         {
             await unitOfWork.Users.LockUserAsync(user.Userid);
             var record = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
             if (record == null || !EmailOtpPolicy.CanVerify(record.Expiresat, record.Isverified, record.Failedattempts, UtcNow, settings.Otp.MaxAttempts))
-            { await unitOfWork.RollbackTransactionAsync(); return false; }
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                return false;
+            }
             bool matches = EmailOtpPolicy.Matches(user.Userid, request.Token, record.Token, SigningKey);
-            if (matches) record.Isverified = true;
+            if (matches)
+                record.Isverified = true;
             else record.Failedattempts++;
             await unitOfWork.CommitTransactionAsync();
             return matches;
         }
-        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
     }
 
     public async Task<ResendOtpResponse> ResendOtpAsync(ResendOtpRequest request)
     {
         var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
-        if (user == null || !Active(user)) return OtpReceipt();
+        if (user == null || !Active(user))
+            return OtpReceipt();
         await unitOfWork.BeginTransactionAsync();
         string code;
         try
@@ -127,13 +160,20 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
             await unitOfWork.Users.AddVerificationEmailAsync(NewVerification(user, code));
             await unitOfWork.CommitTransactionAsync();
         }
-        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
         await emailSender.SendVerificationCodeAsync(user.Email, code);
         return OtpReceipt();
     }
 
-    ResendOtpResponse OtpReceipt() => new() { OtpLifetimeMinutes=settings.Otp.LifetimeMinutes,
-        OtpResendCooldownSeconds=settings.Otp.ResendCooldownSeconds };
+    ResendOtpResponse OtpReceipt() => new()
+    {
+        OtpLifetimeMinutes = settings.Otp.LifetimeMinutes,
+        OtpResendCooldownSeconds = settings.Otp.ResendCooldownSeconds
+    };
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
@@ -141,7 +181,8 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         if (user == null || PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
             return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials");
         var rejected = await RejectIneligibleUserAsync(user);
-        if (rejected != null) return rejected;
+        if (rejected != null)
+            return rejected;
         var refresh = NewRefreshToken(user.Userid);
         await unitOfWork.Users.AddRefreshTokenAsync(refresh.Entity);
         await unitOfWork.SaveChangesAsync();
@@ -150,7 +191,8 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
 
     async Task<AuthResponse?> RejectIneligibleUserAsync(User user)
     {
-        if (!Active(user)) return Failure("Tài khoản đang bị khóa hoặc tạm ngưng.", "account_inactive");
+        if (!Active(user))
+            return Failure("Tài khoản đang bị khóa hoặc tạm ngưng.", "account_inactive");
         var verification = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
         return verification?.Isverified != true
             ? Failure("Email chưa được xác thực. Hãy nhập OTP hoặc yêu cầu gửi lại mã.", "email_not_verified") : null;
@@ -160,24 +202,36 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
     {
         var hash = HashRefreshToken(request.RefreshToken);
         var snapshot = await unitOfWork.Users.GetRefreshTokenAsync(hash);
-        if (snapshot == null) return Failure("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "invalid_session");
+        if (snapshot == null)
+            return Failure("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "invalid_session");
         await unitOfWork.BeginTransactionAsync();
         try
         {
             await unitOfWork.Users.LockUserAsync(snapshot.Userid);
             var token = await unitOfWork.Users.GetRefreshTokenAsync(hash);
             if (token == null || token.Isrevoked || token.Expiresat <= UtcNow)
-            { await unitOfWork.RollbackTransactionAsync(); return Failure("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "invalid_session"); }
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                return Failure("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "invalid_session");
+            }
             var user = await unitOfWork.Users.GetByIdWithRoleAndProfileAsync(token.Userid);
             var rejected = user == null ? Failure("Không tìm thấy tài khoản.", "invalid_session") : await RejectIneligibleUserAsync(user);
-            if (rejected != null) { await unitOfWork.RollbackTransactionAsync(); return rejected; }
+            if (rejected != null)
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                return rejected;
+            }
             var next = NewRefreshToken(token.Userid);
             await unitOfWork.Users.RevokeRefreshTokenAsync(token);
             await unitOfWork.Users.AddRefreshTokenAsync(next.Entity);
             await unitOfWork.CommitTransactionAsync();
             return await SignedInAsync(user!, next.Raw);
         }
-        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
     }
 
     public async Task<bool> LogoutAsync(Guid userId, string refreshToken)
@@ -200,8 +254,11 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
 
     async Task<AuthResponse> SignedInAsync(User user, string refreshToken) => new()
     {
-        Success = true, Message = "Đăng nhập thành công.", AccessToken = GenerateJwtToken(user),
-        RefreshToken = refreshToken, Profile = await profiles.GetMyProfileAsync(user.Userid)
+        Success = true,
+        Message = "Đăng nhập thành công.",
+        AccessToken = GenerateJwtToken(user),
+        RefreshToken = refreshToken,
+        Profile = await profiles.GetMyProfileAsync(user.Userid)
     };
 
     string GenerateJwtToken(User user)

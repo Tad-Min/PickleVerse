@@ -6,7 +6,12 @@ namespace PickleVerse.Rules
     public struct CourtPoint
     {
         public float x, y, z;
-        public CourtPoint(float x, float y, float z) { this.x = x; this.y = y; this.z = z; }
+        public CourtPoint(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
     }
     public static class Court
     {
@@ -45,79 +50,129 @@ namespace PickleVerse.Rules
         int gameFirstServer;
         int serverEnd;
 
-        public SinglesRules(int firstServer = 0) { Server = firstServer; gameFirstServer = firstServer; }
+        public SinglesRules(int firstServer = 0)
+        {
+            Server = firstServer;
+            gameFirstServer = firstServer;
+        }
         public void PrepareServe(int end)
         {
-            serverEnd = end; LastHitter = -1; Stroke = Bounces = 0; Live = false;
-            LastFault = Fault.None; FaultPlayer = -1; EndChangeDue = false;
+            serverEnd = end;
+            LastHitter = -1;
+            Stroke = Bounces = 0;
+            Live = false;
+            LastFault = Fault.None;
+            FaultPlayer = -1;
+            EndChangeDue = false;
         }
         public Fault Serve(int player, CourtPoint left, CourtPoint right, CourtPoint contact, float elapsed, bool upwards = true, bool headBelowWrist = true)
         {
-            if (player != Server || Stroke != 0 || LastFault != Fault.None) return Fault.None;
-            if (elapsed > 10f) return Fail(player, Fault.ServeTimeout);
-            if (!Court.LegalServeFeet(left, right, serverEnd, Points[Server])) return Fail(player, Fault.ServeFoot);
-            if (contact.y > 1.05f || contact.y < .15f || !upwards || !headBelowWrist) return Fail(player, Fault.ServeMotion);
-            Live = true; LastHitter = player; Stroke = 1; Bounces = 0; return Fault.None;
+            if (player != Server || Stroke != 0 || LastFault != Fault.None)
+                return Fault.None;
+            if (elapsed > 10f)
+                return Fail(player, Fault.ServeTimeout);
+            if (!Court.LegalServeFeet(left, right, serverEnd, Points[Server]))
+                return Fail(player, Fault.ServeFoot);
+            if (contact.y > 1.05f || contact.y < .15f || !upwards || !headBelowWrist)
+                return Fail(player, Fault.ServeMotion);
+            Live = true;
+            LastHitter = player;
+            Stroke = 1;
+            Bounces = 0;
+            return Fault.None;
         }
         public Fault Hit(int player, CourtPoint contact, bool feetInKitchen)
         {
-            if (!Live) return Fault.None;
-            if (player == LastHitter) return Fail(player, Fault.DoubleHit);
+            if (!Live)
+                return Fault.None;
+            if (player == LastHitter)
+                return Fail(player, Fault.DoubleHit);
             int end = player == Server ? serverEnd : -serverEnd;
-            if (contact.z * end <= 0f) return Fail(player, Fault.NetPlane);
-            if (Bounces == 0 && Stroke <= 2) return Fail(player, Fault.TwoBounce);
-            if (Bounces == 0 && feetInKitchen) return Fail(player, Fault.KitchenVolley);
-            LastHitter = player; Stroke++; Bounces = 0; return Fault.None;
+            if (contact.z * end <= 0f)
+                return Fail(player, Fault.NetPlane);
+            if (Bounces == 0 && Stroke <= 2)
+                return Fail(player, Fault.TwoBounce);
+            if (Bounces == 0 && feetInKitchen)
+                return Fail(player, Fault.KitchenVolley);
+            LastHitter = player;
+            Stroke++;
+            Bounces = 0;
+            return Fault.None;
         }
         public Fault Bounce(CourtPoint p)
         {
-            if (!Live) return Fault.None;
-            if (Bounces > 0) return Fail(ExpectedHitter, Fault.DoubleBounce);
-            if (!Court.InBounds(p)) return Fail(LastHitter, Fault.Out);
+            if (!Live)
+                return Fault.None;
+            if (Bounces > 0)
+                return Fail(ExpectedHitter, Fault.DoubleBounce);
+            if (!Court.InBounds(p))
+                return Fail(LastHitter, Fault.Out);
             int hitterEnd = LastHitter == Server ? serverEnd : -serverEnd;
-            if (p.z * hitterEnd >= 0) return Fail(LastHitter, Fault.OwnCourt);
+            if (p.z * hitterEnd >= 0)
+                return Fail(LastHitter, Fault.OwnCourt);
             if (Stroke == 1)
             {
-                if (Math.Abs(p.z) <= Court.Kitchen) return Fail(Server, Fault.ServeShort);
+                if (Math.Abs(p.z) <= Court.Kitchen)
+                    return Fail(Server, Fault.ServeShort);
                 int serverLane = (Points[Server] % 2 == 0 ? 1 : -1) * -serverEnd;
                 // The centre line belongs to the service court. Kitchen line does not.
-                if (p.x * serverLane > Court.LineWidth / 2f) return Fail(Server, Fault.ServeWrongCourt);
+                if (p.x * serverLane > Court.LineWidth / 2f)
+                    return Fail(Server, Fault.ServeWrongCourt);
             }
-            Bounces = 1; return Fault.None;
+            Bounces = 1;
+            return Fault.None;
         }
         public Fault Fail(int player, Fault fault, bool allowDeadMomentum = false)
         {
-            if (Winner >= 0) return Fault.None;
-            if (LastFault != Fault.None && !allowDeadMomentum) return LastFault;
-            Live = false; FaultPlayer = player; LastFault = fault; return fault;
+            if (Winner >= 0)
+                return Fault.None;
+            if (LastFault != Fault.None && !allowDeadMomentum)
+                return LastFault;
+            Live = false;
+            FaultPlayer = player;
+            LastFault = fault;
+            return fault;
         }
         // Delay scoring until any volley momentum is settled, including after dead ball.
         public void CommitRally()
         {
-            if (FaultPlayer < 0 || LastFault == Fault.None || GameFinished || Winner >= 0) return;
+            if (FaultPlayer < 0 || LastFault == Fault.None || GameFinished || Winner >= 0)
+                return;
             int rallyWinner = 1 - FaultPlayer;
-            if (rallyWinner == Server) Points[Server]++;
+            if (rallyWinner == Server)
+                Points[Server]++;
             else Server = rallyWinner;
             if (Points[rallyWinner] >= 11 && Points[rallyWinner] - Points[1 - rallyWinner] >= 2)
             {
-                Games[rallyWinner]++; GameFinished = true;
-                if (Games[rallyWinner] == 2) Winner = rallyWinner;
+                Games[rallyWinner]++;
+                GameFinished = true;
+                if (Games[rallyWinner] == 2)
+                    Winner = rallyWinner;
             }
             if (!GameFinished && GameNumber == 3 && !decidingEndsChanged && Math.Max(Points[0], Points[1]) >= 6)
-            { EndChangeDue = true; decidingEndsChanged = true; }
+            {
+                EndChangeDue = true;
+                decidingEndsChanged = true;
+            }
             FaultPlayer = -1;
         }
         public void NextGame()
         {
-            if (!GameFinished || Winner >= 0) return;
-            Points[0] = Points[1] = 0; Timeouts[0] = Timeouts[1] = 2;
-            gameFirstServer = 1 - gameFirstServer; Server = gameFirstServer; GameFinished = false;
+            if (!GameFinished || Winner >= 0)
+                return;
+            Points[0] = Points[1] = 0;
+            Timeouts[0] = Timeouts[1] = 2;
+            gameFirstServer = 1 - gameFirstServer;
+            Server = gameFirstServer;
+            GameFinished = false;
             PrepareServe(serverEnd);
         }
         public bool TakeTimeout(int player)
         {
-            if (Live || Stroke != 0 || Timeouts[player] <= 0 || Winner >= 0) return false;
-            Timeouts[player]--; return true;
+            if (Live || Stroke != 0 || Timeouts[player] <= 0 || Winner >= 0)
+                return false;
+            Timeouts[player]--;
+            return true;
         }
     }
 }

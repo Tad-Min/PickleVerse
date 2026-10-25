@@ -14,7 +14,10 @@ namespace PickleVerse.LocalMatch
         public static string DisplayName(CourtVenue venue) => Normalize(venue) == CourtVenue.LowPoly ? "Sân ngoài trời" : "Sân chuyên nghiệp";
         public static string ResourcePath(CourtVenue venue) => "Courts/" + (Normalize(venue) == CourtVenue.LowPoly ? "LowPoly" : "Professional");
 
-        void Awake() { Select(useBotPreference ? BotMatchLaunchSettings.Venue : selected); }
+        void Awake()
+        {
+            Select(useBotPreference ? BotMatchLaunchSettings.Venue : selected);
+        }
 
         public bool Select(CourtVenue venue)
         {
@@ -22,26 +25,46 @@ namespace PickleVerse.LocalMatch
             if (!current || selected != venue)
             {
                 var prefab = Resources.Load<GameObject>(ResourcePath(venue));
-                if (!prefab) { Debug.LogError("Missing court: " + ResourcePath(venue), this); return false; }
+                if (!prefab)
+                {
+                    Debug.LogError("Missing court: " + ResourcePath(venue), this);
+                    return false;
+                }
                 var replacement = Instantiate(prefab).GetComponent<StadiumEnvironment>();
                 var previous = current;
-                current = replacement; selected = venue;
-                if (previous) { previous.gameObject.SetActive(false); Destroy(previous.gameObject); }
+                current = replacement;
+                selected = venue;
+                if (previous)
+                {
+                    previous.gameObject.SetActive(false);
+                    Destroy(previous.gameObject);
+                }
             }
-            Bind(); return true;
+            Bind();
+            return true;
         }
 
         void Bind()
         {
             var lighting = GetComponent<MatchEnvironmentLighting>();
-            if (lighting) { lighting.stadium = current; lighting.Apply(lighting.selectedNight); }
+            if (lighting)
+            {
+                lighting.stadium = current;
+                lighting.Apply(lighting.selectedNight);
+            }
             var roots = gameObject.scene.GetRootGameObjects();
             foreach (var root in roots)
             {
                 foreach (var intro in root.GetComponentsInChildren<BotMatchIntro>(true))
-                { intro.playerEntrance = current.nearEntrance; intro.opponentEntrance = current.farEntrance; }
+                {
+                    intro.playerEntrance = current.nearEntrance;
+                    intro.opponentEntrance = current.farEntrance;
+                }
                 foreach (var result in root.GetComponentsInChildren<BotMatchVictory>(true))
-                { result.nearPresentation = current.nearResult; result.farPresentation = current.farResult; }
+                {
+                    result.nearPresentation = current.nearResult;
+                    result.farPresentation = current.farResult;
+                }
             }
         }
     }

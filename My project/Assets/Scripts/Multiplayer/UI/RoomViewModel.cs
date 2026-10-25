@@ -16,9 +16,12 @@ namespace PickleVerse.Multiplayer.UI
         }
         public static string PlayLabel(IMultiplayerState state)
         {
-            if (state.Searching) return "Hủy";
-            if (state.Busy || state.State == FlowState.Menu) return "Đang kết nối…";
-            if (!state.Custom) return "Tìm trận";
+            if (state.Searching)
+                return "Hủy";
+            if (state.Busy || state.State == FlowState.Menu)
+                return "Đang kết nối…";
+            if (!state.Custom)
+                return "Tìm trận";
             return state.IsCaptain ? "Bắt đầu" : "Chờ chủ phòng";
         }
     }

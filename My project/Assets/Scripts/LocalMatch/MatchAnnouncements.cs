@@ -33,13 +33,18 @@ namespace PickleVerse.LocalMatch
         public float Elapsed => elapsed;
         public int PendingCount => pending.Count;
 
-        void Awake() { Clear(); }
+        void Awake()
+        {
+            Clear();
+        }
         void Update()
         {
-            if (externallyDriven) return;
+            if (externallyDriven)
+                return;
             if (match && (match.Paused || match.Phase == MatchPhase.Cinematic))
             {
-                if (panel) panel.gameObject.SetActive(false);
+                if (panel)
+                    panel.gameObject.SetActive(false);
                 return;
             }
             // Keep the text readable after a stalled frame or an Editor pause.
@@ -49,37 +54,50 @@ namespace PickleVerse.LocalMatch
         public void Enqueue(string title, string body, AnnouncementTone tone = AnnouncementTone.Neutral, float duration = 1.25f, Action started = null, Action finished = null)
         {
             pending.Enqueue(new Notice { title = title, body = body, tone = tone, duration = Mathf.Max(.6f, duration), started = started, finished = finished });
-            if (current == null) StartNext();
+            if (current == null)
+                StartNext();
         }
 
         void StartNext()
         {
-            if (pending.Count == 0) return;
-            current = pending.Dequeue(); elapsed = 0;
-            headline.text = current.title; detail.text = current.body;
-            Color color = current.tone == AnnouncementTone.Fault ? new Color(1,.55f,.40f) : current.tone == AnnouncementTone.Success ? new Color(.51f,.90f,.80f) : current.tone == AnnouncementTone.ChangeEnds ? new Color(.80f,.96f,.45f) : Color.white;
-            headline.color = color; accent.color = color;
-            panel.gameObject.SetActive(true); panel.SetAsLastSibling();
+            if (pending.Count == 0)
+                return;
+            current = pending.Dequeue();
+            elapsed = 0;
+            headline.text = current.title;
+            detail.text = current.body;
+            Color color = current.tone == AnnouncementTone.Fault ? new Color(1, .55f, .40f) : current.tone == AnnouncementTone.Success ? new Color(.51f, .90f, .80f) : current.tone == AnnouncementTone.ChangeEnds ? new Color(.80f, .96f, .45f) : Color.white;
+            headline.color = color;
+            accent.color = color;
+            panel.gameObject.SetActive(true);
+            panel.SetAsLastSibling();
             current.started?.Invoke();
             Render();
         }
 
         public void Advance(float dt)
         {
-            if (Suspended || match && match.Paused) return;
+            if (Suspended || match && match.Paused)
+                return;
             dt = Mathf.Max(0, dt);
-            if (current == null) StartNext();
+            if (current == null)
+                StartNext();
             while (current != null)
             {
                 float step = Mathf.Min(dt, current.duration - elapsed);
-                elapsed += step; dt -= step; Render();
-                if (elapsed < current.duration) break;
+                elapsed += step;
+                dt -= step;
+                Render();
+                if (elapsed < current.duration)
+                    break;
                 var callback = current.finished;
                 current = null;
-                panel.gameObject.SetActive(false); opacity.alpha = 0;
+                panel.gameObject.SetActive(false);
+                opacity.alpha = 0;
                 callback?.Invoke();
                 StartNext();
-                if (dt <= 0) break;
+                if (dt <= 0)
+                    break;
             }
         }
 
@@ -97,9 +115,13 @@ namespace PickleVerse.LocalMatch
 
         public void Clear()
         {
-            pending.Clear(); current = null; elapsed = 0;
-            if (panel) panel.gameObject.SetActive(false);
-            if (opacity) opacity.alpha = 0;
+            pending.Clear();
+            current = null;
+            elapsed = 0;
+            if (panel)
+                panel.gameObject.SetActive(false);
+            if (opacity)
+                opacity.alpha = 0;
         }
     }
 }

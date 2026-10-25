@@ -13,10 +13,13 @@ namespace PickleVerse.Multiplayer
         public static ReadyOutcome Evaluate(MatchRoster roster, IReadOnlyDictionary<string, ReadyDecision> decisions,
             bool expired, bool allConnected)
         {
-            if (roster == null || !roster.IsValid()) return ReadyOutcome.Rejected;
+            if (roster == null || !roster.IsValid())
+                return ReadyOutcome.Rejected;
             var humans = roster.members.Where(p => !p.bot).ToArray();
-            if (humans.Any(p => decisions.TryGetValue(p.id, out var d) && d == ReadyDecision.Declined)) return ReadyOutcome.Rejected;
-            if (expired) return ReadyOutcome.Rejected;
+            if (humans.Any(p => decisions.TryGetValue(p.id, out var d) && d == ReadyDecision.Declined))
+                return ReadyOutcome.Rejected;
+            if (expired)
+                return ReadyOutcome.Rejected;
             return allConnected && humans.All(p => decisions.TryGetValue(p.id, out var d) && d == ReadyDecision.Accepted)
                 ? ReadyOutcome.Approved : ReadyOutcome.Waiting;
         }

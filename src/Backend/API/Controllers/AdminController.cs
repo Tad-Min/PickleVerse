@@ -31,7 +31,8 @@ namespace API.Controllers
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
         {
             var success = await _adminService.AssignRoleAsync(request.UserId, request.RoleId);
-            if (!success) return BadRequest(new { message = "Gán vai trò thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Gán vai trò thất bại." });
             return Ok(new { message = "Gán vai trò thành công." });
         }
 
@@ -39,7 +40,8 @@ namespace API.Controllers
         public async Task<IActionResult> BanUser([FromBody] BanUserRequest request)
         {
             var result = await _adminService.BanUserAsync(request.UserId, request.Reason, request.BannedUntil);
-            if (!result.Success) return BadRequest(new { message = result.Message });
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
             return Ok(new { message = result.Message });
         }
 
@@ -47,7 +49,8 @@ namespace API.Controllers
         public async Task<IActionResult> UnbanUser(Guid userId)
         {
             var result = await _adminService.UnbanUserAsync(userId);
-            if (!result.Success) return BadRequest(new { message = result.Message });
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
             return Ok(new { message = result.Message });
         }
 
@@ -55,7 +58,8 @@ namespace API.Controllers
         public async Task<IActionResult> ResetPlayerElo(Guid playerId, [FromQuery] int defaultElo = 2000)
         {
             var success = await _adminService.ResetPlayerEloAsync(playerId, defaultElo);
-            if (!success) return BadRequest(new { message = "Reset Elo thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Reset Elo thất bại." });
             return Ok(new { message = $"Đã reset điểm Elo của người chơi về {defaultElo}." });
         }
 
@@ -63,7 +67,8 @@ namespace API.Controllers
         public async Task<IActionResult> ManualVerifyUserEmail(Guid userId)
         {
             var success = await _adminService.ManualVerifyUserEmailAsync(userId);
-            if (!success) return BadRequest(new { message = "Kích hoạt tài khoản thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Kích hoạt tài khoản thất bại." });
             return Ok(new { message = "Kích hoạt tài khoản người dùng thành công." });
         }
 
@@ -116,7 +121,8 @@ namespace API.Controllers
         public async Task<IActionResult> ReviewReport([FromBody] ReviewReportRequest request)
         {
             var result = await _adminService.ReviewReportAsync(request);
-            if (!result.Success) return BadRequest(new { message = result.Message });
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
             return Ok(new { message = result.Message });
         }
 

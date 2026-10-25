@@ -15,10 +15,10 @@ namespace API.Controllers
         private readonly ITrainingService _trainingService;
         private readonly Services.Game.OnlineGameService _game;
 
-        public TrainingController(ITrainingService trainingService,Services.Game.OnlineGameService game)
+        public TrainingController(ITrainingService trainingService, Services.Game.OnlineGameService game)
         {
             _trainingService = trainingService;
-            _game=game;
+            _game = game;
         }
 
         private Guid GetCurrentUserId()
@@ -41,7 +41,7 @@ namespace API.Controllers
         [Obsolete("Use api/Game/training/start, checkpoint and complete.")]
         public IActionResult SubmitDrill([FromBody] SubmitDrillRequest request)
         {
-            return StatusCode(410,new{message="API gửi điểm tự do đã được thay bằng api/Game/training/start, checkpoint và complete."});
+            return StatusCode(410, new { message = "API gửi điểm tự do đã được thay bằng api/Game/training/start, checkpoint và complete." });
         }
     }
 }

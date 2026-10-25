@@ -54,17 +54,22 @@ namespace Services.Implementations
             try
             {
                 var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null) throw new NotFoundException("Người dùng không tồn tại.");
+                if (user == null)
+                    throw new NotFoundException("Người dùng không tồn tại.");
 
                 var role = await _unitOfWork.Users.GetRoleByIdAsync(roleId);
-                if (role == null) throw new NotFoundException("Vai trò không tồn tại.");
+                if (role == null)
+                    throw new NotFoundException("Vai trò không tồn tại.");
 
                 user.Roleid = roleId;
                 await _unitOfWork.Users.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
-            catch (AppException) { throw; }
+            catch (AppException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi gán vai trò {RoleId} cho UserId {UserId}", roleId, userId);
@@ -77,14 +82,18 @@ namespace Services.Implementations
             try
             {
                 var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null) throw new NotFoundException("Người dùng không tồn tại.");
+                if (user == null)
+                    throw new NotFoundException("Người dùng không tồn tại.");
 
                 user.Status = UserStatus.Banned.ToString();
                 await _unitOfWork.Users.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 return (true, $"Tài khoản {user.Email} đã bị khóa. Lý do: {reason}");
             }
-            catch (AppException) { throw; }
+            catch (AppException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi khóa tài khoản UserId {UserId}", userId);
@@ -97,14 +106,18 @@ namespace Services.Implementations
             try
             {
                 var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null) throw new NotFoundException("Người dùng không tồn tại.");
+                if (user == null)
+                    throw new NotFoundException("Người dùng không tồn tại.");
 
                 user.Status = UserStatus.Active.ToString();
                 await _unitOfWork.Users.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 return (true, $"Mở khóa tài khoản {user.Email} thành công.");
             }
-            catch (AppException) { throw; }
+            catch (AppException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi mở khóa tài khoản UserId {UserId}", userId);
@@ -117,14 +130,18 @@ namespace Services.Implementations
             try
             {
                 var profile = await _unitOfWork.Profiles.GetByUserIdAsync(playerId);
-                if (profile == null) throw new NotFoundException("Không tìm thấy hồ sơ người chơi.");
+                if (profile == null)
+                    throw new NotFoundException("Không tìm thấy hồ sơ người chơi.");
 
                 profile.Elo = defaultElo;
                 await _unitOfWork.Profiles.UpdateProfileAsync(profile);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
-            catch (AppException) { throw; }
+            catch (AppException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi reset Elo cho PlayerId {PlayerId}", playerId);
@@ -137,14 +154,18 @@ namespace Services.Implementations
             try
             {
                 var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null) throw new NotFoundException("Người dùng không tồn tại.");
+                if (user == null)
+                    throw new NotFoundException("Người dùng không tồn tại.");
 
                 user.Status = UserStatus.Active.ToString();
                 await _unitOfWork.Users.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
-            catch (AppException) { throw; }
+            catch (AppException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi kích hoạt email thủ công cho UserId {UserId}", userId);
@@ -311,7 +332,8 @@ namespace Services.Implementations
             try
             {
                 var report = await _unitOfWork.Matches.GetReportAsync(request.ReporterId, request.ReportedPlayerId, request.MatchId);
-                if (report == null) throw new NotFoundException("Đơn tố cáo không tồn tại.");
+                if (report == null)
+                    throw new NotFoundException("Đơn tố cáo không tồn tại.");
 
                 report.Status = request.Status;
                 report.Updatedat = DateTime.UtcNow;
@@ -330,7 +352,10 @@ namespace Services.Implementations
                 await _unitOfWork.SaveChangesAsync();
                 return (true, $"Đã cập nhật trạng thái đơn tố cáo thành: {request.Status}");
             }
-            catch (AppException) { throw; }
+            catch (AppException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi duyệt đơn tố cáo của MatchId {MatchId}", request.MatchId);

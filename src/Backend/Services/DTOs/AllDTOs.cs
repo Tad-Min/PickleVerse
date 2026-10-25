@@ -5,10 +5,12 @@ namespace Services.DTOs
     // Auth
     public class RegisterRequest
     {
-        [Required, EmailAddress]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Required, MinLength(6)]
+        [Required]
+        [MinLength(6)]
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
@@ -20,7 +22,8 @@ namespace Services.DTOs
 
     public class LoginRequest
     {
-        [Required, EmailAddress]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
         [Required]
@@ -29,16 +32,20 @@ namespace Services.DTOs
 
     public class VerifyEmailRequest
     {
-        [Required, EmailAddress]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Required, RegularExpression(@"^\d{6}$")]
+        [Required]
+        [RegularExpression(@"^\d{6}$")]
         public string Token { get; set; } = string.Empty;
     }
 
     public class ResendOtpRequest
     {
-        [Required, EmailAddress, MaxLength(254)]
+        [Required]
+        [EmailAddress]
+        [MaxLength(254)]
         public string Email { get; set; } = string.Empty;
     }
 
@@ -89,7 +96,8 @@ namespace Services.DTOs
 
     public class UpdateProfileRequest
     {
-        [MinLength(3), MaxLength(18)]
+        [MinLength(3)]
+        [MaxLength(18)]
         public string? PlayerName { get; set; }
         public string? Avatar { get; set; }
         public bool? IsMale { get; set; }

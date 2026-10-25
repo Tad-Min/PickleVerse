@@ -74,7 +74,8 @@ namespace Services.Implementations
         public async Task<(bool Success, string Message, int ExpGained)> ClaimRewardAsync(Guid playerId, int achievementId)
         {
             var achievement = await _unitOfWork.Achievements.GetByIdAsync(achievementId);
-            if (achievement == null) return (false, "Thành tựu không tồn tại.", 0);
+            if (achievement == null)
+                return (false, "Thành tựu không tồn tại.", 0);
 
             var pa = await _unitOfWork.Achievements.GetPlayerAchievementAsync(playerId, achievementId);
 

@@ -14,10 +14,15 @@ namespace PickleVerse.LocalMatch
         public static CourtVenue Venue => CourtVenueSelection.Normalize((CourtVenue)PlayerPrefs.GetInt(VenueKey, 0));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetLaunch() { launchRequested = false; }
+        static void ResetLaunch()
+        {
+            launchRequested = false;
+        }
 
         public static void Prepare(int difficulty, bool night)
-        { Prepare(difficulty, night, Venue); }
+        {
+            Prepare(difficulty, night, Venue);
+        }
 
         public static void Prepare(int difficulty, bool night, CourtVenue venue)
         {

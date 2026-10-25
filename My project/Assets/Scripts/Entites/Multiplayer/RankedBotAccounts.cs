@@ -15,9 +15,12 @@ namespace PickleVerse.Multiplayer
         });
         public static bool Contains(string id)
         {
-            if (!Guid.TryParse(id, out var parsed)) return false;
+            if (!Guid.TryParse(id, out var parsed))
+                return false;
             var key = parsed.ToString("N");
-            foreach (var value in Ids) if (value == key) return true;
+            foreach (var value in Ids)
+                if (value == key)
+                    return true;
             return false;
         }
     }

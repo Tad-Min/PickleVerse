@@ -24,29 +24,38 @@ if (args.Contains("--check-admin-authorization"))
     await UnityFixture.CheckAdminAuthorizationAsync(connection, root);
     return;
 }
-var photonFixtureArg=args.FirstOrDefault(a=>a.StartsWith("--photon-fixture",StringComparison.Ordinal));
-if (args.Contains("--unity-fixture") || args.Contains("--cleanup-unity-fixture") || photonFixtureArg!=null)
+var photonFixtureArg = args.FirstOrDefault(a => a.StartsWith("--photon-fixture", StringComparison.Ordinal));
+if (args.Contains("--unity-fixture") || args.Contains("--cleanup-unity-fixture") || photonFixtureArg != null)
 {
-    string suffix=photonFixtureArg?["--photon-fixture".Length..]??"";
-    if(suffix!=""&&suffix!="-2"&&suffix!="-3"&&suffix!="-4")throw new InvalidOperationException("Invalid fixture suffix.");
-    await UnityFixture.RunAsync(connection, root, args.Contains("--cleanup-unity-fixture"),photonFixtureArg!=null,suffix);
+    string suffix = photonFixtureArg?["--photon-fixture".Length..] ?? "";
+    if (suffix != "" && suffix != "-2" && suffix != "-3" && suffix != "-4")
+        throw new InvalidOperationException("Invalid fixture suffix.");
+    await UnityFixture.RunAsync(connection, root, args.Contains("--cleanup-unity-fixture"), photonFixtureArg != null, suffix);
     return;
 }
 var database = "pkv_auth_checks_" + Guid.NewGuid().ToString("N");
 var adminBuilder = new NpgsqlConnectionStringBuilder(connection) { Database = "postgres", Pooling = false };
 await using var admin = new NpgsqlConnection(adminBuilder.ConnectionString);
 await admin.OpenAsync();
-await using (var create = new NpgsqlCommand($"CREATE DATABASE \"{database}\"", admin)) await create.ExecuteNonQueryAsync();
+await using (var create = new NpgsqlCommand($"CREATE DATABASE \"{database}\"", admin))
+    await create.ExecuteNonQueryAsync();
 var testBuilder = new NpgsqlConnectionStringBuilder(connection) { Database = database, Pooling = false };
 var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(testBuilder.ConnectionString).Options;
 var mail = new CapturedMail();
 var time = new TestClock();
 var config = TestSettings.Configuration();
 int checks = 0;
-void Check(bool passed, string name) { if (!passed) throw new Exception("FAILED: " + name); checks++; Console.WriteLine("PASS: " + name); }
+void Check(bool passed, string name)
+{
+    if (!passed)
+        throw new Exception("FAILED: " + name);
+    checks++;
+    Console.WriteLine("PASS: " + name);
+}
 async Task<T> Call<T>(Func<AuthService, Task<T>> action)
 {
-    using var context = new PickleVerseContext(options); using var uow = new UnitOfWork(context);
+    using var context = new PickleVerseContext(options);
+    using var uow = new UnitOfWork(context);
     return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, time, new Services.Configuration.ServerSettings(config)));
 }
 var generatedNames = new HashSet<string>(StringComparer.Ordinal);
@@ -74,21 +83,22 @@ try
     }
     if (args.Contains("--check-catalog-text"))
     {
-        int scriptIndex=Array.IndexOf(args,"--check-catalog-text")+1;
-        if(scriptIndex>=args.Length)throw new ArgumentException("Pass the generated UTF-8 repair SQL path after --check-catalog-text.");
-        await CatalogTextChecks.Run(options,args[scriptIndex],Check);
+        int scriptIndex = Array.IndexOf(args, "--check-catalog-text") + 1;
+        if (scriptIndex >= args.Length)
+            throw new ArgumentException("Pass the generated UTF-8 repair SQL path after --check-catalog-text.");
+        await CatalogTextChecks.Run(options, args[scriptIndex], Check);
         Console.WriteLine($"SUCCESS: {checks} catalog text checks; disposable PostgreSQL database removed.");
         return;
     }
     if (args.Contains("--check-room-invitations"))
     {
-        await RoomInvitationChecks.Run(options,time,Check);
+        await RoomInvitationChecks.Run(options, time, Check);
         Console.WriteLine($"SUCCESS: {checks} room invitation checks; disposable PostgreSQL database and isolated Redis keys removed.");
         return;
     }
     if (args.Contains("--check-redis"))
     {
-        await RedisChecks.Run(options,time,Check);
+        await RedisChecks.Run(options, time, Check);
         Console.WriteLine($"SUCCESS: {checks} Redis checks; disposable SQL database and Redis keys removed.");
         return;
     }
@@ -106,21 +116,22 @@ try
             WITH inserted AS (INSERT INTO users(email,passwordhash,roleid)
                 SELECT 'race-check@example.invalid','test-account-cannot-login',roleid FROM roles WHERE rolename='Player' RETURNING userid)
             INSERT INTO playerprofiles(userid,playername) SELECT userid,'GameCheck' FROM inserted;
-            """,fixture);
+            """, fixture);
         await command.ExecuteNonQueryAsync();
-        if(args.Contains("--check-app-ranked"))
+        if (args.Contains("--check-app-ranked"))
         {
-            await using var testContext=new PickleVerseContext(options);
-            var id=await testContext.Users.Where(u=>u.Email=="race-check@example.invalid").Select(u=>u.Userid).SingleAsync();
-            await ActivityRankedChecks.Run(options,time,Check,id);
+            await using var testContext = new PickleVerseContext(options);
+            var id = await testContext.Users.Where(u => u.Email == "race-check@example.invalid").Select(u => u.Userid).SingleAsync();
+            await ActivityRankedChecks.Run(options, time, Check, id);
         }
-        else if(args.Contains("--check-online-social"))await SocialChecks.Run(options,Check);
-        else if(args.Contains("--check-online-multiplayer"))
+        else if (args.Contains("--check-online-social"))
+            await SocialChecks.Run(options, Check);
+        else if (args.Contains("--check-online-multiplayer"))
         {
-            await using var testContext=new PickleVerseContext(options);
-            var id=await testContext.Users.Where(u=>u.Email=="race-check@example.invalid").Select(u=>u.Userid).SingleAsync();
-            await OnlineMatchChecks.Run(options,time,Check,id);
-            await SocialChecks.Run(options,Check);
+            await using var testContext = new PickleVerseContext(options);
+            var id = await testContext.Users.Where(u => u.Email == "race-check@example.invalid").Select(u => u.Userid).SingleAsync();
+            await OnlineMatchChecks.Run(options, time, Check, id);
+            await SocialChecks.Run(options, Check);
         }
         else await GameChecks.RunAsync(options, time, Check, root);
         Console.WriteLine($"SUCCESS: {checks} online game checks; disposable PostgreSQL database removed.");
@@ -135,9 +146,10 @@ try
     Check(!invalidRegistration.Success && invalidRegistration.Code == "password_confirmation_mismatch", "service rejects mismatched confirmation");
     using (var context = new PickleVerseContext(options))
         Check(await context.Users.CountAsync() == 10 && mail.Codes.Count == 0, "invalid confirmation creates no account or OTP beyond the ten virtual accounts");
-    Check(!(await Login("rank-bot-1@players.pickleverse.invalid")).Success,"virtual ranked accounts cannot sign in");
+    Check(!(await Login("rank-bot-1@players.pickleverse.invalid")).Success, "virtual ranked accounts cannot sign in");
     const string email = "online-check@example.invalid";
-    string defaultName = await Register(email, "AuthCheck", isMale: false); string code = mail.Codes[email];
+    string defaultName = await Register(email, "AuthCheck", isMale: false);
+    string code = mail.Codes[email];
     Check((await Login(email)).Code == "email_not_verified", "unverified login rejected");
     Check(!await Verify("other@example.invalid", code), "OTP bound to email");
     Check(!await Verify(email, "not-six-digits"), "malformed OTP rejected");
@@ -172,7 +184,9 @@ try
     var beforeBan = await Login(email);
     using (var context = new PickleVerseContext(options))
     {
-        var user = await context.Users.SingleAsync(u=>u.Email==email); user.Status = "SUSPENDED"; await context.SaveChangesAsync();
+        var user = await context.Users.SingleAsync(u => u.Email == email);
+        user.Status = "SUSPENDED";
+        await context.SaveChangesAsync();
     }
     Check((await Login(email)).Code == "account_inactive", "suspended login rejected");
     Check((await Refresh(beforeBan.RefreshToken!)).Code == "account_inactive", "suspended refresh rejected");
@@ -193,7 +207,8 @@ try
                 FOR EACH ROW EXECUTE FUNCTION collide_default_name_once();
             """);
     const string lockedEmail = "locked-check@example.invalid";
-    await Register(lockedEmail, "LockCheck"); var lockedCode = mail.Codes[lockedEmail];
+    await Register(lockedEmail, "LockCheck");
+    var lockedCode = mail.Codes[lockedEmail];
     await using (var collision = new NpgsqlConnection(testBuilder.ConnectionString))
     {
         await collision.OpenAsync();
@@ -205,14 +220,23 @@ try
     for (int i = 0; i < new Services.Configuration.ServerSettings(config).Otp.MaxAttempts; i++) Check(!await Verify(lockedEmail, lockedCode == "000000" ? "111111" : "000000"), "incorrect OTP attempt " + (i + 1));
     Check(!await Verify(lockedEmail, lockedCode), "five failures lock the OTP");
     bool cooldown = false;
-    try { await Resend(lockedEmail); } catch (AppException ex) { cooldown = ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests; }
+    try
+    {
+        await Resend(lockedEmail);
+    }
+    catch (AppException ex)
+    {
+        cooldown = ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests;
+    }
     Check(cooldown, "resend cooldown enforced");
-    time.Now = time.Now.AddSeconds(61); var unverifiedResend = await Resend(lockedEmail);
+    time.Now = time.Now.AddSeconds(61);
+    var unverifiedResend = await Resend(lockedEmail);
     Check(unverifiedResend.Code == "verification_requested", "unverified resend retains the verification flow");
     Check(await Verify(lockedEmail, mail.Codes[lockedEmail]), "resend issues a usable OTP after lockout");
 
     const string expiredEmail = "expired-check@example.invalid";
-    await Register(expiredEmail, "ExpiryCheck"); time.Now = time.Now.AddMinutes(11);
+    await Register(expiredEmail, "ExpiryCheck");
+    time.Now = time.Now.AddMinutes(11);
     Check(!await Verify(expiredEmail, mail.Codes[expiredEmail]), "expired OTP rejected");
 
     const string raceEmail = "race-check@example.invalid";
@@ -253,7 +277,8 @@ sealed class CapturedMail : IEmailSender
     public void EnsureConfigured() { }
     public async Task SendVerificationCodeAsync(string email, string code)
     {
-        if (email == Recipient && LiveSender != null) await LiveSender.SendVerificationCodeAsync(email, code);
+        if (email == Recipient && LiveSender != null)
+            await LiveSender.SendVerificationCodeAsync(email, code);
         Codes[email] = code;
         SendCount++;
     }
@@ -273,7 +298,8 @@ static class UnityFixture
         string email = settings["SMTP_USERNAME"].ToLowerInvariant();
         var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(connection).Options;
         using var context = new PickleVerseContext(options);
-        if (await context.Users.AnyAsync(u => u.Email == email)) throw new InvalidOperationException("The SMTP recipient already has an account; refusing to modify it.");
+        if (await context.Users.AnyAsync(u => u.Email == email))
+            throw new InvalidOperationException("The SMTP recipient already has an account; refusing to modify it.");
         var createdAfter = DateTime.UtcNow.AddSeconds(-2);
         var password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));
         try
@@ -281,18 +307,26 @@ static class UnityFixture
             using var http = new HttpClient { BaseAddress = new Uri("http://localhost:8080"), Timeout = TimeSpan.FromSeconds(35) };
             using var body = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
             {
-                email, password, confirmPassword = password, isMale = true
+                email,
+                password,
+                confirmPassword = password,
+                isMale = true
             }), System.Text.Encoding.UTF8, "application/json");
             using var response = await http.PostAsync("/api/Auth/register", body);
             response.EnsureSuccessStatusCode();
             using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            if (!json.RootElement.GetProperty("success").GetBoolean()) throw new Exception("Docker OTP registration failed.");
+            if (!json.RootElement.GetProperty("success").GetBoolean())
+                throw new Exception("Docker OTP registration failed.");
             Console.WriteLine("PASS: Docker API registration returned 200 after Gmail SMTP accepted the real OTP.");
         }
         finally
         {
             var created = await context.Users.Include(u => u.Playerprofile).SingleOrDefaultAsync(u => u.Email == email && u.Createdat >= createdAfter && u.Playerprofile != null && u.Playerprofile.Playername.StartsWith("player"));
-            if (created != null) { context.Users.Remove(created); await context.SaveChangesAsync(); }
+            if (created != null)
+            {
+                context.Users.Remove(created);
+                await context.SaveChangesAsync();
+            }
             Console.WriteLine("Temporary Docker SMTP test account removed; no existing account was modified.");
         }
     }
@@ -302,66 +336,84 @@ static class UnityFixture
         var fixture = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(await File.ReadAllTextAsync(Path.Combine(root, "artifacts", "unity-account-fixture.json")))!;
         using var http = new HttpClient { BaseAddress = new Uri("http://localhost:8080"), Timeout = TimeSpan.FromSeconds(15) };
         using var anonymous = await http.GetAsync("/api/Admin/users");
-        if ((int)anonymous.StatusCode != 401) throw new Exception("Anonymous admin access must return 401.");
+        if ((int)anonymous.StatusCode != 401)
+            throw new Exception("Anonymous admin access must return 401.");
         async Task<int> AuthenticatedStatus()
         {
             using var body = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { email = fixture["email"], password = fixture["password"] }), System.Text.Encoding.UTF8, "application/json");
-            using var login = await http.PostAsync("/api/Auth/login", body); login.EnsureSuccessStatusCode();
+            using var login = await http.PostAsync("/api/Auth/login", body);
+            login.EnsureSuccessStatusCode();
             using var json = System.Text.Json.JsonDocument.Parse(await login.Content.ReadAsStringAsync());
             http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", json.RootElement.GetProperty("accessToken").GetString());
             using var response = await http.GetAsync("/api/Admin/users");
             return (int)response.StatusCode;
         }
-        if (await AuthenticatedStatus() != 403) throw new Exception("Player admin access must return 403.");
+        if (await AuthenticatedStatus() != 403)
+            throw new Exception("Player admin access must return 403.");
         var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(connection).Options;
-        using var context = new PickleVerseContext(options); var id = Guid.Parse(fixture["userId"]);
-        var user = await context.Users.SingleAsync(u => u.Userid == id); int originalRole = user.Roleid;
+        using var context = new PickleVerseContext(options);
+        var id = Guid.Parse(fixture["userId"]);
+        var user = await context.Users.SingleAsync(u => u.Userid == id);
+        int originalRole = user.Roleid;
         try
         {
-            user.Roleid = (await context.Roles.SingleAsync(r => r.Rolename == "Admin")).Roleid; await context.SaveChangesAsync();
-            if (await AuthenticatedStatus() != 200) throw new Exception("Admin access must return 200.");
+            user.Roleid = (await context.Roles.SingleAsync(r => r.Rolename == "Admin")).Roleid;
+            await context.SaveChangesAsync();
+            if (await AuthenticatedStatus() != 200)
+                throw new Exception("Admin access must return 200.");
         }
-        finally { user.Roleid = originalRole; await context.SaveChangesAsync(); }
+        finally
+        {
+            user.Roleid = originalRole;
+            await context.SaveChangesAsync();
+        }
         Console.WriteLine("PASS: Admin authorization HTTP 401 (anonymous), 403 (Player), 200 (Admin); fixture role restored.");
     }
 
-    public static async Task RunAsync(string connection, string root, bool cleanup,bool photon=false,string fixtureSuffix="")
+    public static async Task RunAsync(string connection, string root, bool cleanup, bool photon = false, string fixtureSuffix = "")
     {
-        var path = Path.Combine(root, "artifacts", photon?$"photon-account-fixture{fixtureSuffix}.json":"unity-account-fixture.json");
+        var path = Path.Combine(root, "artifacts", photon ? $"photon-account-fixture{fixtureSuffix}.json" : "unity-account-fixture.json");
         var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(connection).Options;
         using var context = new PickleVerseContext(options);
         if (cleanup)
         {
-            if (!File.Exists(path)) return;
+            if (!File.Exists(path))
+                return;
             var fixture = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(await File.ReadAllTextAsync(path))!;
             var id = Guid.Parse(fixture["userId"]);
-            if(!fixture["email"].StartsWith("unity-smoke-",StringComparison.Ordinal)||!fixture["email"].EndsWith("@example.invalid",StringComparison.Ordinal))
+            if (!fixture["email"].StartsWith("unity-smoke-", StringComparison.Ordinal) || !fixture["email"].EndsWith("@example.invalid", StringComparison.Ordinal))
                 throw new InvalidOperationException("Refusing to clean up a non-fixture account.");
-            var sql=new Services.Game.GameSql(context);
-            if(!await context.Users.AnyAsync(u=>u.Userid==id&&u.Email==fixture["email"]))throw new InvalidOperationException("Fixture identity does not match the database.");
-            var keys=await sql.Query("SELECT objectkey FROM onlinereplays WHERE playerid=@id UNION SELECT objectkey FROM onlinereplaychunks WHERE playerid=@id",r=>r.GetString(0),Services.Game.GameSql.P("id",id));
-            var storageConfig=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>
-                {["Storage:ServiceUrl"]="http://localhost:19000",["Storage:AccessKey"]="minioadmin",["Storage:SecretKey"]="minioadmin",["Storage:BucketName"]="pickleverse"}).Build();
-            var storage=new StorageService(storageConfig,NullLogger<StorageService>.Instance);
-            foreach(var key in keys)
+            var sql = new Services.Game.GameSql(context);
+            if (!await context.Users.AnyAsync(u => u.Userid == id && u.Email == fixture["email"]))
+                throw new InvalidOperationException("Fixture identity does not match the database.");
+            var keys = await sql.Query("SELECT objectkey FROM onlinereplays WHERE playerid=@id UNION SELECT objectkey FROM onlinereplaychunks WHERE playerid=@id", r => r.GetString(0), Services.Game.GameSql.P("id", id));
+            var storageConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            { ["Storage:ServiceUrl"] = "http://localhost:19000", ["Storage:AccessKey"] = "minioadmin", ["Storage:SecretKey"] = "minioadmin", ["Storage:BucketName"] = "pickleverse" }).Build();
+            var storage = new StorageService(storageConfig, NullLogger<StorageService>.Instance);
+            foreach (var key in keys)
             {
-                if(!key.StartsWith($"replays/{id:N}/",StringComparison.Ordinal))throw new InvalidOperationException("Unexpected fixture object key.");
-                if(!await storage.DeleteFileAsync(key))throw new InvalidOperationException("Fixture object deletion failed.");
+                if (!key.StartsWith($"replays/{id:N}/", StringComparison.Ordinal))
+                    throw new InvalidOperationException("Unexpected fixture object key.");
+                if (!await storage.DeleteFileAsync(key))
+                    throw new InvalidOperationException("Fixture object deletion failed.");
             }
-            await using var cleanupTx=await context.Database.BeginTransactionAsync();
-            var matches=await sql.Query("SELECT matchid FROM playermatchhistory WHERE playerid=@id UNION SELECT matchid FROM gamematches WHERE ownerid=@id UNION SELECT matchid FROM gamematchplayers WHERE playerid=@id",r=>r.GetGuid(0),Services.Game.GameSql.P("id",id));
-            await sql.Run("DELETE FROM playermatchhistory WHERE playerid=@id",Services.Game.GameSql.P("id",id));
+            await using var cleanupTx = await context.Database.BeginTransactionAsync();
+            var matches = await sql.Query("SELECT matchid FROM playermatchhistory WHERE playerid=@id UNION SELECT matchid FROM gamematches WHERE ownerid=@id UNION SELECT matchid FROM gamematchplayers WHERE playerid=@id", r => r.GetGuid(0), Services.Game.GameSql.P("id", id));
+            await sql.Run("DELETE FROM playermatchhistory WHERE playerid=@id", Services.Game.GameSql.P("id", id));
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM users WHERE userid = {id} AND email = {fixture["email"]}");
             // Preserve a match if any other participant/history remains, including real players.
-            foreach(var match in matches)
+            foreach (var match in matches)
             {
-                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND ownerid IS NULL AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)",Services.Game.GameSql.P("match",match));
-                await sql.Run("DELETE FROM matchhistory WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)",Services.Game.GameSql.P("match",match));
+                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND ownerid IS NULL AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
+                await sql.Run("DELETE FROM matchhistory WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
             }
             await cleanupTx.CommitAsync();
-            File.Delete(path); Console.WriteLine("Unity smoke-test account removed."); return;
+            File.Delete(path);
+            Console.WriteLine("Unity smoke-test account removed.");
+            return;
         }
-        if (File.Exists(path)) throw new InvalidOperationException("Clean up the previous Unity fixture first.");
+        if (File.Exists(path))
+            throw new InvalidOperationException("Clean up the previous Unity fixture first.");
         using var uow = new UnitOfWork(context);
         var config = TestSettings.Configuration();
         var mail = new CapturedMail();
@@ -370,7 +422,8 @@ static class UnityFixture
         var email = "unity-smoke-" + suffix + "@example.invalid";
         var password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));
         var result = await auth.RegisterAsync(new RegisterRequest { Email = email, Password = password, ConfirmPassword = password, IsMale = false });
-        if (!result.Success || !await auth.VerifyEmailAsync(new VerifyEmailRequest { Email = email, Token = mail.Codes[email] })) throw new Exception("Fixture registration failed.");
+        if (!result.Success || !await auth.VerifyEmailAsync(new VerifyEmailRequest { Email = email, Token = mail.Codes[email] }))
+            throw new Exception("Fixture registration failed.");
         var user = await context.Users.Include(u => u.Playerprofile).SingleAsync(u => u.Email == email);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>

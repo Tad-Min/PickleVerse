@@ -31,7 +31,8 @@ namespace API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             var result = await _authService.RegisterAsync(request);
-            if (!result.Success) return BadRequest(result);
+            if (!result.Success)
+                return BadRequest(result);
             return Ok(result);
         }
 
@@ -39,7 +40,8 @@ namespace API.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var result = await _authService.LoginAsync(request);
-            if (!result.Success) return Unauthorized(result);
+            if (!result.Success)
+                return Unauthorized(result);
             return Ok(result);
         }
 
@@ -47,7 +49,8 @@ namespace API.Controllers
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
             var success = await _authService.VerifyEmailAsync(request);
-            if (!success) return BadRequest(new { message = "Mã xác thực không hợp lệ hoặc đã hết hạn!" });
+            if (!success)
+                return BadRequest(new { message = "Mã xác thực không hợp lệ hoặc đã hết hạn!" });
             return Ok(new { message = "Xác thực email thành công! Tài khoản đã được kích hoạt." });
         }
 
@@ -55,7 +58,8 @@ namespace API.Controllers
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             var result = await _authService.RefreshTokenAsync(request);
-            if (!result.Success) return Unauthorized(result);
+            if (!result.Success)
+                return Unauthorized(result);
             return Ok(result);
         }
 

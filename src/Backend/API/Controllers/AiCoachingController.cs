@@ -49,7 +49,8 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             var success = await _aiCoachingService.LogTechniqueErrorAsync(userId, request);
-            if (!success) return BadRequest(new { message = "Ghi nhận lỗi thất bại." });
+            if (!success)
+                return BadRequest(new { message = "Ghi nhận lỗi thất bại." });
             return Ok(new { message = "Ghi nhận lỗi kỹ thuật thành công!" });
         }
     }
