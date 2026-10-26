@@ -1,0 +1,13 @@
+{
+  "name": "PickleVerse.VenueRefinement.Editor",
+  "references": [
+    "PickleVerse.LocalMatch",
+    "PickleVerse.Settings",
+    "PickleVerse.Entites",
+    "PickleVerse.Rules",
+    "Unity.TextMeshPro",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime"
+  ],
+  "includePlatforms": ["Editor"]
+}
