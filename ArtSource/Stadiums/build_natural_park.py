@@ -237,6 +237,14 @@ for key,name in [('Professional','ProfessionalStadium'),('LowPoly','PickleballCo
                 if node.type=='MIX_RGB':node.inputs[2].default_value=(1,1,1,1)
                 if node.type=='MIX' and node.data_type=='RGBA':node.inputs[7].default_value=(1,1,1,1)
             m.diffuse_color=(1,1,1,1)
+    palette=json.loads((SOURCE/'CourtPalette.json').read_text())
+    for mat in bpy.data.materials:
+        if mat.name not in palette:continue
+        mat.diffuse_color=palette[mat.name]
+        if mat.use_nodes:
+            for node in mat.node_tree.nodes:
+                if node.type=='MIX' and node.data_type=='RGBA' and node.blend_type=='MULTIPLY':node.inputs[7].default_value=palette[mat.name]
+                if node.type=='MIX_RGB' and node.blend_type=='MULTIPLY':node.inputs[2].default_value=palette[mat.name]
     core=[o for o in bpy.context.scene.objects if o.type=='MESH']
     export(OUT/(name+'.glb'),core)
     # Preserve the color factors explicitly; Blender material previews are not

@@ -155,6 +155,7 @@ def build(key,filename):
         'Rail_Black':(.055,.075,.08),'Camera_Charcoal':(.07,.085,.095),'Planter_Charcoal':(.13,.16,.16),
         'Soil':(.10,.073,.04),'Net_Tape_White':(.78,.80,.74),'Net_Binding':(.78,.80,.74),
         'Net_Frame':(.055,.075,.08),'Fence_Steel':(.07,.09,.09)}
+    colors.update({name:tuple(value[:3]) for name,value in json.loads((ROOT/'ArtSource'/'Stadiums'/'CourtPalette.json').read_text()).items()})
     textures={}
     for old in list(bpy.data.materials):
         if not old.use_nodes:continue
