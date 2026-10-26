@@ -35,6 +35,8 @@ Photon; thời gian hoạt động tính từ lúc mở app. Xem thay đổi sch
 
 ## Cấu hình API và gameplay
 
+Unity đọc địa chỉ API từ asset `My project/Assets/Resources/BackendApiSettings.asset` (chọn asset trong Project và sửa **Base Url** ở Inspector). Đổi giá trị mặc định trong `BackendApiSettings.cs` không cập nhật asset đã tồn tại. Để thử server HTTP ngoài localhost trong Editor hoặc Development Build, bật **Allow Remote Http In Development** trên asset; bản phát hành vẫn yêu cầu URL HTTPS.
+
 `src/Backend/API/appsettings.json` quản lý SMTP (Host/Port/FromName), OTP (10 phút / gửi lại sau 60 giây / 5 lần sai), token (2 giờ / 14 ngày), Matchmaking (bot sau 360 giây / xác nhận 120 giây), OnlineMatch (mất kết nối 35 giây / heartbeat 8 giây) và toàn bộ EXP/phần thưởng progression. API kiểm tra cấu hình khi khởi động; sau khi sửa chạy `docker compose up -d --build backend-api`.
 
 Khi chạy Docker, SMTP Username/Password/FromEmail lấy từ `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` trong `.env` và ghi đè các giá trị tương ứng trong `appsettings.json`. Sau khi đổi Google App Password, cập nhật `SMTP_APP_PASSWORD` trong `.env` rồi chạy `docker compose up -d backend-api` để tạo lại container với mật khẩu mới; `docker compose restart` không nạp lại `.env`. Không commit giá trị bí mật. Unity chỉ nhận cấu hình gameplay công khai qua catalog API.
