@@ -47,6 +47,19 @@ namespace PickleVerse.Tests.Services
             else Assert.Throws<ArgumentException>(() => ApiUrl.Build(url, "api/Profiles/me", development));
         }
 
+        [TestCase("http://tad-min.io.vn:8080", true, true, true)]
+        [TestCase("http://tad-min.io.vn:8080/", true, true, true)]
+        [TestCase("http://tad-min.io.vn:8080", true, false, false)]
+        [TestCase("http://tad-min.io.vn:8080", false, true, false)]
+        [TestCase("http://tad-min.io.vn:8080", false, false, false)]
+        public void RemoteHttpRequiresDevelopmentAndExplicitOptIn(string url, bool development, bool allowRemoteHttp, bool accepted)
+        {
+            if (accepted)
+                Assert.That(ApiUrl.Build(url, "api/Auth/register", development, allowRemoteHttp),
+                    Is.EqualTo("http://tad-min.io.vn:8080/api/Auth/register"));
+            else Assert.Throws<ArgumentException>(() => ApiUrl.Build(url, "api/Auth/register", development, allowRemoteHttp));
+        }
+
         [Test]
         public async Task RegistrationNeverCreatesASignedInSession()
         {

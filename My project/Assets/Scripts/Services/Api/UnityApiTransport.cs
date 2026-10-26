@@ -18,7 +18,7 @@ namespace PickleVerse.Services.Api
         public Task<ApiHttpResponse> SendAsync(string method, string path, string json, string bearerToken, CancellationToken cancellation)
         {
             cancellation.ThrowIfCancellationRequested();
-            string url = ApiUrl.Build(Settings.baseUrl, path, Application.isEditor || Debug.isDebugBuild);
+            string url = ApiUrl.Build(Settings.baseUrl, path, Application.isEditor || Debug.isDebugBuild, Settings.allowRemoteHttpInDevelopment);
             var request = new UnityWebRequest(url, method) { downloadHandler = new DownloadHandlerBuffer(), timeout = Settings.timeoutSeconds, redirectLimit = 0 };
             request.SetRequestHeader("Accept", "application/json");
             if (json != null)
