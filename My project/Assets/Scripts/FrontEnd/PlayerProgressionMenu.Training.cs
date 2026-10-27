@@ -34,6 +34,7 @@ namespace PickleVerse.FrontEnd
         }
         void BuildTrainingProgress(PlayerProfile player, bool rebuild = true)
         {
+            EnsureCoachingSummary(player.id);
             var data = TrainingEngine.Ensure(player);
             int complete = data.lessons.Count(r => r.bestStars > 0);
             string resume = TrainingEngine.Recommended(data);
@@ -52,6 +53,7 @@ namespace PickleVerse.FrontEnd
             Tab(weeklyTab, false);
             if (!rebuild)
                 return;
+            BuildCoachingRows();
             var mostWrong = data.lessons.OrderByDescending(r => r.errors.Sum(e => e.count)).FirstOrDefault();
             var mostRetried = data.lessons.OrderByDescending(r => r.retries).FirstOrDefault();
             var insights = Row("Insights", 86);
@@ -82,6 +84,68 @@ namespace PickleVerse.FrontEnd
                     TrainingLaunch.Open(d.id);
                 }, new Vector2(.78f, .26f), new Vector2(.97f, .77f), unlocked ? Mint : Surface, unlocked ? Ink : Muted, 14);
                 b.interactable = unlocked;
+            }
+        }
+        string coachingOwner, coachingError;
+        bool coachingLoading;
+        CoachingSummary coaching;
+        void EnsureCoachingSummary(string owner)
+        {
+            if (ProgressionRuntime.Instance?.Snapshot?.catalog?.hybridCoachingEnabled != true) return;
+            if (coachingOwner == owner)
+            {
+                if (!coachingLoading && coachingError == null && coaching != null && CoachingRuntime.Instance.Summary == null) FetchCoaching(false);
+                return;
+            }
+            coachingOwner = owner;
+            coaching = null;
+            FetchCoaching(false);
+        }
+        async void FetchCoaching(bool refresh)
+        {
+            if (coachingLoading) return;
+            coachingLoading = true;
+            string owner = coachingOwner;
+            // A cached Task can complete synchronously during Render; defer to avoid re-entry.
+            await System.Threading.Tasks.Task.Yield();
+            try
+            {
+                var result = await CoachingRuntime.Instance.LoadSummary(refresh);
+                if (owner == coachingOwner) { coaching = result; coachingError = null; }
+            }
+            catch (System.Exception) { if (owner == coachingOwner) coachingError = "Chưa tải được góp ý. Bấm cập nhật để thử lại."; }
+            finally
+            {
+                coachingLoading = false;
+                if (owner != coachingOwner) FetchCoaching(false);
+                if (this) { listRevision++; Refresh(); }
+            }
+        }
+        void BuildCoachingRows()
+        {
+            if (ProgressionRuntime.Instance?.Snapshot?.catalog?.hybridCoachingEnabled != true) return;
+            var row = Row("Coaching", 152);
+            Text("Title", row, "GÓP Ý SAU BUỔI CHƠI", 18, Mint, new Vector2(.025f, .72f), new Vector2(.70f, .96f), Vector2.zero, Vector2.zero);
+            var refresh = MakeButton("RefreshCoaching", row, "CẬP NHẬT", () => FetchCoaching(true),
+                new Vector2(.77f, .73f), new Vector2(.97f, .95f), Mint, Ink, 13);
+            refresh.interactable = !coachingLoading;
+            string message = coachingError ?? (coachingLoading ? "Đang tải góp ý…" : coaching?.status == "processing" || coaching?.status == "pending"
+                ? "Buổi chơi mới đang được tổng hợp. Bạn vẫn có thể xem góp ý trước đó." : "Luyện tập đều đặn để nhận góp ý phù hợp với bạn.");
+            var analysis = coaching?.analysis;
+            if (analysis?.findings != null && analysis.findings.Count > 0)
+                message += "\n" + string.Join("\n", analysis.findings.Select(f => f.tip).Distinct().Take(2));
+            if (analysis?.tier?.status == "ready")
+                message += "\nMức kỹ năng gợi ý: " + (analysis.tier.tier == "beginner" ? "Cơ bản" : analysis.tier.tier == "intermediate" ? "Trung cấp" : "Nâng cao");
+            Text("Body", row, message, 14, White, new Vector2(.025f, .04f), new Vector2(.97f, .70f), Vector2.zero, Vector2.zero);
+            if (analysis?.recommendations == null) return;
+            foreach (var drill in analysis.recommendations.Take(3))
+            {
+                string id = drill.id;
+                var suggestion = Row("Suggested " + id, 94);
+                Text("Title", suggestion, drill.title, 17, White, new Vector2(.025f, .52f), new Vector2(.74f, .95f), Vector2.zero, Vector2.zero);
+                Text("Reason", suggestion, drill.reason, 13, Muted, new Vector2(.025f, .06f), new Vector2(.74f, .52f), Vector2.zero, Vector2.zero);
+                MakeButton("Practice", suggestion, "LUYỆN", () => { Close(); TrainingLaunch.Open(id); },
+                    new Vector2(.79f, .25f), new Vector2(.97f, .77f), Mint, Ink, 15);
             }
         }
     }

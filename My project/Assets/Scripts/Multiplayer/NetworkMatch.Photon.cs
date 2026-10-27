@@ -56,6 +56,10 @@ namespace PickleVerse.Multiplayer
                 AnnouncementEffect(a[0].Value<string>(), a[1].Value<string>(), a[2].Value<int>(), a[3].Value<float>());
             else if (kind == "replay-event" && a.Count == 2)
                 ReplayEventEffect(a[0].Value<string>(), a[1].Value<string>());
+            else if (kind == "coaching-shot" && a.Count == 1)
+                ReceiveCoachingShot(a[0].Value<string>());
+            else if (kind == "coaching-checkpoint" && a.Count == 1)
+                ReceiveCoachingCheckpoint(a[0].Value<bool>());
         }
     }
 }

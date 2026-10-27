@@ -1,0 +1,16 @@
+{
+  "sessionId": "11111111111111111111111111111111",
+  "ruleVersion": "rules-v1",
+  "mode": "training",
+  "shots": [
+    { "shotId": "shot-1", "sequence": 0, "kind": "Serve", "technique": "Serve", "source": "contract-test", "outcome": "Contact", "timingError": 0.10, "assisted": false },
+    { "shotId": "shot-2", "sequence": 1, "kind": "Volley", "technique": "Volley", "source": "contract-test", "outcome": "Fault", "volley": true, "kitchen": true }
+  ],
+  "history": [],
+  "drills": [
+    { "id": "serve", "title": "Giao bóng", "skill": "Serve", "prerequisites": [] },
+    { "id": "volley", "title": "Volley ngoài Kitchen", "skill": "Volley", "prerequisites": [] }
+  ],
+  "completedLessons": [],
+  "fallbackLesson": "serve"
+}

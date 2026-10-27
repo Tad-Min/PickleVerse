@@ -13,6 +13,7 @@ public sealed partial class OnlineGameService
 {
     sealed class OnlineMatch
     {
+        public string ratingPolicyVersion = EloPolicy.LegacyVersion;
         public MatchRoster roster = new();
         public string session = "", host = "", phase = "PREPARING", searchId = "";
         public long startedUtcTicks;
@@ -74,7 +75,7 @@ public sealed partial class OnlineGameService
         {
             if (create == null)
                 throw new AppException("Không tìm thấy trận online.", HttpStatusCode.NotFound);
-            stored = new OnlineMatch { roster = GameJson.Read<MatchRoster>(GameJson.Write(create.Roster)), session = create.Session, host = create.HostPlayerId, searchId = create.SearchId };
+            stored = new OnlineMatch { ratingPolicyVersion = settings.HybridAi.RatingPolicyVersion, roster = GameJson.Read<MatchRoster>(GameJson.Write(create.Roster)), session = create.Session, host = create.HostPlayerId, searchId = create.SearchId };
         }
         else stored = GameJson.Read<OnlineMatch>(saved);
         if (RankedBotAccounts.Contains(caller.ToString("N")) || !stored.roster.members.Any(m => MatchId(m.id) == caller))
@@ -147,6 +148,7 @@ public sealed partial class OnlineGameService
     static OnlineMatchTicket Ticket(OnlineMatch m, List<Participant> participants) => new() { roster = m.roster, allAccepted = participants.All(p => p.accepted), phase = m.phase };
     MatchResult OnlineResult(OnlineMatch match, RoomMember member) => new()
     {
+        ratingPolicyVersion = match.ratingPolicyVersion,
         id = match.roster.matchId,
         playerId = member.id,
         kind = OnlineKind(match.roster),
@@ -315,6 +317,7 @@ public sealed partial class OnlineGameService
             var r = m.results[member.id];
             await sql.Run("INSERT INTO playermatchhistory(playerid,matchid,status,isteama,receivedelo) VALUES(@player,@match,@status,@team,@elo) ON CONFLICT DO NOTHING",
                 P("player", MatchId(member.id)), P("match", match), P("status", r.outcome == MatchOutcome.Won ? "WIN" : r.outcome == MatchOutcome.Lost ? "LOSE" : "INTERRUPTED"), P("team", member.team == 0), P("elo", r.eloDelta));
+            await RecordRating(MatchId(member.id), r);
         }
         m.phase = "FINISHED";
         await SaveOnline(match, m);

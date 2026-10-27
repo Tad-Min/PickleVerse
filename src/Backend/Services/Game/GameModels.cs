@@ -31,6 +31,8 @@ public sealed class CosmeticOffer
 }
 public sealed class GameCatalog
 {
+    public BotPolicy botPolicy = new();
+    public bool hybridTelemetryEnabled, hybridCoachingEnabled;
     public string version = "";
     public int winXp, lossXp;
     public RewardBundle dailyBonus, weeklyBonus;

@@ -1,0 +1,8 @@
+{
+  "name": "PickleVerse.HybridBot.Tests",
+  "references": ["PickleVerse.LocalMatch", "PickleVerse.Multiplayer", "Fusion.Unity", "PickleVerse.Progression", "PickleVerse.Entites", "PickleVerse.Rules", "Unity.Behavior", "Unity.Properties", "Unity.Behavior.SerializableGUID", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll", "Newtonsoft.Json.dll", "Fusion.Runtime.dll"],
+  "autoReferenced": false
+}

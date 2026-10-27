@@ -2,6 +2,8 @@
 !src/
 !src/Backend/
 !src/Backend/**
+!src/AiService/
+!src/AiService/**
 !My project/
 !My project/Assets/
 !My project/Assets/Scripts/
@@ -21,3 +23,7 @@
 **/.env
 **/.env.*
 **/TestResults/
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+src/AiService/models/

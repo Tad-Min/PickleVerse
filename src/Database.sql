@@ -537,4 +537,44 @@ INSERT INTO PlayerCosmetics(PlayerId,CosmeticId,Equipped) SELECT p.UserId,c.Cosm
 -- END UNITY GAME CONTENT SEED
 -- END INITIAL DATA
 
+-- Hybrid AI durable queue and rating ledger.
+CREATE TABLE IF NOT EXISTS ratingledger (
+    playerid UUID NOT NULL REFERENCES playerprofiles(userid) ON DELETE CASCADE,
+    matchid UUID NOT NULL REFERENCES matchhistory(matchid) ON DELETE CASCADE,
+    beforeelo INT NOT NULL, afterelo INT NOT NULL, opponentelo INT NOT NULL,
+    delta INT NOT NULL, policyversion TEXT NOT NULL, createdat TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY(playerid,matchid), CHECK(afterelo >= 100), CHECK(afterelo-beforeelo=delta)
+);
+CREATE TABLE IF NOT EXISTS aitelemetrysessions (
+    batchid UUID PRIMARY KEY, playerid UUID NOT NULL REFERENCES playerprofiles(userid) ON DELETE CASCADE,
+    sessionid UUID NOT NULL, sessiontype TEXT NOT NULL CHECK(sessiontype IN ('match','training')),
+    partcount INT NOT NULL CHECK(partcount BETWEEN 1 AND 100), metadata JSONB NOT NULL,
+    createdat TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE(playerid,sessionid,sessiontype)
+);
+CREATE TABLE IF NOT EXISTS aitelemetryparts (
+    batchid UUID NOT NULL REFERENCES aitelemetrysessions(batchid) ON DELETE CASCADE,
+    partindex INT NOT NULL CHECK(partindex>=0), fingerprint TEXT NOT NULL, shots JSONB NOT NULL,
+    PRIMARY KEY(batchid,partindex)
+);
+CREATE TABLE IF NOT EXISTS aianalysisjobs (
+    batchid UUID PRIMARY KEY REFERENCES aitelemetrysessions(batchid) ON DELETE CASCADE,
+    state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','processing','completed','failed')),
+    attempts INT NOT NULL DEFAULT 0, availableat TIMESTAMPTZ NOT NULL DEFAULT now(),
+    leasetoken UUID, leaseuntil TIMESTAMPTZ, request JSONB,
+    ruleversion TEXT NOT NULL DEFAULT 'rules-v1', lasterror TEXT,
+    updatedat TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ai_jobs_pending_idx ON aianalysisjobs(availableat) WHERE state IN ('pending','processing');
+CREATE TABLE IF NOT EXISTS aicoachingsessions (
+    batchid UUID PRIMARY KEY, playerid UUID NOT NULL REFERENCES playerprofiles(userid) ON DELETE CASCADE,
+    sessionid UUID NOT NULL, sessiontype TEXT NOT NULL, result JSONB NOT NULL,
+    createdat TIMESTAMPTZ NOT NULL DEFAULT now(), UNIQUE(playerid,sessionid,sessiontype)
+);
+CREATE INDEX IF NOT EXISTS ai_coaching_recent_idx ON aicoachingsessions(playerid,createdat DESC);
+CREATE TABLE IF NOT EXISTS aicoachingprofiles (
+    playerid UUID PRIMARY KEY REFERENCES playerprofiles(userid) ON DELETE CASCADE,
+    batchid UUID NOT NULL, result JSONB NOT NULL, updatedat TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 COMMIT;

@@ -43,4 +43,37 @@ public sealed class BotContactChanceTests
         Assert.That(chance.HasDecision(0),Is.False); Assert.That(chance.Missed(0),Is.False);
         chance.Resolve(random,9100,0); Assert.That(random.calls,Is.EqualTo(2)); Assert.That(chance.Missed(0),Is.False);
     }
+
+    [TestCase(0)] [TestCase(100)] [TestCase(500)] [TestCase(2000)] [TestCase(9100)]
+    public void ServesNeverWhiffAtAnyRating(int elo)
+    {
+        var random=new CountingRandom(.999999); var chance=new BotContactChance();
+        for(int rally=0;rally<1000;rally++)
+        {
+            chance.Reset();
+            for(int tick=0;tick<5;tick++)
+                Assert.That(chance.Resolve(random,elo,0,isServe:true),Is.True);
+            Assert.That(chance.Missed(0),Is.False);
+        }
+        Assert.That(random.calls,Is.Zero);
+    }
+
+    [Test] public void ReturnAfterServeStillUsesRatingAndOneDecisionPerStroke()
+    {
+        var random=new CountingRandom(.99); var chance=new BotContactChance();
+        Assert.That(chance.Resolve(random,100,0,isServe:true),Is.True);
+        for(int tick=0;tick<1200;tick++)
+            Assert.That(chance.Resolve(random,100,1),Is.False);
+        Assert.That(random.calls,Is.EqualTo(1));
+        Assert.That(chance.Missed(1),Is.True);
+    }
+
+    [Test] public void ServeCannotReuseACachedMiss()
+    {
+        var random=new CountingRandom(.99); var chance=new BotContactChance();
+        Assert.That(chance.Resolve(random,100,0),Is.False);
+        Assert.That(chance.Resolve(random,100,0,isServe:true),Is.True);
+        Assert.That(chance.Missed(0),Is.False);
+        Assert.That(random.calls,Is.EqualTo(1));
+    }
 }

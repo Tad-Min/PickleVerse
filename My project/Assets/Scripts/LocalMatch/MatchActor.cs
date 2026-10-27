@@ -187,6 +187,7 @@ namespace PickleVerse.LocalMatch
             if (Swinging)
                 return false;
             Intent = shot;
+            GetComponent<ActorTelemetry>()?.Input(shot);
             Swinging = true;
             swingTime = 0;
             contactConsumed = contactConfirmed = false;
@@ -249,6 +250,7 @@ namespace PickleVerse.LocalMatch
             shot.BeforeBounce ? (backhand ? "PKV_Volley_BH" : "PKV_Volley_FH") : (backhand ? "PKV_Groundstroke_BH" : "PKV_Groundstroke_FH");
         public void MissContact()
         {
+            GetComponent<ActorTelemetry>()?.Outcome("Miss");
             contactConsumed = true;
             if (Intent.kind == ShotKind.Serve)
                 SfxPlayer.Stop(GameSfx.Countdown);
@@ -258,6 +260,7 @@ namespace PickleVerse.LocalMatch
             if (contactConsumed)
                 return;
             impactPoint = position ?? (paddleFace ? paddleFace.position : transform.position + Vector3.up);
+            GetComponent<ActorTelemetry>()?.Contact(impactPoint, volley, successful);
             // Grade the uncorrected paddle, BEFORE the short contact IK pose is applied.
             LastContactGrade = successful ? confirmedGrade ?? (pendingHit.grade != HitGrade.None ? pendingHit.grade :
                 PaddleContact.Grade(paddleFace ? Vector3.Distance(impactPoint, paddleFace.position) : float.PositiveInfinity, swingTime - ContactDelay)) : HitGrade.None;
@@ -383,6 +386,7 @@ namespace PickleVerse.LocalMatch
                 float endTime = contactConfirmed ? impactTime + .035f + Intent.Duration - Intent.ContactDelay : SwingDuration;
                 if (swingTime >= endTime)
                 {
+                    if (!contactConsumed) GetComponent<ActorTelemetry>()?.Outcome("Miss");
                     Swinging = false;
                     Play(moving ? locomotionName : VolleyMomentum ? "PKV_NVZ_MomentumRecovery" : "PKV_Idle_Ready");
                 }

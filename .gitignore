@@ -15,3 +15,9 @@ dist/
 .agents/
 .vs/
 [Tt]ools/
+# Python runtime and generated model artifacts
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+src/AiService/models/

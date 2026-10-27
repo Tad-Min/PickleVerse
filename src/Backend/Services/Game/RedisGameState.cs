@@ -105,7 +105,15 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
     }
     public async Task<List<(string raw, QueueEntry entry)>> Candidates(QueueEntry partition, long? staleBefore = null)
     {
-        var ids = await redis.SortedSetRangeByRankAsync(Queue(partition), 0, 511);
+        // Rotate bounded pages per search while always including the caller and party.
+        // Polls beyond the oldest 512 seats must participate, even when those seats cannot match.
+        long count = await redis.SortedSetLengthAsync(Queue(partition));
+        long pages = Math.Max(1, (count + 511) / 512);
+        long page = (await redis.StringIncrementAsync(Prefix + "cursor:" + partition.searchId) - 1) % pages;
+        await redis.KeyExpireAsync(Prefix + "cursor:" + partition.searchId, TimeSpan.FromSeconds(settings.SearchRetentionSeconds));
+        var pageIds = await redis.SortedSetRangeByRankAsync(Queue(partition), page * 512, page * 512 + 511);
+        var partySearches = await redis.StringGetAsync(partition.party.Select(Owner).ToArray());
+        var ids = pageIds.Concat(partySearches.Where(x => !x.IsNullOrEmpty)).Append((RedisValue)partition.searchId).Distinct().ToArray();
         if (ids.Length == 0)
             return [];
         var values = await redis.StringGetAsync(ids.Select(v => Search(v.ToString())).ToArray());

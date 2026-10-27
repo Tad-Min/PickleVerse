@@ -6,7 +6,19 @@ namespace PickleVerse.Progression
     public static class EloPolicy
     {
         public const int Minimum = 100, Window = 120;
+        public const string LegacyVersion = "legacy-v1", CurrentVersion = "elo-v2";
         public static int Delta(int own, int opponent, bool won, int priorWins, int priorLosses)
+            => StandardDelta(own, opponent, won);
+        public static int VersionedDelta(string version, int own, int opponent, bool won, int priorWins, int priorLosses)
+            => version == CurrentVersion ? StandardDelta(own, opponent, won) : LegacyDelta(own, opponent, won, priorWins, priorLosses);
+        public static int StandardDelta(int own, int opponent, bool won)
+        {
+            double expected = 1d / (1d + Math.Pow(10, ((double)opponent - own) / 400d));
+            long delta = (long)Math.Round(32 * ((won ? 1d : 0d) - expected), MidpointRounding.AwayFromZero);
+            long next = Math.Max(Minimum, Math.Min(int.MaxValue, own + delta));
+            return (int)(next - own);
+        }
+        public static int LegacyDelta(int own, int opponent, bool won, int priorWins, int priorLosses)
         {
             double magnitude = opponent > own ? (opponent - (double)own) / 2 : opponent == own ? 20 : won ? (own - (double)opponent) / 4 : (own - (double)opponent) * 4;
             if (won)

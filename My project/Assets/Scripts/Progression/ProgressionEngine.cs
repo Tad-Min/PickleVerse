@@ -107,7 +107,7 @@ namespace PickleVerse.Progression
                 p.lifetime.bestStreak = Math.Max(p.lifetime.bestStreak, p.lifetime.streak);
                 if (result.Ranked)
                 {
-                    result.eloDelta = EloPolicy.Delta(result.ownElo, result.opponentElo, won, p.rankWinStreak, p.rankLossStreak);
+                    result.eloDelta = EloPolicy.VersionedDelta(result.ratingPolicyVersion, result.ownElo, result.opponentElo, won, p.rankWinStreak, p.rankLossStreak);
                     p.elo = result.ownElo + result.eloDelta;
                     p.rankWinStreak = won ? p.rankWinStreak + 1 : 0;
                     p.rankLossStreak = won ? 0 : p.rankLossStreak + 1;

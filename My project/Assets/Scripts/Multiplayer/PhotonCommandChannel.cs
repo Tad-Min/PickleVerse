@@ -33,6 +33,8 @@ namespace PickleVerse.Multiplayer
         }
         static readonly List<PhotonCommandChannel> channels = new List<PhotonCommandChannel>();
         readonly List<Envelope> pending = new List<Envelope>();
+        // Analytics yields capacity to gameplay commands and their acknowledgements.
+        public int PendingCount => pending.Count;
         readonly Dictionary<int, int> received = new Dictionary<int, int>();
         [Serializable]
         sealed class Envelope { public int destination, sequence; public PhotonMessage message; }

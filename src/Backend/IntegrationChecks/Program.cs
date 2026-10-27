@@ -81,6 +81,18 @@ try
         await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
         await command.ExecuteNonQueryAsync();
     }
+    if (args.Contains("--check-hybrid-http"))
+    {
+        await HybridHttpChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} Hybrid HTTP/load checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-hybrid"))
+    {
+        await HybridChecks.Run(options, time, Check);
+        Console.WriteLine($"SUCCESS: {checks} hybrid checks; disposable database removed.");
+        return;
+    }
     if (args.Contains("--check-catalog-text"))
     {
         int scriptIndex = Array.IndexOf(args, "--check-catalog-text") + 1;

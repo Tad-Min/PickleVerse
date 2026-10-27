@@ -7,6 +7,8 @@ static class TestSettings
     public static IConfigurationRoot Configuration() => new ConfigurationBuilder()
         .AddJsonFile(Path.Combine(Root, "src/Backend/API/appsettings.json"))
         .AddInMemoryCollection(new Dictionary<string, string?>
-        { ["Jwt:Key"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48)) }).Build();
+        { ["Jwt:Key"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48)),
+          // Stable timing fixture, independent of a developer's local gameplay settings.
+          ["Matchmaking:BotFallbackSeconds"] = "360", ["Matchmaking:ReadyConfirmationSeconds"] = "120" }).Build();
     public static ServerSettings Load() => new(Configuration());
 }

@@ -13,6 +13,8 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class OnlineGameCatalog
     {
+        public BotPolicy botPolicy = new BotPolicy();
+        public bool hybridTelemetryEnabled, hybridCoachingEnabled;
         public string version;
         public RuntimeMatchmakingSettings matchmaking;
         public RuntimeOnlineMatchSettings onlineMatch;

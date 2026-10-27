@@ -14,8 +14,10 @@ Bảng `AppActivitySessions` khởi tạo rỗng; 10 tài khoản bot kèm hồ 
 - **PostgreSQL có sẵn:** tạo một database trống, mở kết nối vào database đó và chạy toàn bộ
   `src/Database.sql` một lần bằng pgAdmin hoặc `psql -v ON_ERROR_STOP=1 -d <database> -f src/Database.sql`.
 
-Volume database đã tồn tại được giữ nguyên; Compose không chạy lại init script.
-Không chạy toàn bộ file khởi tạo lên database đang có dữ liệu, không cần xóa volume hiện tại.
+Docker dev dùng volume `pickleverse_dev_postgres_data`, có thể đổi tên bằng `POSTGRES_VOLUME`
+trong `.env`. Khi cần database trắng để phát triển, chọn một tên volume mới rồi chạy lại
+`docker compose up -d postgres backend-api`. PostgreSQL nạp trực tiếp schema và seed từ
+`src/Database.sql` khi volume trống; volume đã khởi tạo không chạy lại SQL.
 
 Nếu chữ tiếng Việt trong danh mục đã bị lưu thành `?`, chạy
 `./scripts/Repair-CatalogText.ps1` để xem trước, rồi thêm `-Apply` để phục hồi từ
@@ -41,7 +43,7 @@ Unity đọc địa chỉ API từ asset `My project/Assets/Resources/BackendApi
 
 Khi chạy Docker, SMTP Username/Password/FromEmail lấy từ `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` trong `.env` và ghi đè các giá trị tương ứng trong `appsettings.json`. Sau khi đổi Google App Password, cập nhật `SMTP_APP_PASSWORD` trong `.env` rồi chạy `docker compose up -d backend-api` để tạo lại container với mật khẩu mới; `docker compose restart` không nạp lại `.env`. Không commit giá trị bí mật. Unity chỉ nhận cấu hình gameplay công khai qua catalog API.
 
-Schema mới có **37 bảng / 208 cột**, đã bỏ `GameSettings` và `RankedSearches`; danh mục game và dữ liệu người chơi tiếp tục lưu database. Với database cũ, triển khai API mới rồi sao lưu và bỏ riêng bảng `GameSettings`; giữ nguyên volume và dữ liệu khác. Chi tiết ở [mục cấu hình API trong tài liệu tổng hợp](Doc/PickleVerse_Project_Documentation.md#doc-server-configuration).
+SQL khởi tạo bao gồm toàn bộ schema game, hàng đợi Hybrid AI và Elo ledger. Trong giai đoạn phát triển, cập nhật trực tiếp `src/Database.sql` và khởi tạo database mới khi schema thay đổi. Danh mục game và dữ liệu gốc được seed trong cùng transaction.
 
 ## Redis và Photon
 
@@ -49,7 +51,7 @@ Schema mới có **37 bảng / 208 cột**, đã bỏ `GameSettings` và `Ranked
 
 Unity đăng ký/poll hàng chờ qua API; API trả phòng Photon được ghép, từng người xác nhận rồi mới tải sân. Rank Singles giữ bot dự phòng sau 360 giây, xác nhận trong 120 giây. Nhóm Doubles cần mỗi thành viên đăng ký và luôn được giữ cùng đội. Protocol Unity hiện là 14; cần dùng cùng bản client mới.
 
-Leaderboard dùng Redis Sorted Set, cache 15 giây; Elo/kết quả/thời gian app vẫn lưu PostgreSQL. Redis có AOF và volume riêng, không thay thế PostgreSQL. Database cũ cần backup rồi bỏ riêng `RankedSearches` sau khi triển khai API mới; giữ `AppActivitySessions` và các volume. Không chạy lại `Database.sql` trên database có dữ liệu.
+Leaderboard dùng Redis Sorted Set, cache 15 giây; Elo/kết quả/thời gian app vẫn lưu PostgreSQL. Redis có AOF và volume riêng, không thay thế PostgreSQL. Schema khởi tạo hiện tại không chứa các bảng cấu hình cũ `GameSettings` và `RankedSearches`.
 
 Xem [chi tiết Redis](Doc/PickleVerse_Project_Documentation.md#doc-redis-matchmaking).
 
@@ -60,3 +62,7 @@ Người nhận phải có quan hệ bạn bè và đang ở lobby; thông báo 
 chấp nhận sẽ vào đúng phòng Fusion. Lời mời có hiệu lực 60 giây, cập nhật khoảng 3 giây.
 Presence và lời mời dùng Redis, không cần thêm bảng Rooms.
 Xem [triển khai và kết quả kiểm tra](Doc/Proccess/Friend_Room_Invitations_20261025.md).
+
+## Hybrid AI
+
+Kiến trúc Unity-local bot + FastAPI analytics, khởi tạo database, cờ triển khai và hướng dẫn kiểm thử nằm tại [Hybrid AI](Doc/Hybrid_AI_Implementation.md). Các bảng Hybrid và Elo ledger được tạo trực tiếp bởi `src/Database.sql`.

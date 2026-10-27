@@ -29,6 +29,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
+builder.Services.AddRequestDecompression();
 
 builder.Services.AddCors(options =>
 {
@@ -115,6 +116,10 @@ builder.Services.AddScoped<GameSql>();
 builder.Services.AddScoped<GameCatalogService>();
 builder.Services.AddScoped<OnlineGameService>();
 builder.Services.AddScoped<OnlineReplayService>();
+builder.Services.AddSingleton(sp => sp.GetRequiredService<ServerSettings>().HybridAi);
+builder.Services.AddScoped<HybridCoachingService>();
+builder.Services.AddHttpClient("hybrid-ai", client => client.Timeout = TimeSpan.FromSeconds(15));
+builder.Services.AddHostedService<API.Workers.HybridAiWorker>();
 
 // 5. OpenAPI
 builder.Services.AddOpenApi();
@@ -134,6 +139,7 @@ using (var scope = app.Services.CreateScope())
 
 // 7. Global Exception Handler Pipeline
 app.UseExceptionHandler();
+app.UseRequestDecompression();
 
 if (app.Environment.IsDevelopment())
 {

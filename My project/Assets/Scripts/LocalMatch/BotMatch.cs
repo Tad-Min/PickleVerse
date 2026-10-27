@@ -198,6 +198,7 @@ namespace PickleVerse.LocalMatch
             if (serving != (intent.kind == ShotKind.Serve))
                 return false;
             float contactDelay = PaddleContact.Anticipation(Actor(id), intent, BallPosition, BallVelocity, out var predicted);
+            Actor(id).GetComponent<ActorTelemetry>()?.Context(Rules.Stroke,TotalRallies,Rules.Bounces);
             bool began = Actor(id).Swing(intent, predicted, contactDelay);
             if (began && serving)
             {
@@ -283,6 +284,7 @@ namespace PickleVerse.LocalMatch
                     float t = prior.z / (prior.z - p.z);
                     Vector3 crossing = Vector3.Lerp(prior, p, t);
                     float netTop = Court.NetHeight(crossing.x);
+                    if (Rules.LastHitter == 0) human.GetComponent<ActorTelemetry>()?.NetClearance(crossing.y-Court.BallRadius-netTop);
                     if (crossing.y - Court.BallRadius <= netTop)
                     {
                         // A tape graze may continue across; touching the net is not a let.
@@ -310,6 +312,7 @@ namespace PickleVerse.LocalMatch
                 {
                     var bounce = BallPosition;
                     bounce.y = Court.BallRadius;
+                    if (Rules.LastHitter == 0) human.GetComponent<ActorTelemetry>()?.Landing(bounce);
                     Rules.Bounce(ToPoint(bounce));
                     if (!Rules.Live)
                         BeginFault();
@@ -465,6 +468,14 @@ namespace PickleVerse.LocalMatch
             if (Phase == MatchPhase.Settling)
                 return;
             replay?.Event("Fault", Rules.FaultPlayer + ":" + Rules.LastFault);
+            if (Rules.FaultPlayer == 0)
+            {
+                string fault = Rules.LastFault.ToString();
+                if (Rules.LastFault == Fault.ServeTimeout || Rules.LastFault == Fault.ServeMiss || Rules.LastFault == Fault.DoubleBounce)
+                    human.GetComponent<ActorTelemetry>()?.MissedOpportunity(Rules.LastFault != Fault.DoubleBounce,Rules.Stroke,TotalRallies);
+                human.GetComponent<ActorTelemetry>()?.Outcome(fault == "ServeTimeout" ? "LateServe" : fault == "KitchenVolley" ? "Kitchen" : fault == "KitchenMomentum" ? "Momentum" : fault == "ServeFoot" ? "ServeFeet" : fault == "NetPlane" ? "Net" : fault);
+            }
+            human.GetComponent<ActorTelemetry>()?.Checkpoint();
             Phase = MatchPhase.Settling;
             phaseTime = 0;
             input.Cancel();

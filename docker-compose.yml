@@ -73,6 +73,21 @@ services:
     networks:
       - pickleverse_network
 
+  # Internal stateless analytics. Unity only calls backend-api.
+  ai-service:
+    build:
+      context: .
+      dockerfile: src/AiService/Dockerfile
+    restart: unless-stopped
+    environment:
+      AI_SERVICE_KEY: "${AI_SERVICE_KEY:-}"
+      AI_ENABLE_MODEL: "${AI_ENABLE_MODEL:-false}"
+      AI_MODEL_PATH: "/models/tier.joblib"
+    volumes:
+      - ./src/AiService/models:/models:ro
+    networks:
+      - pickleverse_network
+
   # 4. Backend Web API (.NET 10)
   backend-api:
     build:
@@ -81,6 +96,12 @@ services:
     container_name: pickleverse_api
     restart: unless-stopped
     environment:
+      HybridAi__IngestEnabled: "${AI_INGEST_ENABLED:-false}"
+      HybridAi__DispatcherEnabled: "${AI_DISPATCHER_ENABLED:-false}"
+      HybridAi__CoachingEnabled: "${AI_COACHING_ENABLED:-false}"
+      HybridAi__ModelEnabled: "${AI_ENABLE_MODEL:-false}"
+      HybridAi__ServiceUrl: "http://ai-service:8000"
+      HybridAi__ServiceKey: "${AI_SERVICE_KEY:-}"
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=pickleverse;Username=sa;Password=12345;GSS Encryption Mode=Disable;"
@@ -112,6 +133,7 @@ volumes:
   redis_data:
     driver: local
   postgres_data:
+    name: ${POSTGRES_VOLUME:-pickleverse_dev_postgres_data}
     driver: local
   s3_data:
     name: pickleverse_dev_s3_data

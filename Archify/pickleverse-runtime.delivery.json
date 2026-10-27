@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a21205fb-383f-4d6c-9cfd-cdca35fb5f62",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\Repository\\PickleVerse\\Archify\\candidate.json",
+  "output": "D:\\Repository\\PickleVerse\\Archify\\pickleverse-runtime.html",
+  "specification": {
+    "sha256": "fdc570ee4250431ee782f9591d42edd63cd45bad75223f56a8c92b049f0e86cb",
+    "bytes": 7799
+  },
+  "artifact": {
+    "sha256": "95b7eb8f622e5bf06a417ce846eae1cfa74b44372f9eec6eee163cdd59cecfb5",
+    "bytes": 851266
+  }
+}

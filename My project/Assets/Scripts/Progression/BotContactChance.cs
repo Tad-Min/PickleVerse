@@ -11,11 +11,12 @@ namespace PickleVerse.Progression
 
         public bool HasDecision(int incomingStroke) => decided && stroke == incomingStroke;
         public bool Missed(int incomingStroke) => HasDecision(incomingStroke) && !hit;
-        public bool Resolve(Random random, int elo, int incomingStroke)
+        public bool Resolve(Random random, int elo, int incomingStroke, bool isServe = false)
         {
-            if (!HasDecision(incomingStroke))
+            if (!HasDecision(incomingStroke) || isServe && !hit)
             {
-                hit = EloPolicy.BotDecision(random, elo);
+                // Serves never intentionally whiff and do not consume return-shot randomness.
+                hit = isServe || EloPolicy.BotDecision(random, elo);
                 stroke = incomingStroke;
                 decided = true;
             }

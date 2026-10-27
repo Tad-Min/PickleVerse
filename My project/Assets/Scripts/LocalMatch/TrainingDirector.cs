@@ -84,6 +84,8 @@ namespace PickleVerse.LocalMatch
         bool loadingAttempt, completing;
         Task saves = Task.CompletedTask;
         string completionRequest;
+        CoachingSession coachingSession;
+        ActorTelemetry telemetry;
         TrainingError lastError;
         Vector3 trialPlayerOrigin;
         MatchActor receiver, feeder;
@@ -198,6 +200,8 @@ namespace PickleVerse.LocalMatch
                 if (!this)
                     return;
                 Session = Clone(state.player.training.active);
+                coachingSession = CoachingRuntime.Instance.Begin(Session.id, "training");
+                telemetry = ActorTelemetry.Bind(player, coachingSession);
                 completionRequest = null;
                 MusicPlayer.SetTrainingExercise(true);
                 SfxPlayer.StopAll();
@@ -276,7 +280,7 @@ namespace PickleVerse.LocalMatch
                         opponent.Step(Vector2.zero, false, step, false);
                 }
             }
-            if ((Phase == TrainingPhase.Practice || Phase == TrainingPhase.Recovery) && elapsed - lastSave > 10)
+            if ((Phase == TrainingPhase.Practice || Phase == TrainingPhase.Recovery) && elapsed - lastSave > 30)
             {
                 lastSave = elapsed;
                 SaveActive();
@@ -353,6 +357,7 @@ namespace PickleVerse.LocalMatch
             ball.position = ballPosition;
             ball.gameObject.SetActive(true);
             Feedback = PartnerTurn ? "Bóng của đồng đội AI • giữ cùng hàng, không tranh bóng." : "Bóng " + (Session.trials + 1) + " / " + Lesson.trials + " • " + (Application.isMobilePlatform || touchRoot && touchRoot.activeSelf ? TouchShotGesture.Hint(ExpectedMask) : GameControls.ShotKeys(ExpectedMask));
+            if (!PartnerTurn) telemetry?.Trial(expected.kind.ToString(), Lesson.skill.ToString());
         }
         static SinglesRules ThirdShot()
         {
@@ -569,6 +574,7 @@ namespace PickleVerse.LocalMatch
             candidate = false;
             lastError = error;
             Session.Error(error);
+            telemetry?.Outcome(error == TrainingError.Late && Lesson.skill == TrainingSkill.Serve ? "LateServe" : error.ToString());
             Phase = TrainingPhase.Recovery;
             recoveryTime = 0;
             needsRecovery = false;
@@ -620,10 +626,12 @@ namespace PickleVerse.LocalMatch
                 PrepareTrial();
                 return;
             }
+            if (needsRecovery) telemetry?.Recovery(recovered);
+            telemetry?.Checkpoint();
             Session.trials++;
             if (candidate)
                 Session.successes++;
-            SaveActive();
+            SaveActive(false);
             if (Session.trials >= Lesson.trials)
             {
                 Finish();
@@ -648,6 +656,7 @@ namespace PickleVerse.LocalMatch
                 if (!this)
                     return;
                 Session = Clone(state.player.training.active);
+                CoachingRuntime.Instance?.Close(coachingSession);
                 Feedback = Session.passed ? (Session.review ? "Ôn lại hoàn thành • tiến bộ đã được lưu, không có phần thưởng." : "Hoàn thành • " + Session.rewardTokenpad + " Tokenpad và " + Session.rewardXp + " XP đã vào ví.") : "Chưa đạt • cần " + Lesson.required + " cú thành công. Xem lỗi và luyện lại.";
             }
             catch (Exception error)
@@ -662,8 +671,11 @@ namespace PickleVerse.LocalMatch
                     hud.ShowResults();
             }
         }
-        public async void SaveActive()
+        public async void SaveActive(bool force = true)
         {
+            if (!force && elapsed - lastSave < 30) return;
+            lastSave = elapsed;
+            telemetry?.Checkpoint();
             try
             {
                 await SaveActiveAsync();

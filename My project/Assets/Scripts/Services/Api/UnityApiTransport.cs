@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +25,17 @@ namespace PickleVerse.Services.Api
             request.SetRequestHeader("Accept", "application/json");
             if (json != null)
             {
-                request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+                byte[] bytes = Encoding.UTF8.GetBytes(json);
+                if (path == "api/AiCoaching/telemetry" && bytes.Length >= 16384)
+                {
+                    using (var buffer = new MemoryStream())
+                    {
+                        using (var gzip = new GZipStream(buffer, System.IO.Compression.CompressionLevel.Fastest, true)) gzip.Write(bytes, 0, bytes.Length);
+                        bytes = buffer.ToArray();
+                    }
+                    request.SetRequestHeader("Content-Encoding", "gzip");
+                }
+                request.uploadHandler = new UploadHandlerRaw(bytes);
                 request.SetRequestHeader("Content-Type", "application/json; charset=utf-8");
             }
             if (!string.IsNullOrEmpty(bearerToken))

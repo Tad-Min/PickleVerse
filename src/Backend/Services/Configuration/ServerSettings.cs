@@ -25,9 +25,11 @@ public sealed class ServerSettings
     public MatchmakingSettings Matchmaking { get; }
     public OnlineMatchSettings OnlineMatch { get; }
     public ProgressionSettings Progression { get; }
+    public HybridAiSettings HybridAi { get; }
 
     public ServerSettings(IConfiguration configuration)
     {
+        HybridAi = new(configuration);
         int Number(string key, int minimum, int maximum)
         {
             if (!int.TryParse(configuration[key], out int value) || value < minimum || value > maximum)
@@ -56,6 +58,9 @@ public sealed class ServerSettings
 
     public GameCatalog CreateCatalog() => new()
     {
+        botPolicy = HybridAi.BotPolicy,
+        hybridTelemetryEnabled = HybridAi.IngestEnabled,
+        hybridCoachingEnabled = HybridAi.CoachingEnabled,
         winXp = Progression.WinXp,
         lossXp = Progression.LossXp,
         dailyBonus = Progression.DailyBonus.Bundle(),

@@ -102,6 +102,8 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class MatchResult
     {
+        // Missing on saved pre-cutover matches: finish under their original policy.
+        public string ratingPolicyVersion = "legacy-v1";
         public string id, playerId, reason = "";
         public long startedUtcTicks, endedUtcTicks;
         public MatchKind kind;

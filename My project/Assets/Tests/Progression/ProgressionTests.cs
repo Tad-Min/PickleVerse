@@ -24,12 +24,12 @@ namespace PickleVerse.Tests
         [TestCase(400,360,true,10)] [TestCase(400,360,false,-160)]
         [TestCase(200,160,false,-100)] [TestCase(100,100,false,0)] [TestCase(200,201,true,1)]
         public void EloSixCasesRoundingAndFloor(int own,int opponent,bool win,int expected)
-        { Assert.That(EloPolicy.Delta(own,opponent,win,0,0),Is.EqualTo(expected)); }
+        { Assert.That(EloPolicy.LegacyDelta(own,opponent,win,0,0),Is.EqualTo(expected)); }
         [Test] public void EloStreaksAndComeback()
         {
-            Assert.That(EloPolicy.Delta(1000,1000,true,2,0),Is.EqualTo(22)); Assert.That(EloPolicy.Delta(1000,1000,true,100,0),Is.EqualTo(30));
-            Assert.That(EloPolicy.Delta(1000,1000,true,0,5),Is.EqualTo(15)); Assert.That(EloPolicy.Delta(1000,1000,true,0,100),Is.EqualTo(10));
-            Assert.That(EloPolicy.Delta(1000,1000,false,0,1),Is.EqualTo(-22)); Assert.That(EloPolicy.Delta(1000,1000,false,0,100),Is.EqualTo(-30));
+            Assert.That(EloPolicy.LegacyDelta(1000,1000,true,2,0),Is.EqualTo(22)); Assert.That(EloPolicy.LegacyDelta(1000,1000,true,100,0),Is.EqualTo(30));
+            Assert.That(EloPolicy.LegacyDelta(1000,1000,true,0,5),Is.EqualTo(15)); Assert.That(EloPolicy.LegacyDelta(1000,1000,true,0,100),Is.EqualTo(10));
+            Assert.That(EloPolicy.LegacyDelta(1000,1000,false,0,1),Is.EqualTo(-22)); Assert.That(EloPolicy.LegacyDelta(1000,1000,false,0,100),Is.EqualTo(-30));
         }
         [TestCase(100,"Đồng")] [TestCase(499,"Đồng")] [TestCase(500,"Bạc")] [TestCase(999,"Bạc")]
         [TestCase(1000,"Vàng")] [TestCase(1999,"Vàng")] [TestCase(2000,"Bạch Kim")] [TestCase(3499,"Bạch Kim")]

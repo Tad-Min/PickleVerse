@@ -34,6 +34,7 @@
     <Compile Include="../../../My project/Assets/Scripts/Progression/ProgressionEngine.cs" Link="GameRules/ProgressionEngine.cs" />
     <Compile Include="../../../My project/Assets/Scripts/Progression/DailyStreakEngine.cs" Link="GameRules/DailyStreakEngine.cs" />
     <Compile Include="../../../My project/Assets/Scripts/Progression/EloPolicy.cs" Link="GameRules/EloPolicy.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Progression/HybridAiModels.cs" Link="GameRules/HybridAiModels.cs" />
     <Compile Include="../../../My project/Assets/Scripts/Progression/TrainingModels.cs" Link="GameRules/TrainingEngine.cs" />
   </ItemGroup>
 

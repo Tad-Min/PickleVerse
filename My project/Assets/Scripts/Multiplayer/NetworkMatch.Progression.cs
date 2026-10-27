@@ -22,6 +22,15 @@ namespace PickleVerse.Multiplayer
         readonly HashSet<string> forfeitedPlayers = new HashSet<string>();
         readonly List<GameScore> teamGameScores = new List<GameScore>();
         readonly int[] teamPoints = new int[2];
+        CoachingSession coachingSession;
+        void EnsureCoaching()
+        {
+            if (coachingSession != null || !Started || Roster == null || !ProgressionRuntime.Exists) return;
+            if (ProgressionRuntime.Instance.Snapshot?.catalog?.hybridTelemetryEnabled != true) return;
+            var local = NetworkPlayer.All.FirstOrDefault(p => p && p.IsLocalHuman && p.Actor);
+            if (!local) return;
+            coachingSession = CoachingRuntime.Instance.Begin(Roster.matchId, "match");
+        }
         MatchResult localProgression;
         void BindProgression()
         {
@@ -99,10 +108,15 @@ namespace PickleVerse.Multiplayer
         void ResultsAvailable(string old, string value)
         {
             if (Application.isPlaying)
+            {
+                // Final authoritative coaching records arrive in a reliable message batch
+                // from LateUpdate; its checkpoint closes the spool after every shot.
                 MultiplayerApp.Instance.ApplyOnlineProgressionResults(value);
+            }
         }
         public void RecordLocalExit(bool forfeit, string reason)
         {
+            CoachingRuntime.Instance?.Close(coachingSession, true);
             if (!Started || Finished || !ProgressionRuntime.Exists)
                 return;
             BeginLocalProgression();

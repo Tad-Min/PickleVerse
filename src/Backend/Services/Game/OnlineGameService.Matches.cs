@@ -32,6 +32,7 @@ public sealed partial class OnlineGameService
         int opponent = request.Kind == MatchKind.RankedBot ? EloPolicy.BotElo(s.Player.elo, s.Player.rankLossStreak) : 100;
         var match = new MatchResult
         {
+            ratingPolicyVersion = settings.HybridAi.RatingPolicyVersion,
             id = Guid.NewGuid().ToString("N"),
             playerId = s.Player.id,
             startedUtcTicks = Now.Ticks,
@@ -108,5 +109,14 @@ public sealed partial class OnlineGameService
             P("match", Guid.Parse(result.id)), P("now", Now), P("kind", result.kind.ToString()), P("own", result.gamesWon), P("opponent", result.gamesLost));
         await sql.Run("INSERT INTO playermatchhistory(playerid,matchid,status,isteama,receivedelo) VALUES(@player,@match,@status,true,@elo) ON CONFLICT DO NOTHING",
             P("player", id), P("match", Guid.Parse(result.id)), P("status", result.outcome == MatchOutcome.Won ? "WIN" : result.outcome == MatchOutcome.Lost ? "LOSE" : "INTERRUPTED"), P("elo", result.eloDelta));
+        await RecordRating(id, result);
+    }
+    async Task RecordRating(Guid player, MatchResult result)
+    {
+        if (!result.Ranked || result.outcome == MatchOutcome.Interrupted)
+            return;
+        await sql.Run("INSERT INTO ratingledger(playerid,matchid,beforeelo,afterelo,opponentelo,delta,policyversion) VALUES(@player,@match,@before,@after,@opponent,@delta,@policy) ON CONFLICT DO NOTHING",
+            P("player", player), P("match", Guid.Parse(result.id)), P("before", result.ownElo), P("after", result.ownElo + result.eloDelta),
+            P("opponent", result.opponentElo), P("delta", result.eloDelta), P("policy", result.ratingPolicyVersion));
     }
 }

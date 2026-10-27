@@ -315,11 +315,13 @@ namespace PickleVerse.Multiplayer
             var local = BotMatchGameplayService.ToLocal(intent);
             float delay = PaddleContact.Anticipation(player.Actor, local, ballPosition, ballVelocity, out var predicted);
             player.BeginSwing(intent, predicted, delay);
+            if (player.Actor.Swinging) CoachingAttempt(player, local.kind.ToString());
             if (serve)
                 releasedServe = false;
         }
         void BeginRally()
         {
+            CoachingNewRally();
             ReplayEventRpc("NewRally", "");
             Rules.NewRally();
             rallyEnding = rallyCommitted = false;
@@ -422,6 +424,7 @@ namespace PickleVerse.Multiplayer
             foreach (var player in players.Values)
             {
                 Rules.CheckActorMomentum(player.Team, player.Index, player.Actor.VolleyMomentum, player.Actor.InKitchen);
+                CoachingMomentum(player);
                 if (Rules.live && Mathf.Abs(player.transform.position.z) < .31f)
                     Rules.Fault(player.Team, "Chạm lưới");
             }
@@ -453,9 +456,12 @@ namespace PickleVerse.Multiplayer
                     {
                         var left = actor.Feet(true);
                         var right = actor.Feet(false);
-                        if (TryBotContact(server) && Rules.Serve(server.Team, server.Index, server.transform.position, ballPosition,
+                        bool attempted = TryBotContact(server);
+                        bool served = attempted && Rules.Serve(server.Team, server.Index, server.transform.position, ballPosition,
                             new Vector3(0, actor.PaddleHeadTop, 0), actor.hand.position, actor.PaddleVelocity,
-                            Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1)))
+                            Court.LegalServeFeet(left, right, actor.end, Rules.RightServe ? 0 : 1));
+                        if (attempted) CoachingContact(server, false, served);
+                        if (served)
                         {
                             progressStrokes.Launch(server.Team * 2 + server.Index, true, Rules.strokeCount);
                             ballVelocity = LaunchBall(server, actor.Intent);
@@ -475,6 +481,7 @@ namespace PickleVerse.Multiplayer
                 {
                     var crossing = Vector3.Lerp(previous, ballPosition, previous.z / (previous.z - ballPosition.z));
                     float top = Court.NetHeight(crossing.x);
+                    CoachingNet(crossing.y - Court.BallRadius - top);
                     if (crossing.y - Court.BallRadius <= top)
                     {
                         if (crossing.y >= top - .01f)
@@ -504,6 +511,7 @@ namespace PickleVerse.Multiplayer
                     bool volley = Rules.bounceCount == 0;
                     bool hit = Rules.Hit(player.Team, player.Index, actor.transform.position,
                         ballPosition, BotMatchGameplayService.FromLocal(shot).kind, actor.InKitchen);
+                    CoachingContact(player, volley, hit);
                     if (hit)
                     {
                         progressStrokes.AcceptFlight();
@@ -522,6 +530,7 @@ namespace PickleVerse.Multiplayer
                 {
                     var bounce = ballPosition;
                     bounce.y = Court.BallRadius;
+                    CoachingLanding(bounce);
                     Rules.Bounce(bounce);
                     if (Rules.live)
                     {
@@ -552,6 +561,7 @@ namespace PickleVerse.Multiplayer
             {
                 int loser = Rules.pendingFault, endedGame = Rules.GameNumber, priorServer = Rules.servingTeam;
                 string fault = Rules.reason;
+                CoachingRallyEnded(loser, fault);
                 int beforeA = Rules.score[0], beforeB = Rules.score[1];
                 Rules.SettleRally();
                 if (Rules.gameFinished)
@@ -606,8 +616,11 @@ namespace PickleVerse.Multiplayer
         }
         void LateUpdate()
         {
+            if (!IsSpawned) return;
             EnsureReplay();
-            if (!IsSpawned || !Body || !Started)
+            EnsureCoaching();
+            FlushNetworkCoaching();
+            if (!Body || !Started)
                 return;
             var frame = Ball;
             if (!IsServer && !Paused && !Finished)
@@ -767,6 +780,7 @@ namespace PickleVerse.Multiplayer
         }
         void Finish()
         {
+            if (captureCoaching) coachingFinalPending = true;
             if (!Finished)
                 MatchSoundRpc((int)GameSfx.GameWhistle);
             Body.isKinematic = true;
