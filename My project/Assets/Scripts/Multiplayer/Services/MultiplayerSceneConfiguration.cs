@@ -5,12 +5,13 @@ namespace PickleVerse.Multiplayer.Services
 {
     public static class MultiplayerSceneConfiguration
     {
-        public const ushort ProtocolVersion = 14;
+        public const ushort ProtocolVersion = 15;
         public const string RoomPath = "Assets/Scenes/UI/PlayMultiplayer.unity";
         public const string CourtPath = "Assets/Scenes/MultiplayerCourt.unity";
+        public const string LobbyPath = "Assets/Scenes/PhotonLobby.unity";
         public static void Validate()
         {
-            foreach (var path in new[] { RoomPath, CourtPath })
+            foreach (var path in new[] { RoomPath, CourtPath, LobbyPath })
                 if (SceneUtility.GetBuildIndexByScenePath(path) < 0)
                     throw new InvalidOperationException("Scene chưa được bật trong Build Profile: " + path + ". " + ConfigurationHelp);
             for (int i = 0; i < SceneManager.sceneCount; i++)

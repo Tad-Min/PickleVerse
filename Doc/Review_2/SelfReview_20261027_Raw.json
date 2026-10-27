@@ -1,0 +1,126 @@
+{
+  "baseline": "087769927cdd38a5e4907ceb3cbabc60fc2e0baa",
+  "date": "27 October 2026",
+  "formalTagStatus": "Local review-2 tag absent; tagged rerun required",
+  "findings": [
+    {
+      "id": "SR01",
+      "category": "Architecture",
+      "location": "Proposal 3.1/3.2; F09; SDD 1–2",
+      "finding": "Online 1v1/2v2 is implemented with Photon Fusion Shared. Peer StateAuthority and participant result agreement do not meet the proposal commitment to dedicated trusted simulation and client-input anti-cheat.",
+      "severity": "High",
+      "evidence": "PhotonSession.cs 164–181; NetworkMatch.Photon.cs; SDD ARCH02"
+    },
+    {
+      "id": "SR02",
+      "category": "Design vs code",
+      "location": "Proposal offline NFR; F14",
+      "finding": "Training has local gameplay rules, but the active progression runtime requires an authenticated REST command to start/checkpoint/complete an attempt. A durable offline outbox and conflict-safe reconnect workflow are not evidenced.",
+      "severity": "High",
+      "evidence": "ProgressionRuntime.cs 138–150; TrainingDirector.cs 197; SRS F14"
+    },
+    {
+      "id": "SR03",
+      "category": "Scope",
+      "location": "Proposal AI and onboarding; F01/F05",
+      "finding": "Elo-scaled behavior-tree play, deterministic technique checks and weak-drill recommendations are implemented. The required onboarding self-assessment, initial-tier classifier and labelled evaluation of technique classifiers are not evidenced.",
+      "severity": "High",
+      "evidence": "BhTreeBot.cs 15–17; TrainingModels.cs 66–75; AiCoachingService.cs; SRS F01/F05"
+    },
+    {
+      "id": "SR04",
+      "category": "Flows",
+      "location": "Admin login; F15; SDD 2",
+      "finding": "The real admin web path sends emailOrUsername/passwordHash and expects token/role/userId. The API requires Email/Password and returns AccessToken/RefreshToken/Profile. Mock mode can mask this incompatibility.",
+      "severity": "High",
+      "evidence": "Frontend api.ts 3–17; AuthContext.tsx 49–75; AllDTOs.cs 24–74"
+    },
+    {
+      "id": "SR05",
+      "category": "Data",
+      "location": "Admin account status; F15",
+      "finding": "Source SQL restricts Users.Status to uppercase ACTIVE/BANNED/SUSPENDED. Admin service writes title-case UserStatus.ToString values. Source contract compatibility and the deployed constraint must be resolved before sanction/restore is accepted.",
+      "severity": "High",
+      "evidence": "src/Database.sql 14–21; AdminService.cs 88/112/346; Entities/Enums"
+    },
+    {
+      "id": "SR06",
+      "category": "Design vs code",
+      "location": "Content publishing; F16",
+      "finding": "CMS exposes create operations but no complete edit/publish/unpublish flow. Creation does not populate the coded config consumed by GameCatalogService; several requested level/target/order values are omitted or replaced by constants.",
+      "severity": "High",
+      "evidence": "AdminController.cs CMS routes; AdminService.cs 176–221; GameCatalogService.cs 16–18"
+    },
+    {
+      "id": "SR07",
+      "category": "Requirements",
+      "location": "Oversight moderation analytics; F17/F18",
+      "finding": "Recent-match/report/heatmap paths exist, but ActiveUsersToday is set to total users. Period-based retention, lesson popularity and matchmaking health are not evidenced; full progress reset, active-match/disconnect and appeal-resolution workflows remain incomplete.",
+      "severity": "High",
+      "evidence": "AdminService.cs 364–425; AdminController.cs monitoring/moderation; proposal admin FRs"
+    },
+    {
+      "id": "SR08",
+      "category": "Architecture",
+      "location": "Public deployment and release transport; N05",
+      "finding": "The configured public HTTP readiness endpoint returns 200 ready. Release clients reject remote HTTP by ApiUrl policy; HTTPS readiness was not verified. Production TLS, CORS, secret configuration and AES-256-at-rest evidence are still required.",
+      "severity": "High",
+      "evidence": "BackendApiSettings.asset; ApiUrl.cs 15–16; API/Program.cs; health-check-host.json"
+    },
+    {
+      "id": "SR09",
+      "category": "Requirements",
+      "location": "Proposal NFRs; BM01 N01–N06",
+      "finding": "Historical local tests and PC rendering evidence exist. They do not establish the full mid-range-device/iOS matrix, <100ms VN RTT, <1s feedback, 2,000-player/500-match load, 99.5% uptime or deployed encryption guarantees at this revision.",
+      "severity": "High",
+      "evidence": "Doc/Proccess reports; source NFR design; no current complete acceptance matrix"
+    },
+    {
+      "id": "SR10",
+      "category": "States",
+      "location": "SDD room/invitation lifecycle; WF04",
+      "finding": "The 23 October state/guard baseline predates the 25 October presence and invitation workflow. Pending/accepted/declined outcomes, expiry and busy/closed/full-room rejections need explicit FR, activity and transition-test mapping.",
+      "severity": "Medium",
+      "evidence": "RoomInvitationService.cs 92–220; Friend_Room_Invitations_20261025.md; SDD diagrams"
+    },
+    {
+      "id": "SR11",
+      "category": "Data",
+      "location": "SDD logical data and deployment record",
+      "finding": "The existing SQL ERD covers the 37-table source schema. Redis invitation/presence leases and their TTL/ownership rules are not fully represented in the older design pack, and the public deployment has no verified schema/image-version record in that pack.",
+      "severity": "Medium",
+      "evidence": "src/Database.sql; RoomInvitationService.cs; RedisGameState.cs; SDD ERD/ARCH"
+    },
+    {
+      "id": "SR12",
+      "category": "Scope",
+      "location": "Proposal curriculum breadth; F03",
+      "finding": "The source curriculum defines 12 drills while the proposal says around 15. Core techniques and advanced/doubles combinations are covered; the final accepted breadth should be stated explicitly.",
+      "severity": "Low",
+      "evidence": "TrainingModels.cs 13–25; proposal scope discipline"
+    },
+    {
+      "id": "SR13",
+      "category": "Architecture",
+      "location": "Registration technology; BM03",
+      "finding": "The supplied proposal names Spring Boot/FastAPI and UI Toolkit, while the implemented API uses .NET 10 and the client uses uGUI. The requester confirms the .NET choice, but the reviewed registration amendment still needs formal recording.",
+      "severity": "Medium",
+      "evidence": "API.csproj; Canvas/UI source; proposal server/client technologies; BM03"
+    },
+    {
+      "id": "SR14",
+      "category": "Scope",
+      "location": "Review baseline and test evidence",
+      "finding": "The supporting SRS/SDD and diagrams identify the 23 October snapshot, while current code is 0877699. A local review-2 tag is absent and no current CI evidence demonstrates the proposed committed case count. Readiness alone does not close these gates.",
+      "severity": "High",
+      "evidence": "baseline.json; Prepared Report3/Report4; Test_Case_Register.csv; repository workflow inventory"
+    }
+  ],
+  "topFive": [
+    "SR08",
+    "SR04",
+    "SR01",
+    "SR02",
+    "SR03"
+  ]
+}

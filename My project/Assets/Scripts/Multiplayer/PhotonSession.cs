@@ -147,22 +147,24 @@ namespace PickleVerse.Multiplayer
         public static FusionAppSettings Settings(string region)
         {
             var settings = PhotonAppSettings.Global.AppSettings.GetCopy();
+            // Do not let older index-based clients join path-based scene sessions.
+            settings.AppVersion += ".protocol-" + Services.MultiplayerSceneConfiguration.ProtocolVersion;
             if (!string.IsNullOrEmpty(region))
                 settings.FixedRegion = region;
             return settings;
         }
         static NetworkSceneInfo InitialScene()
         {
-            int index = UnityEngine.SceneManagement.SceneUtility.GetBuildIndexByScenePath("Assets/Scenes/PhotonLobby.unity");
+            int index = UnityEngine.SceneManagement.SceneUtility.GetBuildIndexByScenePath(Services.MultiplayerSceneConfiguration.LobbyPath);
             if (index < 0)
                 throw new InvalidOperationException("Thiếu PhotonLobby trong danh sách build.");
             var scene = new NetworkSceneInfo();
-            scene.AddSceneRef(SceneRef.FromIndex(index), UnityEngine.SceneManagement.LoadSceneMode.Additive);
+            scene.AddSceneRef(SceneRef.FromPath(Services.MultiplayerSceneConfiguration.LobbyPath), UnityEngine.SceneManagement.LoadSceneMode.Additive);
             return scene;
         }
         public async Task StartAsync(string name, string playerId, string region, PhotonRoomData initial, GameObject statePrefab)
         {
-            var sceneManager = Runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
+            var sceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>();
             var result = await Runner.StartGame(new StartGameArgs
             {
                 GameMode = GameMode.Shared,
@@ -193,7 +195,7 @@ namespace PickleVerse.Multiplayer
         }
         public async Task JoinAsync(string name, string playerId, string region, bool party)
         {
-            var sceneManager = Runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
+            var sceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>();
             var result = await Runner.StartGame(new StartGameArgs
             {
                 GameMode = GameMode.Shared,

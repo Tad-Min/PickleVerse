@@ -1,0 +1,19 @@
+﻿id,name,actor,ac,status,evidence,owner,workflows,tests
+F01,Accounts and onboarding,Player,"Verify email, sign in and retain own profile; record initial skill assessment.",Partial,AccountService.cs; AuthService.cs; SR03,M1,WF01,TC-F01-01..03
+F02,Tutorial and controls,Player,Complete or replay rule/control steps; retain completion for the account.,Implemented,TutorialDirector.cs; ProgressionRuntime.cs,M1,WF01,TC-F02-01..03
+F03,Guided technique drills,Player,Validate the target technique; score 1–3 stars; first completion earns one reward.,Implemented,TrainingDirector.cs; OnlineGameService.Training.cs,M1,WF01/WF05,TC-F03-01..03
+F04,XP levels and unlocks,Player,Apply eligible XP/unlocks once; wallet and progress persist after refresh.,Implemented,ProgressionEngine.cs; OnlineGameService.cs,M1,WF05,TC-F04-01..03
+F05,Adaptive bot and coaching,Player,"Scale bot difficulty, identify technique errors and recommend weak drills; evaluate placement/classifiers.",Partial,BhTreeBot.cs; TrainingModels.cs; AiCoachingService.cs; SR03,M2,WF02,TC-F05-01..03
+F06,Shots movement and rules,Player,"Enforce legal serve, two-bounce, kitchen, net, scoring and supported shot combinations.",Implemented,SinglesRules.cs; DoublesRules.cs; MatchActor.cs,M2,WF02/WF03,TC-F06-01..03
+F07,Elo queue and ready check,Players,Both clients can accept; start only after required acceptances; decline cancels safely.,Implemented,MultiplayerApp.Ready.cs; OnlineGameService.OnlineMatches.cs,M3,WF03,TC-F07-01..03
+F08,Private rooms and invitations,Host and guest,"Create/join 1v1 or 2v2; validate invite, capacity, team and ready roster.",Implemented,PhotonSession.cs; RoomInvitationService.cs,M3,WF04,TC-F08-01..03
+F09,Online singles and doubles,Players,Synchronize legal inputs and score; apply disconnect policy with trusted simulation.,Implemented*,NetworkMatch.cs; PhotonSession.cs; SR01,M3,WF03/WF04,TC-F09-01..03
+F10,Results rating and awards,Player,"Finalize one agreed result; update Elo, reward and history once; reject conflicting replay.",Implemented,OnlineGameService.OnlineMatches.cs; EloPolicy.cs,M3,WF02/WF03/WF04,TC-F10-01..03
+F11,Progress history and replay,Player,"Show accuracy/time/mastery trends, match history and participant-authorized replay.",Implemented,ProgressScreen.cs; OnlineReplayService.cs,M1,WF02/WF05,TC-F11-01..03
+F12,Friends and leaderboard,Player,Authorize requests/invitations; list friends and consistently order Elo ranks.,Implemented,OnlineSocialService.cs; LeaderboardCache.cs,M3,WF04,TC-F12-01..03
+F13,Daily streak and achievements,Player,Claim each eligible objective or streak reward once per period; preserve balances.,Implemented,OnlineGameService.Activity.cs; ProgressionEngine.cs,M1,WF05,TC-F13-01..03
+F14,Offline practice and sync,Player,Complete drills without a connection; reconcile progress once after reconnect.,Gap,ProgressionRuntime.cs; SR02,M1,WF05,TC-F14-01..03
+F15,Admin access and users,Admin,"Authorize admin login; search, sanction, restore, reset progress and assign roles.",Partial,AdminController.cs; AuthContext.tsx; SR04/SR05,M4,WF06,TC-F15-01..03
+F16,Playable content CMS,Admin,"Create, edit, publish/unpublish valid lesson/drill/difficulty data visible in game.",Partial,AdminService.cs; GameCatalogService.cs; SR06,M4,WF06,TC-F16-01..03
+F17,Monitoring and moderation,Admin and player,"Inspect active/completed matches; resolve reports, disconnect cases and appeals.",Partial,AdminController.cs; AdminService.cs; SR07,M4,WF06,TC-F17-01..03
+F18,Operational analytics,Admin,"Report dated active users, retention, lesson use, error heatmaps and queue health.",Partial,AdminService.cs 364–425; SR07,M4,WF06,TC-F18-01..03
