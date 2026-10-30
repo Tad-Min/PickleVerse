@@ -1,4 +1,5 @@
 using PickleVerse.Progression;
+using PickleVerse.Multiplayer;
 using static Services.Game.GameSql;
 
 namespace Services.Game;
@@ -18,7 +19,7 @@ public sealed partial class OnlineGameService
         {
             if (!pending.Bot)
                 throw Conflict("Bạn cần hoàn tất hoặc rời trận online hiện tại trước.");
-            var old = await sql.One("SELECT data::text FROM gamematches WHERE matchid=@match AND ownerid=@player AND status='STARTED'", r => r.GetString(0), P("match", Guid.Parse(pending.id)), P("player", id));
+            var old = await sql.One("SELECT m.data::text FROM gamematches m WHERE m.matchid=@match AND m.kind='BotPractice' AND m.status='STARTED' AND EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player)", r => r.GetString(0), P("match", Guid.Parse(pending.id)), P("player", id));
             if (old != null)
             {
                 var abandoned = GameJson.Read<StoredMatch>(old);
@@ -30,6 +31,12 @@ public sealed partial class OnlineGameService
             }
         }
         int opponent = request.Kind == MatchKind.RankedBot ? EloPolicy.BotElo(s.Player.elo, s.Player.rankLossStreak) : 100;
+        var bot = await sql.One("""
+            SELECT p.userid,p.playername FROM playerprofiles p JOIN users u ON u.userid=p.userid
+            WHERE p.userid=ANY(@bots) AND u.status='ACTIVE' ORDER BY random() LIMIT 1
+            """, r => new OpponentInfo { id = r.GetGuid(0).ToString("N"), name = r.GetString(1), elo = opponent },
+            P("bots", RankedBotAccounts.Ids.Select(Guid.Parse).ToArray()))
+            ?? throw Conflict("Chưa có hồ sơ bot khả dụng.");
         var match = new MatchResult
         {
             ratingPolicyVersion = settings.HybridAi.RatingPolicyVersion,
@@ -40,9 +47,11 @@ public sealed partial class OnlineGameService
             opponentElo = opponent,
             kind = request.Kind
         };
-        match.opponents.Add(new OpponentInfo { id = "BOT", name = request.Kind == MatchKind.RankedBot ? "Bot rank" : "Bot", elo = opponent });
-        await sql.Run("INSERT INTO gamematches(matchid,ownerid,kind,data) VALUES(@match,@player,@kind,@data::jsonb)",
-            P("match", Guid.Parse(match.id)), P("player", id), P("kind", match.kind.ToString()), P("data", GameJson.Write(new StoredMatch { result = match })));
+        match.opponents.Add(bot);
+        await sql.Run("INSERT INTO gamematches(matchid,kind,data) VALUES(@match,@kind,@data::jsonb)",
+            P("match", Guid.Parse(match.id)), P("kind", match.kind.ToString()), P("data", GameJson.Write(new StoredMatch { result = match })));
+        await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted,lastseenat) VALUES(@match,@player,0,true,@now),(@match,@bot,1,true,@now)",
+            P("match", Guid.Parse(match.id)), P("player", id), P("bot", Guid.Parse(bot.id)), P("now", Now));
         s.Player.pendingMatch = match;
     });
     public Task<GameSnapshot> FinishBot(Guid id, MatchFinishRequest request) => Execute(id, request.RequestId, "bot-complete", request, async s =>
@@ -50,9 +59,11 @@ public sealed partial class OnlineGameService
         var input = request.Result;
         if (!Guid.TryParse(input.id, out var matchId))
             throw Bad("Mã trận không hợp lệ.");
-        var row = await sql.One("SELECT data::text,status FROM gamematches WHERE matchid=@match AND ownerid=@player", r => new { data = r.GetString(0), status = r.GetString(1) }, P("match", matchId), P("player", id)) ?? throw Bad("Trận chưa được tạo cho tài khoản này.");
+        var row = await sql.One("SELECT m.data::text,m.status FROM gamematches m WHERE m.matchid=@match AND m.kind='BotPractice' AND EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player)", r => new { data = r.GetString(0), status = r.GetString(1) }, P("match", matchId), P("player", id)) ?? throw Bad("Trận chưa được tạo cho tài khoản này.");
         string fingerprint = GameJson.Payload(new { input.outcome, input.localForfeit, input.gamesWon, input.gamesLost, input.points, input.validReturns, input.validServes, input.scores });
         var stored = GameJson.Read<StoredMatch>(row.data);
+        if (RankedBotAccounts.Contains(id.ToString("N")) || stored.result.playerId != id.ToString("N"))
+            throw Bad("Kết quả trận bot không thuộc tài khoản này.");
         if (row.status == "FINISHED")
         {
             if (stored.fingerprint != fingerprint)
@@ -110,6 +121,7 @@ public sealed partial class OnlineGameService
         await sql.Run("INSERT INTO playermatchhistory(playerid,matchid,status,isteama,receivedelo) VALUES(@player,@match,@status,true,@elo) ON CONFLICT DO NOTHING",
             P("player", id), P("match", Guid.Parse(result.id)), P("status", result.outcome == MatchOutcome.Won ? "WIN" : result.outcome == MatchOutcome.Lost ? "LOSE" : "INTERRUPTED"), P("elo", result.eloDelta));
         await RecordRating(id, result);
+        await replays.PublishAvailable(Guid.Parse(result.id));
     }
     async Task RecordRating(Guid player, MatchResult result)
     {

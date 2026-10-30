@@ -11,9 +11,9 @@ using static Services.Game.GameSql;
 
 namespace Services.Game;
 
-public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql, GameCatalogService catalogs, TimeProvider clock, ServerSettings settings, RedisGameState matchmaking, LeaderboardCache leaderboard)
+public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql, GameCatalogService catalogs, TimeProvider clock, ServerSettings settings, RedisGameState matchmaking, LeaderboardCache leaderboard, MatchReplayService replays)
 {
-    sealed class StoredState
+    sealed class PlayerState
     {
         public PlayerProfile player = new();
         public TutorialState tutorial = new();
@@ -21,13 +21,16 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
     sealed class Session
     {
         public Playerprofile profile = null!;
-        public StoredState stored = new();
+        public PlayerState state = new();
         public OnlineInventory inventory = new();
         public GameCatalog catalog = new();
         public long revision, beforeCoins, beforeElite;
-        public PlayerProfile Player => stored.player;
+        public bool trainingChanged;
+        public Dictionary<(ProgressScope,string,string),(int,bool,int)> missionRows = [];
+        public HashSet<string> bonusCommands = [];
+        public PlayerProfile Player => state.player;
         public ProgressionEngine Engine => new(catalog.Rules());
-        public GameSnapshot Snapshot() => new() { player = Player, inventory = inventory, catalog = catalog, isMale = profile.Ismale, revision = revision, tutorial = stored.tutorial };
+        public GameSnapshot Snapshot() => new() { player = Player, inventory = inventory, catalog = catalog, isMale = profile.Ismale, revision = revision, tutorial = state.tutorial };
     }
     DateTime Now => clock.GetUtcNow().UtcDateTime;
     static AppException Bad(string message) => new(message, HttpStatusCode.BadRequest);
@@ -37,9 +40,8 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
     {
         var profile = await db.Playerprofiles.FromSqlInterpolated($"SELECT * FROM playerprofiles WHERE userid={id} FOR UPDATE").SingleOrDefaultAsync()
             ?? throw new AppException("Không tìm thấy hồ sơ.", HttpStatusCode.NotFound);
-        var saved = await sql.One("SELECT data::text,revision FROM gameprogress WHERE playerid=@id", r => new { data = r.GetString(0), revision = r.GetInt64(1) }, P("id", id));
-        var stored = saved == null ? new StoredState() : GameJson.Read<StoredState>(saved.data);
-        var p = stored.player;
+        var s = new Session { profile=profile, catalog=catalog };
+        var p = s.Player;
         p.online = true;
         p.id = id.ToString("N");
         p.playerName = profile.Playername;
@@ -50,14 +52,6 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
         p.wins = profile.Wincount;
         p.losses = profile.Losecount;
         p.activeSeconds = profile.Timeplayedseconds;
-        if (saved == null)
-        {
-            p.totalXp = 100L * p.level * (p.level - 1) + p.levelXp;
-            p.lifetime.matches = p.wins + p.losses;
-            p.lifetime.wins = p.wins;
-            p.lifetime.streak = p.lifetime.bestStreak = profile.Winstreak;
-            p.achievementClaims = await sql.Query("SELECT a.achievementcode FROM playerachievements p JOIN achievements a USING(achievementid) WHERE p.playerid=@id AND p.isclaimed", r => r.GetString(0), P("id", id));
-        }
         await sql.Run("INSERT INTO playercurrencies(playerid,currencyid,amount) SELECT @id,currencyid,0 FROM currencies WHERE currencyname IN ('TOKENPAD','ELITE TOKEN') ON CONFLICT DO NOTHING", P("id", id));
         var balances = await sql.Query("SELECT c.currencyname,p.amount FROM playercurrencies p JOIN currencies c USING(currencyid) WHERE p.playerid=@id", r => new { name = r.GetString(0), amount = (long)r.GetInt32(1) }, P("id", id));
         p.coins = balances.FirstOrDefault(b => b.name == "TOKENPAD")?.amount ?? 0;
@@ -65,7 +59,11 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
         await sql.Run("INSERT INTO playercosmetics(playerid,cosmeticid,equipped) SELECT @id,cosmeticid,NOT EXISTS(SELECT 1 FROM playercosmetics WHERE playerid=@id AND equipped) FROM cosmetics WHERE itemcode='paddle.default' ON CONFLICT DO NOTHING", P("id", id));
         var items = await sql.Query("SELECT c.itemcode,p.equipped FROM playercosmetics p JOIN cosmetics c USING(cosmeticid) WHERE p.playerid=@id ORDER BY c.cosmeticid", r => new { code = r.GetString(0), equipped = r.GetBoolean(1) }, P("id", id));
         var inventory = new OnlineInventory { tokenpad = p.coins, elite = p.gems, owned = items.Select(i => i.code).ToList(), equippedPaddle = items.FirstOrDefault(i => i.equipped)?.code ?? "paddle.default" };
-        return new Session { profile = profile, stored = stored, inventory = inventory, catalog = catalog, revision = saved?.revision ?? 0, beforeCoins = p.coins, beforeElite = p.gems };
+        s.inventory=inventory;
+        s.beforeCoins=p.coins;
+        s.beforeElite=p.gems;
+        await LoadProgress(s,id);
+        return s;
     }
 
     async Task Persist(Session s, Guid id, string command, string reason)
@@ -92,14 +90,8 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
         p.shopData = GameJson.Write(s.inventory);
         foreach (var def in s.catalog.definitions.Where(d => d.scope == ProgressScope.Achievement))
             await sql.Run("INSERT INTO playerachievements(playerid,achievementid,progress,isclaimed,claimedat) SELECT @id,achievementid,@progress,@claimed,CASE WHEN @claimed THEN CURRENT_TIMESTAMP ELSE NULL END FROM achievements WHERE achievementcode=@code ON CONFLICT(playerid,achievementid) DO UPDATE SET progress=EXCLUDED.progress,isclaimed=EXCLUDED.isclaimed,claimedat=COALESCE(playerachievements.claimedat,EXCLUDED.claimedat)", P("id", id), P("progress", (int)Math.Min(int.MaxValue, s.Engine.Progress(p, def))), P("claimed", p.achievementClaims.Contains(def.id)), P("code", def.id));
-        foreach (var def in s.catalog.definitions.Where(d => d.scope != ProgressScope.Achievement))
-        {
-            var period = def.scope == ProgressScope.Daily ? p.daily : p.weekly;
-            await sql.Run("INSERT INTO playermissions(playerid,missionid,periodkey,progress,isclaimed,claimedat) SELECT @id,missionid,@period,@progress,@claimed,CASE WHEN @claimed THEN CURRENT_TIMESTAMP ELSE NULL END FROM missions WHERE code=@code ON CONFLICT(playerid,missionid) DO UPDATE SET periodkey=EXCLUDED.periodkey,progress=EXCLUDED.progress,isclaimed=EXCLUDED.isclaimed,claimedat=CASE WHEN NOT EXCLUDED.isclaimed THEN NULL WHEN playermissions.periodkey=EXCLUDED.periodkey THEN COALESCE(playermissions.claimedat,EXCLUDED.claimedat) ELSE EXCLUDED.claimedat END",
-                P("id", id), P("period", period.key), P("progress", (int)Math.Min(int.MaxValue, s.Engine.Progress(p, def))), P("claimed", period.claimed.Contains(def.id)), P("code", def.id));
-        }
+        await PersistProgress(s,id);
         await db.SaveChangesAsync();
-        s.revision = await sql.One("INSERT INTO gameprogress(playerid,data,revision) VALUES(@id,@data::jsonb,1) ON CONFLICT(playerid) DO UPDATE SET data=EXCLUDED.data,revision=gameprogress.revision+1,updatedat=CURRENT_TIMESTAMP RETURNING revision", r => r.GetInt64(0), P("id", id), P("data", GameJson.Write(s.stored)));
     }
 
     async Task<GameSnapshot> Execute(Guid id, string? requestId, string kind, object? payload, Func<Session, Task> operation)
@@ -151,9 +143,9 @@ public sealed partial class OnlineGameService(PickleVerseContext db, GameSql sql
     public Task<GameSnapshot> Tutorial(Guid id, TutorialUpdateRequest request) => Execute(id, request.RequestId, "tutorial", request, s =>
     {
         if (request.Key == "completed")
-            s.stored.tutorial.completed = true;
+            s.state.tutorial.completed = true;
         else if (request.Key == "skipped")
-            s.stored.tutorial.skipped = true;
+            s.state.tutorial.skipped = true;
         else throw Bad("Trạng thái hướng dẫn không hợp lệ.");
         return Task.CompletedTask;
     });

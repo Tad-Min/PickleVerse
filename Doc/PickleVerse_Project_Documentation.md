@@ -2,6 +2,8 @@
 
 Bản tổng hợp ngày **22/10/2026**, gộp đầy đủ **48 tài liệu Markdown** trong `Doc`. Nội dung được sắp theo chủ đề; các báo cáo, đề xuất và mẫu lệnh vẫn phản ánh thời điểm tài liệu gốc được viết.
 
+**Cập nhật schema ngày 31/10/2026:** đã bỏ `GameProgress`, `OnlineReplays` và `OnlineReplayChunks`. Schema hiện có 40 bảng; phần từ điển bên dưới là snapshot cũ. Thiết kế mới tại [Tiến trình từ các bảng chuyên biệt](Relational_Progress_20261031.md) và [Replay dùng chung](Replay_Storage_20261031.md); dùng `src/Database.sql` hiện tại để tạo database.
+
 **Đọc trước:** [Trạng thái chuyển online](#doc-online-migration-status), [chạy Docker và tích hợp Unity/backend](#doc-unity-backend-integration), [thời gian app và bot Rank Online](#doc-app-activity-ranked-fallback). Các báo cáo giai đoạn local/NGO được giữ để tra cứu lịch sử.
 
 Bốn tài liệu yêu cầu được giữ riêng, nguyên trạng: [Core Features Markdown](PickleVerse_Core_Features.md), [Core Features Word](PickleVerse_Core_Features.docx), [Capstone Proposal Markdown](PickleVerse_Capstone_Proposal.md), [Capstone Proposal Word](PickleVerse_Capstone_Proposal.docx).

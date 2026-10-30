@@ -116,6 +116,7 @@ namespace PickleVerse.Multiplayer
                 await Task.Delay(5000);
                 var replay = match.GetComponent<PickleVerse.Replays.ReplayRecorder>();
                 Report["replayStarted"] = replay != null;
+                Report["sharedReplayProducer"] = (replay != null) == match.IsServer;
                 if (reconnectCheck)
                 {
                     if (host)
@@ -159,7 +160,7 @@ namespace PickleVerse.Multiplayer
                 }
                 await Task.Delay(1000);
                 Report["frames"] = Time.frameCount;
-                Report["passed"] = new[] { "readyShown", "readyAccepted", "courtStarted", "replicatedActors", "onlinePending", "movementConfirmed", "inputAcknowledged", "replayStarted", "pendingCleared" }.All(k => Report.TryGetValue(k, out var v) && v is true) && (!reconnectCheck || host || Report.TryGetValue("reconnected", out var connected) && connected is true);
+                Report["passed"] = new[] { "readyShown", "readyAccepted", "courtStarted", "replicatedActors", "onlinePending", "movementConfirmed", "inputAcknowledged", "sharedReplayProducer", "pendingCleared" }.All(k => Report.TryGetValue(k, out var v) && v is true) && (!reconnectCheck || host || Report.TryGetValue("reconnected", out var connected) && connected is true);
                 Stage("completed");
             }
             catch (Exception error)

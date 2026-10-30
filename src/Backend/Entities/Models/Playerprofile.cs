@@ -29,6 +29,40 @@ public partial class Playerprofile
 
     public int Losecount { get; set; }
 
+    public long Revision { get; set; }
+
+    public bool TutorialCompleted { get; set; }
+
+    public bool TutorialSkipped { get; set; }
+
+    public DateTime? DailyStreakEnabledAt { get; set; }
+
+    public int RankWinStreak { get; set; }
+
+    public int RankLossStreak { get; set; }
+
+    public int BestWinStreak { get; set; }
+
+    public long LifetimeMatches { get; set; }
+
+    public long LifetimePoints { get; set; }
+
+    public long LifetimeReturns { get; set; }
+
+    public long LifetimeServes { get; set; }
+
+    public long LifetimeBotMatches { get; set; }
+
+    public long LifetimeHumanMatches { get; set; }
+
+    public long LifetimeHumanWins { get; set; }
+
+    public long LifetimeRankedWins { get; set; }
+
+    public long LifetimeDoublesWins { get; set; }
+
+    public long LifetimeHigherRatedWins { get; set; }
+
     public virtual ICollection<Playerachievement> Playerachievements { get; set; } = new List<Playerachievement>();
 
     public virtual ICollection<Playercosmetic> Playercosmetics { get; set; } = new List<Playercosmetic>();

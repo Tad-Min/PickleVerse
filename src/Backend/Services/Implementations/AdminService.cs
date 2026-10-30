@@ -283,7 +283,7 @@ namespace Services.Implementations
                         TeamAScore = m.Teamascore,
                         TeamBScore = m.Teambscore,
                         CreatedAt = m.Createdat,
-                        ReplayUrl = replay?.Replayurl
+                        ReplayUrl = replay == null ? null : $"/api/Replays/{m.Matchid}"
                     });
                 }
                 return result;
@@ -315,7 +315,7 @@ namespace Services.Implementations
                         Reason = r.Reason,
                         Status = r.Status,
                         CreatedAt = r.Createdat,
-                        ReplayUrl = replay?.Replayurl
+                        ReplayUrl = replay == null ? null : $"/api/Replays/{r.Matchid}"
                     });
                 }
                 return result;

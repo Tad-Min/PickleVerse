@@ -43,7 +43,7 @@ public sealed class RoomInvitationService(GameSql sql, IConnectionMultiplexer co
         """, r => r.GetBoolean(0), P("a", a), P("b", b));
     async Task<bool> InMatch(Guid player) => await sql.One("""
         SELECT EXISTS(SELECT 1 FROM gamematches m WHERE m.status='STARTED'
-          AND (m.ownerid=@player OR EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player)))
+          AND EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player))
         """, r => r.GetBoolean(0), P("player", player));
     static int Capacity(Presence p) => p.Value.Custom ? 2 * p.Value.Mode : 2;
     async Task<Presence?> Room(string code)

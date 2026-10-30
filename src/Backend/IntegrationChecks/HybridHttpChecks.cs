@@ -94,7 +94,8 @@ static class HybridHttpChecks
         for(int index=0;index<112;index++)
         {
             var match=Guid.NewGuid();
-            await sql.Run("INSERT INTO gamematches(matchid,ownerid,kind,data,status) VALUES(@match,@player,'BotPractice','{}','FINISHED')",P("match",match),P("player",player));
+            await sql.Run("INSERT INTO gamematches(matchid,kind,data,status) VALUES(@match,'BotPractice','{}','FINISHED')",P("match",match));
+            await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted) VALUES(@match,@player,0,true)",P("match",match),P("player",player));
             await sql.Run("INSERT INTO matchhistory(matchid,matchtype,teamascore,teambscore) VALUES(@match,'BotPractice',2,0)",P("match",match));
             var batch=new TelemetryBatch{batchId=Guid.NewGuid().ToString("N"),sessionId=match.ToString("N"),sessionType="match",playerId=player.ToString("N"),gameVersion="benchmark"};
             int count=index<12?1000:200;

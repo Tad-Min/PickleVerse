@@ -81,6 +81,24 @@ try
         await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
         await command.ExecuteNonQueryAsync();
     }
+    if (args.Contains("--check-relational-progress"))
+    {
+        await RelationalProgressChecks.Run(options, time, Check);
+        Console.WriteLine($"SUCCESS: {checks} relational progress checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-shared-replays-s3"))
+    {
+        await SharedReplayS3Checks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} shared replay HTTP/S3 checks; disposable database and test objects removed.");
+        return;
+    }
+    if (args.Contains("--check-shared-replays"))
+    {
+        await SharedReplayChecks.Run(options, time, Check);
+        Console.WriteLine($"SUCCESS: {checks} shared replay checks; disposable database removed.");
+        return;
+    }
     if (args.Contains("--check-hybrid-http"))
     {
         await HybridHttpChecks.Run(options, Check);
@@ -398,25 +416,35 @@ static class UnityFixture
             var sql = new Services.Game.GameSql(context);
             if (!await context.Users.AnyAsync(u => u.Userid == id && u.Email == fixture["email"]))
                 throw new InvalidOperationException("Fixture identity does not match the database.");
-            var keys = await sql.Query("SELECT objectkey FROM onlinereplays WHERE playerid=@id UNION SELECT objectkey FROM onlinereplaychunks WHERE playerid=@id", r => r.GetString(0), Services.Game.GameSql.P("id", id));
             var storageConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["Storage:ServiceUrl"] = "http://localhost:19000", ["Storage:AccessKey"] = "minioadmin", ["Storage:SecretKey"] = "minioadmin", ["Storage:BucketName"] = "pickleverse" }).Build();
             var storage = new StorageService(storageConfig, NullLogger<StorageService>.Instance);
-            foreach (var key in keys)
-            {
-                if (!key.StartsWith($"replays/{id:N}/", StringComparison.Ordinal))
-                    throw new InvalidOperationException("Unexpected fixture object key.");
-                if (!await storage.DeleteFileAsync(key))
-                    throw new InvalidOperationException("Fixture object deletion failed.");
-            }
             await using var cleanupTx = await context.Database.BeginTransactionAsync();
-            var matches = await sql.Query("SELECT matchid FROM playermatchhistory WHERE playerid=@id UNION SELECT matchid FROM gamematches WHERE ownerid=@id UNION SELECT matchid FROM gamematchplayers WHERE playerid=@id", r => r.GetGuid(0), Services.Game.GameSql.P("id", id));
+            var matches = await sql.Query("SELECT matchid FROM playermatchhistory WHERE playerid=@id UNION SELECT matchid FROM gamematchplayers WHERE playerid=@id", r => r.GetGuid(0), Services.Game.GameSql.P("id", id));
             await sql.Run("DELETE FROM playermatchhistory WHERE playerid=@id", Services.Game.GameSql.P("id", id));
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM users WHERE userid = {id} AND email = {fixture["email"]}");
             // Preserve a match if any other participant/history remains, including real players.
             foreach (var match in matches)
             {
-                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND ownerid IS NULL AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
+                var empty = await sql.One("SELECT NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", r => r.GetBoolean(0), Services.Game.GameSql.P("match", match));
+                if (!empty) continue;
+                var manifestKey = Services.Game.MatchReplayService.ManifestKey(match);
+                await using (var stream = await storage.GetFileAsync(manifestKey))
+                {
+                    if (stream != null)
+                    {
+                        using var reader = new StreamReader(stream);
+                        var replay = Services.Game.GameJson.Read<PickleVerse.Replays.ReplayMetadata>(await reader.ReadToEndAsync());
+                        if (replay.matchId != match.ToString("N")) throw new InvalidOperationException("Unexpected fixture replay.");
+                        foreach (var part in replay.chunks)
+                        {
+                            if (string.IsNullOrEmpty(part.file) || part.file.Contains('/') || part.file.Contains('\\')) throw new InvalidOperationException("Unexpected fixture chunk key.");
+                            if (!await storage.DeleteFileAsync($"replays/{match:N}/{part.file}")) throw new InvalidOperationException("Fixture chunk deletion failed.");
+                        }
+                    }
+                }
+                if (!await storage.DeleteFileAsync(manifestKey)) throw new InvalidOperationException("Fixture manifest deletion failed.");
+                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
                 await sql.Run("DELETE FROM matchhistory WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
             }
             await cleanupTx.CommitAsync();

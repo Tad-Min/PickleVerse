@@ -16,6 +16,8 @@ public sealed partial class OnlineGameService
         if (data.active is { completed: false } active && active.lessonId == lesson.id && !request.Retry)
             return;
         var attempt = TrainingEngine.Start(s.Player, lesson.id, request.Retry);
+        s.trainingChanged=true;
+        await sql.Run("UPDATE trainingsessions SET iscurrent=false WHERE playerid=@player AND iscurrent",P("player",id));
         var rows = await sql.Run("INSERT INTO trainingsessions(attemptid,playerid,lessonid,drillid,data,createdat,updatedat) SELECT @attempt,@player,l.lessonid,d.drillid,@data::jsonb,@now,@now FROM lessons l JOIN drills d ON d.code=l.code WHERE l.code=@code", P("attempt", Guid.Parse(attempt.id)), P("player", id), P("data", GameJson.Write(attempt)), P("now", Now), P("code", lesson.id));
         if (rows != 1)
             throw Bad("Danh mục bài học chưa được liên kết đủ.");
@@ -48,6 +50,7 @@ public sealed partial class OnlineGameService
         data.active = original;
         if (complete)
         {
+            s.trainingChanged=true;
             if (!TrainingEngine.Complete(s.Player, original))
                 throw Conflict("Không thể hoàn tất lượt tập.");
             await sql.Run("INSERT INTO playerlessondrills(playerid,lessonid,drillid,score,isclaimedreward) SELECT @player,l.lessonid,d.drillid,@stars,@claimed FROM lessons l JOIN drills d ON d.code=l.code WHERE l.code=@code ON CONFLICT(playerid,lessonid,drillid) DO UPDATE SET score=GREATEST(playerlessondrills.score,EXCLUDED.score),isclaimedreward=playerlessondrills.isclaimedreward OR EXCLUDED.isclaimedreward", P("player", id), P("stars", original.stars), P("claimed", original.passed), P("code", lesson.id));

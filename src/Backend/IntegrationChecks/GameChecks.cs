@@ -17,7 +17,7 @@ static class GameChecks
         {
             await using var context = new PickleVerseContext(options);
             var sql = new GameSql(context);
-            return await action(new OnlineGameService(context, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard));
+            return await action(new OnlineGameService(context, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(context, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Rejected(Func<Task> action, string name, HttpStatusCode status = HttpStatusCode.BadRequest)
         {
@@ -134,7 +134,7 @@ static class GameChecks
             var sql = new GameSql(context);
             var count = await sql.One("SELECT count(*) FROM currencytransactions WHERE playerid=@id AND commandid=@command", r => r.GetInt64(0), GameSql.P("id", id), GameSql.P("command", purchase.RequestId));
             check(count == 1, "currency ledger records one transaction for the concurrent purchase");
-            check(await context.Playerlessondrills.CountAsync(x => x.Playerid == id) == 4,
+            check(await context.Playerlessondrills.CountAsync(x => x.Playerid == id && x.Score > 0) == 4,
                 "training results also populate normalized lesson progress");
         }
         var beforeMatch = await Call(s => s.Read(id));
@@ -142,6 +142,21 @@ static class GameChecks
         var result = GameJson.Read<MatchResult>(GameJson.Write(matchState.player.pendingMatch));
         check(Guid.TryParse(result.id, out _) && result.ownElo == beforeMatch.player.elo,
             "backend allocates bot match identity and rating snapshot");
+        var opponent = result.opponents.Single();
+        check(PickleVerse.Multiplayer.RankedBotAccounts.Contains(opponent.id), "practice opponent uses an existing seeded bot profile");
+        var outsider = Guid.NewGuid();
+        await using (var context = new PickleVerseContext(options))
+        {
+            var sql = new GameSql(context);
+            var seats = await sql.Query("SELECT p.playerid,p.team,u.playername FROM gamematchplayers p JOIN playerprofiles u ON u.userid=p.playerid WHERE p.matchid=@match",
+                r => (id: r.GetGuid(0), team: r.GetInt16(1), name: r.GetString(2)), GameSql.P("match", Guid.Parse(result.id)));
+            check(seats.Count == 2 && seats.Any(p => p.id == id && p.team == 0)
+                && seats.Any(p => p.id == Guid.Parse(opponent.id) && p.team == 1 && p.name == opponent.name),
+                "practice stores the human and named bot in GameMatchPlayers with opposite teams");
+            await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'",
+                GameSql.P("id", outsider), GameSql.P("email", outsider+"@example.invalid"));
+            await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)", GameSql.P("id", outsider), GameSql.P("name", "Outside"+outsider.ToString("N")[..8]));
+        }
         result.outcome = MatchOutcome.Won;
         result.gamesWon = 2;
         result.scores = [new GameScore(11, 5, true), new GameScore(11, 8, true)];
@@ -152,6 +167,8 @@ static class GameChecks
         result.opponentElo = 999999;
         result.eloDelta = 999999;
         var finish = new MatchFinishRequest { RequestId = Guid.NewGuid().ToString("N"), Result = result };
+        await Rejected(() => Call(s => s.FinishBot(outsider, finish)), "outsider cannot submit a known practice match without participant membership");
+        await Rejected(() => Call(s => s.FinishBot(Guid.Parse(opponent.id), finish)), "virtual bot cannot submit the human's practice result");
         var finishedMatch = await Call(s => s.FinishBot(id, finish));
         var replayedMatch = await Call(s => s.FinishBot(id, finish));
         check(finishedMatch.player.coins == beforeMatch.player.coins + 100 && finishedMatch.player.wins == beforeMatch.player.wins + 1
@@ -172,11 +189,11 @@ static class GameChecks
             var sql = new GameSql(context);
             check(await sql.One("SELECT count(*) FROM playermissions WHERE playerid=@id AND periodkey<>''", r => r.GetInt64(0), GameSql.P("id", id)) == 17, "daily and weekly mission state is normalized with its reset period");
         }
-        var storage = new CheckStorage();
-        async Task<T> Replay<T>(Func<OnlineReplayService, Task<T>> action)
+        var storage = TestReplayStorage.Shared;
+        async Task<T> Replay<T>(Func<MatchReplayService, Task<T>> action)
         {
             await using var context = new PickleVerseContext(options);
-            return await action(new OnlineReplayService(context, new GameSql(context), storage));
+            return await action(new MatchReplayService(context, new GameSql(context), storage, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance));
         }
         var match = Guid.Parse(result.id);
         var metadata = new ReplayMetadata
@@ -185,8 +202,9 @@ static class GameChecks
             matchId = match.ToString("N"),
             actors = [
             new ReplayActorInfo{id = id.ToString("N"), name = "Check player", team = 0, visualId = "Male", bones = ["Root"]},
-            new ReplayActorInfo{id = "BOT", name = "Bot", team = 1, visualId = "Female", bones = ["Root"]}]
+            new ReplayActorInfo{id = opponent.id, name = opponent.name, team = 1, visualId = "Female", bones = ["Root"]}]
         };
+        await Rejected(() => Replay(s => s.Save(outsider, match, metadata)), "outsider cannot upload a replay for another player's practice match", HttpStatusCode.NotFound);
         await Replay(s => s.Save(id, match, metadata));
         var chunk = new ReplayChunk { frames = [new ReplayFrame { time = 0, ball = [0, 1, 0], actors = [new ReplayActorPose { root = new float[10], bones = new float[10] }, new ReplayActorPose { root = new float[10], bones = new float[10] }] }] };
         ReplayChunkUpload Compressed()
@@ -218,23 +236,4 @@ static class GameChecks
         await SocialChecks.Run(options, check);
     }
 
-    sealed class CheckStorage : IStorageService
-    {
-        public readonly Dictionary<string, byte[]> Objects = [];
-        public Task EnsureBucketExistsAsync() => Task.CompletedTask;
-        public async Task PutFileAsync(Stream stream, string key, string contentType)
-        {
-            using var copy = new MemoryStream();
-            await stream.CopyToAsync(copy);
-            Objects[key] = copy.ToArray();
-        }
-        public async Task<string> UploadFileAsync(Stream stream, string name, string type)
-        {
-            await PutFileAsync(stream, name, type);
-            return name;
-        }
-        public Task<Stream?> GetFileAsync(string key) => Task.FromResult(Objects.TryGetValue(key, out var bytes) ? (Stream?)new MemoryStream(bytes) : null);
-        public Task<bool> DeleteFileAsync(string key) => Task.FromResult(Objects.Remove(key));
-        public string GetFileUrl(string key) => throw new InvalidOperationException("No internal storage URL should be needed.");
-    }
 }

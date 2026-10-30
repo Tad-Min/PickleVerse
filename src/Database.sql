@@ -55,6 +55,23 @@ CREATE TABLE PlayerProfiles (
     DayStreak INT NOT NULL DEFAULT 0 CHECK (DayStreak >= 0),
     WinCount INT NOT NULL DEFAULT 0 CHECK (WinCount >= 0),
     LoseCount INT NOT NULL DEFAULT 0 CHECK (LoseCount >= 0),
+    Revision BIGINT NOT NULL DEFAULT 0,
+    TutorialCompleted BOOLEAN NOT NULL DEFAULT FALSE,
+    TutorialSkipped BOOLEAN NOT NULL DEFAULT FALSE,
+    DailyStreakEnabledAt TIMESTAMPTZ NULL,
+    RankWinStreak INT NOT NULL DEFAULT 0,
+    RankLossStreak INT NOT NULL DEFAULT 0,
+    BestWinStreak INT NOT NULL DEFAULT 0,
+    LifetimeMatches BIGINT NOT NULL DEFAULT 0,
+    LifetimePoints BIGINT NOT NULL DEFAULT 0,
+    LifetimeReturns BIGINT NOT NULL DEFAULT 0,
+    LifetimeServes BIGINT NOT NULL DEFAULT 0,
+    LifetimeBotMatches BIGINT NOT NULL DEFAULT 0,
+    LifetimeHumanMatches BIGINT NOT NULL DEFAULT 0,
+    LifetimeHumanWins BIGINT NOT NULL DEFAULT 0,
+    LifetimeRankedWins BIGINT NOT NULL DEFAULT 0,
+    LifetimeDoublesWins BIGINT NOT NULL DEFAULT 0,
+    LifetimeHigherRatedWins BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT FK_PlayerProfiles_Users FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
 --#endregion
@@ -97,6 +114,7 @@ CREATE TABLE BlockedUsers (
 --#region Match-History
 CREATE TABLE MatchHistory (
     MatchId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    Sequence BIGINT GENERATED ALWAYS AS IDENTITY,
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     MatchType VARCHAR(25) NOT NULL DEFAULT '1Vs1',
     TeamAScore INT NOT NULL DEFAULT 0,
@@ -131,7 +149,7 @@ CREATE TABLE ReportPlayerInMatch (
 
 CREATE TABLE MatchHistoryReplay (
     MatchId UUID PRIMARY KEY,
-    ReplayUrl VARCHAR(1000) NOT NULL,
+    ObjectKey VARCHAR(500) NOT NULL,
     CONSTRAINT FK_MatchHistoryReplay_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
 );
 --#endregion
@@ -214,7 +232,8 @@ CREATE TABLE PlayerMissions (
     IsClaimed BOOLEAN NOT NULL DEFAULT FALSE,
     ClaimedAt TIMESTAMPTZ NULL,
     PeriodKey VARCHAR(8) NOT NULL DEFAULT '',
-    PRIMARY KEY (PlayerId, MissionId),
+    CurrentStreak INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (PlayerId, MissionId, PeriodKey),
     CONSTRAINT FK_PlayerMissions_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CONSTRAINT FK_PlayerMissions_Missions FOREIGN KEY (MissionId) REFERENCES Missions(MissionId)
 );
@@ -295,6 +314,14 @@ CREATE TABLE PlayerLessonDrills (
     DrillId INT NOT NULL,
     Score INT NOT NULL DEFAULT 0,
     IsClaimedReward BOOLEAN NOT NULL DEFAULT FALSE,
+    Attempts INT NOT NULL DEFAULT 0,
+    Retries INT NOT NULL DEFAULT 0,
+    Completions INT NOT NULL DEFAULT 0,
+    Trials INT NOT NULL DEFAULT 0,
+    Successes INT NOT NULL DEFAULT 0,
+    Seconds DOUBLE PRECISION NOT NULL DEFAULT 0,
+    BestAccuracy DOUBLE PRECISION NOT NULL DEFAULT 0,
+    Errors JSONB NOT NULL DEFAULT '[]'::jsonb,
     PRIMARY KEY (PlayerId, LessonId, DrillId),
     CONSTRAINT FK_PlayerLessonDrills_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CONSTRAINT FK_PlayerLessonDrills_Lessons FOREIGN KEY (LessonId) REFERENCES Lessons(LessonId) ON DELETE CASCADE,
@@ -312,12 +339,6 @@ CREATE TABLE IF NOT EXISTS CosmeticPrices (
     Price INT NOT NULL CHECK(Price >= 0),
     PRIMARY KEY(CosmeticId, CurrencyId)
 );
-CREATE TABLE IF NOT EXISTS GameProgress (
-    PlayerId UUID PRIMARY KEY REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
-    Data JSONB NOT NULL DEFAULT '{}'::jsonb,
-    Revision BIGINT NOT NULL DEFAULT 0,
-    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
 CREATE TABLE IF NOT EXISTS GameCommands (
     PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CommandId VARCHAR(64) NOT NULL,
@@ -329,15 +350,18 @@ CREATE TABLE IF NOT EXISTS GameCommands (
 );
 CREATE TABLE IF NOT EXISTS TrainingSessions (
     AttemptId UUID PRIMARY KEY,
+    Sequence BIGINT GENERATED ALWAYS AS IDENTITY,
     PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     LessonId INT NOT NULL REFERENCES Lessons(LessonId),
     DrillId INT NOT NULL REFERENCES Drills(DrillId),
     Data JSONB NOT NULL,
     Completed BOOLEAN NOT NULL DEFAULT FALSE,
+    IsCurrent BOOLEAN NOT NULL DEFAULT TRUE,
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(LessonId,DrillId) REFERENCES LessonDrills(LessonId,DrillId)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS TrainingSessions_Current_Idx ON TrainingSessions(PlayerId) WHERE IsCurrent;
 CREATE INDEX IF NOT EXISTS TrainingSessions_Player_Time_Idx ON TrainingSessions(PlayerId,CreatedAt DESC);
 -- Durable app activity sessions start empty. Matchmaking/search/consent live in Redis.
 CREATE TABLE IF NOT EXISTS AppActivitySessions (
@@ -352,7 +376,6 @@ CREATE INDEX IF NOT EXISTS AppActivitySessions_Player_Idx ON AppActivitySessions
 
 CREATE TABLE IF NOT EXISTS GameMatches (
     MatchId UUID PRIMARY KEY,
-    OwnerId UUID REFERENCES PlayerProfiles(UserId) ON DELETE SET NULL,
     Kind VARCHAR(32) NOT NULL,
     Status VARCHAR(20) NOT NULL DEFAULT 'STARTED' CHECK(Status IN ('STARTED','FINISHED','CANCELLED')),
     Data JSONB NOT NULL,
@@ -380,24 +403,6 @@ CREATE TABLE IF NOT EXISTS CurrencyTransactions (
     Reason VARCHAR(80) NOT NULL,
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(PlayerId,CurrencyId,CommandId)
-);
-CREATE TABLE IF NOT EXISTS OnlineReplays (
-    MatchId UUID NOT NULL REFERENCES GameMatches(MatchId) ON DELETE CASCADE,
-    PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
-    ObjectKey VARCHAR(500) NOT NULL,
-    Metadata JSONB NOT NULL,
-    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(MatchId,PlayerId)
-);
-CREATE TABLE IF NOT EXISTS OnlineReplayChunks (
-    MatchId UUID NOT NULL,
-    PlayerId UUID NOT NULL,
-    ChunkIndex INT NOT NULL CHECK(ChunkIndex>=0 AND ChunkIndex<10000),
-    ObjectKey VARCHAR(500) NOT NULL,
-    ContentHash VARCHAR(64) NOT NULL,
-    Metadata JSONB NOT NULL,
-    PRIMARY KEY(MatchId,PlayerId,ChunkIndex),
-    FOREIGN KEY(MatchId,PlayerId) REFERENCES OnlineReplays(MatchId,PlayerId) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS VerificationEmail_User_Recent_Idx ON VerificationEmail(UserId,CreatedAt DESC,VerificationEmailId DESC);
 CREATE INDEX IF NOT EXISTS PlayerProfiles_Leaderboard_Idx ON PlayerProfiles(Elo DESC,WinCount DESC);

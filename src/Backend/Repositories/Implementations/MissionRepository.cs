@@ -33,6 +33,7 @@ namespace Repositories.Implementations
         {
             return await _context.Playermissions
                 .Include(pm => pm.Mission)
+                .OrderByDescending(pm => pm.Periodkey)
                 .FirstOrDefaultAsync(pm => pm.Playerid == playerId && pm.Missionid == missionId);
         }
 

@@ -15,7 +15,7 @@ namespace PickleVerse.Multiplayer
         }
         void EnsureReplay()
         {
-            if (replay || !Started || Finished || Roster == null || !PickleVerse.Progression.ProgressionRuntime.Exists)
+            if (!IsServer || replay || !Started || Finished || Roster == null || !PickleVerse.Progression.ProgressionRuntime.Exists)
                 return;
             var actors = NetworkPlayer.All.Where(p => p && p.IsSpawned && p.Actor).OrderBy(p => p.Identity.ToString()).ToArray();
             if (actors.Length != Roster.Count)

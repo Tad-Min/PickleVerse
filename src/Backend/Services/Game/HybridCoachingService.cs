@@ -51,7 +51,7 @@ public sealed class HybridCoachingService(PickleVerseContext db, GameSql sql, Ga
         var batchId = Guid.Parse(batch.batchId);
         // Authenticated ownership and server-accepted completion precede analytics.
         var owner = batch.sessionType == "match"
-            ? await sql.One("SELECT m.kind,m.updatedat FROM gamematches m WHERE m.matchid=@session AND m.status='FINISHED' AND (m.ownerid=@player OR EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player))",
+            ? await sql.One("SELECT m.kind,m.updatedat FROM gamematches m WHERE m.matchid=@session AND m.status='FINISHED' AND EXISTS(SELECT 1 FROM gamematchplayers p WHERE p.matchid=m.matchid AND p.playerid=@player)",
                 r => new { mode = r.GetString(0), ended = r.GetDateTime(1) }, P("session", session), P("player", player))
             : await sql.One("SELECT 'training',updatedat FROM trainingsessions WHERE attemptid=@session AND playerid=@player AND completed",
                 r => new { mode = r.GetString(0), ended = r.GetDateTime(1) }, P("session", session), P("player", player));
@@ -100,9 +100,7 @@ public sealed class HybridCoachingService(PickleVerseContext db, GameSql sql, Ga
     public async Task<CoachingSummary> Summary(Guid player)
     {
         var catalog = await catalogs.Load();
-        var progress = await sql.One("SELECT data::text FROM gameprogress WHERE playerid=@player", r => r.GetString(0), P("player", player));
-        var profile = progress == null ? new PlayerProfile() : GameJson.Read<ProgressEnvelope>(progress).player;
-        var training = TrainingEngine.Ensure(profile);
+        var training = await RelationalTraining.Load(sql,player);
         var available = catalog.lessons.Where(d => TrainingEngine.Unlocked(training, d)).ToDictionary(d => d.id);
         string fallback = TrainingEngine.Recommended(training);
         var summary = settings.CoachingEnabled ? await sql.One("SELECT result::text,updatedat FROM aicoachingprofiles WHERE playerid=@player AND updatedat>=@cutoff",
@@ -118,7 +116,6 @@ public sealed class HybridCoachingService(PickleVerseContext db, GameSql sql, Ga
         }
         return summary;
     }
-    public sealed class ProgressEnvelope { public PlayerProfile player = new(); }
     public async Task<Services.DTOs.RecommendationResponse> LegacyRecommendation(Guid player)
     {
         var summary = await Summary(player);
@@ -149,9 +146,7 @@ public sealed class HybridCoachingService(PickleVerseContext db, GameSql sql, Ga
             ORDER BY s.createdat,p.partindex LIMIT 3
             """, r => r.GetString(0), P("player", session.player), P("mode", session.mode), P("cutoff", clock.GetUtcNow().UtcDateTime.AddDays(-30))) : new List<string>();
         var history = await sql.Query("SELECT (result->'metrics')::text FROM aicoachingsessions WHERE playerid=@player AND createdat>=@cutoff ORDER BY createdat DESC LIMIT 9", r => GameJson.Read<List<TechniqueMetric>>(r.GetString(0)), P("player", session.player), P("cutoff", clock.GetUtcNow().UtcDateTime.AddDays(-30)));
-        var saved = await sql.One("SELECT data::text FROM gameprogress WHERE playerid=@player", r => r.GetString(0), P("player", session.player));
-        var profile = saved == null ? new PlayerProfile() : GameJson.Read<ProgressEnvelope>(saved).player;
-        var training = TrainingEngine.Ensure(profile);
+        var training = await RelationalTraining.Load(sql,session.player);
         var catalog = await catalogs.Load();
         return HybridJson.Write(new { sessionId = session.session.ToString("N"), ruleVersion = "rules-v1", mode = session.mode,
             shots = rows.SelectMany(row => GameJson.Read<List<ShotTelemetry>>(row)).OrderBy(s => s.sequence), history,

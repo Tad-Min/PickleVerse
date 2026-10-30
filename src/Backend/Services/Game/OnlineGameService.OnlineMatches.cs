@@ -122,8 +122,8 @@ public sealed partial class OnlineGameService
         if (saved == null)
         {
             string kind = OnlineKind(stored.roster).ToString();
-            await sql.Run("INSERT INTO gamematches(matchid,ownerid,kind,data,createdat,updatedat) VALUES(@match,@owner,@kind,@data::jsonb,@now,@now)",
-                P("match", match), P("owner", MatchId(stored.host)), P("kind", kind), P("data", GameJson.Write(stored)), P("now", Now));
+            await sql.Run("INSERT INTO gamematches(matchid,kind,data,createdat,updatedat) VALUES(@match,@kind,@data::jsonb,@now,@now)",
+                P("match", match), P("kind", kind), P("data", GameJson.Write(stored)), P("now", Now));
             foreach (var member in stored.roster.members)
                 await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,lastseenat) VALUES(@match,@player,@team,@now)", P("match", match), P("player", MatchId(member.id)), P("team", member.team), P("now", Now));
         }
@@ -321,6 +321,7 @@ public sealed partial class OnlineGameService
         }
         m.phase = "FINISHED";
         await SaveOnline(match, m);
+        await replays.PublishAvailable(match);
     }
     async Task EndOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players, int? loser, string reason, HashSet<Guid> forfeits)
     {

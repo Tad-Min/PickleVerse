@@ -91,7 +91,7 @@ namespace PickleVerse.Replays
         }
         public async Task<ReplayChunk> ReadChunkAsync(ReplayMetadata metadata, ReplayChunkInfo info)
         {
-            Guard(metadata.playerId);
+            Guard(Account.Profile?.UserId.ToString("N"));
             int index = metadata.chunks.FindIndex(c => c.file == info.file);
             if (index < 0)
                 throw new InvalidDataException("Không tìm thấy chunk replay.");

@@ -9,6 +9,10 @@ public partial class Playermission
 
     public int Missionid { get; set; }
 
+    public string Periodkey { get; set; } = "";
+
+    public int CurrentStreak { get; set; }
+
     public int Progress { get; set; }
 
     public bool Isclaimed { get; set; }

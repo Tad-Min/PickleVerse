@@ -60,7 +60,7 @@ static class ConfigurationChecks
         {
             await using var db = new PickleVerseContext(options);
             var sql = new GameSql(db);
-            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, settings), clock, settings, TestRedis.State, TestRedis.Leaderboard));
+            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, settings), clock, settings, TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(db, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Reject(Func<Task> action, HttpStatusCode status, string name)
         {
@@ -93,9 +93,9 @@ static class ConfigurationChecks
             var otp = await db.Verificationemails.SingleAsync(v => v.Userid == player);
             check(otp.Expiresat - otp.Createdat == TimeSpan.FromMinutes(2), "OTP expiration follows a non-default configuration");
             var sql = new GameSql(db);
-            check(await sql.One("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'", r => r.GetInt64(0)) == 37
-                && await sql.One("SELECT count(*) FROM information_schema.columns WHERE table_schema='public'", r => r.GetInt64(0)) == 208,
-                "fresh database has 37 tables and 208 columns without GameSettings/RankedSearches");
+            check(await sql.One("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'", r => r.GetInt64(0)) == 40
+                && await sql.One("SELECT count(*) FROM information_schema.columns WHERE table_schema='public'", r => r.GetInt64(0)) == 260,
+                "fresh database has 40 tables and 260 columns without a player progress document");
         }
         clock.Now = clock.Now.AddSeconds(2);
         await Reject(() => Auth(s => s.ResendOtpAsync(new() { Email = email })), HttpStatusCode.TooManyRequests, "resend uses the configured cooldown");

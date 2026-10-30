@@ -22,7 +22,7 @@ namespace PickleVerse.Replays
         public List<ReplayChunkInfo> chunks = new List<ReplayChunkInfo>();
     }
     [Serializable]
-    public sealed class ReplayChunkInfo { public string file; public double start, end; }
+    public sealed class ReplayChunkInfo { public string file, contentHash; public double start, end; }
     [Serializable]
     public sealed class ReplayActorPose
     {

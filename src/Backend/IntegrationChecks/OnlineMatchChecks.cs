@@ -16,7 +16,7 @@ static class OnlineMatchChecks
         {
             await using var context = new PickleVerseContext(options);
             var sql = new GameSql(context);
-            return await action(new OnlineGameService(context, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard));
+            return await action(new OnlineGameService(context, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(context, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Reject(Func<Task> call, string name, HttpStatusCode status = HttpStatusCode.Conflict)
         {

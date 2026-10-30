@@ -15,7 +15,7 @@ static class RedisChecks
         {
             await using var db = new PickleVerseContext(options);
             var sql = new GameSql(db);
-            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard));
+            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(db, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task<bool> Rejected(Func<Task> action)
         {

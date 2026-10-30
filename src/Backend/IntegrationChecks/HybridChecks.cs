@@ -22,7 +22,8 @@ static class HybridChecks
         var sql = new GameSql(db);
         await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'", P("id", player), P("email", player + "@example.invalid"));
         await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)", P("id", player), P("name", "Hybrid" + player.ToString("N")[..8]));
-        await sql.Run("INSERT INTO gamematches(matchid,ownerid,kind,data,status) VALUES(@match,@player,'BotPractice','{}','FINISHED')", P("match", match), P("player", player));
+        await sql.Run("INSERT INTO gamematches(matchid,kind,data,status) VALUES(@match,'BotPractice','{}','FINISHED')", P("match", match));
+        await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted) VALUES(@match,@player,0,true)", P("match", match), P("player", player));
         await sql.Run("INSERT INTO matchhistory(matchid,matchtype,teamascore,teambscore) VALUES(@match,'BotPractice',2,0)", P("match", match));
         var service = new HybridCoachingService(db, sql, new GameCatalogService(sql, new ServerSettings(config)), settings, clock);
         TelemetryBatch Batch() => new() { batchId = Guid.NewGuid().ToString("N"), sessionId = match.ToString("N"), sessionType = "match", playerId = player.ToString("N"), gameVersion = "integration" };
@@ -41,6 +42,9 @@ static class HybridChecks
         check(await Rejected(() => service.Ingest(player, batch), HttpStatusCode.Conflict), "conflicting part payload rejected");
         batch.shots[0].timingError = .1f;
         check(await Rejected(() => service.Ingest(Guid.NewGuid(), batch), HttpStatusCode.Forbidden), "another account cannot upload telemetry for this player");
+        var outsider = Guid.NewGuid();
+        var otherBatch = Batch(); otherBatch.playerId = outsider.ToString("N");
+        check(await Rejected(() => service.Ingest(outsider, otherBatch), HttpStatusCode.Conflict), "matching telemetry account fields cannot bypass match participant membership");
         batch.partIndex = 0; batch.shots[0].shotId = "first"; batch.shots[0].sequence = 0;
         accepted = await service.Ingest(player, batch);
         check(accepted.status == "queued" && accepted.acceptedParts == 2, "complete batch creates one durable job");
@@ -85,12 +89,11 @@ static class HybridChecks
             new(){id=a.ToString("N"),team=0,elo=400,name="A"},new(){id=b.ToString("N"),team=1,elo=400,name="B"}]};
         var stored=new Dictionary<string,object>{["roster"]=roster,["session"]="rating-fixture",["host"]=a.ToString("N"),["phase"]="PLAYING",["startedUtcTicks"]=clock.GetUtcNow().Ticks};
         if(!legacy)stored["ratingPolicyVersion"]=EloPolicy.CurrentVersion;
-        await sql.Run("INSERT INTO gamematches(matchid,ownerid,kind,data) VALUES(@match,@owner,'RankedSingles',@data::jsonb)",P("match",match),P("owner",a),P("data",GameJson.Payload(stored)));
+        await sql.Run("INSERT INTO gamematches(matchid,kind,data) VALUES(@match,'RankedSingles',@data::jsonb)",P("match",match),P("data",GameJson.Payload(stored)));
         foreach(var id in new[]{a,b})
         {
             await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted) VALUES(@match,@player,@team,true)",P("match",match),P("player",id),P("team",id==a?0:1));
-            var pending=new MatchResult{id=match.ToString("N"),playerId=id.ToString("N"),kind=MatchKind.RankedSingles,ownElo=400,opponentElo=400};
-            await sql.Run("INSERT INTO gameprogress(playerid,data) VALUES(@player,@data::jsonb)",P("player",id),P("data",GameJson.Payload(new{player=new PlayerProfile{id=id.ToString("N"),pendingMatch=pending}})));
+
         }
         MatchFinishRequest Result(Guid id,bool won)=>new(){RequestId=Guid.NewGuid().ToString("N"),Result=new MatchResult{
             id=match.ToString("N"),playerId=id.ToString("N"),kind=MatchKind.RankedSingles,outcome=won?MatchOutcome.Won:MatchOutcome.Lost,
@@ -100,7 +103,7 @@ static class HybridChecks
         {
             await using var context=new PickleVerseContext(options);var query=new GameSql(context);
             var settings=TestSettings.Load();
-            var game=new OnlineGameService(context,query,new GameCatalogService(query,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard);
+            var game=new OnlineGameService(context,query,new GameCatalogService(query,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,new MatchReplayService(context,query,TestReplayStorage.Shared,Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance));
             return await game.ReportOnline(player,request);
         }
         var requestA=Result(a,true);var requestB=Result(b,false);

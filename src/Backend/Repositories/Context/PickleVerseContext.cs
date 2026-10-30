@@ -323,9 +323,9 @@ public partial class PickleVerseContext : DbContext
             entity.Property(e => e.Matchid)
                 .ValueGeneratedNever()
                 .HasColumnName("matchid");
-            entity.Property(e => e.Replayurl)
-                .HasMaxLength(1000)
-                .HasColumnName("replayurl");
+            entity.Property(e => e.Objectkey)
+                .HasMaxLength(500)
+                .HasColumnName("objectkey");
 
             entity.HasOne(d => d.Match).WithOne(p => p.Matchhistoryreplay)
                 .HasForeignKey<Matchhistoryreplay>(d => d.Matchid)
@@ -471,7 +471,7 @@ public partial class PickleVerseContext : DbContext
 
         modelBuilder.Entity<Playermission>(entity =>
         {
-            entity.HasKey(e => new { e.Playerid, e.Missionid }).HasName("playermissions_pkey");
+            entity.HasKey(e => new { e.Playerid, e.Missionid, e.Periodkey }).HasName("playermissions_pkey");
 
             entity.ToTable("playermissions");
 
@@ -479,6 +479,8 @@ public partial class PickleVerseContext : DbContext
             entity.Property(e => e.Missionid).HasColumnName("missionid");
             entity.Property(e => e.Claimedat).HasColumnName("claimedat");
             entity.Property(e => e.Isclaimed).HasColumnName("isclaimed");
+            entity.Property(e => e.Periodkey).HasMaxLength(8).HasDefaultValue("").HasColumnName("periodkey");
+            entity.Property(e => e.CurrentStreak).HasColumnName("currentstreak");
             entity.Property(e => e.Progress).HasColumnName("progress");
 
             entity.HasOne(d => d.Mission).WithMany(p => p.Playermissions)
@@ -506,6 +508,23 @@ public partial class PickleVerseContext : DbContext
                 .HasMaxLength(80)
                 .HasDefaultValueSql("'initial'::character varying")
                 .HasColumnName("avatar");
+            entity.Property(e => e.Revision).HasColumnName("revision");
+            entity.Property(e => e.TutorialCompleted).HasColumnName("tutorialcompleted");
+            entity.Property(e => e.TutorialSkipped).HasColumnName("tutorialskipped");
+            entity.Property(e => e.DailyStreakEnabledAt).HasColumnName("dailystreakenabledat");
+            entity.Property(e => e.RankWinStreak).HasColumnName("rankwinstreak");
+            entity.Property(e => e.RankLossStreak).HasColumnName("ranklossstreak");
+            entity.Property(e => e.BestWinStreak).HasColumnName("bestwinstreak");
+            entity.Property(e => e.LifetimeMatches).HasColumnName("lifetimematches");
+            entity.Property(e => e.LifetimePoints).HasColumnName("lifetimepoints");
+            entity.Property(e => e.LifetimeReturns).HasColumnName("lifetimereturns");
+            entity.Property(e => e.LifetimeServes).HasColumnName("lifetimeserves");
+            entity.Property(e => e.LifetimeBotMatches).HasColumnName("lifetimebotmatches");
+            entity.Property(e => e.LifetimeHumanMatches).HasColumnName("lifetimehumanmatches");
+            entity.Property(e => e.LifetimeHumanWins).HasColumnName("lifetimehumanwins");
+            entity.Property(e => e.LifetimeRankedWins).HasColumnName("lifetimerankedwins");
+            entity.Property(e => e.LifetimeDoublesWins).HasColumnName("lifetimedoubleswins");
+            entity.Property(e => e.LifetimeHigherRatedWins).HasColumnName("lifetimehigherratedwins");
             entity.Property(e => e.Daystreak).HasColumnName("daystreak");
             entity.Property(e => e.Elo)
                 .HasDefaultValue(100)

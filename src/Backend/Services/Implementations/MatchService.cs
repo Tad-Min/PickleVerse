@@ -33,17 +33,6 @@ namespace Services.Implementations
 
             await _unitOfWork.Matches.AddMatchAsync(match);
 
-            // Lưu Replay nếu có
-            if (!string.IsNullOrWhiteSpace(request.ReplayUrl))
-            {
-                var replay = new Matchhistoryreplay
-                {
-                    Matchid = matchId,
-                    Replayurl = request.ReplayUrl
-                };
-                await _unitOfWork.Matches.AddTelemetryReplayAsync(replay);
-            }
-
             // Tính toán Elo
             bool teamAWon = request.TeamAScore > request.TeamBScore;
 
@@ -127,7 +116,7 @@ namespace Services.Implementations
                     CreatedAt = m.Createdat,
                     IsWinner = participant?.Status == "WIN",
                     ReceivedElo = participant?.Receivedelo ?? 0,
-                    ReplayUrl = replay?.Replayurl
+                    ReplayUrl = replay == null ? null : $"/api/Replays/{m.Matchid}"
                 });
             }
 

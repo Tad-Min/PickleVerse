@@ -26,7 +26,7 @@ namespace Services.Implementations
             var result = new List<MissionDto>();
             foreach (var mission in missions)
             {
-                var pm = playerMissions.FirstOrDefault(x => x.Missionid == mission.Missionid);
+                var pm = playerMissions.Where(x => x.Missionid == mission.Missionid).OrderByDescending(x => x.Periodkey).FirstOrDefault();
                 var progress = pm?.Progress ?? 0;
                 result.Add(new MissionDto
                 {
