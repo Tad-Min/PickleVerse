@@ -696,7 +696,7 @@ namespace PickleVerse.Multiplayer
                 SetNotice("Mọi người đã xác nhận • Đang tải sân…");
                 PickleVerse.Settings.SceneLoading.BeginExternal("MultiplayerCourt");
                 if (Match.IsHost)
-                    await Match.Runner.LoadScene("MultiplayerCourt", LoadSceneMode.Single);
+                    await Match.Runner.LoadScene(Fusion.SceneRef.FromPath(MultiplayerSceneConfiguration.CourtPath), LoadSceneMode.Single);
             }
             finally
             {
