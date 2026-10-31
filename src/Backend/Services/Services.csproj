@@ -1,11 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Multiplayer/RoomModels.cs" Link="GameRules/RoomModels.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Multiplayer/RoomInvitationModels.cs" Link="GameRules/RoomInvitationModels.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Multiplayer/RankedBotAccounts.cs" Link="GameRules/RankedBotAccounts.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Multiplayer/CourtVenue.cs" Link="GameRules/CourtVenue.cs" />
-    <PackageReference Include="StackExchange.Redis" Version="3.4.5" />
     <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <ProjectReference Include="..\Repositories\Repositories.csproj" />
@@ -24,18 +19,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <!-- Compile the prototype's pure C# rules on the server as well. No Unity runtime dependency. -->
-  <ItemGroup>
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Progression/ProgressionModels.cs" Link="GameRules/ProgressionModels.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Progression/DailyStreakData.cs" Link="GameRules/DailyStreakData.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Training/TrainingModels.cs" Link="GameRules/TrainingData.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Entites/Replays/ReplayModels.cs" Link="GameRules/ReplayData.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Progression/ProgressionEngine.cs" Link="GameRules/ProgressionEngine.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Progression/DailyStreakEngine.cs" Link="GameRules/DailyStreakEngine.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Progression/EloPolicy.cs" Link="GameRules/EloPolicy.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Progression/HybridAiModels.cs" Link="GameRules/HybridAiModels.cs" />
-    <Compile Include="../../../My project/Assets/Scripts/Progression/TrainingModels.cs" Link="GameRules/TrainingEngine.cs" />
-  </ItemGroup>
 
 </Project>

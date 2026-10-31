@@ -2,10 +2,10 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PickleVerse.Multiplayer;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
+using Entities.Exceptions;
+using Services.Implementations;
 using StackExchange.Redis;
-using static Services.Game.GameSql;
+using static Repositories.Data.PostgresCommands;
 
 static class RedisChecks
 {
@@ -14,8 +14,8 @@ static class RedisChecks
         async Task<T> Call<T>(Func<OnlineGameService, Task<T>> action)
         {
             await using var db = new PickleVerseContext(options);
-            var sql = new GameSql(db);
-            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(db, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            return await action(new OnlineGameService(sqlData, new GameCatalogService(sqlData, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(sqlData, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task<bool> Rejected(Func<Task> action)
         {
@@ -33,7 +33,7 @@ static class RedisChecks
         {
             var id = Guid.NewGuid();
             await using var db = new PickleVerseContext(options);
-            var sql = new GameSql(db);
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
             await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'", P("id", id), P("email", id + "@example.invalid"));
             await sql.Run("INSERT INTO playerprofiles(userid,playername,elo) VALUES(@id,@name,@elo)", P("id", id), P("name", "Redis" + id.ToString("N")[..10]), P("elo", elo));
             await sql.Run("INSERT INTO verificationemail(userid,email,token,expiresat,isverified) VALUES(@id,@email,'fixture',CURRENT_TIMESTAMP,true)", P("id", id), P("email", id + "@example.invalid"));
@@ -69,13 +69,13 @@ static class RedisChecks
         var first = await Call(s => s.PrepareOnline(a, requestA));
         check(!first.allAccepted, "only the authenticated player's consent is recorded");
         await using (var db = new PickleVerseContext(options))
-            check(await new GameSql(db).One("SELECT count(*) FROM gamematchplayers WHERE matchid=@id AND accepted", r => r.GetInt64(0), P("id", Guid.Parse(pair.matchId))) == 0, "temporary consent is stored in Redis before the SQL match starts");
+            check(await new PostgresCommands(db).One("SELECT count(*) FROM gamematchplayers p JOIN gamematches m USING(matchid) WHERE matchid=@id AND m.startedat IS NOT NULL", r => r.GetInt64(0), P("id", Guid.Parse(pair.matchId))) == 0, "temporary consent is stored in Redis before the SQL match starts");
         check(await Rejected(() => Call(s => s.StartOnline(a, requestA))), "one confirmation cannot start a two-human match");
         var second = await Call(s => s.PrepareOnline(b, requestB));
         check(second.allAccepted, "both humans must confirm their own seats");
         await Call(s => s.StartOnline(a, requestA));
         await using (var db = new PickleVerseContext(options))
-            check(await new GameSql(db).One("SELECT count(*) FROM gamematchplayers WHERE matchid=@id AND accepted", r => r.GetInt64(0), P("id", Guid.Parse(pair.matchId))) == 2, "SQL retains the durable accepted roster after Redis permits start");
+            check(await new PostgresCommands(db).One("SELECT count(*) FROM gamematchplayers p JOIN gamematches m USING(matchid) WHERE matchid=@id AND m.startedat IS NOT NULL", r => r.GetInt64(0), P("id", Guid.Parse(pair.matchId))) == 2, "accepted state derives from the durable match start after Redis consent");
         await Call(s => s.LeaveOnline(a, new() { MatchId = pair.matchId }));
         check(await TestRedis.Connection.GetDatabase().StringGetAsync(TestRedis.State.Prefix + "player:" + a.ToString("N")) == RedisValue.Null, "finished matches release Redis player reservations");
 
@@ -112,7 +112,7 @@ static class RedisChecks
             await Call(s => s.CancelRankedSearch(t.Item1, t.Item2));
 
         await using (var reset = new PickleVerseContext(options))
-            await new GameSql(reset).Run("UPDATE playerprofiles SET elo=100 WHERE userid IN (@a,@b)", P("a", a), P("b", b));
+            await new PostgresCommands(reset).Run("UPDATE playerprofiles SET elo=100 WHERE userid IN (@a,@b)", P("a", a), P("b", b));
         qa = Ticket();
         qb = Ticket();
         await Call(s => s.BeginRankedSearch(a, qa));
@@ -127,23 +127,23 @@ static class RedisChecks
 
         await using (var db = new PickleVerseContext(options))
         {
-            var sql = new GameSql(db);
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
             await TestRedis.Leaderboard.Invalidate();
             var cache = TestRedis.Leaderboard;
-            var key = await cache.Snapshot(sql);
+            var key = await cache.Snapshot(sqlData.Game);
             var dbRedis = TestRedis.Connection.GetDatabase();
             check(await dbRedis.KeyTypeAsync(key) == RedisType.SortedSet, "leaderboard cache is a real Redis Sorted Set");
-            var keyAgain = await cache.Snapshot(sql);
+            var keyAgain = await cache.Snapshot(sqlData.Game);
             check(keyAgain == key, "repeated leaderboard reads reuse the cached generation");
             var ranked = await cache.Ranks(key, [c, d]);
             check(ranked[0].id == new[] { c, d }.OrderBy(x => x.ToString("N"), StringComparer.Ordinal).First(), "equal Elo sorts by UUID ascending consistently with PostgreSQL");
             await sql.Run("UPDATE playerprofiles SET elo=5000 WHERE userid=@id", P("id", d));
             await cache.Invalidate();
-            var fresh = await cache.Snapshot(sql);
+            var fresh = await cache.Snapshot(sqlData.Game);
             check(fresh != key && await cache.Rank(fresh, d) == 1, "invalidating the cache rebuilds ranks from authoritative PostgreSQL Elo");
             await dbRedis.KeyDeleteAsync(fresh);
-            check(await cache.Snapshot(sql) != fresh, "a lost Sorted Set is rebuilt automatically");
-            check(await dbRedis.KeyTimeToLiveAsync(await cache.Snapshot(sql)) > TimeSpan.Zero, "leaderboard snapshots have a bounded lifetime");
+            check(await cache.Snapshot(sqlData.Game) != fresh, "a lost Sorted Set is rebuilt automatically");
+            check(await dbRedis.KeyTimeToLiveAsync(await cache.Snapshot(sqlData.Game)) > TimeSpan.Zero, "leaderboard snapshots have a bounded lifetime");
             check(await sql.One("SELECT to_regclass('public.rankedsearches') IS NULL", r => r.GetBoolean(0)), "fresh SQL initialization no longer creates RankedSearches");
         }
     }

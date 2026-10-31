@@ -4,13 +4,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using Repositories.Context;
 using Repositories.UnitOfWork;
-using Services.DTOs;
+using Entities.DTOs;
 using Services.Implementations;
 using Services.Interfaces;
 using Services.Security;
-using Services.Exceptions;
+using Entities.Exceptions;
 
 // Uses an isolated temporary database on the dev PostgreSQL server. No real email is sent.
+if (args.Contains("--check-api-contract"))
+{
+    await ApiContractChecks.Run();
+    return;
+}
 var connection = Environment.GetEnvironmentVariable("PKV_TEST_POSTGRES")
     ?? throw new InvalidOperationException("Set PKV_TEST_POSTGRES to a dev PostgreSQL connection string.");
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../../"));
@@ -39,7 +44,7 @@ await using var admin = new NpgsqlConnection(adminBuilder.ConnectionString);
 await admin.OpenAsync();
 await using (var create = new NpgsqlCommand($"CREATE DATABASE \"{database}\"", admin))
     await create.ExecuteNonQueryAsync();
-var testBuilder = new NpgsqlConnectionStringBuilder(connection) { Database = database, Pooling = false };
+var testBuilder = new NpgsqlConnectionStringBuilder(connection) { Database = database, Pooling = true, MaxPoolSize = 40 };
 var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(testBuilder.ConnectionString).Options;
 var mail = new CapturedMail();
 var time = new TestClock();
@@ -80,6 +85,42 @@ try
         await setup.OpenAsync();
         await using var command = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql")), setup);
         await command.ExecuteNonQueryAsync();
+    }
+    if (args.Contains("--check-schema"))
+    {
+        await SchemaMappingChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} EF/schema mapping checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-normalized-participants"))
+    {
+        await NormalizedParticipantChecks.Run(options,time,Check);
+        Console.WriteLine($"SUCCESS: {checks} normalized participant checks; disposable database and Redis keys removed.");
+        return;
+    }
+    if (args.Contains("--check-match-columns"))
+    {
+        await RelationalMatchColumnChecks.Run(options,time,Check);
+        Console.WriteLine($"SUCCESS: {checks} relational match column checks; disposable database and Redis keys removed.");
+        return;
+    }
+    if (args.Contains("--check-unified-matches"))
+    {
+        await UnifiedMatchChecks.Run(options,time,Check);
+        Console.WriteLine($"SUCCESS: {checks} unified match and composite FK checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-activity-redis"))
+    {
+        await ActivityRedisChecks.Run(options, time, Check);
+        Console.WriteLine($"SUCCESS: {checks} Redis app activity checks; disposable SQL database and isolated Redis keys removed.");
+        return;
+    }
+    if (args.Contains("--check-match-score"))
+    {
+        await MatchScoreChecks.Run(options,time,Check);
+        Console.WriteLine($"SUCCESS: {checks} MatchScore checks; disposable database removed.");
+        return;
     }
     if (args.Contains("--check-relational-progress"))
     {
@@ -294,6 +335,8 @@ try
 finally
 {
     await TestRedis.Cleanup();
+    using var testPool = new NpgsqlConnection(testBuilder.ConnectionString);
+    NpgsqlConnection.ClearPool(testPool);
     await using var drop = new NpgsqlCommand($"DROP DATABASE \"{database}\" WITH (FORCE)", admin);
     await drop.ExecuteNonQueryAsync();
 }
@@ -413,28 +456,27 @@ static class UnityFixture
             var id = Guid.Parse(fixture["userId"]);
             if (!fixture["email"].StartsWith("unity-smoke-", StringComparison.Ordinal) || !fixture["email"].EndsWith("@example.invalid", StringComparison.Ordinal))
                 throw new InvalidOperationException("Refusing to clean up a non-fixture account.");
-            var sql = new Services.Game.GameSql(context);
+            var sql = new Repositories.Data.PostgresCommands(context);
             if (!await context.Users.AnyAsync(u => u.Userid == id && u.Email == fixture["email"]))
                 throw new InvalidOperationException("Fixture identity does not match the database.");
             var storageConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["Storage:ServiceUrl"] = "http://localhost:19000", ["Storage:AccessKey"] = "minioadmin", ["Storage:SecretKey"] = "minioadmin", ["Storage:BucketName"] = "pickleverse" }).Build();
             var storage = new StorageService(storageConfig, NullLogger<StorageService>.Instance);
             await using var cleanupTx = await context.Database.BeginTransactionAsync();
-            var matches = await sql.Query("SELECT matchid FROM playermatchhistory WHERE playerid=@id UNION SELECT matchid FROM gamematchplayers WHERE playerid=@id", r => r.GetGuid(0), Services.Game.GameSql.P("id", id));
-            await sql.Run("DELETE FROM playermatchhistory WHERE playerid=@id", Services.Game.GameSql.P("id", id));
+            var matches = await sql.Query("SELECT matchid FROM gamematchplayers WHERE playerid=@id", r => r.GetGuid(0), Repositories.Data.PostgresCommands.P("id", id));
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM users WHERE userid = {id} AND email = {fixture["email"]}");
             // Preserve a match if any other participant/history remains, including real players.
             foreach (var match in matches)
             {
-                var empty = await sql.One("SELECT NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", r => r.GetBoolean(0), Services.Game.GameSql.P("match", match));
+                var empty = await sql.One("SELECT NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match)", r => r.GetBoolean(0), Repositories.Data.PostgresCommands.P("match", match));
                 if (!empty) continue;
-                var manifestKey = Services.Game.MatchReplayService.ManifestKey(match);
+                var manifestKey = Services.Implementations.MatchReplayService.ManifestKey(match);
                 await using (var stream = await storage.GetFileAsync(manifestKey))
                 {
                     if (stream != null)
                     {
                         using var reader = new StreamReader(stream);
-                        var replay = Services.Game.GameJson.Read<PickleVerse.Replays.ReplayMetadata>(await reader.ReadToEndAsync());
+                        var replay = Entities.Game.GameJson.Read<PickleVerse.Replays.ReplayMetadata>(await reader.ReadToEndAsync());
                         if (replay.matchId != match.ToString("N")) throw new InvalidOperationException("Unexpected fixture replay.");
                         foreach (var part in replay.chunks)
                         {
@@ -444,8 +486,7 @@ static class UnityFixture
                     }
                 }
                 if (!await storage.DeleteFileAsync(manifestKey)) throw new InvalidOperationException("Fixture manifest deletion failed.");
-                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match) AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
-                await sql.Run("DELETE FROM matchhistory WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM playermatchhistory WHERE matchid=@match)", Services.Game.GameSql.P("match", match));
+                await sql.Run("DELETE FROM gamematches WHERE matchid=@match AND NOT EXISTS(SELECT 1 FROM gamematchplayers WHERE matchid=@match)", Repositories.Data.PostgresCommands.P("match", match));
             }
             await cleanupTx.CommitAsync();
             File.Delete(path);

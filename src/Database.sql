@@ -112,24 +112,24 @@ CREATE TABLE BlockedUsers (
 --#endregion
 
 --#region Match-History
-CREATE TABLE MatchHistory (
-    MatchId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    Sequence BIGINT GENERATED ALWAYS AS IDENTITY,
+CREATE SEQUENCE GameMatches_History_Seq;
+CREATE TABLE GameMatches (
+    MatchId UUID PRIMARY KEY,
+    Kind VARCHAR(32) NOT NULL,
+    Status VARCHAR(20) NOT NULL DEFAULT 'PREPARING' CHECK(Status IN ('PREPARING','PLAYING','FINISHED','CANCELLED')),
+    RatingPolicyVersion VARCHAR(64) NOT NULL DEFAULT 'legacy-v1',
+    Mode SMALLINT NOT NULL DEFAULT 1 CHECK (Mode IN (1,2)),
+    PhotonSession VARCHAR(100),
+    SearchId UUID,
+    Region VARCHAR(30),
+    Night BOOLEAN NOT NULL DEFAULT FALSE,
+    Venue SMALLINT NOT NULL DEFAULT 0 CHECK (Venue IN (0,1)),
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    MatchType VARCHAR(25) NOT NULL DEFAULT '1Vs1',
-    TeamAScore INT NOT NULL DEFAULT 0,
-    TeamBScore INT NOT NULL DEFAULT 0
-);
-
-CREATE TABLE PlayerMatchHistory (
-    PlayerId UUID NOT NULL,
-    MatchId UUID NOT NULL,
-    Status VARCHAR(25) NOT NULL DEFAULT 'WIN',
-    IsTeamA BOOLEAN NOT NULL DEFAULT TRUE,
-    ReceivedElo INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (PlayerId, MatchId),
-    CONSTRAINT FK_PlayerMatchHistory_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId),
-    CONSTRAINT FK_PlayerMatchHistory_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
+    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    StartedAt TIMESTAMPTZ NULL,
+    EndedAt TIMESTAMPTZ NULL,
+    Sequence BIGINT UNIQUE,
+    CONSTRAINT CHK_GameMatches_Finished CHECK (Status <> 'FINISHED' OR (EndedAt IS NOT NULL AND Sequence IS NOT NULL))
 );
 
 CREATE TABLE ReportPlayerInMatch (
@@ -144,13 +144,13 @@ CREATE TABLE ReportPlayerInMatch (
     CONSTRAINT CHK_CannotReportSelf CHECK (ReporterId != ReportedPlayerId),
     CONSTRAINT FK_Report_Reporter FOREIGN KEY (ReporterId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CONSTRAINT FK_Report_ReportedPlayer FOREIGN KEY (ReportedPlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
-    CONSTRAINT FK_Report_Match FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
+    CONSTRAINT FK_Report_GameMatches FOREIGN KEY (MatchId) REFERENCES GameMatches(MatchId) ON DELETE CASCADE
 );
 
 CREATE TABLE MatchHistoryReplay (
     MatchId UUID PRIMARY KEY,
     ObjectKey VARCHAR(500) NOT NULL,
-    CONSTRAINT FK_MatchHistoryReplay_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE CASCADE
+    CONSTRAINT FK_MatchHistoryReplay_GameMatches FOREIGN KEY (MatchId) REFERENCES GameMatches(MatchId) ON DELETE CASCADE
 );
 --#endregion
 
@@ -304,7 +304,7 @@ CREATE TABLE PlayerTechniquesErrors (
     CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_PlayerTechniquesErrors_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     CONSTRAINT FK_PlayerTechniquesErrors_Techniques FOREIGN KEY (TechniqueId) REFERENCES Techniques(TechniqueId) ON DELETE CASCADE,
-    CONSTRAINT FK_PlayerTechniquesErrors_MatchHistory FOREIGN KEY (MatchId) REFERENCES MatchHistory(MatchId) ON DELETE SET NULL,
+    CONSTRAINT FK_PlayerTechniquesErrors_GameMatches FOREIGN KEY (MatchId) REFERENCES GameMatches(MatchId) ON DELETE SET NULL,
     CONSTRAINT FK_PlayerTechniquesErrors_Lessons FOREIGN KEY (LessonId) REFERENCES Lessons(LessonId) ON DELETE SET NULL
 );
 
@@ -324,8 +324,7 @@ CREATE TABLE PlayerLessonDrills (
     Errors JSONB NOT NULL DEFAULT '[]'::jsonb,
     PRIMARY KEY (PlayerId, LessonId, DrillId),
     CONSTRAINT FK_PlayerLessonDrills_PlayerProfiles FOREIGN KEY (PlayerId) REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
-    CONSTRAINT FK_PlayerLessonDrills_Lessons FOREIGN KEY (LessonId) REFERENCES Lessons(LessonId) ON DELETE CASCADE,
-    CONSTRAINT FK_PlayerLessonDrills_Drills FOREIGN KEY (DrillId) REFERENCES Drills(DrillId) ON DELETE CASCADE
+    CONSTRAINT FK_PlayerLessonDrills_LessonDrills FOREIGN KEY (LessonId, DrillId) REFERENCES LessonDrills(LessonId, DrillId) ON DELETE CASCADE
 );
 --#endregion
 
@@ -363,36 +362,39 @@ CREATE TABLE IF NOT EXISTS TrainingSessions (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS TrainingSessions_Current_Idx ON TrainingSessions(PlayerId) WHERE IsCurrent;
 CREATE INDEX IF NOT EXISTS TrainingSessions_Player_Time_Idx ON TrainingSessions(PlayerId,CreatedAt DESC);
--- Durable app activity sessions start empty. Matchmaking/search/consent live in Redis.
-CREATE TABLE IF NOT EXISTS AppActivitySessions (
-    SessionId UUID PRIMARY KEY,
-    PlayerId UUID REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
-    StartedAt TIMESTAMPTZ NOT NULL,
-    ElapsedSeconds BIGINT NOT NULL DEFAULT 0 CHECK(ElapsedSeconds >= 0),
-    CreditedThrough TIMESTAMPTZ,
-    Closed BOOLEAN NOT NULL DEFAULT FALSE
-);
-CREATE INDEX IF NOT EXISTS AppActivitySessions_Player_Idx ON AppActivitySessions(PlayerId,CreditedThrough DESC);
+-- App activity session counters/coverage live in Redis; only the total is persisted in PlayerProfiles.
 
-CREATE TABLE IF NOT EXISTS GameMatches (
-    MatchId UUID PRIMARY KEY,
-    Kind VARCHAR(32) NOT NULL,
-    Status VARCHAR(20) NOT NULL DEFAULT 'STARTED' CHECK(Status IN ('STARTED','FINISHED','CANCELLED')),
-    Data JSONB NOT NULL,
-    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE MatchScore (
+    MatchId UUID NOT NULL REFERENCES GameMatches(MatchId) ON DELETE CASCADE,
+    GameNumber SMALLINT NOT NULL CHECK (GameNumber BETWEEN 1 AND 3),
+    TeamAScore INT NOT NULL CHECK (TeamAScore BETWEEN 0 AND 100000),
+    TeamBScore INT NOT NULL CHECK (TeamBScore BETWEEN 0 AND 100000),
+    Completed BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (MatchId, GameNumber)
 );
 CREATE TABLE IF NOT EXISTS GameMatchPlayers (
     MatchId UUID NOT NULL REFERENCES GameMatches(MatchId) ON DELETE CASCADE,
     PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
     Team SMALLINT NOT NULL CHECK(Team IN (0,1)),
-    Accepted BOOLEAN NOT NULL DEFAULT FALSE,
-    Report JSONB,
-    Fingerprint VARCHAR(64),
+    EloBefore INT NOT NULL DEFAULT 100 CHECK (EloBefore >= 100),
+    GroupId TEXT,
+    RosterIndex SMALLINT NOT NULL DEFAULT 0 CHECK (RosterIndex BETWEEN 0 AND 3),
+    IsReplayWriter BOOLEAN NOT NULL DEFAULT FALSE,
+    ValidReturns INT NOT NULL DEFAULT 0 CHECK (ValidReturns BETWEEN 0 AND 1000000),
+    ValidServes INT NOT NULL DEFAULT 0 CHECK (ValidServes BETWEEN 0 AND 1000000),
+    EndReason VARCHAR(500) NOT NULL DEFAULT '',
+    ReportedAt TIMESTAMPTZ,
     LastSeenAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Outcome VARCHAR(16) NULL CHECK (Outcome IN ('WIN','LOSE','INTERRUPTED')),
+    LocalForfeit BOOLEAN NOT NULL DEFAULT FALSE,
+    FinalizedAt TIMESTAMPTZ NULL,
+    CONSTRAINT CHK_GameMatchPlayers_Finalized CHECK (
+        (FinalizedAt IS NULL AND Outcome IS NULL) OR
+        (FinalizedAt IS NOT NULL AND Outcome IS NOT NULL)),
     PRIMARY KEY(MatchId,PlayerId)
 );
 CREATE INDEX IF NOT EXISTS GameMatchPlayers_Player_Idx ON GameMatchPlayers(PlayerId,MatchId);
+CREATE UNIQUE INDEX GameMatchPlayers_ReplayWriter_Idx ON GameMatchPlayers(MatchId) WHERE IsReplayWriter;
 CREATE TABLE IF NOT EXISTS CurrencyTransactions (
     TransactionId BIGSERIAL PRIMARY KEY,
     PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
@@ -406,7 +408,8 @@ CREATE TABLE IF NOT EXISTS CurrencyTransactions (
 );
 CREATE INDEX IF NOT EXISTS VerificationEmail_User_Recent_Idx ON VerificationEmail(UserId,CreatedAt DESC,VerificationEmailId DESC);
 CREATE INDEX IF NOT EXISTS PlayerProfiles_Leaderboard_Idx ON PlayerProfiles(Elo DESC,WinCount DESC);
-CREATE INDEX IF NOT EXISTS PlayerMatchHistory_Match_Idx ON PlayerMatchHistory(MatchId,PlayerId);
+CREATE INDEX GameMatches_History_Idx ON GameMatches(EndedAt DESC,Sequence DESC) WHERE Status='FINISHED';
+CREATE INDEX GameMatchPlayers_History_Idx ON GameMatchPlayers(PlayerId,FinalizedAt DESC,MatchId) WHERE FinalizedAt IS NOT NULL;
 CREATE INDEX IF NOT EXISTS PlayerTechniquesErrors_Player_Recent_Idx ON PlayerTechniquesErrors(PlayerId,CreatedAt DESC);
 --#endregion
 
@@ -545,7 +548,7 @@ INSERT INTO PlayerCosmetics(PlayerId,CosmeticId,Equipped) SELECT p.UserId,c.Cosm
 -- Hybrid AI durable queue and rating ledger.
 CREATE TABLE IF NOT EXISTS ratingledger (
     playerid UUID NOT NULL REFERENCES playerprofiles(userid) ON DELETE CASCADE,
-    matchid UUID NOT NULL REFERENCES matchhistory(matchid) ON DELETE CASCADE,
+    matchid UUID NOT NULL REFERENCES GameMatches(matchid) ON DELETE CASCADE,
     beforeelo INT NOT NULL, afterelo INT NOT NULL, opponentelo INT NOT NULL,
     delta INT NOT NULL, policyversion TEXT NOT NULL, createdat TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY(playerid,matchid), CHECK(afterelo >= 100), CHECK(afterelo-beforeelo=delta)

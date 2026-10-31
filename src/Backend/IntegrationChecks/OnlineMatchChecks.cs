@@ -4,9 +4,9 @@ using PickleVerse;
 using PickleVerse.Multiplayer;
 using PickleVerse.Progression;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class OnlineMatchChecks
 {
@@ -15,8 +15,8 @@ static class OnlineMatchChecks
         async Task<T> Call<T>(Func<OnlineGameService, Task<T>> action)
         {
             await using var context = new PickleVerseContext(options);
-            var sql = new GameSql(context);
-            return await action(new OnlineGameService(context, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(context, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
+            return await action(new OnlineGameService(sqlData, new GameCatalogService(sqlData, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(sqlData, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Reject(Func<Task> call, string name, HttpStatusCode status = HttpStatusCode.Conflict)
         {
@@ -36,7 +36,7 @@ static class OnlineMatchChecks
         async Task<Guid> Player(string name)
         {
             await using var context = new PickleVerseContext(options);
-            var sql = new GameSql(context);
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
             var id = Guid.NewGuid();
             await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled-test-account',roleid FROM roles WHERE rolename='Player'", P("id", id), P("email", name + "@example.invalid"));
             await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)", P("id", id), P("name", name));
@@ -77,7 +77,9 @@ static class OnlineMatchChecks
         check(started.All(t => t.phase == "PLAYING"), "concurrent start requests create one playing match");
         var pendingA = await Call(s => s.Read(a));
         var pendingB = await Call(s => s.Read(b));
-        check(pendingA.player.pendingMatch.id == pendingB.player.pendingMatch.id && pendingA.player.pendingMatch.startedUtcTicks == clock.GetUtcNow().Ticks, "both profiles share server match identity and start time");
+        var serverStart = clock.GetUtcNow().Ticks / 10 * 10; // PostgreSQL timestamps have microsecond precision.
+        check(pendingA.player.pendingMatch.id == pendingB.player.pendingMatch.id && pendingA.player.pendingMatch.startedUtcTicks == serverStart
+            && pendingB.player.pendingMatch.startedUtcTicks == serverStart, "both profiles share the relational server match identity and start time");
         await Reject(() => Call(s => s.StartBot(a, new MatchStartRequest { RequestId = Guid.NewGuid().ToString("N") })), "bot start cannot overwrite an online match");
         await Reject(() => Call(s => s.StartTraining(a, new StartTrainingRequest { RequestId = Guid.NewGuid().ToString("N"), LessonCode = "serve" })), "training cannot run while an online match is active");
         MatchFinishRequest Result(Guid player, bool won)
@@ -114,11 +116,11 @@ static class OnlineMatchChecks
         await Reject(() => Call(s => s.ReportOnline(a, win)), "completed online statistics cannot be changed on retry");
         await using (var context = new PickleVerseContext(options))
         {
-            var sql = new GameSql(context);
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
             var mid = Guid.Parse(request.Roster.matchId);
-            check(await sql.One("SELECT count(*) FROM playermatchhistory WHERE matchid=@match", r => r.GetInt64(0), P("match", mid)) == 2
-                && await sql.One("SELECT isteama FROM playermatchhistory WHERE matchid=@match AND playerid=@player", r => r.GetBoolean(0), P("match", mid), P("player", a))
-                && !await sql.One("SELECT isteama FROM playermatchhistory WHERE matchid=@match AND playerid=@player", r => r.GetBoolean(0), P("match", mid), P("player", b)), "normalized online history retains both team identities");
+            check(await sql.One("SELECT count(*) FROM gamematchplayers WHERE matchid=@match AND finalizedat IS NOT NULL", r => r.GetInt64(0), P("match", mid)) == 2
+                && await sql.One("SELECT team=0 FROM gamematchplayers WHERE matchid=@match AND finalizedat IS NOT NULL AND playerid=@player", r => r.GetBoolean(0), P("match", mid), P("player", a))
+                && !await sql.One("SELECT team=0 FROM gamematchplayers WHERE matchid=@match AND finalizedat IS NOT NULL AND playerid=@player", r => r.GetBoolean(0), P("match", mid), P("player", b)), "normalized online history retains both team identities");
         }
         var forfeit = Request();
         await Call(s => s.PrepareOnline(a, forfeit));
@@ -134,7 +136,7 @@ static class OnlineMatchChecks
         await Call(s => s.PrepareOnline(b, custom));
         await Call(s => s.StartOnline(a, custom));
         await using (var context = new PickleVerseContext(options))
-            await new GameSql(context).Run("UPDATE gamematchplayers SET lastseenat=@stale WHERE matchid=@match", P("stale", clock.GetUtcNow().UtcDateTime.AddMinutes(-1)), P("match", Guid.Parse(custom.Roster.matchId)));
+            await new PostgresCommands(context).Run("UPDATE gamematchplayers SET lastseenat=@stale WHERE matchid=@match", P("stale", clock.GetUtcNow().UtcDateTime.AddMinutes(-1)), P("match", Guid.Parse(custom.Roster.matchId)));
         var recovered = await Call(s => s.Read(a));
         check(recovered.player.pendingMatch == null && recovered.player.history[0].outcome == MatchOutcome.Interrupted && recovered.player.coins == forfeited.player.coins, "both disconnected accounts reconcile as interrupted without reward on next read");
     }

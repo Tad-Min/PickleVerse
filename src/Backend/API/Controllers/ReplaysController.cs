@@ -4,8 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.DTOs;
-using Services.Game;
+using Entities.DTOs;
+using Services.Interfaces;
 
 namespace API.Controllers
 {
@@ -13,9 +13,9 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class ReplaysController : ControllerBase
     {
-        private readonly MatchReplayService _replayService;
+        private readonly IMatchReplayService _replayService;
 
-        public ReplaysController(MatchReplayService replayService)
+        public ReplaysController(IMatchReplayService replayService)
         {
             _replayService = replayService;
         }
@@ -30,6 +30,7 @@ namespace API.Controllers
 
         [HttpGet("{matchId}")]
         [Authorize]
+        [API.OpenApi.FileResponse]
         public async Task<IActionResult> GetReplay(Guid matchId)
         {
             var player = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

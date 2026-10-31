@@ -2,8 +2,8 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PickleVerse.Progression;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
+using Entities.Exceptions;
+using Services.Implementations;
 using PickleVerse.Replays;
 using System.IO.Compression;
 using Services.Interfaces;
@@ -16,8 +16,8 @@ static class GameChecks
         async Task<T> Call<T>(Func<OnlineGameService, Task<T>> action)
         {
             await using var context = new PickleVerseContext(options);
-            var sql = new GameSql(context);
-            return await action(new OnlineGameService(context, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(context, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
+            return await action(new OnlineGameService(sqlData, new GameCatalogService(sqlData, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(sqlData, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Rejected(Func<Task> action, string name, HttpStatusCode status = HttpStatusCode.BadRequest)
         {
@@ -37,13 +37,13 @@ static class GameChecks
         {
             id = await context.Users.Where(u => u.Email == "race-check@example.invalid").Select(u => u.Userid).SingleAsync();
             string script = await File.ReadAllTextAsync(Path.Combine(root, "src", "Database.sql"));
-            var sql = new GameSql(context);
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
             const string seedStart = "-- BEGIN INITIAL DATA", seedEnd = "-- END INITIAL DATA";
             int start = script.IndexOf(seedStart, StringComparison.Ordinal), end = script.IndexOf(seedEnd, StringComparison.Ordinal);
             if (start < 0 || end <= start)
                 throw new InvalidOperationException("Database.sql must contain one complete initial data section.");
             await sql.Run("BEGIN;\n" + script[start..end] + "\nCOMMIT;");
-            var catalog = await new GameCatalogService(sql, TestSettings.Load()).Load();
+            var catalog = await new GameCatalogService(sqlData, TestSettings.Load()).Load();
             check(catalog.definitions.Count(d => d.scope == ProgressScope.Achievement) == 10 && catalog.definitions.Count(d => d.scope != ProgressScope.Achievement) == 17,
                 "Unity seed is repeatable: 10 achievements and 17 missions");
             check(catalog.lessons.Length == 12 && catalog.lessons.Count(l => l.prerequisites.Length == 0) == 4,
@@ -131,8 +131,8 @@ static class GameChecks
             "equipped paddle and remaining wallet survive a fresh database context");
         await using (var context = new PickleVerseContext(options))
         {
-            var sql = new GameSql(context);
-            var count = await sql.One("SELECT count(*) FROM currencytransactions WHERE playerid=@id AND commandid=@command", r => r.GetInt64(0), GameSql.P("id", id), GameSql.P("command", purchase.RequestId));
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
+            var count = await sql.One("SELECT count(*) FROM currencytransactions WHERE playerid=@id AND commandid=@command", r => r.GetInt64(0), PostgresCommands.P("id", id), PostgresCommands.P("command", purchase.RequestId));
             check(count == 1, "currency ledger records one transaction for the concurrent purchase");
             check(await context.Playerlessondrills.CountAsync(x => x.Playerid == id && x.Score > 0) == 4,
                 "training results also populate normalized lesson progress");
@@ -147,15 +147,15 @@ static class GameChecks
         var outsider = Guid.NewGuid();
         await using (var context = new PickleVerseContext(options))
         {
-            var sql = new GameSql(context);
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
             var seats = await sql.Query("SELECT p.playerid,p.team,u.playername FROM gamematchplayers p JOIN playerprofiles u ON u.userid=p.playerid WHERE p.matchid=@match",
-                r => (id: r.GetGuid(0), team: r.GetInt16(1), name: r.GetString(2)), GameSql.P("match", Guid.Parse(result.id)));
+                r => (id: r.GetGuid(0), team: r.GetInt16(1), name: r.GetString(2)), PostgresCommands.P("match", Guid.Parse(result.id)));
             check(seats.Count == 2 && seats.Any(p => p.id == id && p.team == 0)
                 && seats.Any(p => p.id == Guid.Parse(opponent.id) && p.team == 1 && p.name == opponent.name),
                 "practice stores the human and named bot in GameMatchPlayers with opposite teams");
             await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'",
-                GameSql.P("id", outsider), GameSql.P("email", outsider+"@example.invalid"));
-            await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)", GameSql.P("id", outsider), GameSql.P("name", "Outside"+outsider.ToString("N")[..8]));
+                PostgresCommands.P("id", outsider), PostgresCommands.P("email", outsider+"@example.invalid"));
+            await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)", PostgresCommands.P("id", outsider), PostgresCommands.P("name", "Outside"+outsider.ToString("N")[..8]));
         }
         result.outcome = MatchOutcome.Won;
         result.gamesWon = 2;
@@ -186,14 +186,14 @@ static class GameChecks
         check(legacy.Count == 12 && legacy.Count(l => l.Status == "COMPLETED") == 4, "legacy lesson API uses the complete online prerequisite graph");
         await using (var context = new PickleVerseContext(options))
         {
-            var sql = new GameSql(context);
-            check(await sql.One("SELECT count(*) FROM playermissions WHERE playerid=@id AND periodkey<>''", r => r.GetInt64(0), GameSql.P("id", id)) == 17, "daily and weekly mission state is normalized with its reset period");
+            var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
+            check(await sql.One("SELECT count(*) FROM playermissions WHERE playerid=@id AND periodkey<>''", r => r.GetInt64(0), PostgresCommands.P("id", id)) == 17, "daily and weekly mission state is normalized with its reset period");
         }
         var storage = TestReplayStorage.Shared;
         async Task<T> Replay<T>(Func<MatchReplayService, Task<T>> action)
         {
             await using var context = new PickleVerseContext(options);
-            return await action(new MatchReplayService(context, new GameSql(context), storage, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance));
+            return await action(new MatchReplayService(new UnitOfWork(context), storage, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance));
         }
         var match = Guid.Parse(result.id);
         var metadata = new ReplayMetadata

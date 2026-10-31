@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Services.Exceptions;
+using Entities.Exceptions;
+using Entities.DTOs.Common;
 
 namespace API.Middlewares
 {
@@ -36,28 +37,16 @@ namespace API.Middlewares
                 BadRequestException badReqEx => ((int)HttpStatusCode.BadRequest, badReqEx.Message),
                 UnauthorizedException unauthEx => ((int)HttpStatusCode.Unauthorized, unauthEx.Message),
                 ForbiddenException forbidEx => ((int)HttpStatusCode.Forbidden, forbidEx.Message),
-                StackExchange.Redis.RedisException => (503, "Dịch vụ ghép trận tạm thời chưa sẵn sàng. Vui lòng thử lại."),
+                Exception error when Services.ServiceErrors.IsUnavailable(error) => (503, "Dịch vụ tạm thời chưa sẵn sàng. Vui lòng thử lại."),
                 AppException appEx => ((int)appEx.StatusCode, appEx.Message),
-                KeyNotFoundException => ((int)HttpStatusCode.NotFound, "Tài nguyên không tìm thấy."),
-                UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Không có quyền truy cập."),
+                KeyNotFoundException missing => ((int)HttpStatusCode.NotFound, missing.Message),
+                UnauthorizedAccessException access => ((int)HttpStatusCode.Forbidden, access.Message),
+                ArgumentException argument => ((int)HttpStatusCode.BadRequest, argument.Message),
                 _ => ((int)HttpStatusCode.InternalServerError, "Đã xảy ra lỗi máy chủ nội bộ. Vui lòng liên hệ quản trị viên.")
             };
 
-            var problemDetails = new ProblemDetails
-            {
-                Status = statusCode,
-                Title = title,
-                Detail = exception is AppException ? exception.Message : (_env.IsDevelopment() ? exception.ToString() : "Vui lòng kiểm tra lại yêu cầu hoặc liên hệ hỗ trợ."),
-                Instance = httpContext.Request.Path
-            };
-
-            problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
-            problemDetails.Extensions["timestamp"] = DateTime.UtcNow;
-
             httpContext.Response.StatusCode = statusCode;
-            httpContext.Response.ContentType = "application/problem+json";
-
-            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+            await httpContext.Response.WriteAsJsonAsync(ApiResponse.ErrorResponse(title), cancellationToken);
             return true;
         }
     }

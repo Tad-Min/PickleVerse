@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using PickleVerse.Progression;
 using Repositories.Context;
 using Services.Configuration;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class HybridChecks
 {
@@ -19,13 +19,13 @@ static class HybridChecks
         var settings = new HybridAiSettings(config);
         var player = Guid.NewGuid(); var match = Guid.NewGuid();
         await using var db = new PickleVerseContext(options);
-        var sql = new GameSql(db);
+        var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
         await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'", P("id", player), P("email", player + "@example.invalid"));
         await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)", P("id", player), P("name", "Hybrid" + player.ToString("N")[..8]));
-        await sql.Run("INSERT INTO gamematches(matchid,kind,data,status) VALUES(@match,'BotPractice','{}','FINISHED')", P("match", match));
-        await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted) VALUES(@match,@player,0,true)", P("match", match), P("player", player));
-        await sql.Run("INSERT INTO matchhistory(matchid,matchtype,teamascore,teambscore) VALUES(@match,'BotPractice',2,0)", P("match", match));
-        var service = new HybridCoachingService(db, sql, new GameCatalogService(sql, new ServerSettings(config)), settings, clock);
+        await sql.Run("INSERT INTO gamematches(matchid,kind,status,endedat,sequence) VALUES(@match,'BotPractice','FINISHED',CURRENT_TIMESTAMP,nextval('gamematches_history_seq'))", P("match", match));
+        await MatchScoreStore.Save(db,match,[new(11,5,true),new(11,8,true)]);
+        await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,outcome,finalizedat) VALUES(@match,@player,0,'WIN',CURRENT_TIMESTAMP)", P("match", match), P("player", player));
+        var service = new HybridCoachingService(sqlData, new GameCatalogService(sqlData, new ServerSettings(config)), settings, clock);
         TelemetryBatch Batch() => new() { batchId = Guid.NewGuid().ToString("N"), sessionId = match.ToString("N"), sessionType = "match", playerId = player.ToString("N"), gameVersion = "integration" };
         var batch = Batch(); batch.partCount = 2; batch.partIndex = 1;
         batch.shots.Add(new() { shotId = "second", sequence = 1, kind = "Dink", technique = "Dink", source = "integration", outcome = "Contact", timingError = .1f, assisted = false });
@@ -78,7 +78,7 @@ static class HybridChecks
     }
     static async Task RatingCompletionChecks(DbContextOptions<PickleVerseContext> options, TestClock clock, Action<bool,string> check, bool legacy)
     {
-        await using var db=new PickleVerseContext(options);var sql=new GameSql(db);
+        await using var db=new PickleVerseContext(options);var sql=new PostgresCommands(db);var sqlData = new UnitOfWork(db);
         var a=Guid.NewGuid();var b=Guid.NewGuid();var match=Guid.NewGuid();
         foreach(var id in new[]{a,b})
         {
@@ -87,12 +87,13 @@ static class HybridChecks
         }
         var roster=new PickleVerse.Multiplayer.MatchRoster{matchId=match.ToString("N"),mode=PickleVerse.Multiplayer.PlayMode.Singles,region="asia",members=[
             new(){id=a.ToString("N"),team=0,elo=400,name="A"},new(){id=b.ToString("N"),team=1,elo=400,name="B"}]};
-        var stored=new Dictionary<string,object>{["roster"]=roster,["session"]="rating-fixture",["host"]=a.ToString("N"),["phase"]="PLAYING",["startedUtcTicks"]=clock.GetUtcNow().Ticks};
-        if(!legacy)stored["ratingPolicyVersion"]=EloPolicy.CurrentVersion;
-        await sql.Run("INSERT INTO gamematches(matchid,kind,data) VALUES(@match,'RankedSingles',@data::jsonb)",P("match",match),P("data",GameJson.Payload(stored)));
+        if(legacy)
+            await sql.Run("INSERT INTO gamematches(matchid,kind,status,photonsession,region,startedat) VALUES(@match,'RankedSingles','PLAYING','rating-fixture','asia',@start)",P("match",match),P("start",clock.Now.UtcDateTime));
+        else
+            await sql.Run("INSERT INTO gamematches(matchid,kind,status,photonsession,region,startedat,ratingpolicyversion) VALUES(@match,'RankedSingles','PLAYING','rating-fixture','asia',@start,@policy)",P("match",match),P("start",clock.Now.UtcDateTime),P("policy",EloPolicy.CurrentVersion));
         foreach(var id in new[]{a,b})
         {
-            await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted) VALUES(@match,@player,@team,true)",P("match",match),P("player",id),P("team",id==a?0:1));
+            await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,elobefore,isreplaywriter,rosterindex) VALUES(@match,@player,@team,400,@writer,@team)",P("match",match),P("player",id),P("team",id==a?0:1),P("writer",id==a));
 
         }
         MatchFinishRequest Result(Guid id,bool won)=>new(){RequestId=Guid.NewGuid().ToString("N"),Result=new MatchResult{
@@ -101,9 +102,9 @@ static class HybridChecks
             ratingPolicyVersion="client-forged-version",ownElo=999999,opponentElo=999999}};
         async Task<GameSnapshot> Report(Guid player,MatchFinishRequest request)
         {
-            await using var context=new PickleVerseContext(options);var query=new GameSql(context);
+            await using var context=new PickleVerseContext(options);var query=new PostgresCommands(context);var queryData = new UnitOfWork(context);
             var settings=TestSettings.Load();
-            var game=new OnlineGameService(context,query,new GameCatalogService(query,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,new MatchReplayService(context,query,TestReplayStorage.Shared,Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance));
+            var game=new OnlineGameService(queryData,new GameCatalogService(queryData,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,new MatchReplayService(queryData,TestReplayStorage.Shared,Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance));
             return await game.ReportOnline(player,request);
         }
         var requestA=Result(a,true);var requestB=Result(b,false);
@@ -122,18 +123,22 @@ static class HybridChecks
         var handler = new FlakyAiHandler(url != null);
         var services = new ServiceCollection();
         services.AddScoped(_=>new PickleVerseContext(options));
-        services.AddScoped<GameSql>();
+        services.AddScoped<PostgresCommands>();
+        services.AddScoped<GameRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton(new ServerSettings(workerConfig));
         services.AddSingleton(settings);
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddScoped<GameCatalogService>();
+        services.AddScoped<IGameCatalogService>(sp => sp.GetRequiredService<GameCatalogService>());
         services.AddScoped<HybridCoachingService>();
+        services.AddScoped<IHybridCoachingService>(sp => sp.GetRequiredService<HybridCoachingService>());
         services.AddHttpClient("hybrid-ai", c=>c.Timeout=TimeSpan.FromSeconds(15)).ConfigurePrimaryHttpMessageHandler(()=>handler);
         await using var provider = services.BuildServiceProvider();
-        using var worker = new API.Workers.HybridAiWorker(provider.GetRequiredService<IServiceScopeFactory>(), provider.GetRequiredService<IHttpClientFactory>(), settings, NullLogger<API.Workers.HybridAiWorker>.Instance);
+        using var worker = new Services.Workers.HybridAiWorker(provider.GetRequiredService<IServiceScopeFactory>(), provider.GetRequiredService<IHttpClientFactory>(), settings, NullLogger<Services.Workers.HybridAiWorker>.Instance);
         await worker.StartAsync(CancellationToken.None);
         await using var db = new PickleVerseContext(options);
-        var sql = new GameSql(db);
+        var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
         async Task WaitFor(string target)
         {
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));

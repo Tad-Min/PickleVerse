@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Linq;
 using System.Threading;
@@ -55,7 +56,15 @@ namespace PickleVerse.Services.Api
                 throw ParseError(response);
             try
             {
-                var result = JsonConvert.DeserializeObject<T>(response.Body, Settings);
+                var payload = JToken.Parse(response.Body);
+                if (payload is JObject envelope && envelope["success"]?.Type == JTokenType.Boolean)
+                {
+                    if (!(bool)envelope["success"])
+                        throw ParseError(response);
+                    if (envelope.Property("data") != null)
+                        payload = envelope["data"];
+                }
+                var result = payload.ToObject<T>(JsonSerializer.Create(Settings));
                 if (result == null)
                     throw new JsonSerializationException();
                 return result;

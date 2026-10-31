@@ -1,6 +1,4 @@
-using Services.Game;
-using Repositories.Context;
-using Microsoft.EntityFrameworkCore;
+using Services.Implementations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +6,8 @@ using System.Threading.Tasks;
 using Entities.Models;
 using Microsoft.Extensions.Logging;
 using Repositories.UnitOfWork;
-using Services.DTOs;
-using Services.Exceptions;
+using Entities.DTOs;
+using Entities.Exceptions;
 using Services.Interfaces;
 
 namespace Services.Implementations
@@ -20,13 +18,11 @@ namespace Services.Implementations
         private readonly ILogger<ProfileService> _logger;
 
         readonly LeaderboardCache? _leaderboard;
-        readonly PickleVerseContext? _context;
-        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger, LeaderboardCache? leaderboard = null, PickleVerseContext? context = null)
+        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger, LeaderboardCache? leaderboard = null)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _leaderboard = leaderboard;
-            _context = context;
         }
 
         public async Task<PlayerProfileResponse?> GetMyProfileAsync(Guid userId)
@@ -137,16 +133,16 @@ namespace Services.Implementations
             try
             {
                 top = Math.Clamp(top, 1, 1000);
-                if (_leaderboard != null && _context != null)
+                if (_leaderboard != null)
                 {
                     try
                     {
-                        var key = await _leaderboard.Snapshot(new GameSql(_context));
+                        var key = await _leaderboard.Snapshot(_unitOfWork.Game);
                         var ids = await _leaderboard.Top(key, top);
-                        var cachedProfiles = await _context.Playerprofiles.AsNoTracking().Include(p => p.User).Where(p => ids.Contains(p.Userid)).ToListAsync();
+                        var cachedProfiles = await _unitOfWork.Game.Profiles(ids);
                         return ids.Select(id => cachedProfiles.FirstOrDefault(p => p.Userid == id)).Where(p => p != null).Select(p => MapToResponse(p!)).ToList();
                     }
-                    catch (StackExchange.Redis.RedisException error)
+                    catch (Exception error) when (PersistenceErrors.IsCacheUnavailable(error))
                     {
                         _logger.LogWarning(error, "Leaderboard cache unavailable; reading PostgreSQL.");
                     }

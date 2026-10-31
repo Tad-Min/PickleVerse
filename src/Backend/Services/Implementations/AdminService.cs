@@ -6,8 +6,8 @@ using Entities.Enums;
 using Entities.Models;
 using Microsoft.Extensions.Logging;
 using Repositories.UnitOfWork;
-using Services.DTOs;
-using Services.Exceptions;
+using Entities.DTOs;
+using Entities.Exceptions;
 using Services.Interfaces;
 
 namespace Services.Implementations
@@ -276,13 +276,14 @@ namespace Services.Implementations
                 foreach (var m in matches)
                 {
                     var replay = await _unitOfWork.Matches.GetTelemetryReplayAsync(m.Matchid);
+                    var score = Repositories.Game.MatchScoreStore.GameWins(m.Matchscores);
                     result.Add(new MatchItemDto
                     {
                         MatchId = m.Matchid,
-                        MatchType = m.Matchtype,
-                        TeamAScore = m.Teamascore,
-                        TeamBScore = m.Teambscore,
-                        CreatedAt = m.Createdat,
+                        MatchType = m.Kind,
+                        TeamAScore = score.teamA,
+                        TeamBScore = score.teamB,
+                        CreatedAt = m.Endedat!.Value,
                         ReplayUrl = replay == null ? null : $"/api/Replays/{m.Matchid}"
                     });
                 }

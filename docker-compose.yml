@@ -83,6 +83,11 @@ services:
       AI_SERVICE_KEY: "${AI_SERVICE_KEY:-}"
       AI_ENABLE_MODEL: "${AI_ENABLE_MODEL:-false}"
       AI_MODEL_PATH: "/models/tier.joblib"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
     volumes:
       - ./src/AiService/models:/models:ro
     networks:
@@ -104,7 +109,7 @@ services:
       HybridAi__ServiceKey: "${AI_SERVICE_KEY:-}"
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: "http://+:8080"
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=pickleverse;Username=sa;Password=12345;GSS Encryption Mode=Disable;"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=pickleverse;Username=sa;Password=12345;GSS Encryption Mode=Disable;Maximum Pool Size=${POSTGRES_MAX_POOL_SIZE:-40};"
       Redis__ConnectionString: "redis:6379,abortConnect=false,connectTimeout=3000,syncTimeout=3000"
       Storage__ServiceUrl: "http://s3-storage:9000"
       Storage__AccessKey: "minioadmin"

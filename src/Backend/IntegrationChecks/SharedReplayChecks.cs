@@ -6,22 +6,22 @@ using PickleVerse.Multiplayer;
 using PickleVerse.Progression;
 using PickleVerse.Replays;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class SharedReplayChecks
 {
     public static async Task Run(DbContextOptions<PickleVerseContext> options, TimeProvider clock, Action<bool,string> check)
     {
         var storage = new TestReplayStorage();
-        MatchReplayService Replays(PickleVerseContext db) => new(db,new GameSql(db),storage,NullLogger<MatchReplayService>.Instance);
+        MatchReplayService Replays(PickleVerseContext db) => new(new UnitOfWork(db),storage,NullLogger<MatchReplayService>.Instance);
         async Task<T> Replay<T>(Func<MatchReplayService,Task<T>> call)
         { await using var db=new PickleVerseContext(options); return await call(Replays(db)); }
         async Task<T> Game<T>(Func<OnlineGameService,Task<T>> call)
         {
-            await using var db=new PickleVerseContext(options);var sql=new GameSql(db);var settings=TestSettings.Load();
-            return await call(new OnlineGameService(db,sql,new GameCatalogService(sql,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,Replays(db)));
+            await using var db=new PickleVerseContext(options);var sql=new PostgresCommands(db);var sqlData = new UnitOfWork(db);var settings=TestSettings.Load();
+            return await call(new OnlineGameService(sqlData,new GameCatalogService(sqlData,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,Replays(db)));
         }
         async Task Reject(Func<Task> call,HttpStatusCode status,string name)
         {
@@ -30,7 +30,7 @@ static class SharedReplayChecks
             check(rejected,name);
         }
         var a=Guid.NewGuid();var b=Guid.NewGuid();var outsider=Guid.NewGuid();
-        await using var context=new PickleVerseContext(options);var query=new GameSql(context);
+        await using var context=new PickleVerseContext(options);var query=new PostgresCommands(context);var queryData = new UnitOfWork(context);
         foreach(var id in new[]{a,b,outsider})
         {
             await query.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'",P("id",id),P("email",id+"@example.invalid"));

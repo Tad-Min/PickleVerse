@@ -1,13 +1,12 @@
 using Repositories.UnitOfWork;
-using Services.DTOs;
-using Services.Game;
+using Entities.DTOs;
+using Services.Implementations;
 using Services.Interfaces;
-using static Services.Game.GameSql;
 
 namespace Services.Implementations;
 
 // Retain existing HTTP contracts while sharing the locked mutations used by the online menu.
-public sealed class FriendService(IUnitOfWork unitOfWork, OnlineSocialService online, GameSql sql) : IFriendService
+public sealed class FriendService(IUnitOfWork unitOfWork, IOnlineSocialService online) : IFriendService
 {
     public async Task<bool> SendFriendRequestAsync(Guid senderId, Guid receiverId)
     {
@@ -16,7 +15,7 @@ public sealed class FriendService(IUnitOfWork unitOfWork, OnlineSocialService on
     }
     public async Task<bool> RespondFriendRequestAsync(Guid receiverId, RespondFriendRequestDto request)
     {
-        var sender = await sql.One("SELECT senderid FROM friendrequests WHERE requestid=@request AND receiverid=@receiver", r => (Guid?)r.GetGuid(0), P("request", request.RequestId), P("receiver", receiverId));
+        var sender = await unitOfWork.Game.FriendRequestSender(receiverId, request.RequestId);
         if (!sender.HasValue)
             return false;
         await online.Act(receiverId, new SocialActionRequest { PlayerId = sender.Value, RequestId = request.RequestId, Action = request.Accept ? "accept" : "decline" });

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Entities.Models;
 using Microsoft.Extensions.Logging;
 using Repositories.UnitOfWork;
-using Services.DTOs;
-using Services.Exceptions;
+using Entities.DTOs;
+using Entities.Exceptions;
 using Services.Interfaces;
 
 namespace Services.Implementations

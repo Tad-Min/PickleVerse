@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Repositories.Interfaces;
+using Repositories.Game;
 
 namespace Repositories.UnitOfWork
 {
@@ -15,6 +16,7 @@ namespace Repositories.UnitOfWork
         IFriendRepository Friends { get; }
         IMissionRepository Missions { get; }
         IAchievementRepository Achievements { get; }
+        GameRepository Game { get; }
 
         Task<int> SaveChangesAsync();
         int SaveChanges();

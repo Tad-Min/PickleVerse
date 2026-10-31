@@ -2,6 +2,16 @@
 
 ## Cập nhật ngày 31/10/2026
 
+Mới nhất đã bỏ 9 cột dư ở GameMatchPlayers, còn 15 cột; dùng nguồn dữ liệu gốc và tính tổng thay cho bản sao. Schema hiện tại 38 bảng/267 cột/53 FK. Xem [Rà soát GameMatchPlayers](../GameMatchPlayers_Normalization_20261031.md). Các số 276 cột bên dưới là lịch sử, không phải cấu trúc hiện tại.
+
+Mới nhất đã tách toàn bộ GameMatches.Data và GameMatchPlayers.Report thành cột/quan hệ và xóa hai JSONB. Không thêm bảng; schema hiện tại 38 bảng/276 cột/53 FK. Các số 257/263 cột bên dưới thuộc các đợt trước. Xem [Relational Match Columns](../Relational_Match_Columns_20261031.md).
+
+Tiếp theo, theo yêu cầu người dùng, AppActivitySessions đã bỏ; phiên hoạt động chuyển Redis, chỉ giữ tổng trong PlayerProfiles.TimePlayedSeconds. Schema mới nhất là 38 bảng/257 cột/53 FK. Xem [Redis App Activity](../Redis_App_Activity_20261031.md). Các số 39 bảng và trước đó bên dưới phản ánh từng đợt trước.
+
+Đợt mới nhất đã gộp MatchHistory/GameMatches và GameMatchPlayers/PlayerMatchHistory, sửa FK ghép PlayerLessonDrills và dùng Npgsql EF Core cho các luồng đã sửa. Schema hiện có 39 bảng/263 cột/54 FK, API readiness 200. Chi tiết [Unified Matches](../Unified_Matches_20261031.md). Các dòng bên dưới ghi lại thời điểm trước khi các đề xuất này được thực hiện; không suy ra những chênh lệch Proposal khác đã được giải quyết.
+
+Đợt mới nhất thêm MatchScore theo đồng ý của người dùng để lưu điểm từng game, dùng chung cho các thành viên của hai đội. Schema hiện tại là 41 bảng/265 cột/57 FK; xem [MatchScore](../MatchScore_20261031.md). Các đề xuất gộp bảng trận/lịch sử và sửa FK PlayerLessonDrills chưa được thực hiện trong đợt này.
+
 Đợt mới nhất đã bỏ hoàn toàn GameProgress theo yêu cầu: tiến trình đọc/ghi từ các bảng chuyên biệt, không thêm entity. Đã đồng bộ schema development/backend/sơ đồ với 40 bảng/260 cột/56 FK; API readiness 200 và kiểm tra HTTP tiến trình trên backend Docker đạt. Chi tiết tại [Relational Progress](../Relational_Progress_20261031.md). Những số lượng bảng bên dưới thuộc các đợt trước.
 
 Đã hợp nhất replay theo yêu cầu tiếp theo: bỏ OnlineReplays/OnlineReplayChunks, chỉ giữ MatchHistoryReplay trỏ manifest S3 cho một replay chung mỗi trận. Backend/Unity và Conceptual Diagram đã đồng bộ; database development đã tạo lại với 41 bảng/235 cột/57 FK, backend readiness 200. Chi tiết và kiểm tra trong [Replay Storage](../Replay_Storage_20261031.md). Thay đổi này không xác nhận các khoảng cách Proposal khác đã được xử lý.

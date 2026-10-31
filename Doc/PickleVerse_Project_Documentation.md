@@ -2,7 +2,7 @@
 
 Bản tổng hợp ngày **22/10/2026**, gộp đầy đủ **48 tài liệu Markdown** trong `Doc`. Nội dung được sắp theo chủ đề; các báo cáo, đề xuất và mẫu lệnh vẫn phản ánh thời điểm tài liệu gốc được viết.
 
-**Cập nhật schema ngày 31/10/2026:** đã bỏ `GameProgress`, `OnlineReplays` và `OnlineReplayChunks`. Schema hiện có 40 bảng; phần từ điển bên dưới là snapshot cũ. Thiết kế mới tại [Tiến trình từ các bảng chuyên biệt](Relational_Progress_20261031.md) và [Replay dùng chung](Replay_Storage_20261031.md); dùng `src/Database.sql` hiện tại để tạo database.
+**Cập nhật schema ngày 31/10/2026:** GameMatches và GameMatchPlayers đều còn 15 cột; schema hiện tại 38 bảng/265 cột/53 FK. Hai tổng game thắng của GameMatches đã bỏ, tính từ MatchScore; dữ liệu trùng hồ sơ/điểm/Elo trong GameMatchPlayers cũng đã bỏ. Đã bỏ GameProgress, các bảng replay cũ, AppActivitySessions và JSON Data/Report của trận; vẫn dùng MatchScore, quan hệ trận/lịch sử đã gộp và FK ghép PlayerLessonDrills. Backend dùng Npgsql EF Core cho các luồng đã sửa; phiên hoạt động ở Redis, tổng thời gian ở PlayerProfiles. Phần từ điển bên dưới là snapshot cũ. Xem [Rà soát GameMatches](GameMatches_Normalization_20261031.md), [Rà soát GameMatchPlayers](GameMatchPlayers_Normalization_20261031.md) và dùng src/Database.sql hiện tại để tạo database.
 
 **Đọc trước:** [Trạng thái chuyển online](#doc-online-migration-status), [chạy Docker và tích hợp Unity/backend](#doc-unity-backend-integration), [thời gian app và bot Rank Online](#doc-app-activity-ranked-fallback). Các báo cáo giai đoạn local/NGO được giữ để tra cứu lịch sử.
 
@@ -332,6 +332,7 @@ Phạm vi người dùng duyệt ngày 22/10/2026: thời gian từ mở app, ch
 - `POST /api/Game/activity/open`: không cần JWT, mở phiên bằng UUID ngẫu nhiên của lần chạy app.
 - `POST /api/Game/activity/checkpoint`: cần JWT; `{ sessionId, elapsedSeconds, close }`. UUID trong JSON dùng định dạng có dấu gạch nối. Server trả `{ totalSeconds, elapsedSeconds }`.
 - Server gắn phiên với một tài khoản, kiểm tra thời gian tăng theo đồng hồ server và tính phần thời gian chưa được ghi nhận. Retry và các cửa sổ app chồng nhau không cộng trùng. Đóng phiên không tiếp tục tăng giờ.
+- Cập nhật 31/10: phiên/coverage và biên nhận tổng trước/sau nằm trong Redis, TTL 8 ngày; PostgreSQL chỉ giữ PlayerProfiles.TimePlayedSeconds. Phiên hết hạn/mất trả 410 để Unity tạo UUID mới, không cộng lại elapsed cũ. Xem Redis_App_Activity_20261031.md.
 - Không còn cộng thời lượng khi hoàn tất trận. Endpoint cũ `/api/Profiles/sync-time` trả 410 để tránh cộng thêm lần nữa.
 - Giữ số thời gian đã lưu trước thay đổi này; không có log mở/đóng app cũ để tính lại lịch sử chính xác. Nếu process bị kill/crash trước checkpoint cuối, phần chưa gửi chưa được bảo đảm lưu.
 
@@ -1306,7 +1307,7 @@ Luồng: Unity đăng ký hàng chờ qua API → API ghép đủ người và t
 | Xác nhận | Redis Hash theo MatchId, lưu dấu vân tay phòng/đội hình, hạn 120 giây và từng UUID đã đồng ý. API `offer` mở hạn trước lần đồng ý đầu tiên. Hủy lượt ghép làm mất hiệu lực xác nhận của toàn trận. |
 | Trận và kết quả | `GameMatches`, `GameMatchPlayers`, `MatchHistory`, `PlayerMatchHistory`, hồ sơ/phần thưởng vẫn trong PostgreSQL. Cột `GameMatchPlayers.Accepted` ghi nhận đội hình đã xác nhận khi bắt đầu, không cập nhật theo từng lần bấm lúc chờ. |
 | Bảng xếp hạng | Redis Sorted Set dùng điểm `-Elo` và UUID dạng N; thứ tự Elo giảm dần, UUID tăng dần khi hòa điểm. API đọc metadata và quan hệ chặn/kết bạn hiện tại từ PostgreSQL. Cả danh sách Unity và endpoint Profiles/leaderboard dùng cache. |
-| Thời gian app | `AppActivitySessions` giữ nguyên trong PostgreSQL, cùng transaction với tổng thời gian hồ sơ để tránh cộng trùng. |
+| Thời gian app | Phiên/coverage trong Redis; khóa dòng và biên nhận tổng trước/sau chống cộng trùng. Tổng bền vững ở PlayerProfiles.TimePlayedSeconds; AppActivitySessions đã bỏ ngày 31/10. |
 
 Cấu hình `Redis` trong `src/Backend/API/appsettings.json`: kết nối local `localhost:16379`, prefix `pickleverse:`, lưu ticket/tombstone 900 giây, loại người không poll quá 30 giây khỏi lần ghép tiếp theo, cache leaderboard 15 giây. Unity poll khoảng 1 giây/lần. Key có thời hạn giúp dọn phiên đã bỏ; hủy/kết thúc trận giải phóng chỗ ngay. Elo có nguồn chuẩn trong PostgreSQL; kết thúc trận làm mất hiệu lực cache. Thay đổi từ luồng quản trị/xác thực có thể cần tối đa 15 giây để hiện trong cache mới.
 

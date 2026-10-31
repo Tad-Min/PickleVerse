@@ -1,14 +1,14 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.Game;
+using Services.Interfaces;
 
 namespace API.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/Game")]
-public sealed class GameController(OnlineGameService game, GameCatalogService catalogs) : ControllerBase
+public sealed class GameController(IOnlineGameService game, IGameCatalogService catalogs) : ControllerBase
 {
     Guid Player => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     [AllowAnonymous]

@@ -77,7 +77,7 @@ namespace PickleVerse.Services
                 pending = SendAsync(false);
             }
         }
-        async Task SendAsync(bool close)
+        async Task SendAsync(bool close, bool renewExpired = true)
         {
             int version = generation;
             string key = session;
@@ -100,6 +100,19 @@ namespace PickleVerse.Services
                 }
                 if (version == generation)
                     Error = null;
+            }
+            catch (ApiException error) when (error.StatusCode == 410 && renewExpired && version == generation && this)
+            {
+                // Redis expired/restarted. Keep the persisted total, but never replay the
+                // old elapsed time into a new session (that would count it twice).
+                generation++;
+                session = Guid.NewGuid().ToString("N");
+                began = Time.realtimeSinceStartupAsDouble;
+                opened = false;
+                closing = close;
+                if (receipt != null)
+                    receipt.elapsedSeconds = 0;
+                await SendAsync(close, false);
             }
             catch (Exception error)
             {

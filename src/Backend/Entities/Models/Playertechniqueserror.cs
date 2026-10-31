@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Entities.Models;
@@ -23,7 +23,7 @@ public partial class Playertechniqueserror
 
     public virtual Lesson? Lesson { get; set; }
 
-    public virtual Matchhistory? Match { get; set; }
+    public virtual Gamematch? Match { get; set; }
 
     public virtual Playerprofile Player { get; set; } = null!;
 

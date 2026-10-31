@@ -10,48 +10,51 @@ using Repositories.Interfaces;
 
 namespace Repositories.Implementations
 {
-    public class MatchRepository : GenericRepository<Matchhistory>, IMatchRepository
+    public class MatchRepository : GenericRepository<Gamematch>, IMatchRepository
     {
         public MatchRepository(PickleVerseContext context) : base(context)
         {
         }
 
-        public async Task<Matchhistory?> GetMatchByIdAsync(Guid matchId)
+        public async Task<Gamematch?> GetMatchByIdAsync(Guid matchId)
         {
-            return await _context.Matchhistories
-                .Include(m => m.Playermatchhistories)
+            return await _context.Gamematches
+                .Include(m => m.Gamematchplayers)
                     .ThenInclude(p => p.Player)
-                .FirstOrDefaultAsync(m => m.Matchid == matchId);
+                .FirstOrDefaultAsync(m => m.Matchid == matchId && m.Status == "FINISHED" && m.Endedat != null);
         }
 
-        public async Task<List<Matchhistory>> GetPlayerMatchesAsync(Guid playerId, int limit = 20)
+        public async Task<List<Gamematch>> GetPlayerMatchesAsync(Guid playerId, int limit = 20)
         {
-            return await _context.Matchhistories
-                .Include(m => m.Playermatchhistories)
-                .Where(m => m.Playermatchhistories.Any(p => p.Playerid == playerId))
-                .OrderByDescending(m => m.Createdat)
+            return await _context.Gamematches
+                .Include(m => m.Gamematchplayers).Include(m => m.Ratingledgers).Include(m => m.Matchscores).AsSplitQuery()
+                .Where(m => m.Status == "FINISHED" && m.Endedat != null && m.Gamematchplayers.Any(p => p.Playerid == playerId && p.Finalizedat != null))
+                .Where(m => m.Status == "FINISHED" && m.Endedat != null)
+                .OrderByDescending(m => m.Endedat).ThenByDescending(m => m.Sequence)
                 .Take(limit)
                 .ToListAsync();
         }
 
-        public async Task<List<Matchhistory>> GetRecentMatchesAsync(int limit = 50)
+        public async Task<List<Gamematch>> GetRecentMatchesAsync(int limit = 50)
         {
-            return await _context.Matchhistories
-                .Include(m => m.Playermatchhistories)
+            return await _context.Gamematches
+                .Include(m => m.Gamematchplayers)
                     .ThenInclude(p => p.Player)
-                .OrderByDescending(m => m.Createdat)
+                .Include(m => m.Matchscores).AsSplitQuery()
+                .Where(m => m.Status == "FINISHED" && m.Endedat != null)
+                .OrderByDescending(m => m.Endedat).ThenByDescending(m => m.Sequence)
                 .Take(limit)
                 .ToListAsync();
         }
 
-        public async Task AddMatchAsync(Matchhistory match)
+        public async Task AddMatchAsync(Gamematch match)
         {
-            await _context.Matchhistories.AddAsync(match);
+            await _context.Gamematches.AddAsync(match);
         }
 
-        public async Task AddParticipantAsync(Playermatchhistory participant)
+        public async Task AddParticipantAsync(Gamematchplayer participant)
         {
-            await _context.Playermatchhistories.AddAsync(participant);
+            await _context.Gamematchplayers.AddAsync(participant);
         }
 
         public async Task<Matchhistoryreplay?> GetTelemetryReplayAsync(Guid matchId)

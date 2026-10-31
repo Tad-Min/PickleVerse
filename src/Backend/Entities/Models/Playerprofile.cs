@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Entities.Models;
@@ -71,7 +71,7 @@ public partial class Playerprofile
 
     public virtual ICollection<Playerlessondrill> Playerlessondrills { get; set; } = new List<Playerlessondrill>();
 
-    public virtual ICollection<Playermatchhistory> Playermatchhistories { get; set; } = new List<Playermatchhistory>();
+    public virtual ICollection<Gamematchplayer> Gamematchplayers { get; set; } = new List<Gamematchplayer>();
 
     public virtual ICollection<Playermission> Playermissions { get; set; } = new List<Playermission>();
 

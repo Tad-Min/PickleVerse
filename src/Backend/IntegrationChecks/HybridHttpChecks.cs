@@ -16,17 +16,15 @@ using PickleVerse.Progression;
 using Repositories.Context;
 using Repositories.UnitOfWork;
 using Services.Configuration;
-using Services.Game;
 using Services.Implementations;
 using Services.Interfaces;
-using static Services.Game.GameSql;
+using static Repositories.Data.PostgresCommands;
 
 static class HybridHttpChecks
 {
     public static async Task Run(DbContextOptions<PickleVerseContext> options, Action<bool,string> check)
     {
-        // Functional fixtures disable pooling to simplify database cleanup. Production does
-        // pool connections; benchmark the production behavior, not a fresh login per request.
+        // Keep the benchmark pool bounded to the same budget as the development API.
         using(var source=new PickleVerseContext(options))
         {
             var connection=new Npgsql.NpgsqlConnectionStringBuilder(source.Database.GetConnectionString()) {Pooling=true};
@@ -52,15 +50,18 @@ static class HybridHttpChecks
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddScoped(_=>new PickleVerseContext(options));
-        builder.Services.AddScoped<GameSql>(); builder.Services.AddScoped<GameCatalogService>();
+        builder.Services.AddScoped<PostgresCommands>();
+        builder.Services.AddScoped<GameRepository>(); builder.Services.AddScoped<GameCatalogService>();
+        builder.Services.AddScoped<IGameCatalogService>(sp => sp.GetRequiredService<GameCatalogService>());
         builder.Services.AddSingleton(settings); builder.Services.AddSingleton(settings.HybridAi);
         builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
         builder.Services.AddScoped<HybridCoachingService>();
+        builder.Services.AddScoped<IHybridCoachingService>(sp => sp.GetRequiredService<HybridCoachingService>());
         builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
         builder.Services.AddScoped<IAiCoachingService,AiCoachingService>();
         builder.Services.AddHttpClient("hybrid-ai",c=>c.Timeout=TimeSpan.FromSeconds(15));
-        builder.Services.AddHostedService<API.Workers.HybridAiWorker>();
-        builder.Services.AddControllers().AddJsonOptions(o=>{
+        builder.Services.AddHostedService<Services.Workers.HybridAiWorker>();
+        builder.Services.AddControllers(o=>o.Filters.Add<API.Filters.ApiResponseFilter>()).AddJsonOptions(o=>{
             o.JsonSerializerOptions.IncludeFields=true;
             o.JsonSerializerOptions.IgnoreReadOnlyProperties=true;
             o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
@@ -76,7 +77,7 @@ static class HybridHttpChecks
         app.UseExceptionHandler();app.UseRequestDecompression();app.UseAuthentication();app.UseAuthorization();app.MapControllers();
         await app.StartAsync();
         await using var db=new PickleVerseContext(options);
-        var sql=new GameSql(db);
+        var sql=new PostgresCommands(db);var sqlData = new UnitOfWork(db);
         var player=Guid.NewGuid();
         await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'",P("id",player),P("email",player+"@example.invalid"));
         await sql.Run("INSERT INTO playerprofiles(userid,playername) VALUES(@id,@name)",P("id",player),P("name","Http"+player.ToString("N")[..8]));
@@ -94,9 +95,9 @@ static class HybridHttpChecks
         for(int index=0;index<112;index++)
         {
             var match=Guid.NewGuid();
-            await sql.Run("INSERT INTO gamematches(matchid,kind,data,status) VALUES(@match,'BotPractice','{}','FINISHED')",P("match",match));
-            await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,accepted) VALUES(@match,@player,0,true)",P("match",match),P("player",player));
-            await sql.Run("INSERT INTO matchhistory(matchid,matchtype,teamascore,teambscore) VALUES(@match,'BotPractice',2,0)",P("match",match));
+            await sql.Run("INSERT INTO gamematches(matchid,kind,status,endedat,sequence) VALUES(@match,'BotPractice','FINISHED',CURRENT_TIMESTAMP,nextval('gamematches_history_seq'))",P("match",match));
+            await MatchScoreStore.Save(db,match,[new(11,5,true),new(11,8,true)]);
+            await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,outcome,finalizedat) VALUES(@match,@player,0,'WIN',CURRENT_TIMESTAMP)",P("match",match),P("player",player));
             var batch=new TelemetryBatch{batchId=Guid.NewGuid().ToString("N"),sessionId=match.ToString("N"),sessionType="match",playerId=player.ToString("N"),gameVersion="benchmark"};
             int count=index<12?1000:200;
             batch.shots=Enumerable.Range(0,count).Select(i=>new ShotTelemetry{shotId=$"{index}-{i}",sequence=i,kind="Drive",technique="Drive",source="benchmark",outcome="Contact",assisted=false,timingError=i%5==0?.1f:0}).ToList();
@@ -111,6 +112,8 @@ static class HybridHttpChecks
             using var body=new ByteArrayContent(buffer.ToArray());
             body.Headers.ContentType=new MediaTypeHeaderValue("application/json");body.Headers.ContentEncoding.Add("gzip");
             using var response=await client.PostAsync("api/AiCoaching/telemetry",body);
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Telemetry HTTP {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
             response.EnsureSuccessStatusCode();
             return sw.Elapsed.TotalMilliseconds;
         }

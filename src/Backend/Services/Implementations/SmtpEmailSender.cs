@@ -3,7 +3,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using MimeKit;
-using Services.Exceptions;
+using Entities.Exceptions;
 using Services.Interfaces;
 using Services.Configuration;
 

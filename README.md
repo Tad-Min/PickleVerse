@@ -66,3 +66,5 @@ Xem [triển khai và kết quả kiểm tra](Doc/Proccess/Friend_Room_Invitatio
 ## Hybrid AI
 
 Kiến trúc Unity-local bot + FastAPI analytics, khởi tạo database, cờ triển khai và hướng dẫn kiểm thử nằm tại [Hybrid AI](Doc/Hybrid_AI_Implementation.md). Các bảng Hybrid và Elo ledger được tạo trực tiếp bởi `src/Database.sql`.
+
+Hướng dẫn thử coaching trên môi trường development đã bật ngày 31/10/2026: [AI service và cách test trong game](Doc/AI_Service_Activation_20261031.md).

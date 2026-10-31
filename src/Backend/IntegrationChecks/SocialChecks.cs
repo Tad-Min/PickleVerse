@@ -1,9 +1,9 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class SocialChecks
 {
@@ -12,7 +12,7 @@ static class SocialChecks
         async Task<T> Call<T>(Func<OnlineSocialService, Task<T>> call)
         {
             await using var db = new PickleVerseContext(options);
-            return await call(new OnlineSocialService(db, new GameSql(db), TestRedis.Leaderboard));
+            return await call(new OnlineSocialService(new UnitOfWork(db), TestRedis.Leaderboard));
         }
         async Task Act(Guid self, Guid other, string action, int request = 0) => await Call(async s =>
         {
@@ -35,7 +35,7 @@ static class SocialChecks
         Guid a = Guid.NewGuid(), b = Guid.NewGuid(), c = Guid.NewGuid();
         await using (var db = new PickleVerseContext(options))
         {
-            var sql = new GameSql(db);
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
             foreach (var item in new[] { (a, "SocialAlice", true), (b, "SocialBob", true), (c, "SocialUnverified", false) })
             {
                 await sql.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'", P("id", item.Item1), P("email", item.Item2 + "@example.invalid"));

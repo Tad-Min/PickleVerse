@@ -22,11 +22,22 @@ apiClient.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 & 403
+// Unwrap the API contract once so feature clients continue receiving their DTOs.
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const envelope = response.data;
+    if (envelope && typeof envelope === 'object' && typeof envelope.success === 'boolean') {
+      if (!envelope.success) {
+        return Promise.reject(new AxiosError(envelope.message || 'Yêu cầu không thành công.', 'ERR_BAD_RESPONSE', response.config, response.request, response));
+      }
+      if (Object.prototype.hasOwnProperty.call(envelope, 'data')) {
+        response.data = envelope.data;
+      }
+    }
+    return response;
+  },
   (error: AxiosError<{ message?: string }>) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    if (error.response?.status === 401) {
       // Clear invalid credentials
       localStorage.removeItem('pickleverse_token');
       localStorage.removeItem('pickleverse_user');

@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using PickleVerse.Progression;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class RelationalProgressChecks
 {
@@ -15,11 +15,11 @@ static class RelationalProgressChecks
         var player=Guid.NewGuid();var other=Guid.NewGuid();var settings=TestSettings.Load();
         async Task<T> Game<T>(Func<OnlineGameService,Task<T>> call)
         {
-            await using var db=new PickleVerseContext(options);var sql=new GameSql(db);
-            return await call(new OnlineGameService(db,sql,new GameCatalogService(sql,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,
-                new MatchReplayService(db,sql,TestReplayStorage.Shared,NullLogger<MatchReplayService>.Instance)));
+            await using var db=new PickleVerseContext(options);var sql=new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            return await call(new OnlineGameService(sqlData,new GameCatalogService(sqlData,settings),clock,settings,TestRedis.State,TestRedis.Leaderboard,
+                new MatchReplayService(sqlData,TestReplayStorage.Shared,NullLogger<MatchReplayService>.Instance)));
         }
-        await using var context=new PickleVerseContext(options);var query=new GameSql(context);
+        await using var context=new PickleVerseContext(options);var query=new PostgresCommands(context);var queryData = new UnitOfWork(context);
         foreach(var id in new[]{player,other})
         {
             await query.Run("INSERT INTO users(userid,email,passwordhash,roleid) SELECT @id,@email,'disabled',roleid FROM roles WHERE rolename='Player'",P("id",id),P("email",id+"@example.invalid"));
@@ -64,7 +64,7 @@ static class RelationalProgressChecks
             "lesson API reads normalized rows rather than a hidden progress snapshot");
         await using(var coachingDb=new PickleVerseContext(options))
         {
-            var sql=new GameSql(coachingDb);var coaching=new HybridCoachingService(coachingDb,sql,new GameCatalogService(sql,settings),settings.HybridAi,clock);
+            var sql=new PostgresCommands(coachingDb);var sqlData = new UnitOfWork(coachingDb);var coaching=new HybridCoachingService(sqlData,new GameCatalogService(sqlData,settings),settings.HybridAi,clock);
             check((await coaching.Summary(player)).analysis!.recommendations[0].id=="drive","coaching recommendations use relational lesson completion");
         }
         var ledgerBefore=await query.One("SELECT count(*) FROM currencytransactions WHERE playerid=@player",r=>r.GetInt64(0),P("player",player));

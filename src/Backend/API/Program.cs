@@ -1,28 +1,29 @@
-using StackExchange.Redis;
 using System.Text;
+using Entities.Configuration;
+using StackExchange.Redis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Repositories.Context;
-using Repositories.Implementations;
-using Repositories.Interfaces;
-using Repositories.UnitOfWork;
-using Services.Implementations;
+using Services;
+using API.Filters;
+using API.OpenApi;
+using Entities.DTOs.Common;
 using Services.Interfaces;
 using API.Middlewares;
 using System.Threading.RateLimiting;
-using Services.Game;
-using Services.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton(new ServerSettings(builder.Configuration));
-builder.Services.AddSingleton(new RedisSettings(builder.Configuration));
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(sp.GetRequiredService<RedisSettings>().ConnectionString));
-builder.Services.AddSingleton<RedisGameState>();
-builder.Services.AddSingleton<LeaderboardCache>();
+
+// The API composition root owns configuration binding and Redis connection setup.
+var redisSettings = builder.Configuration.GetSection("Redis").Get<RedisSettings>()
+    ?? throw new InvalidOperationException("Redis configuration is required.");
+redisSettings.Validate();
+builder.Services.AddSingleton(redisSettings);
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
+
+builder.Services.AddPickleVerseServices(builder.Configuration);
 
 // 1. Add Controllers
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddControllers(options => options.Filters.Add<ApiResponseFilter>()).AddJsonOptions(options =>
 {
     // The shared Unity game models use serializable fields and named enums.
     options.JsonSerializerOptions.IncludeFields = true;
@@ -41,11 +42,6 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-
-// 2. Configure PostgreSQL DbContext
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<PickleVerseContext>(options =>
-    options.UseNpgsql(connectionString));
 
 // 3. Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
@@ -79,49 +75,11 @@ builder.Services.AddRateLimiter(options =>
     options.OnRejected = async (context, cancellationToken) =>
     {
         context.HttpContext.Response.Headers.RetryAfter = "60";
-        await context.HttpContext.Response.WriteAsJsonAsync(new { message = "Quá nhiều yêu cầu. Vui lòng thử lại sau 60 giây." }, cancellationToken);
+        await context.HttpContext.Response.WriteAsJsonAsync(ApiResponse.ErrorResponse("Quá nhiều yêu cầu. Vui lòng thử lại sau 60 giây.", "rate_limited"), cancellationToken);
     };
 });
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<Services.Game.OnlineSocialService>();
-builder.Services.AddScoped<RoomInvitationService>();
-builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
-
-// 4. Register Repositories & Unit of Work
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IPlayerProfileRepository, PlayerProfileRepository>();
-builder.Services.AddScoped<IEconomyRepository, EconomyRepository>();
-builder.Services.AddScoped<ITrainingRepository, TrainingRepository>();
-builder.Services.AddScoped<IAiCoachingRepository, AiCoachingRepository>();
-builder.Services.AddScoped<IMatchRepository, MatchRepository>();
-builder.Services.AddScoped<IFriendRepository, FriendRepository>();
-builder.Services.AddScoped<IMissionRepository, MissionRepository>();
-builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
-
-// 5. Register Application Services
-builder.Services.AddScoped<IStorageService, StorageService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IProfileService, ProfileService>();
-builder.Services.AddScoped<ITrainingService, TrainingService>();
-builder.Services.AddScoped<IAiCoachingService, AiCoachingService>();
-builder.Services.AddScoped<IMatchService, MatchService>();
-builder.Services.AddScoped<IFriendService, FriendService>();
-builder.Services.AddScoped<IEconomyService, EconomyService>();
-builder.Services.AddScoped<IMissionService, MissionService>();
-builder.Services.AddScoped<IAchievementService, AchievementService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
-builder.Services.AddScoped<GameSql>();
-builder.Services.AddScoped<GameCatalogService>();
-builder.Services.AddScoped<OnlineGameService>();
-builder.Services.AddScoped<MatchReplayService>();
-builder.Services.AddSingleton(sp => sp.GetRequiredService<ServerSettings>().HybridAi);
-builder.Services.AddScoped<HybridCoachingService>();
-builder.Services.AddHttpClient("hybrid-ai", client => client.Timeout = TimeSpan.FromSeconds(15));
-builder.Services.AddHostedService<API.Workers.HybridAiWorker>();
-
 // 5. OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddOperationTransformer<ApiResponseOperationTransformer>());
 
 // 6. Global Error Handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -138,6 +96,12 @@ using (var scope = app.Services.CreateScope())
 
 // 7. Global Exception Handler Pipeline
 app.UseExceptionHandler();
+app.UseStatusCodePages(async statusContext =>
+{
+    var context = statusContext.HttpContext;
+    if (context.Request.Path.StartsWithSegments("/api"))
+        await context.Response.WriteAsJsonAsync(ApiResponse.ErrorResponse(ApiResponseFilter.DefaultMessage(context.Response.StatusCode)));
+});
 app.UseRequestDecompression();
 
 if (app.Environment.IsDevelopment())
@@ -160,19 +124,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/health/ready", async (PickleVerseContext db, IConnectionMultiplexer redis, CancellationToken ct) =>
-{
-    try
-    {
-        if (!await db.Database.CanConnectAsync(ct))
-            return Results.StatusCode(503);
-        await redis.GetDatabase().PingAsync();
-        return Results.Ok(new { status = "ready" });
-    }
-    catch (RedisException)
-    {
-        return Results.StatusCode(503);
-    }
-});
+app.MapGet("/health/ready", async (IReadinessService readiness, CancellationToken ct) =>
+    await readiness.Check(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
 
 app.Run();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Entities.Models;
@@ -9,5 +9,5 @@ public partial class Matchhistoryreplay
 
     public string Objectkey { get; set; } = null!;
 
-    public virtual Matchhistory Match { get; set; } = null!;
+    public virtual Gamematch Match { get; set; } = null!;
 }

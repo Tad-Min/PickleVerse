@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Repositories.Context;
 using Repositories.Implementations;
 using Repositories.Interfaces;
+using Repositories.Game;
 
 namespace Repositories.UnitOfWork
 {
@@ -21,6 +22,7 @@ namespace Repositories.UnitOfWork
         private IFriendRepository? _friends;
         private IMissionRepository? _missions;
         private IAchievementRepository? _achievements;
+        private GameRepository? _game;
 
         public UnitOfWork(PickleVerseContext context)
         {
@@ -36,6 +38,7 @@ namespace Repositories.UnitOfWork
         public IFriendRepository Friends => _friends ??= new FriendRepository(_context);
         public IMissionRepository Missions => _missions ??= new MissionRepository(_context);
         public IAchievementRepository Achievements => _achievements ??= new AchievementRepository(_context);
+        public GameRepository Game => _game ??= new GameRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {

@@ -1,4 +1,70 @@
-## Cập nhật mới nhất ngày 31/10/2026 — Bỏ GameProgress
+## Cập nhật mới nhất ngày 31/10/2026 — Backend phân tầng, UnitOfWork và ApiResponse
+
+Theo góp ý tiếp theo của người dùng, phần bind cấu hình Redis và đăng ký singleton IConnectionMultiplexer đã chuyển trực tiếp về API/Program.cs, lấy section Redis qua builder.Configuration (appsettings/environment). RedisSettings chuyển thành model cấu hình thuần ở Entities/Configuration, không đọc IConfiguration; Repositories chỉ nhận settings/kết nối qua DI. Giữ nguyên Project Reference đã chốt.
+
+Người dùng chốt kiến trúc Project Reference: Repositories → Entities; Services → Entities, Repositories; API → Entities, Services, lấy SmashClub ở D:/Repository/SmashHub/BESmashClub làm mẫu. Đã đưa DTO/exception về Entities, service vào Interfaces/Implementations, truy cập dữ liệu qua IUnitOfWork.Game/repository; API không còn dùng repository/EF trực tiếp. Redis nằm Repositories/Caching; AI worker nằm Services/Workers. Backend không còn link source GameRules từ Unity; rules/model backend do backend quản lý.
+
+Đã bổ sung mapping EF cho các bảng/cột đã có, dùng EF cho truy vấn/update thông thường; PostgreSQL locks/sequence/upsert/atomic leasing nằm repository. Giữ transaction kết quả/Elo/thưởng và chống lặp. Không sửa schema hoặc reset database trong lượt này. Sửa default JSON Errors/Config cho khớp SQL; lỗi nội bộ được wrap giữ HTTP 500.
+
+API JSON dùng ApiResponse<T>/ApiResponse qua filter và exception handler tập trung, giữ HTTP status, error code và validation errors; Swagger mô tả envelope. File replay download giữ nguyên nội dung file. Unity ApiClient và frontend Axios đã unwrap data; frontend giữ login khi gặp 403. Các client bên ngoài repo cần thích ứng với response envelope mới.
+
+Đạt 613 assertions/19 bộ, backend Debug/Release 0 warning/0 error, frontend type-check/build đạt. Có 39 schema checks và 33 HTTP/architecture/Unity-client checks; test email không gửi SMTP thật. Đã build/recreate riêng pickleverse_api, đạt thêm 11 live HTTP checks, readiness/Swagger/OpenAPI 200; AI fixture đã dọn và không còn database test tạm. Chưa kiểm tra gameplay/UI Unity nhiều client. Chi tiết Doc/Backend_Layering_20261031.md, bằng chứng artifacts/backend-layering/summary.json và live-smoke.json.
+
+## Đợt trước ngày 31/10/2026 — Bật AI service development
+
+Theo yêu cầu người dùng, đã bật runtime AI ingest/dispatcher/coaching trong `.env` local được Git bỏ qua, tạo secret riêng dùng khớp FastAPI/backend. Model ML vẫn tắt, phân tích dùng rules-v1/curriculum. Hai container đã tạo lại, AI healthy, `/ready` và backend readiness/Swagger 200. Catalog thật truyền `hybridTelemetryEnabled=true`, `hybridCoachingEnabled=true` xuống Unity. Asset API vẫn là localhost:8080. Các dòng “AI runtime vẫn tắt” bên dưới là lịch sử trước lần bật này.
+
+Sửa healthcheck AI từ `/health` sang `/ready` trong Dockerfile và Compose vì trước đó container healthy dù thiếu key, readiness 503. Bài tải phát hiện PostgreSQL 53300 vì pool 100 tranh ngân sách tổng 100 kết nối; Compose API và benchmark giờ dùng pool 40 (Compose đổi qua POSTGRES_MAX_POOL_SIZE). Bổ sung response body khi benchmark HTTP thất bại để chẩn đoán. Không sửa schema/reset DB. Image Python hiện có khớp cả năm file source sau chuẩn hóa xuống dòng; không cập nhật dependencies.
+
+Kiểm tra mới: build backend/IntegrationChecks 0 warning/0 error, Python 11/11, Hybrid 33/33, HTTP/load 6/6 với 112 ACK/112 completed; steady ingest p95 41,30 ms, ready p95 1.031,75 ms; burst drain 2,88 giây. Live API→worker→FastAPI→SQL shadow 14/14, coaching bật 16/16, summary ready và recommendation đọc được. Fixture SQL/database tạm/process test đã dọn. Chưa chạy gameplay/UI Unity hoặc thiết bị thật; chưa có model production. Hướng dẫn thử trong game: `Doc/AI_Service_Activation_20261031.md`; bằng chứng: `artifacts/ai-service-activation-20261031/`.
+
+## Đợt trước ngày 31/10/2026 — Chuẩn hóa GameMatches
+
+Đã bỏ GameMatches.TeamAScore/TeamBScore vì là số game thắng đếm được từ MatchScore.Completed và điểm hai đội. GameMatches còn 15 cột; schema hiện tại 38 bảng/265 cột/53 FK. Điểm gốc vẫn ở MatchScore; DTO gamesWon/gamesLost và hai tổng ở lịch sử Player/Admin được tính khi đọc. Không thêm bảng/entity/view/JSON. Bot result tính lại số game hoàn tất; retry không tin tổng gamesWon/gamesLost dư của client. Kết quả bỏ trận/gián đoạn vẫn lấy Outcome, không suy ra từ số game.
+
+Giữ Mode: code Custom Doubles hiện cho phép thiếu người nên không thể suy ra chỉ từ roster. Giữ RatingPolicyVersion vì cần trước khi có ledger; giữ các cột môi trường/kết nối và mốc vòng đời riêng. Xem Doc/GameMatches_Normalization_20261031.md và artifacts/normalized-game-matches-20261031/. Những số 267/276 bên dưới là lịch sử trước khi bỏ hai tổng của GameMatches.
+
+Đã build backend, đạt 269 assertions trong 9 bộ kiểm tra và 15 HTTP checks trên image development đang chạy; database đã tạo lại từ SQL, readiness đạt, fixture được dọn. Sơ đồ giữ 38 entity/53 quan hệ/không attributes, source hash/XML/JS khớp. Không thay Unity DTO; chưa chạy lại gameplay nhiều client.
+
+## Đợt trước ngày 31/10/2026 — Chuẩn hóa GameMatchPlayers
+
+Người dùng yêu cầu không lưu các cột lấy/tính được từ bảng khác. Đã bỏ 9 cột GameMatchPlayers: PlayerName, IsMale, PaddleId, IsBot, Points, Accepted, RosterReady, ReceivedElo, Fingerprint. Bảng còn 15 cột; schema 38 bảng/267 cột/53 FK. Tên/giới tính/vợt đọc hồ sơ/inventory hiện tại; bot nhận diện từ profile UUID đã có; points cộng từ MatchScore; Elo delta từ ratingledger; ready từ Redis/StartedAt; đối chiếu kết quả tính lại từ dữ liệu chuẩn. Không thêm bảng/JSON thay thế. C# Ratingledger chỉ ánh xạ bảng SQL đã có sang EF, không thêm entity nghiệp vụ.
+
+Giữ EloBefore vì là đầu vào cố định theo trận, gồm Elo bot được cấp theo đối thủ, không thể lấy từ Elo hiện tại và chưa có ledger khi đang chơi/PvE. Giữ các dữ kiện phân đội, party, thứ tự actor, quyền replay, thống kê cú đánh, lý do kết thúc và các mốc xử lý riêng của người tham gia. Đổi tên sẽ đổi tên hiển thị trong lịch sử; replay S3 giữ nội dung đã ghi. Giữ API/DTO Unity. Bot points bỏ qua tổng dư do client khai, tính từ scores trước khi cộng tiến trình; luật bỏ trận không cấp tiến trình/thưởng không đổi.
+
+Đã tạo lại đúng DB development và triển khai backend, readiness 200. Đạt 387 assertions trong 14 bộ và 14 HTTP checks trên image đang chạy; backend và Unity C# build đạt. Sơ đồ vẫn 38 entity/53 quan hệ, không attribute; chưa chạy lại gameplay nhiều client. Xem Doc/GameMatchPlayers_Normalization_20261031.md và artifacts/normalized-match-players-20261031/summary.json. Các mô tả snapshot/24 cột/276 cột bên dưới là lịch sử. Chẩn đoán giật multiplayer trước đó chỉ audit source (Doc/Multiplayer_Jitter_Diagnosis_20261031.md); chưa chuyển Dedicated Server hoặc sửa runtime chuyển động.
+
+## Đợt trước ngày 31/10/2026 — Xóa JSON Data/Report của trận
+
+Người dùng yêu cầu tách hết dữ liệu thành cột rồi xóa GameMatches.Data/GameMatchPlayers.Report. Đã bỏ cả hai; hai bảng không còn JSON/JSONB/blob thay thế, không thêm entity. Schema hiện tại 38 bảng/276 cột/53 FK. GameMatches có Status PREPARING/PLAYING/FINISHED/CANCELLED, RatingPolicyVersion, Mode, PhotonSession, SearchId UUID, Region, Night, Venue. GameMatchPlayers có snapshot tên/Elo/giới tính/vợt/group/bot/roster-ready/thứ tự đội hình, IsReplayWriter, Points/ValidReturns/ValidServes/EndReason và ReportedAt. Không thêm lại OwnerId hoặc HostPlayerId; writer là quyền của người tham gia, có partial unique index.
+
+RelationalMatch dựng DTO từ cột/quan hệ. Lịch sử/opponents dùng snapshot lúc tạo trận; điểm từ MatchScore, opponentElo từ đội đối diện. Kết quả gửi đầu tiên lưu một bộ điểm ứng viên theo đội A vào MatchScore và biên nhận scalar; các bên phải cùng fingerprint, chỉ công bố/cấp thưởng khi trận FINISHED. Kết quả cuối, Elo, thưởng và tiến trình cùng transaction; kiểm tra rollback/retry đạt. Cờ Completed của MatchScore chỉ nói game hoàn tất, không thay trạng thái xác nhận trận. Trạng thái PLAYING của PvE không giữ chỗ bot rank, giữ hành vi tái sử dụng virtual profile trước đây.
+
+Đã tạo lại đúng DB dev và triển khai backend; 366 assertions trong 13 bộ, 14 HTTP checks trên image đang chạy, backend/Unity C# build đạt. Sơ đồ vẫn 38 entity/53 quan hệ, không attribute. API/DTO Unity giữ nguyên; chưa chạy lại gameplay nhiều client. Chi tiết Doc/Relational_Match_Columns_20261031.md và artifacts/relational-match-columns-20261031/. Các đoạn 257/263 cột và Data/Report còn giữ bên dưới là lịch sử. AI coaching runtime vẫn tắt.
+
+## Đợt trước ngày 31/10/2026 — Phiên hoạt động trong Redis
+
+Người dùng yêu cầu chuyển trạng thái phiên sang Redis, chỉ giữ tổng trong PlayerProfiles rồi xóa AppActivitySessions. Đã bỏ bảng/quan hệ khỏi src/Database.sql và sơ đồ; schema còn 38 bảng/257 cột/53 FK, không thêm bảng/cột. RedisAppActivity giữ opening/owner, bộ đếm/coverage theo người chơi và biên nhận tổng trước/sau; key TTL 8 ngày, phiên tối đa 7 ngày. OnlineGameService.Activity dùng khóa dòng/ExecuteUpdate Npgsql EF Core. Redis được ghi trước SQL commit để request sau khôi phục SQL rollback hoặc nhận diện commit thành công dù mất response.
+
+Unity giữ nguyên hai API và DTO, bổ sung HTTP 410 để tạo UUID mới và đếm lại từ hiện tại khi key hết hạn/mất. Không cộng lại elapsed phiên cũ; generation ngăn phiên cũ dùng sau khi mất riêng key người chơi. Tổng SQL đã commit còn nguyên khi mất Redis; phần chưa commit/chưa gửi không được bảo đảm nếu mất trạng thái Redis. Chi tiết Doc/Redis_App_Activity_20261031.md và artifacts/redis-activity-checks-20261031/. Các đoạn 39 bảng bên dưới là lịch sử trước thay đổi này. AI coaching vẫn tắt; không có thay đổi nghiệp vụ trận/luyện tập.
+
+Đã tạo lại đúng DB development từ SQL và triển khai image cuối, readiness 200. Đạt 206 assertions trong 6 bộ (31 activity Redis, 22 app/rank, 81 online game, 25 relational progress, 28 Redis, 19 unified matches) và 9 HTTP checks trên image đã triển khai; đã dọn fixture SQL/Redis. Backend và Unity FrontEnd cùng các assembly phụ thuộc build thành công. Sơ đồ 38 entity/53 quan hệ, không attribute; source hash/XML/JS/render đã kiểm tra, xem PNG CD-06 trực tiếp. Chưa chạy lại gameplay nhiều Unity client. Redis snapshot cũ lệch tổng SQL sẽ đổi generation và giữ tổng SQL; opening trước mốc mất trạng thái không được backfill khi không còn coverage. Bằng chứng artifacts/redis-activity-checks-20261031/summary.json.
+
+## Đợt trước ngày 31/10/2026 — Gộp bảng trận, FK luyện tập, Npgsql EF Core
+
+Đã gộp MatchHistory vào GameMatches và bỏ PlayerMatchHistory; GameMatchPlayers là bảng người tham gia duy nhất. GameMatches có StartedAt/EndedAt/Sequence và số game thắng hai đội; GameMatchPlayers có Outcome/ReceivedElo/LocalForfeit/FinalizedAt. Kết quả người và bot ghi cùng transaction với điểm/Elo/thưởng, history/replay chỉ đọc trận hoàn tất và participant đã finalized. FK replay/report/lỗi/rating chuyển sang GameMatches. Giữ MatchScore và MatchHistoryReplay theo thiết kế đã thống nhất. Không loại bỏ mọi metadata JSON trận trong lượt này.
+
+Đã sửa PlayerLessonDrills: giữ PK ba cột và FK player; thay hai FK Lessons/Drills bằng FK ghép (LessonId,DrillId) tới LessonDrills. ORM navigation qua LessonDrill; không thêm entity. Người dùng yêu cầu backend dùng Npgsql EF Core: đã lưu vào AGENTS.md, dùng PickleVerseContext/Fluent API/EF queries/updates cho các luồng trận/lịch sử/điểm/replay đã sửa. SQL đặc thù PostgreSQL dùng cùng EF connection/transaction; các service cũ ngoài phạm vi này còn GameSql.
+
+Đã tạo lại DB dev và triển khai backend đồng bộ: 39 bảng/263 cột/54 FK, 10 profile bot, 12 lesson/12 drill, readiness 200. Đạt 302 assertions trong 11 bộ kiểm tra, cộng 12 kiểm tra HTTP trên Docker API; đã dọn tài khoản/trận thử. Sơ đồ 39 entity/54 quan hệ, không attribute; sửa cách suy luận cardinality để partial unique index của TrainingSessions không bị coi là unique toàn bảng. Chưa chạy lại gameplay nhiều Unity client. Chi tiết Doc/Unified_Matches_20261031.md và artifacts/unified-match-checks-20261031/summary.json. Các đề xuất gộp bảng và FK trước đó nay đã thực hiện; AI coaching runtime vẫn chưa bật.
+
+## Đợt trước ngày 31/10/2026 — MatchScore
+
+Người dùng đồng ý thêm bảng điểm và đổi tên thành MatchScore (chính xác, không phải GameScores). Đã tạo MatchScore với PK (MatchId, GameNumber), FK tới GameMatches, điểm hai đội và Completed. Mỗi game một dòng chung cho cả 1v1/2v2, tối đa ba game. Backend ghi cùng transaction kết quả/thưởng; lịch sử đọc bảng và đổi góc nhìn theo GameMatchPlayers.Team. Điểm chính thức không còn trong GameMatches.Data.result/results; điểm tạm trong client Report được bỏ khi trận hoàn tất. Bot result receipt dùng SHA-256. Xem Doc/MatchScore_20261031.md.
+
+Đã tạo lại đúng DB dev và triển khai backend đồng bộ: 41 bảng/265 cột/57 FK; 10 profile bot, 12 lesson/12 drill; API readiness 200. Đạt 235 assertions trong 8 bộ kiểm tra (20 MatchScore, 81 game, 25 relational progress, 22 app/rank, 33 Hybrid, 20 configuration, 23 replay, 11 HTTP/S3), cộng 9 kiểm tra HTTP trên API Docker. Tài khoản/trận thử đã được xóa. Sơ đồ 41 entity/57 quan hệ, không vẽ attribute. Chưa chạy lại gameplay nhiều Unity client. Các đề xuất gộp MatchHistory/GameMatches, gộp GameMatchPlayers/PlayerMatchHistory và sửa FK PlayerLessonDrills vẫn chưa được thực hiện; các lượt đó là trao đổi thiết kế. AI coaching runtime vẫn tắt, chưa kích hoạt trong lượt thêm MatchScore.
+
+## Đợt trước ngày 31/10/2026 — Bỏ GameProgress
 
 Đã bỏ hoàn toàn GameProgress và việc lưu cả trạng thái người chơi vào JSON. Backend lắp API state từ các bảng nghiệp vụ. Bổ sung cột có mục đích trong PlayerProfiles và PlayerLessonDrills; PlayerMissions dùng PK (PlayerId, MissionId, PeriodKey). TrainingSessions có IsCurrent/Sequence; MatchHistory có Sequence để giữ đúng thứ tự khi timestamp bằng nhau. GameCommands vẫn chống lặp và lưu biên nhận thưởng tổng kỳ. Hybrid coaching đọc cùng dữ liệu luyện tập từ bảng chuyên biệt. Không thêm bảng/entity mới; không chuyển full-progress JSON sang cột khác.
 
@@ -21,10 +87,10 @@ Người dùng xác nhận dự án hiện ở môi trường development và ch
 ### 4.3. Tiền tệ, thời gian, replay và dữ liệu nền
 
 - **TOKENPAD** tương ứng coin; **ELITE TOKEN** tương ứng premium/gem. Đã yêu cầu bỏ số dư/thưởng premium miễn phí; chưa có hệ thống nạp tiền thật. Không ghi nhận IAP đã triển khai.
-- Thời gian hoạt động tính **từ lúc mở app**, gồm đăng nhập/menu/tìm trận/training/trận đấu. Không chỉ cộng duration trận; `AppActivitySessions` hỗ trợ đồng bộ/chống cộng trùng cùng PostgreSQL.
+- Thời gian hoạt động tính **từ lúc mở app**, gồm đăng nhập/menu/tìm trận/training/trận đấu. Redis quản lý phiên/coverage/chống cộng trùng; PostgreSQL chỉ giữ tổng trong PlayerProfiles.TimePlayedSeconds. AppActivitySessions đã bỏ theo yêu cầu mới nhất.
 - Replay đã chuyển từ local sang API/S3 trong luồng chạy chính. Local replay adapter còn phục vụ định dạng cũ/test. Telemetry spool lưu local là hàng đợi gửi AI, không phải profile hoặc offline progression.
 - SQL phát triển thống nhất ở **một file `src/Database.sql`**, khởi tạo schema + seed trong một transaction. Người dùng đã yêu cầu bỏ Migrations và dùng database phát triển mới khi đổi schema; không tự tái tạo database đang dùng trong một nhiệm vụ không yêu cầu việc đó.
-- `GameSettings` đã bỏ; cấu hình thưởng/EXP chuyển vào `appsettings.json`. `RankedSearches` đã bỏ để chuyển sang Redis. **Giữ `AppActivitySessions`**.
+- `GameSettings` đã bỏ; cấu hình thưởng/EXP chuyển vào `appsettings.json`. `RankedSearches` và `AppActivitySessions` đã bỏ để chuyển trạng thái tạm sang Redis.
 - Shared C# rules được backend compile trực tiếp từ một số file Unity. Khi sửa thuật toán thưởng, training, Elo hoặc model dùng chung, phải xem tác động cả Unity và .NET.
 
 ### 4.4. Cách làm việc cần kế thừa
@@ -46,7 +112,7 @@ Người dùng xác nhận dự án hiện ở môi trường development và ch
 | Multiplayer prototype | UI 1v1/2v2/party/custom; tìm/hủy, ready, chia đội, reconnect, Scene Hash/Build Settings, HUD và đồng bộ sân/nhân vật | Bằng chứng UGS/Relay/protocol 3–7 là lịch sử, đã được Photon thay thế |
 | Profile/progression local | Profile, XP/level, Elo/rank, history, achievement, nhiệm vụ ngày/tuần, dev player editor, ví tiền | Đã làm bản local và test/build; nguồn dữ liệu runtime nay đã chuyển sang server |
 | Replay/streak/Entites/BhTree | Replay 3D snapshot/chunk, pause/seek/speed; daily streak UTC; gom entity/assembly; Unity Behavior 1.0.16 theo Elo | Đã triển khai, sau đó chuyển replay online và hợp nhất bot trong Hybrid |
-| Rà soát tính năng/SQL | Đánh giá phần hardcode so với Core Features/proposal, tạo schema PostgreSQL và audit ban đầu | Schema từng là 71 bảng, rồi thay đổi theo backend; hiện phải dùng 40 bảng trong SQL mới |
+| Rà soát tính năng/SQL | Đánh giá phần hardcode so với Core Features/proposal, tạo schema PostgreSQL và audit ban đầu | Schema từng là 71 bảng, rồi thay đổi theo backend; hiện phải dùng 38 bảng trong SQL mới |
 | Kết nối backend | Tạo Services/API/Utilities, register/OTP/JWT/profile/logout; Docker/SMTP/Swagger, sửa quyền Admin | Luồng Unity account đã chạy Editor/Windows; không đồng nghĩa admin web login đã đúng |
 | Chuyển toàn bộ game online | Seed từ Unity, training/shop/equip/claim/social/history online, Photon Fusion, replay S3, 1v1/2v2/ready/reconnect | Có smoke thật Editor/Windows và 4 client trên cùng máy; chưa thay thế ma trận thiết bị/mạng hiện tại |
 | Activity/bot rank/cấu hình | Tính thời gian toàn app, 10 bot UUID, fallback trong Photon, tổng kết server, đưa thông số vào config | Đã thực hiện; timer hiện 180/10 theo thay đổi sau cùng |
@@ -150,10 +216,10 @@ Lệnh và URL trên là hướng dẫn có sẵn, **chưa được chạy lại
 
 ### Database hiện tại
 
-- `src/Database.sql` hiện có **40 lệnh CREATE TABLE**; kiểm tra ngày 31/10 sau bỏ GameProgress xác nhận fresh DB và DB dev **40 bảng/260 cột/56 FK**.
+- `src/Database.sql` hiện có **39 lệnh CREATE TABLE**; kiểm tra ngày 31/10 sau gộp bảng xác nhận fresh DB và DB dev **39 bảng/263 cột/54 FK**.
 - Seed đã ghi nhận: 10 achievement, 17 mission, 3 cosmetic, 12 lesson/12 drill, 10 tài khoản bot; không seed admin đăng nhập sẵn. Dữ liệu seed không phải toàn bộ dữ liệu người chơi đang có.
 - Sáu bảng Hybrid bổ sung: `ratingledger`, `aitelemetrysessions`, `aitelemetryparts`, `aianalysisjobs`, `aicoachingsessions`, `aicoachingprofiles`.
-- Còn `AppActivitySessions`; không còn `GameSettings` hoặc `RankedSearches` trong schema hiện tại.
+- Không còn `AppActivitySessions`, `GameSettings` hoặc `RankedSearches` trong schema hiện tại; trạng thái phiên hoạt động/ghép trận nằm Redis.
 - SQL khởi tạo chạy khi volume PostgreSQL **trống lần đầu**, không tự chạy lại khi volume đã có dữ liệu. Đổi schema không tự áp dụng chỉ bằng restart API.
 - Volume PostgreSQL mặc định `pickleverse_dev_postgres_data`, đổi qua `POSTGRES_VOLUME`; S3 `pickleverse_dev_s3_data`. Giữ dữ liệu đang có nếu nhiệm vụ không yêu cầu reset.
 - Khi cần DB dev mới, README hướng dẫn dùng tên volume mới. Không đưa thao tác xóa volume hoặc DROP DATABASE vào bước setup mặc định.
@@ -284,7 +350,7 @@ Các lỗi này **chưa được sửa trong lượt bàn giao**, không nhầm 
 | Invite chỉ sao chép mã phòng | Đã có danh sách bạn và accept/decline |
 | WatchReplay click mở Detail | Đã sửa raycast và kiểm tra trực tiếp ngày 25/10 |
 | Cần chạy migration Hybrid | Migration đã bỏ theo yêu cầu; fresh DB dùng Database.sql |
-| Schema 71, 43, 41, 39 hoặc 37 bảng | Source hiện 40 bảng; kiểm tra 31/10 sau bỏ GameProgress: 40/260/56 FK |
+| Schema 71, 43, 41, 40 hoặc 37 bảng | Source hiện 39 bảng; kiểm tra 31/10 sau gộp bảng: 39/263/54 FK |
 | Review_2 là hồ sơ đã ký/approved | Đây là draft ở snapshot 23/10, nhiều nội dung/table count cũ; có các gate formal còn mở |
 | Có build Windows/APK tức đã đạt thiết bị/NFR | Chưa có đủ đo đạc và nghiệm thu hiện tại trên thiết bị thật |
 

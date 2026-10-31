@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using PickleVerse.Progression;
-using Services.Game;
+using Services.Implementations;
 
 namespace Services.Configuration;
 

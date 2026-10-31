@@ -4,13 +4,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Entities.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using Repositories.UnitOfWork;
-using Services.DTOs;
-using Services.Exceptions;
+using Entities.DTOs;
+using Entities.Exceptions;
 using Services.Interfaces;
 using Services.Security;
 using Services.Configuration;
@@ -70,8 +68,7 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
                 await unitOfWork.CommitTransactionAsync();
                 break;
             }
-            catch (DbUpdateException ex) when (attempt < 2 && ex.InnerException is PostgresException
-            { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "playerprofiles_playername_key" })
+            catch (Exception ex) when (attempt < 2 && PersistenceErrors.IsUniqueViolation(ex, "playerprofiles_playername_key"))
             {
                 await unitOfWork.RollbackTransactionAsync();
                 profile.Playername = DefaultPlayerName();

@@ -6,13 +6,13 @@ using Repositories.Base;
 
 namespace Repositories.Interfaces
 {
-    public interface IMatchRepository : IGenericRepository<Matchhistory>
+    public interface IMatchRepository : IGenericRepository<Gamematch>
     {
-        Task<Matchhistory?> GetMatchByIdAsync(Guid matchId);
-        Task<List<Matchhistory>> GetPlayerMatchesAsync(Guid playerId, int limit = 20);
-        Task<List<Matchhistory>> GetRecentMatchesAsync(int limit = 50);
-        Task AddMatchAsync(Matchhistory match);
-        Task AddParticipantAsync(Playermatchhistory participant);
+        Task<Gamematch?> GetMatchByIdAsync(Guid matchId);
+        Task<List<Gamematch>> GetPlayerMatchesAsync(Guid playerId, int limit = 20);
+        Task<List<Gamematch>> GetRecentMatchesAsync(int limit = 50);
+        Task AddMatchAsync(Gamematch match);
+        Task AddParticipantAsync(Gamematchplayer participant);
         Task<Matchhistoryreplay?> GetTelemetryReplayAsync(Guid matchId);
         Task AddTelemetryReplayAsync(Matchhistoryreplay replay);
         Task UpdateTelemetryReplayAsync(Matchhistoryreplay replay);

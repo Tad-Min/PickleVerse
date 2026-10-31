@@ -34,7 +34,9 @@ public partial class PickleVerseContext : DbContext
 
     public virtual DbSet<Lessondrill> Lessondrills { get; set; }
 
-    public virtual DbSet<Matchhistory> Matchhistories { get; set; }
+    public virtual DbSet<Gamematch> Gamematches { get; set; }
+    public virtual DbSet<Matchscore> Matchscores { get; set; }
+    public virtual DbSet<Ratingledger> Ratingledgers { get; set; }
 
     public virtual DbSet<Matchhistoryreplay> Matchhistoryreplays { get; set; }
 
@@ -48,7 +50,7 @@ public partial class PickleVerseContext : DbContext
 
     public virtual DbSet<Playerlessondrill> Playerlessondrills { get; set; }
 
-    public virtual DbSet<Playermatchhistory> Playermatchhistories { get; set; }
+    public virtual DbSet<Gamematchplayer> Gamematchplayers { get; set; }
 
     public virtual DbSet<Playermission> Playermissions { get; set; }
 
@@ -294,24 +296,53 @@ public partial class PickleVerseContext : DbContext
                 .HasConstraintName("fk_lessondrills_lessons");
         });
 
-        modelBuilder.Entity<Matchhistory>(entity =>
+        modelBuilder.Entity<Gamematch>(entity =>
         {
-            entity.HasKey(e => e.Matchid).HasName("matchhistory_pkey");
+            entity.HasKey(e => e.Matchid).HasName("gamematches_pkey");
+            entity.ToTable("gamematches");
+            entity.Property(e => e.Matchid).ValueGeneratedNever().HasColumnName("matchid");
+            entity.Property(e => e.Kind).HasMaxLength(32).HasColumnName("kind");
+            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("PREPARING").HasColumnName("status");
+            entity.Property(e => e.Ratingpolicyversion).HasMaxLength(64).HasDefaultValue("legacy-v1").HasColumnName("ratingpolicyversion");
+            entity.Property(e => e.Mode).HasDefaultValue((short)1).HasColumnName("mode");
+            entity.Property(e => e.Photonsession).HasMaxLength(100).HasColumnName("photonsession");
+            entity.Property(e => e.Searchid).HasColumnName("searchid");
+            entity.Property(e => e.Region).HasMaxLength(30).HasColumnName("region");
+            entity.Property(e => e.Night).HasColumnName("night");
+            entity.Property(e => e.Venue).HasColumnName("venue");
+            entity.Property(e => e.Createdat).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnName("createdat");
+            entity.Property(e => e.Updatedat).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnName("updatedat");
+            entity.Property(e => e.Startedat).HasColumnName("startedat");
+            entity.Property(e => e.Endedat).HasColumnName("endedat");
+            entity.Property(e => e.Sequence).HasColumnName("sequence");
+        });
 
-            entity.ToTable("matchhistory");
+        modelBuilder.Entity<Ratingledger>(entity =>
+        {
+            entity.ToTable("ratingledger");
+            entity.HasKey(e => new { e.Playerid, e.Matchid }).HasName("ratingledger_pkey");
+            entity.Property(e => e.Playerid).HasColumnName("playerid");
+            entity.Property(e => e.Matchid).HasColumnName("matchid");
+            entity.Property(e => e.Beforeelo).HasColumnName("beforeelo");
+            entity.Property(e => e.Afterelo).HasColumnName("afterelo");
+            entity.Property(e => e.Opponentelo).HasColumnName("opponentelo");
+            entity.Property(e => e.Delta).HasColumnName("delta");
+            entity.Property(e => e.Policyversion).HasColumnType("text").HasColumnName("policyversion");
+            entity.Property(e => e.Createdat).HasDefaultValueSql("now()").HasColumnName("createdat");
+            entity.HasOne(e => e.Match).WithMany(m => m.Ratingledgers).HasForeignKey(e => e.Matchid).HasConstraintName("ratingledger_matchid_fkey");
+            entity.HasOne<Playerprofile>().WithMany().HasForeignKey(e => e.Playerid).HasConstraintName("ratingledger_playerid_fkey");
+        });
 
-            entity.Property(e => e.Matchid)
-                .HasDefaultValueSql("gen_random_uuid()")
-                .HasColumnName("matchid");
-            entity.Property(e => e.Createdat)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnName("createdat");
-            entity.Property(e => e.Matchtype)
-                .HasMaxLength(25)
-                .HasDefaultValueSql("'1Vs1'::character varying")
-                .HasColumnName("matchtype");
+        modelBuilder.Entity<Matchscore>(entity =>
+        {
+            entity.HasKey(e => new { e.Matchid, e.Gamenumber }).HasName("matchscore_pkey");
+            entity.ToTable("matchscore");
+            entity.Property(e => e.Matchid).HasColumnName("matchid");
+            entity.Property(e => e.Gamenumber).HasColumnName("gamenumber");
             entity.Property(e => e.Teamascore).HasColumnName("teamascore");
             entity.Property(e => e.Teambscore).HasColumnName("teambscore");
+            entity.Property(e => e.Completed).HasColumnName("completed");
+            entity.HasOne(e => e.Match).WithMany(e => e.Matchscores).HasForeignKey(e => e.Matchid).HasConstraintName("matchscore_matchid_fkey");
         });
 
         modelBuilder.Entity<Matchhistoryreplay>(entity =>
@@ -329,7 +360,7 @@ public partial class PickleVerseContext : DbContext
 
             entity.HasOne(d => d.Match).WithOne(p => p.Matchhistoryreplay)
                 .HasForeignKey<Matchhistoryreplay>(d => d.Matchid)
-                .HasConstraintName("fk_matchhistoryreplay_matchhistory");
+                .HasConstraintName("fk_matchhistoryreplay_gamematches");
         });
 
         modelBuilder.Entity<Mission>(entity =>
@@ -429,44 +460,36 @@ public partial class PickleVerseContext : DbContext
             entity.Property(e => e.Isclaimedreward).HasColumnName("isclaimedreward");
             entity.Property(e => e.Score).HasColumnName("score");
 
-            entity.HasOne(d => d.Drill).WithMany(p => p.Playerlessondrills)
-                .HasForeignKey(d => d.Drillid)
-                .HasConstraintName("fk_playerlessondrills_drills");
-
-            entity.HasOne(d => d.Lesson).WithMany(p => p.Playerlessondrills)
-                .HasForeignKey(d => d.Lessonid)
-                .HasConstraintName("fk_playerlessondrills_lessons");
+            entity.HasOne(d => d.LessonDrill).WithMany(p => p.Playerlessondrills)
+                .HasForeignKey(d => new { d.Lessonid, d.Drillid })
+                .HasConstraintName("fk_playerlessondrills_lessondrills");
 
             entity.HasOne(d => d.Player).WithMany(p => p.Playerlessondrills)
                 .HasForeignKey(d => d.Playerid)
                 .HasConstraintName("fk_playerlessondrills_playerprofiles");
         });
 
-        modelBuilder.Entity<Playermatchhistory>(entity =>
+        modelBuilder.Entity<Gamematchplayer>(entity =>
         {
-            entity.HasKey(e => new { e.Playerid, e.Matchid }).HasName("playermatchhistory_pkey");
-
-            entity.ToTable("playermatchhistory");
-
-            entity.Property(e => e.Playerid).HasColumnName("playerid");
+            entity.HasKey(e => new { e.Matchid, e.Playerid }).HasName("gamematchplayers_pkey");
+            entity.ToTable("gamematchplayers");
             entity.Property(e => e.Matchid).HasColumnName("matchid");
-            entity.Property(e => e.Isteama)
-                .HasDefaultValue(true)
-                .HasColumnName("isteama");
-            entity.Property(e => e.Receivedelo).HasColumnName("receivedelo");
-            entity.Property(e => e.Status)
-                .HasMaxLength(25)
-                .HasDefaultValueSql("'WIN'::character varying")
-                .HasColumnName("status");
-
-            entity.HasOne(d => d.Match).WithMany(p => p.Playermatchhistories)
-                .HasForeignKey(d => d.Matchid)
-                .HasConstraintName("fk_playermatchhistory_matchhistory");
-
-            entity.HasOne(d => d.Player).WithMany(p => p.Playermatchhistories)
-                .HasForeignKey(d => d.Playerid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_playermatchhistory_playerprofiles");
+            entity.Property(e => e.Playerid).HasColumnName("playerid");
+            entity.Property(e => e.Team).HasColumnName("team");
+            entity.Property(e => e.Elobefore).HasColumnName("elobefore");
+            entity.Property(e => e.Groupid).HasColumnName("groupid");
+            entity.Property(e => e.Rosterindex).HasColumnName("rosterindex");
+            entity.Property(e => e.Isreplaywriter).HasColumnName("isreplaywriter");
+            entity.Property(e => e.Validreturns).HasColumnName("validreturns");
+            entity.Property(e => e.Validserves).HasColumnName("validserves");
+            entity.Property(e => e.Endreason).HasMaxLength(500).HasColumnName("endreason");
+            entity.Property(e => e.Reportedat).HasColumnName("reportedat");
+            entity.Property(e => e.Lastseenat).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnName("lastseenat");
+            entity.Property(e => e.Outcome).HasMaxLength(16).HasColumnName("outcome");
+            entity.Property(e => e.Localforfeit).HasColumnName("localforfeit");
+            entity.Property(e => e.Finalizedat).HasColumnName("finalizedat");
+            entity.HasOne(e => e.Match).WithMany(e => e.Gamematchplayers).HasForeignKey(e => e.Matchid).HasConstraintName("gamematchplayers_matchid_fkey");
+            entity.HasOne(e => e.Player).WithMany(e => e.Gamematchplayers).HasForeignKey(e => e.Playerid).HasConstraintName("gamematchplayers_playerid_fkey");
         });
 
         modelBuilder.Entity<Playermission>(entity =>
@@ -602,7 +625,7 @@ public partial class PickleVerseContext : DbContext
             entity.HasOne(d => d.Match).WithMany(p => p.Playertechniqueserrors)
                 .HasForeignKey(d => d.Matchid)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("fk_playertechniqueserrors_matchhistory");
+                .HasConstraintName("fk_playertechniqueserrors_gamematches");
 
             entity.HasOne(d => d.Player).WithMany(p => p.Playertechniqueserrors)
                 .HasForeignKey(d => d.Playerid)
@@ -662,7 +685,7 @@ public partial class PickleVerseContext : DbContext
 
             entity.HasOne(d => d.Match).WithMany(p => p.Reportplayerinmatches)
                 .HasForeignKey(d => d.Matchid)
-                .HasConstraintName("fk_report_match");
+                .HasConstraintName("fk_report_gamematches");
 
             entity.HasOne(d => d.Reportedplayer).WithMany(p => p.ReportplayerinmatchReportedplayers)
                 .HasForeignKey(d => d.Reportedplayerid)

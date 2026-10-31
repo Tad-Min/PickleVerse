@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Entities.Models;
 using Repositories.UnitOfWork;
-using Services.DTOs;
+using Entities.DTOs;
 using Services.Interfaces;
 
 namespace Services.Implementations

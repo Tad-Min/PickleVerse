@@ -8,11 +8,10 @@ using PickleVerse.Multiplayer;
 using Repositories.Context;
 using Repositories.UnitOfWork;
 using Services.Configuration;
-using Services.DTOs;
-using Services.Exceptions;
-using Services.Game;
+using Entities.DTOs;
+using Entities.Exceptions;
 using Services.Implementations;
-using static Services.Game.GameSql;
+using static Repositories.Data.PostgresCommands;
 
 static class ConfigurationChecks
 {
@@ -59,8 +58,8 @@ static class ConfigurationChecks
         async Task<T> Game<T>(Func<OnlineGameService, Task<T>> action)
         {
             await using var db = new PickleVerseContext(options);
-            var sql = new GameSql(db);
-            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, settings), clock, settings, TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(db, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            return await action(new OnlineGameService(sqlData, new GameCatalogService(sqlData, settings), clock, settings, TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(sqlData, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Reject(Func<Task> action, HttpStatusCode status, string name)
         {
@@ -92,10 +91,10 @@ static class ConfigurationChecks
             player = user.Userid;
             var otp = await db.Verificationemails.SingleAsync(v => v.Userid == player);
             check(otp.Expiresat - otp.Createdat == TimeSpan.FromMinutes(2), "OTP expiration follows a non-default configuration");
-            var sql = new GameSql(db);
-            check(await sql.One("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'", r => r.GetInt64(0)) == 40
-                && await sql.One("SELECT count(*) FROM information_schema.columns WHERE table_schema='public'", r => r.GetInt64(0)) == 260,
-                "fresh database has 40 tables and 260 columns without a player progress document");
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            check(await sql.One("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'", r => r.GetInt64(0)) == 38
+                && await sql.One("SELECT count(*) FROM information_schema.columns WHERE table_schema='public'", r => r.GetInt64(0)) == 265,
+                "fresh database has 38 tables and 267 columns without duplicated participant data");
         }
         clock.Now = clock.Now.AddSeconds(2);
         await Reject(() => Auth(s => s.ResendOtpAsync(new() { Email = email })), HttpStatusCode.TooManyRequests, "resend uses the configured cooldown");

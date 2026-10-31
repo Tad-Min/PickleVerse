@@ -1,5 +1,9 @@
 # Tiến trình từ các bảng chuyên biệt — 31/10/2026
 
+Cập nhật sau cùng: GameMatchPlayers bỏ 9 cột trùng, schema 38 bảng/267 cột/53 FK. Points lấy từ MatchScore, ReceivedElo từ ratingledger và hồ sơ đọc trực tiếp. Xem [Rà soát GameMatchPlayers](GameMatchPlayers_Normalization_20261031.md); các số 276 cột phía dưới là lịch sử.
+
+Các đợt tiếp theo cùng ngày đã thêm MatchScore, gộp bảng trận/lịch sử, sửa FK PlayerLessonDrills bằng Npgsql EF Core, chuyển AppActivitySessions sang Redis và bỏ JSON Data/Report của trận. Schema hiện tại là 38 bảng/276 cột/53 FK. Các số 40 bảng bên dưới ghi riêng đợt bỏ GameProgress. Xem [Relational Match Columns](Relational_Match_Columns_20261031.md) và [Redis App Activity](Redis_App_Activity_20261031.md).
+
 Theo yêu cầu, đã bỏ hoàn toàn bảng `GameProgress` và việc serialize cả trạng thái người chơi để lưu vào database. Không chuyển bản JSON đó sang một cột khác và không thêm bảng mới. API vẫn trả một đối tượng tiến trình để Unity sử dụng; backend lắp đối tượng này từ dữ liệu trong các bảng nghiệp vụ.
 
 ## Nguồn dữ liệu
@@ -16,7 +20,7 @@ Theo yêu cầu, đã bỏ hoàn toàn bảng `GameProgress` và việc serializ
 | Lượt tập hiện tại và checkpoint | `TrainingSessions` với `IsCurrent`; chỉ một lượt hiện tại cho mỗi người |
 | Kết quả luyện tập gần nhất phục vụ biểu đồ có sẵn | Đọc tối đa 8 lượt hoàn tất từ `TrainingSessions`; không lưu thêm bản lịch sử trong JSON tiến trình |
 | Trận đang chơi | `GameMatches`, `GameMatchPlayers` |
-| Lịch sử và nhận diện trận đã xử lý | `MatchHistory`, `PlayerMatchHistory`, kết quả riêng của trận trong `GameMatches` |
+| Lịch sử và nhận diện trận đã xử lý | `GameMatches` đã hoàn tất và `GameMatchPlayers` đã FinalizedAt; điểm lấy từ `MatchScore` |
 | Chuỗi ngày hoạt động | Tính từ ngày hoàn tất các trận hợp lệ và mốc bắt đầu theo dõi trong `PlayerProfiles` |
 | AI coaching/lộ trình mở khóa | Đọc cùng dữ liệu luyện tập từ các bảng chuyên biệt |
 

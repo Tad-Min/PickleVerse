@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.DTOs;
+using Entities.DTOs;
 using Services.Interfaces;
 
 namespace API.Controllers
@@ -13,9 +13,9 @@ namespace API.Controllers
     public class TrainingController : ControllerBase
     {
         private readonly ITrainingService _trainingService;
-        private readonly Services.Game.OnlineGameService _game;
+        private readonly Services.Interfaces.IOnlineGameService _game;
 
-        public TrainingController(ITrainingService trainingService, Services.Game.OnlineGameService game)
+        public TrainingController(ITrainingService trainingService, Services.Interfaces.IOnlineGameService game)
         {
             _trainingService = trainingService;
             _game = game;

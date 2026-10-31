@@ -2,14 +2,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PickleVerse.Multiplayer;
-using Services.Game;
+using Services.Interfaces;
 
 namespace API.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/Game/lobby")]
-public sealed class RoomInvitationsController(RoomInvitationService invitations) : ControllerBase
+public sealed class RoomInvitationsController(IRoomInvitationService invitations) : ControllerBase
 {
     Guid Player => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     [HttpPost("presence")]

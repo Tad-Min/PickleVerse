@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Entities.Models;
@@ -19,7 +19,7 @@ public partial class Reportplayerinmatch
 
     public DateTime Updatedat { get; set; }
 
-    public virtual Matchhistory Match { get; set; } = null!;
+    public virtual Gamematch Match { get; set; } = null!;
 
     public virtual Playerprofile Reportedplayer { get; set; } = null!;
 

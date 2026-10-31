@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.DTOs;
+using Entities.DTOs;
 using Services.Interfaces;
 
 namespace API.Controllers
@@ -14,9 +14,9 @@ namespace API.Controllers
     public class MissionsController : ControllerBase
     {
         private readonly IMissionService _missionService;
-        private readonly Services.Game.OnlineGameService _game;
+        private readonly Services.Interfaces.IOnlineGameService _game;
 
-        public MissionsController(IMissionService missionService, Services.Game.OnlineGameService game)
+        public MissionsController(IMissionService missionService, Services.Interfaces.IOnlineGameService game)
         {
             _missionService = missionService;
             _game = game;

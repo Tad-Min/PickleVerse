@@ -2,14 +2,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PickleVerse.Replays;
-using Services.Game;
+using Services.Interfaces;
 
 namespace API.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/Game/replays")]
-public sealed class OnlineReplaysController(MatchReplayService replays) : ControllerBase
+public sealed class OnlineReplaysController(IMatchReplayService replays) : ControllerBase
 {
     Guid Player => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     [HttpGet]

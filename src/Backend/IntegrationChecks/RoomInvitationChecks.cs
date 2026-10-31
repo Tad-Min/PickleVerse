@@ -2,9 +2,9 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PickleVerse.Multiplayer;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class RoomInvitationChecks
 {
@@ -14,12 +14,12 @@ static class RoomInvitationChecks
         async Task<T> Call<T>(Func<RoomInvitationService, Task<T>> action)
         {
             await using var db = new PickleVerseContext(options);
-            return await action(new RoomInvitationService(new GameSql(db), TestRedis.Connection, TestRedis.Settings, clock));
+            return await action(new RoomInvitationService(new UnitOfWork(db), new LobbyRepository(TestRedis.Connection, TestRedis.Settings), clock));
         }
         async Task Sql(string command, params Npgsql.NpgsqlParameter[] args)
         {
             await using var db = new PickleVerseContext(options);
-            await new GameSql(db).Run(command, args);
+            await new PostgresCommands(db).Run(command, args);
         }
         foreach (var p in new[] { (a, "Anh Minh"), (b, "Bình"), (c, "Chi") })
         {

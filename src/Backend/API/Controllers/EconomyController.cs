@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.DTOs;
+using Entities.DTOs;
 using Services.Interfaces;
 
 namespace API.Controllers
@@ -14,9 +14,9 @@ namespace API.Controllers
     public class EconomyController : ControllerBase
     {
         private readonly IEconomyService _economyService;
-        private readonly Services.Game.OnlineGameService _game;
+        private readonly Services.Interfaces.IOnlineGameService _game;
 
-        public EconomyController(IEconomyService economyService, Services.Game.OnlineGameService game)
+        public EconomyController(IEconomyService economyService, Services.Interfaces.IOnlineGameService game)
         {
             _economyService = economyService;
             _game = game;

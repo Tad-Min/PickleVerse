@@ -1,14 +1,14 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.Game;
+using Services.Interfaces;
 
 namespace API.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/Game/social")]
-public sealed class OnlineSocialController(OnlineSocialService social) : ControllerBase
+public sealed class OnlineSocialController(IOnlineSocialService social) : ControllerBase
 {
     Guid Player => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     [HttpGet]

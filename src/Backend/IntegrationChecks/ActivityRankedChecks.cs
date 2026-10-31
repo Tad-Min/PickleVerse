@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using PickleVerse.Multiplayer;
 using PickleVerse.Progression;
 using Repositories.Context;
-using Services.Exceptions;
-using Services.Game;
-using static Services.Game.GameSql;
+using Entities.Exceptions;
+using Services.Implementations;
+using static Repositories.Data.PostgresCommands;
 
 static class ActivityRankedChecks
 {
@@ -14,8 +14,8 @@ static class ActivityRankedChecks
         async Task<T> Call<T>(Func<OnlineGameService, Task<T>> action)
         {
             await using var db = new PickleVerseContext(options);
-            var sql = new GameSql(db);
-            return await action(new OnlineGameService(db, sql, new GameCatalogService(sql, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(db, sql, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            return await action(new OnlineGameService(sqlData, new GameCatalogService(sqlData, TestSettings.Load()), clock, TestSettings.Load(), TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(sqlData, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Reject(Func<Task> action, string name, HttpStatusCode code = HttpStatusCode.Conflict)
         {
@@ -105,7 +105,7 @@ static class ActivityRankedChecks
         var pending = await Call(s => s.Read(id));
         check(pending.player.pendingMatch.kind == MatchKind.RankedSingles && pending.player.pendingMatch.opponents[0].id == bot.id, "fallback uses Rank Online with a database opponent UUID");
         await using (var db = new PickleVerseContext(options))
-            await new GameSql(db).Run("UPDATE gamematchplayers SET lastseenat=@stale WHERE matchid=@match AND playerid=@bot", P("stale", clock.Now.UtcDateTime.AddMinutes(-1)), P("match", assignment.MatchId), P("bot", Guid.Parse(bot.id)));
+            await new PostgresCommands(db).Run("UPDATE gamematchplayers SET lastseenat=@stale WHERE matchid=@match AND playerid=@bot", P("stale", clock.Now.UtcDateTime.AddMinutes(-1)), P("match", assignment.MatchId), P("bot", Guid.Parse(bot.id)));
         var heartbeat = await Call(s => s.HeartbeatOnline(id, new() { MatchId = request.Roster.matchId }));
         check(heartbeat.player.pendingMatch != null, "virtual opponents do not require a fabricated JWT or client heartbeat");
         var result = GameJson.Read<MatchResult>(GameJson.Write(pending.player.pendingMatch));
@@ -124,9 +124,9 @@ static class ActivityRankedChecks
         check(saved.player.activeSeconds == 100, "finishing a match no longer adds match duration to app activity");
         await using (var db = new PickleVerseContext(options))
         {
-            var sql = new GameSql(db);
-            check(await sql.One("SELECT count(*) FROM playermatchhistory WHERE matchid=@match", r => r.GetInt64(0), P("match", assignment.MatchId)) == 2 &&
-                await sql.One("SELECT count(*) FROM gamematchplayers WHERE matchid=@match AND accepted AND report IS NOT NULL", r => r.GetInt64(0), P("match", assignment.MatchId)) == 2, "fallback history and online result retain both valid player identities");
+            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            check(await sql.One("SELECT count(*) FROM gamematchplayers WHERE matchid=@match AND finalizedat IS NOT NULL", r => r.GetInt64(0), P("match", assignment.MatchId)) == 2 &&
+                await sql.One("SELECT count(*) FROM gamematchplayers p JOIN gamematches m USING(matchid) WHERE matchid=@match AND m.startedat IS NOT NULL AND p.reportedat IS NOT NULL", r => r.GetInt64(0), P("match", assignment.MatchId)) == 2, "fallback history and online result retain both valid player identities");
         }
     }
 }

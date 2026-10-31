@@ -3,9 +3,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services.DTOs;
+using Entities.DTOs;
 using Services.Interfaces;
-using Services.Game;
 using Services.Configuration;
 using PickleVerse.Progression;
 
@@ -16,10 +15,10 @@ namespace API.Controllers
     public class AiCoachingController : ControllerBase
     {
         private readonly IAiCoachingService _aiCoachingService;
-        private readonly HybridCoachingService _hybrid;
+        private readonly IHybridCoachingService _hybrid;
         private readonly HybridAiSettings _settings;
 
-        public AiCoachingController(IAiCoachingService aiCoachingService, HybridCoachingService hybrid, HybridAiSettings settings)
+        public AiCoachingController(IAiCoachingService aiCoachingService, IHybridCoachingService hybrid, HybridAiSettings settings)
         {
             _aiCoachingService = aiCoachingService;
             _hybrid = hybrid;

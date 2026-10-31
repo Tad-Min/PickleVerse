@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Entities.Models;
@@ -19,7 +19,6 @@ public partial class Lesson
 
     public virtual ICollection<Lessondrill> Lessondrills { get; set; } = new List<Lessondrill>();
 
-    public virtual ICollection<Playerlessondrill> Playerlessondrills { get; set; } = new List<Playerlessondrill>();
 
     public virtual ICollection<Playertechniqueserror> Playertechniqueserrors { get; set; } = new List<Playertechniqueserror>();
 }

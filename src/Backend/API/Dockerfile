@@ -12,11 +12,6 @@ RUN dotnet restore "API/API.csproj"
 
 # Copy all source files and publish
 COPY src/Backend/ .
-COPY ["My project/Assets/Scripts/Entites/Progression/", "/repo/My project/Assets/Scripts/Entites/Progression/"]
-COPY ["My project/Assets/Scripts/Entites/Training/", "/repo/My project/Assets/Scripts/Entites/Training/"]
-COPY ["My project/Assets/Scripts/Entites/Replays/", "/repo/My project/Assets/Scripts/Entites/Replays/"]
-COPY ["My project/Assets/Scripts/Entites/Multiplayer/", "/repo/My project/Assets/Scripts/Entites/Multiplayer/"]
-COPY ["My project/Assets/Scripts/Progression/", "/repo/My project/Assets/Scripts/Progression/"]
 WORKDIR "/repo/src/Backend/API"
 RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 

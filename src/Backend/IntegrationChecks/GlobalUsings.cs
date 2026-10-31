@@ -1,0 +1,9 @@
+global using Entities.Game;
+global using Services.Diagnostics;
+global using Services.Interfaces;
+global using Repositories.UnitOfWork;
+global using Repositories.Caching;
+global using Repositories.Game;
+global using Repositories.Data;
+global using Entities.Configuration;
+global using Services.Mapping;
