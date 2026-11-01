@@ -17,6 +17,8 @@ namespace PickleVerse.FrontEnd
         public UnityEngine.UI.Button femaleButton, maleButton;
         public UnityEngine.UI.Image femaleSelection, maleSelection;
         public TMP_Text danceLabel;
+        public TMP_Text characterStatus;
+        public bool CharacterChangePending { get; private set; }
         public Camera lobbyCamera;
         public Transform courtProps;
         public const string CharacterPreferenceKey = "PickleVerse.Lobby.Character.v1";
@@ -157,6 +159,8 @@ namespace PickleVerse.FrontEnd
 
         void SetCharacter(bool male, bool save)
         {
+            if (save && CharacterChangePending)
+                return;
             if (save && IsMaleSelected == male)
                 return;
             IsMaleSelected = male;
@@ -174,7 +178,40 @@ namespace PickleVerse.FrontEnd
             // Both actors stay on their own half; the floor props follow the selected view.
             if (courtProps)
                 courtProps.rotation = Quaternion.Euler(0, male ? 180 : 0, 0) * propsRotation;
-            // AccountScreen persists character selection through the backend profile API.
+            if (save && Application.isPlaying)
+                SaveAccountCharacter(male);
+        }
+
+        async void SaveAccountCharacter(bool male)
+        {
+            var account = PickleVerse.Services.AccountRuntime.Instance?.Account;
+            if (account == null || !account.IsSignedIn) return;
+            CharacterChangePending = true;
+            if (maleButton) maleButton.interactable = false;
+            if (femaleButton) femaleButton.interactable = false;
+            if (characterStatus) characterStatus.text = "Đang lưu…";
+            try
+            {
+                await account.UpdateProfileAsync(new PickleVerse.Services.Api.UpdateProfileRequest { IsMale = male });
+                if (this && characterStatus) characterStatus.text = "";
+            }
+            catch (System.Exception)
+            {
+                if (this)
+                {
+                    ApplyAccountCharacter(account.Profile?.IsMale == true);
+                    if (characterStatus) characterStatus.text = "Chưa lưu được. Hãy thử lại.";
+                }
+            }
+            finally
+            {
+                if (this)
+                {
+                    CharacterChangePending = false;
+                    if (maleButton) maleButton.interactable = account.IsSignedIn;
+                    if (femaleButton) femaleButton.interactable = account.IsSignedIn;
+                }
+            }
         }
 
         static void SetButtonState(UnityEngine.UI.Button button, bool selected)

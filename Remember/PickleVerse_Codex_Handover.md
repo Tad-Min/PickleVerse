@@ -1,4 +1,26 @@
-## Cập nhật mới nhất ngày 31/10/2026 — Backend phân tầng, UnitOfWork và ApiResponse
+## Cập nhật mới nhất ngày 01/11/2026 — Login → Loading → Menu
+
+AccountScreen bỏ Page.Sync/box chờ vào sân. Nút đăng nhập sau validation gọi SceneLoading.LoadPrepared: mở Loading Single trước, sau đó xác thực/tải game state song song với tải additive và render Menu dưới cover. Khi dữ liệu sẵn sàng, activeSceneChanged bind UI Menu một lần; warm-up quan sát callback render camera Menu thực và dùng SceneWarmup trước khi đạt 100%, fade và mở input. Có khóa/khôi phục EventSystem, background priority và flow generation; thất bại quay Login/OTP, giữ email; game-state failure cho retry bằng session đã xác thực; session mất khi warm-up không được reveal Menu. Không thay backend/schema hoặc asset scene/prefab.
+
+Đã đạt 48 E2E qua UI/Unity HTTP transport/services với HTTP loopback và 31 regression (24 account, 7 warm-up). Game View render thật 1920×1080/RTX 3050 Laptop: 600 frame đầu sau reveal, tách khỏi screenshot/profile test, p95 10,343 ms, p99 12,392 ms, max 19,019 ms, không frame >20 ms; 60 frame đầu max 15,801 ms. Đây là số đo Editor, chưa là release/mobile UAT. Docker daemon chưa hoạt động nên không thử PostgreSQL/SMTP thật. Xem Doc/Login_Loading_Flow_20261101.md và artifacts/login-loading-20261101/e2e.json (có mẫu thô/trace/ảnh). Công cụ LoginLoadingVerification.Prepare/Begin/Restore tự dùng Game View 1080p và khôi phục scene/setup cũ; cần Editor có render. Các thay đổi audience/font có sẵn giữ nguyên.
+
+## Đợt trước ngày 01/11/2026 — Scene Login
+
+Đã tách auth UI sang Assets/Scenes/UI/Login.unity (scene khởi động trong global và active build profile). AccountScreen là coordinator persistent, còn AccountPanelView thuộc scene; Menu chỉ tạo Resources/Auth/MenuAccount với sửa tên/đăng xuất, không còn input login/register/OTP. Form giữa màn hình, ảnh cinematic riêng, palette/vật liệu cùng UI âm nhạc, hiện/ẩn mật khẩu, Tab/Enter/focus, validation, OTP/resend theo server, chống gửi trùng, retry game state. Không còn chọn nam/nữ ở form. HomeLobbyPresentation giữ hai nút tại vị trí cũ và lưu IsMale qua profile API, rollback nếu lỗi. Không sửa backend/schema.
+
+Đã qua 10 asset checks, 24 Services regression, 4 FrontEnd regression và 24 Play Mode checks bằng HTTP loopback với transport/service/controller thật; không gửi email hoặc tạo tài khoản thật. Editor batch CPU p95 Login ~0,257 ms, baseline ~0,219 ms; không diễn giải đây là FPS GPU. Có bộ build/probe Windows opt-in để đo GPU và thời gian frame; báo cáo, ảnh trong artifacts/login-20261101, hướng dẫn và nguồn thiết kế trong Doc/Login_UI_20261101.md. Probe chỉ vào development build và chỉ chạy khi có --login-benchmark. PhotonProjectSetup giữ Login ở đầu build profile qua domain reload. Giữ toàn bộ thay đổi audience và các asset/font có sẵn.
+
+Kiểm tra hợp đồng API/architecture thêm 33/33 (không cần DB). Windows development build thành công; đo render ngoài màn hình 1920×1080 trên RTX 3050 Laptop/D3D12 với GPU readback, 600 frame mỗi pha: p95 toàn frame Login 7,104 ms, baseline 6,121 ms; p95 render có đồng bộ 6,011/5,312 ms. Không diễn giải thành FPS hiển thị hoặc GPU-only time; các counter GPU/window bị ẩn không hợp lệ đã loại khỏi kết luận. Đã xem ảnh PlayerLogin-1920x1080.png. Các thay đổi PlayerSettings phục vụ benchmark đã khôi phục nguyên vẹn. Chi tiết trong Doc/Login_UI_20261101.md.
+
+## Đợt trước ngày 31/10/2026 — Khán giả BotMatch và MultiplayerCourt
+
+Đã tích hợp audience ngồi ghế bằng bốn GLB PlayBoy/T1-girl/Wibu/YellowHairGirl và 16 animation người dùng chuẩn bị. Sân chuyên nghiệp 48 người; sân ngoài trời 32 người, có hai khán đài bên hông tái sử dụng hình học ghế/sàn đã có. Mobile dùng 24/16 người. Bình thường cổ vũ; bên ghi điểm chỉ tay; bên mất điểm thất vọng/tức giận rồi trở lại cổ vũ; thua trận giữ phản ứng cuối. Có lệch pha, độ trễ phản ứng, crossfade và neo pelvis vào ghế.
+
+BotMatch gọi sau CommitRally; multiplayer nhận sự kiện ghi điểm từ state authority và phản ứng cuối trận từ Finished/WinningTeam. CourtVenueSelection giữ sân thay mới trong đúng gameplay scene. Không thay backend/schema. Model gốc và animation gốc giữ nguyên; Blender tạo model dẫn xuất có LOD khoảng 24k/6,7k tam giác, đã xử lý normals để tránh rạn bề mặt. Menu PickleVerse/Audience có lệnh tái tạo prefab, nhưng hai scene đã cài sẵn.
+
+Đạt 40 kiểm tra asset/animation/scene, 10 Play Mode cô lập, 54 assertion hồi quy luật đơn/đôi; đã xem ảnh render. Chưa chạy lại trận Photon hai máy hay FPS thiết bị thật. Fixture scene đã được dọn và khôi phục scene Editor ban đầu. Xem Doc/Audience_20261031.md và artifacts/audience-20261031/. Các thay đổi font và tài nguyên người dùng có sẵn trước nhiệm vụ được giữ.
+
+## Đợt trước ngày 31/10/2026 — Backend phân tầng, UnitOfWork và ApiResponse
 
 Theo góp ý tiếp theo của người dùng, phần bind cấu hình Redis và đăng ký singleton IConnectionMultiplexer đã chuyển trực tiếp về API/Program.cs, lấy section Redis qua builder.Configuration (appsettings/environment). RedisSettings chuyển thành model cấu hình thuần ở Entities/Configuration, không đọc IConfiguration; Repositories chỉ nhận settings/kết nối qua DI. Giữ nguyên Project Reference đã chốt.
 

@@ -36,6 +36,7 @@ namespace PickleVerse.Multiplayer
         void MatchSoundRpc(int sound) => Broadcast("sound", sound);
         void AnnouncementRpc(string title, string detail, int tone, float duration) => Broadcast("announce", title, detail, tone, duration);
         void ReplayEventRpc(string kind, string detail) => Broadcast("replay-event", kind, detail);
+        void AudienceRpc(int winner, bool point, bool finished) => Broadcast("audience", winner, point, finished);
         public void ReceivePhotonMessage(PlayerRef source, string kind, string payload)
         {
             var a = JArray.Parse(payload);
@@ -56,6 +57,8 @@ namespace PickleVerse.Multiplayer
                 AnnouncementEffect(a[0].Value<string>(), a[1].Value<string>(), a[2].Value<int>(), a[3].Value<float>());
             else if (kind == "replay-event" && a.Count == 2)
                 ReplayEventEffect(a[0].Value<string>(), a[1].Value<string>());
+            else if (kind == "audience" && a.Count == 3)
+                PickleVerse.LocalMatch.StadiumAudience.Rally(gameObject.scene, a[0].Value<int>(), a[1].Value<bool>(), a[2].Value<bool>());
             else if (kind == "coaching-shot" && a.Count == 1)
                 ReceiveCoachingShot(a[0].Value<string>());
             else if (kind == "coaching-checkpoint" && a.Count == 1)

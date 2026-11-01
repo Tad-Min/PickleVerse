@@ -564,6 +564,8 @@ namespace PickleVerse.Multiplayer
                 CoachingRallyEnded(loser, fault);
                 int beforeA = Rules.score[0], beforeB = Rules.score[1];
                 Rules.SettleRally();
+                if (!Rules.complete && (Rules.score[0] > beforeA || Rules.score[1] > beforeB))
+                    AudienceRpc(1 - loser, Rules.score[0] > beforeA || Rules.score[1] > beforeB, false);
                 if (Rules.gameFinished)
                     ReplayEventRpc("GameEnd", Rules.score[0] + ":" + Rules.score[1]);
                 teamPoints[0] += Math.Max(0, Rules.score[0] - beforeA);
@@ -795,6 +797,9 @@ namespace PickleVerse.Multiplayer
         {
             if (!complete)
                 return;
+            // Replicated final state also covers a client reconnecting after the
+            // winning point; it must not rely on having received that rally RPC.
+            StadiumAudience.Rally(gameObject.scene, WinningTeam, true, true);
             replay?.Event("MatchEnd", Status.ToString());
             replay?.Finish(true);
             MultiplayerApp.Instance.ShowResult(Status.ToString());

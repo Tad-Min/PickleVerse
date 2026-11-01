@@ -33,8 +33,8 @@ namespace PickleVerse.Settings
             DisplayedProgress = TargetProgress = 0;
             shownPercent = shownBall = -1;
             group.alpha = 1;
-            destination.text = scene == "BotMatch" ? "ĐẤU VỚI BOT" : scene == "Training" ? "HỌC VIỆN PICKLEVERSE" : scene == "Tutorial" ? "LÀM QUEN SÂN ĐẤU" : "ĐẤU TRỰC TUYẾN";
-            tip.text = scene == "MultiplayerCourt" ? "Một đội hình. Cùng nhịp đấu." : "Giữ nhịp di chuyển. Đón bóng. Tỏa sáng.";
+            destination.text = scene == "Menu" ? "SẢNH PICKLEVERSE" : scene == "BotMatch" ? "ĐẤU VỚI BOT" : scene == "Training" ? "HỌC VIỆN PICKLEVERSE" : scene == "Tutorial" ? "LÀM QUEN SÂN ĐẤU" : "ĐẤU TRỰC TUYẾN";
+            tip.text = scene == "Menu" ? "Hành trình của bạn. Sân đấu của bạn." : scene == "MultiplayerCourt" ? "Một đội hình. Cùng nhịp đấu." : "Giữ nhịp di chuyển. Đón bóng. Tỏa sáng.";
             picture = pictures.Length > 0 ? nextPicture++ % pictures.Length : 0;
             if (pictures.Length > 0)
                 artwork.texture = pictures[picture];

@@ -598,6 +598,7 @@ MonoBehaviour:
   shotMask: 8
   joystick: 0
   modifier: 1
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &24317720
 MonoBehaviour:
@@ -1236,6 +1237,7 @@ MonoBehaviour:
   shotMask: 5
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &90252951
 MonoBehaviour:
@@ -4105,6 +4107,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &475443672
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1181835549}
+    m_Modifications:
+    - target: {fileID: 724708621020725317, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_Name
+      value: Professional
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+--- !u!4 &475443673 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6204840045827510430, guid: 494eaf6a7f31b944cbf07686698fb6d2, type: 3}
+  m_PrefabInstance: {fileID: 475443672}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &477333928
 GameObject:
   m_ObjectHideFlags: 0
@@ -4314,6 +4378,7 @@ MonoBehaviour:
   current: {fileID: 1181835548}
   selected: 0
   useBotPreference: 0
+  includeAudience: 1
 --- !u!1 &525328420
 GameObject:
   m_ObjectHideFlags: 0
@@ -4980,6 +5045,7 @@ MonoBehaviour:
   shotMask: 1
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &550143257
 MonoBehaviour:
@@ -5149,6 +5215,7 @@ MonoBehaviour:
   shotMask: 0
   joystick: 1
   modifier: 0
+  sprint: 0
   knob: {fileID: 1298930381}
 --- !u!114 &568212811
 MonoBehaviour:
@@ -8001,6 +8068,7 @@ MonoBehaviour:
   shotMask: 3
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &848418300
 MonoBehaviour:
@@ -8977,6 +9045,7 @@ MonoBehaviour:
   shotMask: 4
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1047978400
 MonoBehaviour:
@@ -10569,7 +10638,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 475443673}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d838b30db0a84004fb350971b85c772d, type: 3}
 --- !u!114 &1181835548 stripped
@@ -10583,6 +10655,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36740688037119c4f8c9646de31597b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PickleVerse.LocalMatch::PickleVerse.LocalMatch.StadiumEnvironment
+--- !u!4 &1181835549 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3047348548646360282, guid: d838b30db0a84004fb350971b85c772d, type: 3}
+  m_PrefabInstance: {fileID: 1181835547}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1186539476
 GameObject:
   m_ObjectHideFlags: 0
@@ -11619,6 +11696,7 @@ MonoBehaviour:
   shotMask: 6
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1299231582
 MonoBehaviour:
@@ -12416,6 +12494,7 @@ MonoBehaviour:
   shotMask: 16
   joystick: 0
   modifier: 1
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1425188279
 MonoBehaviour:
@@ -15320,6 +15399,7 @@ MonoBehaviour:
   shotMask: 2
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1660621399
 MonoBehaviour:

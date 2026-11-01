@@ -91,6 +91,7 @@ namespace PickleVerse.LocalMatch
         }
         void InitializeMatch()
         {
+            StadiumAudience.Restart(gameObject.scene);
             if (!human || !bot)
                 return;
             botDifficulty = BotMatchLaunchSettings.Difficulty;
@@ -493,6 +494,7 @@ namespace PickleVerse.LocalMatch
             Message = FaultText(Rules.LastFault) + " • " + (loser == 0 ? "Bạn" : "Bot") + " phạm lỗi";
             int ownBefore = Rules.Points[0];
             Rules.CommitRally();
+            StadiumAudience.Rally(gameObject.scene, 1 - loser, priorServer == 1 - loser, Rules.Winner >= 0);
             TotalRallies++;
             if (Rules.GameFinished)
                 replay?.Event("GameEnd", Rules.Points[0] + ":" + Rules.Points[1]);
