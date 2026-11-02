@@ -22,7 +22,7 @@ namespace PickleVerse.EditorTools
     /// <summary>UI -> real Unity HTTP transport -> loopback API -> Loading -> rendered Menu.</summary>
     public static class LoginLoadingVerification
     {
-        public static string Output=>Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/login-loading-20261101"));
+        public static string Output=>SessionState.GetString("PKV.Loading.Output",Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/login-loading-20261101")));
         static readonly BindingFlags Private=BindingFlags.NonPublic|BindingFlags.Instance;
         static readonly List<string> checks=new List<string>();
         static readonly List<Trace> traces=new List<Trace>();
@@ -49,8 +49,9 @@ namespace PickleVerse.EditorTools
             double until=EditorApplication.timeSinceStartup+timeoutMs/1000d;
             while(!ready()) { if(EditorApplication.timeSinceStartup>until)throw new TimeoutException("E2E wait timed out: "+trace?.name); await Task.Delay(15); }
         }
-        public static object Prepare()
+        public static object Prepare(string outputDirectory=null)
         {
+            if(!string.IsNullOrEmpty(outputDirectory))SessionState.SetString("PKV.Loading.Output",Path.GetFullPath(outputDirectory));
             Directory.CreateDirectory(Output);
             if(Application.isBatchMode)throw new InvalidOperationException("This verification requires a rendered Game View, not a headless Editor.");
             var type=typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView");
@@ -91,6 +92,7 @@ namespace PickleVerse.EditorTools
                 type.GetProperty("selectedSizeIndex",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).SetValue(window,index);
                 SessionState.EraseInt("PKV.Loading.GameViewSize");
             }
+            SessionState.EraseString("PKV.Loading.Output");
             return result;
         }
         public static object Begin()

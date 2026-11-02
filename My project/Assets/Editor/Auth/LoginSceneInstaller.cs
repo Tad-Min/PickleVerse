@@ -31,11 +31,7 @@ namespace PickleVerse.EditorTools
             Directory.CreateDirectory(Output);
             Directory.CreateDirectory("Assets/Resources/Auth");
             AssetDatabase.Refresh();
-            var importer = (TextureImporter)AssetImporter.GetAtPath("Assets/FrontEndContent/Login/LoginCinematic.png");
-            importer.textureType = TextureImporterType.Default; importer.mipmapEnabled = false; importer.isReadable = false;
-            importer.alphaSource = TextureImporterAlphaSource.None; importer.maxTextureSize = 2048;
-            importer.wrapMode = TextureWrapMode.Clamp; importer.textureCompression = TextureImporterCompression.CompressedHQ;
-            importer.SaveAndReimport();
+            AnimatedArtworkInstaller.ConfigureImports();
             font = ScreenUiTheme.Current.font;
             glass = AssetDatabase.LoadAssetAtPath<Material>("Assets/FrontEndContent/AnimeUI/Glass.mat");
             quiet = ScreenUiTheme.Current.quiet;
@@ -47,7 +43,7 @@ namespace PickleVerse.EditorTools
             {
                 var root = CanvasRoot("Login Screen");
                 var art = Rect(root.transform, "Cinematic Stadium"); Stretch(art);
-                var image = art.gameObject.AddComponent<RawImage>(); image.texture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/FrontEndContent/Login/LoginCinematic.png"); image.raycastTarget = false;
+                var image = art.gameObject.AddComponent<RawImage>(); AnimatedArtworkInstaller.ConfigureLogin(image); image.raycastTarget = false;
                 var aspect = art.gameObject.AddComponent<AspectRatioFitter>(); aspect.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; aspect.aspectRatio = image.texture.width/(float)image.texture.height;
                 var shade = Block(root.transform,"Atmosphere",new Color(.025f,.045f,.085f,.20f)); Stretch(shade);
                 var safe = Rect(root.transform,"Safe Area"); Stretch(safe);

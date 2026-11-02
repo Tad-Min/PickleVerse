@@ -4,6 +4,7 @@ using System.IO;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Rendering;
+using PickleVerse.Settings;
 
 namespace PickleVerse.FrontEnd
 {
@@ -20,8 +21,10 @@ namespace PickleVerse.FrontEnd
         [Serializable] public sealed class Report
         {
             public string environment, gpu, resolution;
-            public bool frameTimingEnabled;
-            public Sample login, uiHiddenBaseline;
+            public bool frameTimingEnabled, success;
+            public Sample login, uiHiddenBaseline, loading;
+            public bool loginAnimationReady, loginAnimationAdvanced, loadingAnimationReady, loadingAnimationAdvanced;
+            public int loadingClips;
         }
         const int Frames=600;
         readonly double[] frame=new double[Frames], cpu=new double[Frames], gpu=new double[Frames];
@@ -37,6 +40,10 @@ namespace PickleVerse.FrontEnd
         Camera renderCamera;
         RenderTexture target;
         bool screenshotSaved;
+        CinematicArtwork playback;
+        LoadingScreenView loading;
+        long firstVideoFrame = -1;
+        bool videoAdvanced;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {
@@ -49,7 +56,9 @@ namespace PickleVerse.FrontEnd
         void Begin()
         {
             Application.runInBackground=true; Application.targetFrameRate=-1; QualitySettings.vSyncCount=0;
+            Directory.CreateDirectory(Path.GetDirectoryName(destination));
             ui=FindAnyObjectByType<AccountPanelView>().GetComponentInParent<Canvas>().rootCanvas.gameObject;
+            playback=ui.GetComponentInChildren<CinematicArtwork>();
             mainRecorder=ProfilerRecorder.StartNew(ProfilerCategory.Internal,"Main Thread");
             gcRecorder=ProfilerRecorder.StartNew(ProfilerCategory.Memory,"GC Allocated In Frame");
             drawRecorder=ProfilerRecorder.StartNew(ProfilerCategory.Render,"Draw Calls Count");
@@ -61,7 +70,7 @@ namespace PickleVerse.FrontEnd
             renderCamera.targetTexture=target; renderCamera.cullingMask=1<<5; renderCamera.orthographic=true;
             renderCamera.orthographicSize=400; renderCamera.transform.position=new Vector3(0,0,-10);
             var canvas=ui.GetComponent<Canvas>(); canvas.renderMode=RenderMode.ScreenSpaceCamera; canvas.worldCamera=renderCamera; canvas.planeDistance=1;
-            report=new Report{environment="Windows development player, uncapped, synchronized offscreen GPU render at 1080p, 2 seconds warm-up per phase, 600 frames per phase; includes 1-pixel GPU readback, excludes window presentation",gpu=SystemInfo.graphicsDeviceName+" / "+SystemInfo.graphicsDeviceType,resolution=target.width+"x"+target.height,frameTimingEnabled=FrameTimingManager.IsFeatureEnabled()};
+            report=new Report{environment="Windows development player, uncapped, synchronized offscreen GPU render at 1080p, 2 seconds warm-up per phase, 600 frames per phase (Login, UI-hidden baseline, Loading); includes 1-pixel GPU readback, excludes window presentation",gpu=SystemInfo.graphicsDeviceName+" / "+SystemInfo.graphicsDeviceType,resolution=target.width+"x"+target.height,frameTimingEnabled=FrameTimingManager.IsFeatureEnabled()};
             warmUntil=Time.realtimeSinceStartupAsDouble+2;
         }
         void Update()
@@ -73,16 +82,22 @@ namespace PickleVerse.FrontEnd
             readback.WaitForCompletion();
             double renderMs=(System.Diagnostics.Stopwatch.GetTimestamp()-started)*1000d/System.Diagnostics.Stopwatch.Frequency;
             if(readback.hasError) throw new InvalidOperationException("Benchmark GPU readback failed.");
-            if(!screenshotSaved)
+            if(phase==2) playback=loading.artwork.GetComponent<CinematicArtwork>();
+            if(!screenshotSaved && phase!=1 && playback && playback.IsReady)
             {
                 screenshotSaved=true;
                 var prior=RenderTexture.active; RenderTexture.active=target;
                 var image=new Texture2D(target.width,target.height,TextureFormat.RGB24,false); image.ReadPixels(new Rect(0,0,target.width,target.height),0,0); image.Apply(); RenderTexture.active=prior;
-                File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(destination),"PlayerLogin-1920x1080.png"),image.EncodeToPNG()); Destroy(image);
+                File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(destination),phase==0?"PlayerLogin-1920x1080.png":"PlayerLoading-1920x1080.png"),image.EncodeToPNG()); Destroy(image);
                 warmUntil=Time.realtimeSinceStartupAsDouble+2;
             }
             FrameTimingManager.CaptureFrameTimings();
             if(Time.realtimeSinceStartupAsDouble<warmUntil) return;
+            if(playback && playback.IsReady)
+            {
+                if(firstVideoFrame<0) firstVideoFrame=playback.Player.frame;
+                else if(playback.Player.frame!=firstVideoFrame) videoAdvanced=true;
+            }
             frame[index]=Time.unscaledDeltaTime*1000d;
             cpu[index]=mainRecorder.LastValue/1000000d; gc[index]=gcRecorder.LastValue; draws[index]=drawRecorder.LastValue;
             render[index]=renderMs;
@@ -91,13 +106,32 @@ namespace PickleVerse.FrontEnd
             Array.Sort(frame); Array.Sort(cpu); Array.Sort(gc); Array.Sort(draws); Array.Sort(gpu,0,gpuCount); Array.Sort(render);
             var sample=new Sample{frames=index,gpuFrames=gpuCount,frameMsP50=frame[index/2],frameMsP95=frame[(int)(index*.95)],mainThreadMsP50=cpu[index/2],mainThreadMsP95=cpu[(int)(index*.95)],gcBytesP50=gc[index/2],gcBytesP95=gc[(int)(index*.95)],drawsP50=draws[index/2],gpuMsP50=gpuCount>0?gpu[gpuCount/2]:0,gpuMsP95=gpuCount>0?gpu[(int)(gpuCount*.95)]:0};
             sample.synchronizedRenderMsP50=render[index/2]; sample.synchronizedRenderMsP95=render[(int)(index*.95)];
-            if(phase++==0)
+            if(phase==0)
             {
-                report.login=sample; ui.SetActive(false); index=gpuCount=0; warmUntil=Time.realtimeSinceStartupAsDouble+2; return;
+                report.login=sample; report.loginAnimationReady=playback && playback.IsReady;
+                report.loginAnimationAdvanced=videoAdvanced;
+                ui.SetActive(false); NextPhase(); return;
             }
-            report.uiHiddenBaseline=sample;
+            if(phase==1)
+            {
+                report.uiHiddenBaseline=sample;
+                loading=Instantiate(Resources.Load<LoadingScreenView>("Loading/LoadingScreen"));
+                loading.Begin("Menu"); loading.SetProgress(.5f,"Đang chuẩn bị hình ảnh");
+                foreach(var movie in loading.movies) if(movie)report.loadingClips++;
+                var canvas=loading.GetComponent<Canvas>(); canvas.renderMode=RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera=renderCamera; canvas.planeDistance=1; renderCamera.cullingMask=~0;
+                NextPhase(); return;
+            }
+            report.loading=sample; report.loadingAnimationReady=playback && playback.IsReady;
+            report.loadingAnimationAdvanced=videoAdvanced;
+            report.success=report.loginAnimationReady&&report.loginAnimationAdvanced&&report.loadingAnimationReady&&report.loadingAnimationAdvanced&&report.loadingClips==4;
             Directory.CreateDirectory(Path.GetDirectoryName(destination)); File.WriteAllText(destination,JsonUtility.ToJson(report,true));
             enabled=false; mainRecorder.Dispose(); gcRecorder.Dispose(); drawRecorder.Dispose(); Application.Quit();
+        }
+        void NextPhase()
+        {
+            phase++; index=gpuCount=0; warmUntil=Time.realtimeSinceStartupAsDouble+2;
+            firstVideoFrame=-1; videoAdvanced=screenshotSaved=false;
         }
     }
 }

@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 48773842396483810}
   - component: {fileID: 2606960015971871340}
   - component: {fileID: 1539627693935919603}
+  - component: {fileID: 210770928977481573}
   m_Layer: 0
   m_Name: CinematicArtwork
   m_TagString: Untagged
@@ -140,13 +141,28 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 57a6654561a6b1346b0c2bc9516711e4, type: 3}
+  m_Texture: {fileID: 2800000, guid: 7e65f885e3f59da4cb6f1357c0e3f08e, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
     y: 0
     width: 1
     height: 1
+--- !u!114 &210770928977481573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312951695919418973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2394ecf536acf464bb724e5e9ebda16e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PickleVerse.Settings::PickleVerse.Settings.CinematicArtwork
+  clip: {fileID: 0}
+  poster: {fileID: 0}
+  playOnEnable: 0
 --- !u!1 &1367509280825031090
 GameObject:
   m_ObjectHideFlags: 0
@@ -566,6 +582,7 @@ GameObject:
   - component: {fileID: 721932554145870207}
   - component: {fileID: 7569771826853430204}
   - component: {fileID: 7961564087872995490}
+  - component: {fileID: 4472613506088262520}
   m_Layer: 0
   m_Name: ArtworkCrossfade
   m_TagString: Untagged
@@ -620,13 +637,28 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 0}
+  m_Texture: {fileID: 2800000, guid: 7e65f885e3f59da4cb6f1357c0e3f08e, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
     y: 0
     width: 1
     height: 1
+--- !u!114 &4472613506088262520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4450304191847157963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2394ecf536acf464bb724e5e9ebda16e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PickleVerse.Settings::PickleVerse.Settings.CinematicArtwork
+  clip: {fileID: 0}
+  poster: {fileID: 0}
+  playOnEnable: 0
 --- !u!1 &4733518963870123727
 GameObject:
   m_ObjectHideFlags: 0
@@ -1689,13 +1721,20 @@ MonoBehaviour:
   artwork: {fileID: 1539627693935919603}
   nextArtwork: {fileID: 7961564087872995490}
   pictures:
-  - {fileID: 2800000, guid: 57a6654561a6b1346b0c2bc9516711e4, type: 3}
-  - {fileID: 2800000, guid: 20ba0c4d771cf364ea1240cced64d0c1, type: 3}
-  - {fileID: 2800000, guid: 902bc8152bcaac849b3d9497a02e644f, type: 3}
+  - {fileID: 2800000, guid: 7e65f885e3f59da4cb6f1357c0e3f08e, type: 3}
+  - {fileID: 2800000, guid: 91047de422a0de640a5109bfdbf390f0, type: 3}
+  - {fileID: 2800000, guid: b54c09eeee069214e890d3bc01da58d7, type: 3}
+  - {fileID: 2800000, guid: 8c63fdc57190224469de107d471d91b7, type: 3}
+  movies:
+  - {fileID: 32900000, guid: da83d818f2794f946b8f792f2fe30d84, type: 3}
+  - {fileID: 32900000, guid: 1f604c644df67eb4085ae00432c8b91f, type: 3}
+  - {fileID: 32900000, guid: d3e1fe04372472d49a8fbf3b225be584, type: 3}
+  - {fileID: 32900000, guid: 890432d434f815e42bf78c3b4fffaec8, type: 3}
   pictureCaptions:
-  - "01  /  GI\u1EDC V\xC0NG TR\xCAN S\xC2N"
-  - "02  /  S\u1EB4N S\xC0NG \u0110\u1ED0I \u0110\u1EA6U"
-  - "03  /  M\u1ED6I C\xDA \u0110\xC1NH L\xC0 M\u1ED8T C\u01A0 H\u1ED8I"
+  - "01  /  B\u1EE8T PH\xC1 TR\xCAN S\xC2N"
+  - "02  /  \u0110\xD3N B\xD3NG. T\u1ECEA S\xC1NG."
+  - "03  /  S\xC2N \u0110\u1EA4U C\u1EE6A B\u1EA0N"
+  - "04  /  S\u1EB4N S\xC0NG CHO C\xDA \u0110\xC1NH TI\u1EBEP THEO"
   destination: {fileID: 2602574737834621034}
   status: {fileID: 76254151559196623}
   percentage: {fileID: 3972628777252694204}
