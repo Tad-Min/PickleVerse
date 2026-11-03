@@ -1,3 +1,11 @@
+## Cập nhật ngày 03/11/2026 — Đã phát hành Docker Hub
+
+Theo yêu cầu người dùng, đã push đủ ba image Linux amd64 lên `tadminm/pickelverse`, release `20261103-p18-53871c6-hub1`: các tag `api-...`, `ai-...`, `server-...`. Đã đối chiếu digest remote với image local đã kiểm tra; không thay tag `latest`/`ai` cũ. Metadata/digest: `artifacts/docker-hub-20261103/images.json`.
+
+API Dockerfile sanitizes appsettings trong build stage trước khi COPY runtime; quét cả 8 runtime layer không có credential phát triển đã kiểm tra. Local appsettings/.env không bị sửa. Linux dedicated đã build lại từ mã sau merge (0 lỗi). AI dùng dependency layer đã xác minh requirements/lock và version trùng, cập nhật toàn bộ app hiện tại; kiểm tra byte và 11/11 Python tests đạt. Smoke cách ly: database mới từ Database.sql, API/AI ready, HTTP AI auth/validation đúng, worker healthy/Redis heartbeat. Các container/network/volume kiểm thử và credential tạm đã dọn. Chưa nghiệm thu gameplay Ubuntu/NAT; cảnh báo Unity TLS nền vẫn có như trước.
+
+Thêm `docker-compose.hub.yml`, sanitizer và `scripts/package-dockerhub.py`. Gói cấu hình Ubuntu 16.8 KB (không source build/native binary/credential thật): `artifacts/docker-hub-20261103/PickleVerse-DockerHub-20261103-p18-53871c6-hub1.tar.gz`. Hướng dẫn `Doc/DockerHub_Ubuntu_20261103.md`. Người dùng yêu cầu xóa toàn bộ dữ liệu development PickleVerse để triển khai mới, không backup, không migration; database mới tự init từ src/Database.sql. Thay đổi cấu hình/đóng gói lượt này chưa commit Git; font Bold đã dirty trước lượt này được giữ.
+
 ## Cập nhật ngày 03/11/2026 — Merge main, dùng Login làm scene chính
 
 Đã hợp nhất `origin/main` tại `61504d43` vào `realtime-AI-response`. Theo yêu cầu bổ sung của người dùng, scene **Login** từ main thay thế Authentication; Login có đầy đủ quên mật khẩu/email OTP/reset, nền động và luồng Loading → Menu. Global scenes, client build profile, navigation và build/setup helpers đều dùng Login. Không khôi phục nút Tài khoản: sửa tên/copy ID ở Tiến trình, chọn Nam/Nữ ở Character Selection, đăng xuất ở Settings. Giữ guard phòng/tìm trận/trận đấu và một luồng lưu nhân vật duy nhất.

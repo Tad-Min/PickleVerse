@@ -4,6 +4,9 @@
 !src/Backend/**
 !src/AiService/
 !src/AiService/**
+!deploy/
+!deploy/api/
+!deploy/api/sanitize_settings.py
 !My project/
 !My project/Assets/
 !My project/Assets/Scripts/

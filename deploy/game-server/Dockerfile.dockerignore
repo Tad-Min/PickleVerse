@@ -4,3 +4,4 @@
 !artifacts/account-multiplayer-ai-20261103/linux-server/
 !artifacts/account-multiplayer-ai-20261103/linux-server/**
 artifacts/account-multiplayer-ai-20261103/linux-server/*_BackUpThisFolder_ButDontShipItWithYourGame/
+artifacts/account-multiplayer-ai-20261103/linux-server/**/.unity-pipeline*

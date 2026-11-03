@@ -1,0 +1,9 @@
+# Apply after docker-compose.yml and docker-compose.dedicated.yml.
+# One Docker Hub repository, three independently versioned component tags.
+services:
+  backend-api:
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:api-${PKV_RELEASE:-20261103-p18-53871c6-hub1}
+  ai-service:
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:ai-${PKV_RELEASE:-20261103-p18-53871c6-hub1}
+  game-server:
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:server-${PKV_RELEASE:-20261103-p18-53871c6-hub1}
