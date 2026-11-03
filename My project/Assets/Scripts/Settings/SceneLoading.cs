@@ -7,12 +7,13 @@ namespace PickleVerse.Settings
 {
     // The screen survives local and Photon-owned scene operations.
     // No network scene is ever loaded through Unity's local SceneManager here.
-    public sealed class SceneLoading : MonoBehaviour
+    public sealed partial class SceneLoading : MonoBehaviour
     {
         static SceneLoading instance;
         LoadingScreenView view; AsyncOperation tracked; Coroutine flow;
         bool blocking, external, finishing; string destination; float progress;
         bool ownsPriority; UnityEngine.ThreadPriority originalPriority;
+        int flowVersion;
         public static bool IsBlocking => instance && instance.blocking;
         public static bool IsExternal => instance && instance.external && instance.blocking;
         public static bool LocalRenderReady { get; private set; }
@@ -60,6 +61,7 @@ namespace PickleVerse.Settings
         }
         void Begin(string scene, bool network)
         {
+            flowVersion++;
             destination = scene;
             external = network;
             blocking = true;
@@ -232,6 +234,8 @@ namespace PickleVerse.Settings
         }
         void Cleanup()
         {
+            RestorePreparedInput();
+            FrontEndModalInput.Release(this);
             blocking = external = finishing = false;
             tracked = null;
             flow = null;
@@ -251,6 +255,9 @@ namespace PickleVerse.Settings
         }
         void OnDisable()
         {
+            preparedCancellation?.Cancel();
+            RestorePreparedInput();
+            FrontEndModalInput.Release(this);
             SceneManager.activeSceneChanged -= ActiveSceneChanged;
             if (ownsPriority)
                 Application.backgroundLoadingPriority = originalPriority;

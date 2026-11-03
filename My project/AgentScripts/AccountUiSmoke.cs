@@ -28,7 +28,7 @@ public static class AccountUiSmoke
             camera.clearFlags = CameraClearFlags.SolidColor; camera.cullingMask = 0;
         }
         var pageType = typeof(AccountScreen).GetNestedType("Page", BindingFlags.NonPublic);
-        typeof(AccountScreen).GetMethod("Show", Private).Invoke(screen, new object[] { Enum.Parse(pageType, page), true });
+        typeof(AccountScreen).GetMethod("Show", Private).Invoke(screen, new object[] { Enum.Parse(pageType, page) });
         Canvas.ForceUpdateCanvases();
         Debug.Log("[AccountUiSmoke] Authentication page: " + page);
         return page;

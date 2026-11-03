@@ -1,6 +1,7 @@
 #if !UNITY_SERVER
 using PickleVerse.Services;
 using PickleVerse.Progression;
+using PickleVerse.Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,7 +10,7 @@ namespace PickleVerse.FrontEnd
     // Navigation only. This persistent object never owns a Canvas or modal.
     public sealed class AuthenticationNavigation : MonoBehaviour
     {
-        public const string SceneName = "Authentication";
+        public const string SceneName = "Login";
         bool navigating, quitting;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot() => new GameObject("Authentication Navigation").AddComponent<AuthenticationNavigation>();
@@ -23,6 +24,9 @@ namespace PickleVerse.FrontEnd
         async void Check()
         {
             if (quitting || navigating || SceneManager.GetActiveScene().name == SceneName) return;
+            // Authentication and Menu warm-up share an opaque Loading scene. The
+            // prepared transition owns rollback until both account and game data are ready.
+            if (SceneLoading.IsPreparedTransition && SceneLoading.Destination == "Menu") return;
             if (AccountRuntime.Ensure().Account.IsSignedIn && ProgressionRuntime.Instance.Ready) return;
             navigating = true;
             Time.timeScale = 1;

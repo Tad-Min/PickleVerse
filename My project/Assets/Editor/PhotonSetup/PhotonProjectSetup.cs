@@ -68,7 +68,7 @@ namespace PickleVerse.Editor
             var profile=UnityEditor.Build.Profile.BuildProfile.GetActiveBuildProfile();
             if(profile&&profile.overrideGlobalScenes)
             {
-                var required=new[]{"Assets/Scenes/UI/Menu.unity","Assets/Scenes/UI/ModeSelection.unity","Assets/Scenes/BotMatch.unity","Assets/Scenes/Training.unity","Assets/Scenes/UI/PlayMultiplayer.unity","Assets/Scenes/MultiplayerCourt.unity","Assets/Scenes/Shop.unity","Assets/Scenes/Collection.unity","Assets/Scenes/Tutorial.unity","Assets/Scenes/Replay.unity","Assets/Scenes/UI/Loading.unity",path};
+                var required=new[]{"Assets/Scenes/UI/Login.unity","Assets/Scenes/UI/Menu.unity","Assets/Scenes/UI/ModeSelection.unity","Assets/Scenes/BotMatch.unity","Assets/Scenes/Training.unity","Assets/Scenes/UI/PlayMultiplayer.unity","Assets/Scenes/MultiplayerCourt.unity","Assets/Scenes/Shop.unity","Assets/Scenes/Collection.unity","Assets/Scenes/Tutorial.unity","Assets/Scenes/Replay.unity","Assets/Scenes/UI/Loading.unity",path};
                 var scenes=required.Concat(profile.scenes.Where(s=>s.enabled).Select(s=>s.path)).Distinct().Where(p=>AssetDatabase.LoadAssetAtPath<SceneAsset>(p)).Select(p=>new EditorBuildSettingsScene(p,true)).ToArray();
                 if(!profile.scenes.Select(s=>s.path).SequenceEqual(scenes.Select(s=>s.path)))
                 {profile.scenes=scenes;EditorUtility.SetDirty(profile);AssetDatabase.SaveAssets();}

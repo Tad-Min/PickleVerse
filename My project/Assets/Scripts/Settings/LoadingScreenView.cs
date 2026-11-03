@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace PickleVerse.Settings
 {
@@ -9,6 +10,7 @@ namespace PickleVerse.Settings
         public CanvasGroup group;
         public RawImage artwork, nextArtwork;
         public Texture2D[] pictures;
+        public VideoClip[] movies;
         public string[] pictureCaptions;
         public TMP_Text destination, status, percentage, caption, tip;
         public RectTransform track, fill, ball;
@@ -19,6 +21,9 @@ namespace PickleVerse.Settings
         float age, changeTime; int picture, shownPercent = -1, shownBall = -1;
         int lastWidth, lastHeight;
         static int nextPicture;
+        CinematicArtwork currentMotion, nextMotion;
+        bool preparingNext;
+        float fadeAge = -1;
         void Awake()
         {
             if (Application.isPlaying)
@@ -33,11 +38,16 @@ namespace PickleVerse.Settings
             DisplayedProgress = TargetProgress = 0;
             shownPercent = shownBall = -1;
             group.alpha = 1;
-            destination.text = scene == "BotMatch" ? "ĐẤU VỚI MÁY" : scene == "Training" ? "HỌC VIỆN PICKLEVERSE" : scene == "Tutorial" ? "LÀM QUEN SÂN ĐẤU" : "ĐẤU TRỰC TUYẾN";
-            tip.text = scene == "MultiplayerCourt" ? "Một đội hình. Cùng nhịp đấu." : "Giữ nhịp di chuyển. Đón bóng. Tỏa sáng.";
+            destination.text = scene == "Menu" ? "SẢNH PICKLEVERSE" : scene == "BotMatch" ? "ĐẤU VỚI MÁY" : scene == "Training" ? "HỌC VIỆN PICKLEVERSE" : scene == "Tutorial" ? "LÀM QUEN SÂN ĐẤU" : "ĐẤU TRỰC TUYẾN";
+            tip.text = scene == "Menu" ? "Hành trình của bạn. Sân đấu của bạn." : scene == "MultiplayerCourt" ? "Một đội hình. Cùng nhịp đấu." : "Giữ nhịp di chuyển. Đón bóng. Tỏa sáng.";
             picture = pictures.Length > 0 ? nextPicture++ % pictures.Length : 0;
-            if (pictures.Length > 0)
-                artwork.texture = pictures[picture];
+            currentMotion = artwork.GetComponent<CinematicArtwork>();
+            nextMotion = nextArtwork.GetComponent<CinematicArtwork>();
+            preparingNext = false;
+            fadeAge = -1;
+            if (nextMotion) nextMotion.Stop();
+            PlayArtwork(artwork, currentMotion, picture);
+            artwork.color = Color.white;
             if (caption && pictureCaptions.Length > picture)
                 caption.text = pictureCaptions[picture];
             nextArtwork.color = new Color(1, 1, 1, 0);
@@ -58,23 +68,40 @@ namespace PickleVerse.Settings
             RenderProgress();
             if (Screen.width != lastWidth || Screen.height != lastHeight)
                 UpdateLayout();
-            if (pictures.Length < 2 || changeTime < 7)
+            if (pictures.Length < 2 || changeTime < 6)
                 return;
             int next = (picture + 1) % pictures.Length;
-            nextArtwork.texture = pictures[next];
-            Crop(nextArtwork);
-            float weight = Mathf.Clamp01((changeTime - 7) / .85f);
+            if (!preparingNext)
+            {
+                preparingNext = true;
+                nextArtwork.transform.SetSiblingIndex(artwork.transform.GetSiblingIndex() + 1);
+                PlayArtwork(nextArtwork, nextMotion, next);
+            }
+            if (changeTime < 7 || (nextMotion && !nextMotion.IsReady && !nextMotion.Failed))
+                return;
+            if (fadeAge < 0) fadeAge = age;
+            float weight = Mathf.Clamp01((age - fadeAge) / .85f);
             nextArtwork.color = new Color(1, 1, 1, weight);
             if (weight >= 1)
             {
                 picture = next;
-                artwork.texture = pictures[picture];
-                Crop(artwork);
-                nextArtwork.color = new Color(1, 1, 1, 0);
+                artwork.color = new Color(1, 1, 1, 0);
+                if (currentMotion) currentMotion.Stop();
+                (artwork, nextArtwork) = (nextArtwork, artwork);
+                (currentMotion, nextMotion) = (nextMotion, currentMotion);
+                preparingNext = false;
+                fadeAge = -1;
                 changeTime = 0;
                 if (caption && pictureCaptions.Length > picture)
                     caption.text = pictureCaptions[picture];
             }
+        }
+        void PlayArtwork(RawImage image, CinematicArtwork motion, int index)
+        {
+            var poster = pictures.Length > index ? pictures[index] : null;
+            if (motion) motion.Play(movies != null && movies.Length > index ? movies[index] : null, poster);
+            else image.texture = poster;
+            Crop(image);
         }
         void RenderProgress()
         {

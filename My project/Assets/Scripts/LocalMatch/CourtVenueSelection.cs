@@ -9,6 +9,7 @@ namespace PickleVerse.LocalMatch
         public StadiumEnvironment current;
         public CourtVenue selected;
         public bool useBotPreference;
+        public bool includeAudience;
         public CourtVenue Selected => selected;
         public static CourtVenue Normalize(CourtVenue venue) => venue == CourtVenue.LowPoly ? venue : CourtVenue.Professional;
         public static string DisplayName(CourtVenue venue) => Normalize(venue) == CourtVenue.LowPoly ? "Sân ngoài trời" : "Sân chuyên nghiệp";
@@ -31,6 +32,7 @@ namespace PickleVerse.LocalMatch
                     return false;
                 }
                 var replacement = Instantiate(prefab).GetComponent<StadiumEnvironment>();
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(replacement.gameObject, gameObject.scene);
                 var previous = current;
                 current = replacement;
                 selected = venue;
@@ -46,6 +48,8 @@ namespace PickleVerse.LocalMatch
 
         void Bind()
         {
+            if (includeAudience)
+                StadiumAudience.Ensure(current, selected);
             var lighting = GetComponent<MatchEnvironmentLighting>();
             if (lighting)
             {

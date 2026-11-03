@@ -17,6 +17,7 @@ namespace PickleVerse.FrontEnd
         public UnityEngine.UI.Button femaleButton, maleButton;
         public UnityEngine.UI.Image femaleSelection, maleSelection;
         public TMP_Text danceLabel;
+        public bool CharacterChangePending => savingCharacter;
         public Camera lobbyCamera;
         public Transform courtProps;
         public const string CharacterPreferenceKey = "PickleVerse.Lobby.Character.v1";

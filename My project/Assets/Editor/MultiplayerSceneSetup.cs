@@ -13,7 +13,7 @@ namespace PickleVerse.EditorTools
     {
         static readonly string[] Required =
         {
-            "Assets/Scenes/UI/Authentication.unity",
+            "Assets/Scenes/UI/Login.unity",
             MultiplayerSceneConfiguration.RoomPath,
             MultiplayerSceneConfiguration.CourtPath,
             "Assets/Scenes/UI/ModeSelection.unity"

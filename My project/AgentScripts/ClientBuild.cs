@@ -14,7 +14,7 @@ public static class ClientBuild
         string output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/account-multiplayer-ai-20261103/windows-client/PickleVerse.exe"));
         Directory.CreateDirectory(Path.GetDirectoryName(output));
         var scenes = EditorBuildSettings.globalScenes.Where(s => s.enabled && !s.path.Contains("ServerBootstrap")).Select(s => s.path).ToArray();
-        if (scenes.Length == 0 || !scenes[0].EndsWith("Authentication.unity")) throw new InvalidOperationException("Authentication must be first.");
+        if (scenes.Length == 0 || !scenes[0].EndsWith("Login.unity")) throw new InvalidOperationException("Login must be first.");
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = scenes, target = BuildTarget.StandaloneWindows64,
             subtarget = (int)StandaloneBuildSubtarget.Player, locationPathName = output,
             options = BuildOptions.Development | BuildOptions.DetailedBuildReport });
