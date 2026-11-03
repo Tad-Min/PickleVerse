@@ -85,6 +85,7 @@ public partial class PickleVerseContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pgcrypto");
+        ConfigureRecovery(modelBuilder);
 
         modelBuilder.Entity<Achievement>(entity =>
         {

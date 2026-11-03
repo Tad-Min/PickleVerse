@@ -138,10 +138,28 @@ namespace Repositories.Implementations
                 .FirstOrDefaultAsync();
         }
 
+        public Task<Passwordresetchallenge?> GetPasswordResetAsync(Guid userId) =>
+            _context.Passwordresetchallenges.SingleOrDefaultAsync(x => x.Userid == userId);
+
+        public async Task SavePasswordResetAsync(Passwordresetchallenge challenge)
+        {
+            var previous = await GetPasswordResetAsync(challenge.Userid);
+            if (previous == null) await _context.Passwordresetchallenges.AddAsync(challenge);
+            else _context.Entry(previous).CurrentValues.SetValues(challenge);
+        }
+
+        public Task RevokeAllRefreshTokensAsync(Guid userId) => _context.Refreshtokens
+            .Where(t => t.Userid == userId && !t.Isrevoked).ExecuteUpdateAsync(s => s.SetProperty(t => t.Isrevoked, true));
+
+        public Task<bool> IsAuthVersionValidAsync(Guid userId, int version) => _context.Users
+            .AsNoTracking().AnyAsync(u => u.Userid == userId && u.Authversion == version && u.Status == "ACTIVE");
+
         public async Task LockUserAsync(Guid userId)
         {
             // All OTP attempts/resends for an account share this transaction lock.
             await _context.Users.FromSqlInterpolated($"SELECT * FROM users WHERE userid = {userId} FOR UPDATE").ToListAsync();
+            var tracked = _context.ChangeTracker.Entries<User>().FirstOrDefault(x => x.Entity.Userid == userId);
+            if (tracked != null) await tracked.ReloadAsync();
         }
     }
 }

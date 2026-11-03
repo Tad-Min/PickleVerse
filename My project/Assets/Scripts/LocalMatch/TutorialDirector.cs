@@ -280,7 +280,7 @@ namespace PickleVerse.LocalMatch
                         else if (Lesson.kind == TutorialKind.Serve)
                         {
                             demoDone = true;
-                            Feedback = "HAI LẦN NẢY ĐÃ XONG • Từ đây có thể volley ngoài kitchen.";
+                            Feedback = "HAI LẦN NẢY ĐÃ XONG • Từ đây có thể vô lê ngoài vùng cấm vô lê.";
                             returning = true;
                             ballVelocity = ShotTrajectory.Launch(intent, ballPosition, new Vector3(1.2f, Court.BallRadius, -4));
                         }
@@ -479,7 +479,7 @@ namespace PickleVerse.LocalMatch
         async System.Threading.Tasks.Task SaveTutorialAsync(bool skip)
         {
             if (this)
-                Feedback = "Đang lưu tiến trình online…";
+                Feedback = "Đang lưu tiến trình trực tuyến…";
             try
             {
                 if (skip)
@@ -487,7 +487,7 @@ namespace PickleVerse.LocalMatch
                 else await TutorialProgress.CompleteAsync();
                 tutorialSaveError = null;
                 if (this)
-                    Feedback = "Đã lưu tiến trình online.";
+                    Feedback = "Đã lưu tiến trình trực tuyến.";
             }
             catch (Exception error)
             {

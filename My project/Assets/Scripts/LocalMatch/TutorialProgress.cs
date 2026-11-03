@@ -24,7 +24,7 @@ namespace PickleVerse.LocalMatch
                 return storage.Read(completed ? CompletedKey : SkippedKey) != 0;
             var runtime = ProgressionRuntime.Instance;
             if (!runtime || !runtime.Ready)
-                throw new InvalidOperationException("Vui lòng tải hồ sơ online trước.");
+                throw new InvalidOperationException("Vui lòng tải hồ sơ trực tuyến trước.");
             return completed ? runtime.Snapshot.tutorial.completed : runtime.Snapshot.tutorial.skipped;
         }
         public static bool NeedsIntroduction => !Read(true) && !Read(false);

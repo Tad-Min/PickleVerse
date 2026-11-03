@@ -248,7 +248,7 @@ namespace PickleVerse.Multiplayer
             if (server && !broadcast)
                 server.text = !hasMatch ? "" : match.TimedOut ? $"TIME-OUT  {match.TimeoutRemaining:0}s" : match.WaitingServe ? $"GIAO BÓNG  {Mathf.Max(0, 10 - match.ServeElapsed):0.0}s\n<size=16>Đội {(match.ServerTeam == 0 ? "A" : "B")} • Người {match.ServerIndex + 1} • Lượt {match.ServerNumber}</size>" : match.Ball.live ? match.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY" : "";
             if (returnLabel)
-                returnLabel.text = nextGame ? "Game tiếp" : "Về phòng";
+                returnLabel.text = nextGame ? "Ván tiếp" : "Về phòng";
             bool results = hasMatch && match.Finished && (!announcements || !announcements.Busy) && !SettingsOverlay.IsOpen;
             if (resultActions)
                 resultActions.SetActive(results && !resultScreen);
@@ -307,7 +307,7 @@ namespace PickleVerse.Multiplayer
                 if (modalTitle)
                     modalTitle.text = match.TimedOut ? "TIME-OUT" : "CHỜ KẾT NỐI LẠI";
                 if (modalBody)
-                    modalBody.text = match.TimedOut ? $"Đội {(match.TimeoutTeam == 0 ? "A" : "B")} • Còn {match.TimeoutRemaining:0} giây\nĐiểm {match.ScoreA}–{match.ScoreB}\nĐội xin time-out bấm Enter / Tiếp tục để kết thúc sớm." : match.Status.ToString();
+                    modalBody.text = match.TimedOut ? $"Đội {(match.TimeoutTeam == 0 ? "A" : "B")} • Còn {match.TimeoutRemaining:0} giây\nĐiểm {match.ScoreA}–{match.ScoreB}\nĐội xin hội ý bấm Enter / Tiếp tục để kết thúc sớm." : match.Status.ToString();
                 if (continueButton)
                 {
                     continueButton.gameObject.SetActive(match.TimedOut);
@@ -436,12 +436,12 @@ namespace PickleVerse.Multiplayer
             if (text)
                 text.text = "<size=28><color=#83E6CD>ĐIỀU KHIỂN VÀ LUẬT</color></size>\n\n" +
                                 K(GameAction.Forward) + " / " + K(GameAction.Backward) + " / " + K(GameAction.Left) + " / " + K(GameAction.Right) + " di chuyển • " + K(GameAction.Run) + " chạy\n" +
-                                K(GameAction.Drive) + " Drive/giao bóng | " + K(GameAction.Dink) + " Dink | " + K(GameAction.Volley) + " Volley\n" +
+                                K(GameAction.Drive) + " Đánh bạt/giao bóng | " + K(GameAction.Dink) + " Dink | " + K(GameAction.Volley) + " Volley\n" +
                                 K(GameAction.Drive) + "+" + K(GameAction.Dink) + " Drop | " + K(GameAction.Drive) + "+" + K(GameAction.Volley) + " Smash | " + K(GameAction.Dink) + "+" + K(GameAction.Volley) + " Reset\n" +
-                                K(GameAction.Power) + " tăng lực • " + K(GameAction.Cross) + " đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\n11 điểm, cách biệt 2 • Chỉ đội giao ghi điểm • Thắng 2/3 game\n" +
-                                K(GameAction.Timeout) + " time-out • Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận online tiếp tục.";
+                                K(GameAction.Power) + " tăng lực • " + K(GameAction.Cross) + " đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Vô lê và đà vô lê vào vùng cấm vô lê là lỗi.\n11 điểm, cách biệt 2 • Chỉ đội giao ghi điểm • Thắng 2/3 ván\n" +
+                                K(GameAction.Timeout) + " hội ý • Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận trực tuyến tiếp tục.";
             if (text && (Application.isMobilePlatform || touchControls && touchControls.activeSelf))
-                text.text = TouchShotGesture.HelpText + "\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận online tiếp tục.";
+                text.text = TouchShotGesture.HelpText + "\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận trực tuyến tiếp tục.";
             if (layout)
                 layout.RefreshKeys();
             else

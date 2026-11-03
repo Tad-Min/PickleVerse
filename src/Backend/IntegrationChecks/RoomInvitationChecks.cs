@@ -14,7 +14,7 @@ static class RoomInvitationChecks
         async Task<T> Call<T>(Func<RoomInvitationService, Task<T>> action)
         {
             await using var db = new PickleVerseContext(options);
-            return await action(new RoomInvitationService(new UnitOfWork(db), new LobbyRepository(TestRedis.Connection, TestRedis.Settings), clock));
+            return await action(new RoomInvitationService(new UnitOfWork(db), new LobbyRepository(TestRedis.Connection, TestRedis.Settings), clock, TestSettings.Load()));
         }
         async Task Sql(string command, params Npgsql.NpgsqlParameter[] args)
         {
@@ -112,5 +112,37 @@ static class RoomInvitationChecks
         invitation = await Send();
         clock.Now = clock.Now.AddSeconds(RoomInvitationService.PresenceSeconds + 1);
         check((await Call(s => s.List(a, "", 0))).Players.Single().Status == "offline", "presence leases expire after a client stops heartbeating");
+        async Task Social(Guid self, Guid target, string action)
+        {
+            await using var context = new PickleVerseContext(options);
+            var social = new OnlineSocialService(new UnitOfWork(context), TestRedis.Leaderboard,
+                new LobbyRepository(TestRedis.Connection, TestRedis.Settings));
+            await social.Act(self, new() { PlayerId = target, Action = action });
+        }
+        invitation = await Send();
+        await Social(a, b, "block");
+        check((await Guest()).Invitations.Length == 0, "blocking removes pending room invitations from the inbox");
+        await Rejected(() => Call(s => s.Send(a, new() { PlayerId = b.ToString("N") })), HttpStatusCode.Forbidden, "blocker cannot send room invitations");
+        await Rejected(() => Call(s => s.Respond(b, invitation.Id, true)), HttpStatusCode.Gone, "received-before-block invitation cannot be accepted");
+        await Social(a, b, "unblock");
+        await Sql("INSERT INTO friendships(userid1,userid2) VALUES(LEAST(@a,@b),GREATEST(@a,@b))", P("a", a), P("b", b));
+        await Rejected(() => Call(s => s.Respond(b, invitation.Id, true)), HttpStatusCode.Gone, "unblock and a new friendship cannot revive an invalidated invitation");
+        invitation = await Send();
+        await Social(b, a, "block");
+        await Rejected(() => Call(s => s.Respond(b, invitation.Id, true)), HttpStatusCode.Gone, "recipient-side block also invalidates a previously received invitation");
+        var preparation = Guid.NewGuid();
+        await Sql("INSERT INTO gamematches(matchid,kind,status,createdat) VALUES(@match,'Custom','PREPARING',@created)", P("match", preparation), P("created", clock.GetUtcNow().UtcDateTime));
+        await Sql("INSERT INTO gamematchplayers(matchid,playerid,team) VALUES(@match,@player,0)", P("match", preparation), P("player", c));
+        async Task<bool> Rename()
+        {
+            await using var context = new PickleVerseContext(options);
+            var profiles = new ProfileService(new UnitOfWork(context), Microsoft.Extensions.Logging.Abstractions.NullLogger<ProfileService>.Instance, TestSettings.Load(), clock);
+            return await profiles.UpdateProfileAsync(c, new Entities.DTOs.UpdateProfileRequest { PlayerName = "Chi mới" });
+        }
+        await Rejected(() => Rename(), HttpStatusCode.Conflict, "a live ready confirmation prevents profile changes");
+        await Sql("UPDATE gamematches SET createdat=@created WHERE matchid=@match", P("match", preparation), P("created", clock.GetUtcNow().UtcDateTime.AddSeconds(-TestSettings.Load().Matchmaking.ReadyConfirmationSeconds - 1)));
+        check(await Rename(), "an expired preparation does not permanently lock the profile");
+        await Sql("UPDATE gamematches SET status='PLAYING' WHERE matchid=@match", P("match", preparation));
+        await Rejected(() => Rename(), HttpStatusCode.Conflict, "an ongoing match keeps the profile locked regardless of its age");
     }
 }

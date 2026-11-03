@@ -28,7 +28,7 @@ public sealed partial class GameRepository
         .OrderBy(m => m.Createdat).Select(m => (Guid?)m.Matchid).FirstOrDefaultAsync();
     public Task<bool> MatchEnded(Guid match) => db.Gamematches.AnyAsync(m => m.Matchid == match && (m.Status == "FINISHED" || m.Status == "CANCELLED"));
     public Task<DateTime> MatchCreated(Guid match) => db.Gamematches.Where(m => m.Matchid == match).Select(m => m.Createdat).SingleAsync();
-    public Task<bool> InMatch(Guid player) => db.Gamematches.AnyAsync(m => (m.Status == "PREPARING" || m.Status == "PLAYING")
+    public Task<bool> InMatch(Guid player, DateTime readyAfter) => db.Gamematches.AnyAsync(m => (m.Status == "PLAYING" || m.Status == "PREPARING" && m.Createdat >= readyAfter)
         && m.Gamematchplayers.Any(p => p.Playerid == player));
     public Task CancelPreparation(Guid match, DateTime now) => db.Gamematches.Where(m => m.Matchid == match && m.Status == "PREPARING")
         .ExecuteUpdateAsync(s => s.SetProperty(m => m.Status, "CANCELLED").SetProperty(m => m.Updatedat, now));

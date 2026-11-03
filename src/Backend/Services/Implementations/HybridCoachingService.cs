@@ -51,8 +51,10 @@ public sealed class HybridCoachingService : IHybridCoachingService
         if (Encoding.UTF8.GetByteCount(GameJson.Write(batch)) > 1024 * 1024)
             throw new AppException("Gói telemetry vượt 1 MiB.", HttpStatusCode.RequestEntityTooLarge);
     }
-    public async Task<TelemetryReceipt> Ingest(Guid player, TelemetryBatch batch)
+    public async Task<TelemetryReceipt> Ingest(Guid player, TelemetryBatch batch, bool trustedServer = false)
     {
+        if (!trustedServer && batch.sessionType == "match" && Guid.TryParse(batch.sessionId, out var matchId) && await _unitOfWork.Game.IsDedicated(matchId))
+            throw new AppException("Telemetry trận dedicated do máy chủ gửi.", HttpStatusCode.Forbidden);
         var timer=System.Diagnostics.Stopwatch.StartNew();double stagePrevious=0;
         void Stage(string name) {double now=timer.Elapsed.TotalMilliseconds;HybridAiMetrics.IngestStageMs.Record(now-stagePrevious,new KeyValuePair<string,object?>("stage",name));stagePrevious=now;}
         if (!settings.IngestEnabled) throw new AppException("Telemetry đang tắt.", HttpStatusCode.ServiceUnavailable);
@@ -107,8 +109,18 @@ public sealed class HybridCoachingService : IHybridCoachingService
         Stage("commit");
         return new() { batchId = batch.batchId, acceptedParts = received, status = received == batch.partCount ? "queued" : "receiving" };
     }
-    public async Task<CoachingSummary> Summary(Guid player)
+    public async Task<CoachingSummary> Summary(Guid player, Guid? sessionId = null, string sessionType = "match")
     {
+        if (sessionId.HasValue)
+        {
+            if (sessionType is not ("match" or "training") || sessionId.Value == Guid.Empty) throw Invalid("Phiên phân tích không hợp lệ.");
+            if (!settings.CoachingEnabled) return new() { status = "disabled" };
+            var result = await _unitOfWork.Game.SessionCoaching(player, sessionId.Value, sessionType);
+            if (result != null) return new() { status = "ready", analysis = GameJson.Read<CoachingAnalysis>(result.Result), updatedAt = result.CreatedAt.ToString("O") };
+            if (!await _unitOfWork.Game.OwnsCoachingSession(player, sessionId.Value, sessionType))
+                throw new AppException("Không tìm thấy phiên phân tích của bạn.", HttpStatusCode.NotFound);
+            return new() { status = await _unitOfWork.Game.SessionAnalysisState(player, sessionId.Value, sessionType) ?? "pending" };
+        }
         var catalog = await catalogs.Load();
         var training = await _unitOfWork.Game.Training(player);
         var available = catalog.lessons.Where(d => TrainingEngine.Unlocked(training, d)).ToDictionary(d => d.id);

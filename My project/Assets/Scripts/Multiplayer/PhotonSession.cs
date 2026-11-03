@@ -33,7 +33,7 @@ namespace PickleVerse.Multiplayer
         public List<PhotonSeat> seats = new List<PhotonSeat>();
         public MatchRoster Roster(string region) => new MatchRoster { matchId = matchId, mode = mode, custom = custom, night = night, venue = venue, region = region, members = seats.Select(s => s.member).ToList() };
     }
-    public sealed class PhotonSession
+    public sealed partial class PhotonSession
     {
         static readonly Dictionary<NetworkRunner, PhotonSession> sessions = new Dictionary<NetworkRunner, PhotonSession>();
         public NetworkRunner Runner { get; private set; }
@@ -49,9 +49,9 @@ namespace PickleVerse.Multiplayer
         public string Id => Runner && Runner.IsRunning ? Runner.SessionInfo.Name : sessionName;
         public string Region => Runner && Runner.IsRunning ? Runner.SessionInfo.Region : sessionRegion;
         public string Code => Id;
-        public bool IsHost => Runner && Runner.IsRunning && Runner.IsSharedModeMasterClient;
+        public bool IsHost => Runner && Runner.IsRunning && (Runner.IsSharedModeMasterClient || Runner.IsServer);
         public int PlayerCount => Data.seats.Count;
-        public PhotonRoomData Data => Lobby && Lobby.Object && Lobby.Object.IsValid ? Lobby.Data : new PhotonRoomData();
+        public PhotonRoomData Data => Lobby && Lobby.Object && Lobby.Object.IsValid ? Lobby.Data : dedicatedData ?? new PhotonRoomData();
         public bool Closing { get; private set; }
         public event Action Changed;
         public event Action<NetworkRunner, PlayerRef> PeerJoined, PeerLeft;
@@ -60,7 +60,7 @@ namespace PickleVerse.Multiplayer
         public string Rejected { get; private set; }
         public string LastMessage { get; private set; }
         public readonly List<string> MessageTrace = new List<string>();
-        public static PhotonSession Find(NetworkRunner runner) => sessions.TryGetValue(runner, out var session) ? session : null;
+        public static PhotonSession Find(NetworkRunner runner) => runner && sessions.TryGetValue(runner, out var session) ? session : null;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
         {
@@ -92,6 +92,7 @@ namespace PickleVerse.Multiplayer
         public void Send(PlayerRef destination, NetworkObject target, string kind, object payload)
         {
             var message = new PhotonMessage { target = target.Id.Raw, kind = kind, payload = JsonConvert.SerializeObject(payload) };
+            if (IsDedicated) { SendDedicated(destination, message); return; }
             if (MessageTrace.Count < 12)
                 MessageTrace.Add("send " + kind + " to " + destination.RawEncoded + " object " + target.Id.Raw);
             if (JsonConvert.SerializeObject(message).Length > 3500)
@@ -168,6 +169,7 @@ namespace PickleVerse.Multiplayer
             var result = await Runner.StartGame(new StartGameArgs
             {
                 GameMode = GameMode.Shared,
+                  Config = ConfigForSession(false),
                 SessionName = name,
                 PlayerCount = initial.party ? (initial.custom ? 2 * (int)initial.mode : 2) : 2 * (int)initial.mode,
                 IsVisible = false,
@@ -180,7 +182,7 @@ namespace PickleVerse.Multiplayer
                     {"elo", Progression.ProgressionRuntime.Instance.Player.elo}, {"losses", Progression.ProgressionRuntime.Instance.Player.rankLossStreak}, {"expanded", false}}
             });
             if (!result.Ok)
-                throw new InvalidOperationException("Không kết nối được Photon: " + result.ShutdownReason);
+                throw new InvalidOperationException("Không kết nối được Photon. Vui lòng kiểm tra mạng và thử lại.");
             sessionName = Runner.SessionInfo.Name;
             sessionRegion = Runner.SessionInfo.Region;
             if (Runner.IsSharedModeMasterClient)
@@ -199,6 +201,7 @@ namespace PickleVerse.Multiplayer
             var result = await Runner.StartGame(new StartGameArgs
             {
                 GameMode = GameMode.Shared,
+                  Config = ConfigForSession(false),
                 SessionName = name,
                 EnableClientSessionCreation = false,
                 CustomLobbyName = "pickleverse-online",
@@ -208,7 +211,7 @@ namespace PickleVerse.Multiplayer
                 CustomPhotonAppSettings = Settings(region)
             });
             if (!result.Ok)
-                throw new InvalidOperationException("Không vào được phòng Photon: " + result.ShutdownReason);
+                throw new InvalidOperationException("Không vào được phòng Photon. Vui lòng thử lại hoặc chọn phòng khác.");
             sessionName = Runner.SessionInfo.Name;
             sessionRegion = Runner.SessionInfo.Region;
             await WaitAsync(() => Lobby, "Chưa nhận được trạng thái phòng Photon.");

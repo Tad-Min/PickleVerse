@@ -14,6 +14,7 @@ import {
   CreateLessonRequest,
   CreateMissionRequest,
   LoginRequest,
+  PlayerAuthResponse,
   MatchItemDto,
   ReviewReportRequest,
 } from '../types/api';
@@ -22,8 +23,13 @@ export const adminApi = {
   // Auth
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
     if (isMockMode) return mockAdminApi.login(credentials);
-    const res = await apiClient.post<AuthResponse>('/api/Auth/login', credentials);
-    return res.data;
+    const { data } = await apiClient.post<PlayerAuthResponse>('/api/Auth/login', credentials);
+    if (!data.success || !data.accessToken || !data.profile) throw new Error(data.message || 'Đăng nhập thất bại.');
+    const encoded = data.accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const claims = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(encoded), c => c.charCodeAt(0)))) as Record<string, string>;
+    // UI visibility only; the backend validates signature, session version and role on every request.
+    return { token: data.accessToken, userId: data.profile.userId, username: data.profile.playerName,
+      email: credentials.email, role: claims.role || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Player' };
   },
 
   // W01 - User Management & RBAC

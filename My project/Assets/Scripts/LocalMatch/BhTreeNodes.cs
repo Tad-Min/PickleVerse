@@ -20,11 +20,11 @@ namespace PickleVerse.LocalMatch
     public partial class BhServe : BhTreeAction { protected override bool Execute() => Bot.Serve(); }
     [Serializable]
     [GeneratePropertyBag]
-    [NodeDescription(name: "Smash hợp lệ", category: "PickleVerse", id: "01b00000000000000000000000000003")]
+    [NodeDescription(name: "Đập bóng hợp lệ", category: "PickleVerse", id: "01b00000000000000000000000000003")]
     public partial class BhSmash : BhTreeAction { protected override bool Execute() => Bot.Shot(ShotKind.Smash); }
     [Serializable]
     [GeneratePropertyBag]
-    [NodeDescription(name: "Reset khi bị ép", category: "PickleVerse", id: "01b00000000000000000000000000004")]
+    [NodeDescription(name: "Hãm bóng khi bị ép", category: "PickleVerse", id: "01b00000000000000000000000000004")]
     public partial class BhReset : BhTreeAction { protected override bool Execute() => Bot.Shot(ShotKind.Reset); }
     [Serializable]
     [GeneratePropertyBag]
@@ -32,15 +32,15 @@ namespace PickleVerse.LocalMatch
     public partial class BhDrop : BhTreeAction { protected override bool Execute() => Bot.Shot(ShotKind.Drop); }
     [Serializable]
     [GeneratePropertyBag]
-    [NodeDescription(name: "Dink gần lưới", category: "PickleVerse", id: "01b00000000000000000000000000006")]
+    [NodeDescription(name: "Bóng ngắn gần lưới", category: "PickleVerse", id: "01b00000000000000000000000000006")]
     public partial class BhDink : BhTreeAction { protected override bool Execute() => Bot.Shot(ShotKind.Dink); }
     [Serializable]
     [GeneratePropertyBag]
-    [NodeDescription(name: "Volley hợp lệ", category: "PickleVerse", id: "01b00000000000000000000000000007")]
+    [NodeDescription(name: "Vô lê hợp lệ", category: "PickleVerse", id: "01b00000000000000000000000000007")]
     public partial class BhVolley : BhTreeAction { protected override bool Execute() => Bot.Shot(ShotKind.Volley); }
     [Serializable]
     [GeneratePropertyBag]
-    [NodeDescription(name: "Drive sau nảy", category: "PickleVerse", id: "01b00000000000000000000000000008")]
+    [NodeDescription(name: "Đánh bạt sau nảy", category: "PickleVerse", id: "01b00000000000000000000000000008")]
     public partial class BhDrive : BhTreeAction { protected override bool Execute() => Bot.Shot(ShotKind.Drive); }
     [Serializable]
     [GeneratePropertyBag]

@@ -192,7 +192,7 @@ namespace PickleVerse.LocalMatch
             var d = training.Lesson;
             bool review = TrainingEngine.Completed(TrainingEngine.Ensure(ProgressionRuntime.Instance.Player), d.id);
             start.GetComponentInChildren<TMP_Text>().text = review ? "BẮT ĐẦU ÔN LẠI" : "BẮT ĐẦU";
-            lessonBody.text = d.explanation + "\n\n" + Controls(d.coaching) + "\n\nĐạt " + d.required + "/" + d.trials + " cú • " + (review ? "Ôn lại: không nhận thưởng Tokenpad hoặc XP." : "Thưởng lần đầu: " + d.reward + " Tokenpad • " + d.xp + " XP") + "\n\n1 sao: đạt mục tiêu; 2 sao: từ 80%; 3 sao: từ 90% và timing không quá 0,16 s.";
+            lessonBody.text = d.explanation + "\n\n" + Controls(d.coaching) + "\n\nĐạt " + d.required + "/" + d.trials + " cú • " + (review ? "Ôn lại: không nhận thưởng Tokenpad hoặc XP." : "Thưởng lần đầu: " + d.reward + " Tokenpad • " + d.xp + " XP") + "\n\n1 sao: đạt mục tiêu; 2 sao: từ 80%; 3 sao: từ 90% và thời điểm không quá 0,16 s.";
             lessonBody.enableAutoSizing = true;
             lessonBody.fontSizeMin = 14;
             lessonBody.fontSizeMax = 18;
@@ -220,8 +220,10 @@ namespace PickleVerse.LocalMatch
             var d = training.Lesson;
             resultTitle.text = a.passed ? (a.review ? "ÔN LẠI HOÀN THÀNH" : "HOÀN THÀNH") : "CHƯA ĐẠT MỤC TIÊU";
             resultStars.SetRating(a.stars);
+            CoachingSessionView.Attach(results, a.id, "training", new Vector2(.07f, .275f), new Vector2(.93f, .355f));
+            resultBody.rectTransform.anchorMin = new Vector2(.07f, .37f);
             var frequent = a.errors.OrderByDescending(e => e.count).FirstOrDefault();
-            resultBody.text = $"{a.successes}/{a.trials} cú đạt vùng đích  •  {a.Accuracy:P0}\nTiming trung bình: {a.Timing:0.00} s\nThời gian luyện: {ProgressionRuntime.FormatTime(a.seconds)}\n\n" + (frequent == null ? "Kiểm soát tốt. Hãy thử bài khó hơn." : TrainingCurriculum.ErrorName(frequent.error) + " (" + frequent.count + " lần)\n" + TrainingCurriculum.Tip(frequent.error)) + "\n\n" + (a.review ? "Ôn lại không nhận thưởng. Sao và thống kê vẫn được lưu." : a.rewardTokenpad > 0 ? $"Đã nhận {a.rewardTokenpad} TOKENPAD + {a.rewardXp} XP" : "Không mất Tokenpad. Luyện lại để đạt " + d.required + " cú.");
+            resultBody.text = $"{a.successes}/{a.trials} cú đạt vùng đích  •  {a.Accuracy:P0}\nCanh thời điểm trung bình: {a.Timing:0.00} s\nThời gian luyện: {ProgressionRuntime.FormatTime(a.seconds)}\n\n" + (frequent == null ? "Kiểm soát tốt. Hãy thử bài khó hơn." : TrainingCurriculum.ErrorName(frequent.error) + " (" + frequent.count + " lần)\n" + TrainingCurriculum.Tip(frequent.error)) + "\n\n" + (a.review ? "Ôn lại không nhận thưởng. Sao và thống kê vẫn được lưu." : a.rewardTokenpad > 0 ? $"Đã nhận {a.rewardTokenpad} TOKENPAD + {a.rewardXp} XP" : "Không mất Tokenpad. Luyện lại để đạt " + d.required + " cú.");
             retry.GetComponentInChildren<TMP_Text>().text = TrainingEngine.Completed(ProgressionRuntime.Instance.Player.training, d.id) ? "ÔN LẠI" : "LUYỆN LẠI";
             next.interactable = a.passed;
         }

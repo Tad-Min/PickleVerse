@@ -55,9 +55,9 @@ const waitForDemo = <T,>(value: T): Promise<T> =>
 
 export const mockAdminApi = {
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    const identity = credentials.emailOrUsername.trim().toLowerCase();
+    const identity = credentials.email.trim().toLowerCase();
     const admin = users.find((user) => user.roleId === 2 && user.status === 'ACTIVE');
-    if (!admin || !['admin', 'admin@pickleverse.local'].includes(identity) || credentials.passwordHash !== 'Admin123!') {
+    if (!admin || !['admin', 'admin@pickleverse.local'].includes(identity) || credentials.password !== 'Admin123!') {
       throw new Error('Tài khoản demo không hợp lệ. Dùng admin@pickleverse.local / Admin123!.');
     }
     return waitForDemo({ token: 'pickleverse-local-demo-token', userId: admin.userId, username: admin.playerName, email: admin.email, role: 'Admin' });

@@ -13,6 +13,18 @@ public sealed partial class GameRepository
         .Select(p => new { p.Userid, p.Elo }).ToListAsync()).Select(p => (p.Userid, p.Elo)).ToList();
     public async Task<OnlineSocialPage> SocialPage(Guid self, string view, string query, int offset, Repositories.Caching.LeaderboardCache? cache = null)
     {
+        if (view == "blocked")
+        {
+            var rows = from block in db.Blockedusers.AsNoTracking()
+                       join profile in db.Playerprofiles.AsNoTracking() on block.Blockeduserid equals profile.Userid
+                       where block.Userid == self && (profile.Playername.ToLower().Contains(query.ToLower()) || profile.Userid.ToString().Replace("-", "").Contains(query.Replace("-", "").ToLower()))
+                       orderby block.Createdat descending, profile.Userid
+                       select new OnlineSocialPlayer { Id = profile.Userid, Name = profile.Playername,
+                           Elo = profile.Elo, Avatar = profile.Avatar, Level = profile.Level, Relationship = "blocked" };
+            int total = await rows.CountAsync();
+            return new() { Players = await rows.Skip(offset).Take(50).ToListAsync(), Total = total,
+                Offset = offset, HasMore = offset + 50 < total };
+        }
         await using var tx = await BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
         var players = await VerifiedPlayers.OrderByDescending(p => p.Elo).ThenBy(p => p.Userid)
             .Select(p => new OnlineSocialPlayer { Id = p.Userid, Name = p.Playername, Elo = p.Elo, Avatar = p.Avatar, Level = p.Level }).ToListAsync();

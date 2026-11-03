@@ -78,7 +78,12 @@ static class SocialChecks
         await Act(b, a, "decline", reissued.Players.Single().RequestId);
         await Act(a, b, "request");
         await Act(b, a, "block");
+        var ownBlocked = await Call(s => s.Read(b, "blocked", a.ToString("N"), 0));
+        check(ownBlocked.Players.Single().Id == a && ownBlocked.Players.Single().Relationship == "blocked", "blocked list contains only the caller's own block and supports copied ID");
+        check((await Call(s => s.Read(a, "blocked", null, 0))).Total == 0, "blocked list does not reveal who blocked the caller");
         await Rejected(() => Act(a, b, "request"), "blocked users cannot reissue friend invitations");
         check((await Call(s => s.Read(a, "directory", "SocialBob", 0))).Total == 0 && (await Call(s => s.Read(b, "friends", null, 0))).Total == 0, "blocking removes relationships and hides the blocked profile from lists");
+        await Act(b, a, "unblock");
+        check((await Call(s => s.Read(b, "blocked", null, 0))).Total == 0 && (await Call(s => s.Read(b, "friends", null, 0))).FriendCount == 0, "unblocking does not recreate friendships");
     }
 }

@@ -49,7 +49,7 @@ static class GameChecks
             check(catalog.lessons.Length == 12 && catalog.lessons.Count(l => l.prerequisites.Length == 0) == 4,
                 "online catalog has every Unity lesson and the original four entry lessons");
             check(catalog.lessons.Single(l => l.id == "serve").title == "Giao bóng đúng ô"
-                && catalog.lessons.Single(l => l.id == "drive").title == "Drive về cuối sân"
+                && catalog.lessons.Single(l => l.id == "drive").title == "Đánh bạt về cuối sân"
                 && catalog.definitions.Single(d => d.id == "D.Serve10").title == "Giao bóng hợp lệ 10 lần"
                 && catalog.definitions.Single(d => d.id == "A.Win5").title == "Thắng 5 trận",
                 "UTF-8 catalog text survives SQL initialization and PostgreSQL reads");

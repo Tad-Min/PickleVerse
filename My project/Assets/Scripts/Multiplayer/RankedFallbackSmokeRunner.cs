@@ -96,7 +96,7 @@ namespace PickleVerse.Multiplayer
                 while (!match.Finished && Time.realtimeSinceStartupAsDouble < finishBy)
                 {
                     if (!match.BetweenGames && !match.BetweenPoints && !match.Paused && !match.TimedOut)
-                        match.Rules.Fault(loser, "Kiểm thử lỗi rally để kiểm tra tổng kết.");
+                        match.Rules.Fault(loser, "Kiểm thử lỗi pha bóng để kiểm tra tổng kết.");
                     await Task.Delay(100);
                 }
                 if (!match.Finished)

@@ -22,19 +22,22 @@ namespace PickleVerse.Multiplayer
             int i = Array.IndexOf(args, "-pkvPhotonSmoke");
             if (i < 0 || i + 4 >= args.Length || !Debug.isDebugBuild)
                 return;
-            StartCheck(args[i + 1], args[i + 2], args[i + 3], args[i + 4] == "host", Array.IndexOf(args, "-pkvPublicSearch") >= 0, Array.IndexOf(args, "-pkvDoubles") >= 0, Array.IndexOf(args, "-pkvPartyPair") >= 0, Array.IndexOf(args, "-pkvPartyFollower") >= 0, Array.IndexOf(args, "-pkvReconnectCheck") >= 0);
+            StartCheck(args[i + 1], args[i + 2], args[i + 3], args[i + 4] == "host", Array.IndexOf(args, "-pkvPublicSearch") >= 0, Array.IndexOf(args, "-pkvDoubles") >= 0, Array.IndexOf(args, "-pkvPartyPair") >= 0, Array.IndexOf(args, "-pkvPartyFollower") >= 0, Array.IndexOf(args, "-pkvReconnectCheck") >= 0, Array.IndexOf(args, "-pkvServerLossCheck") >= 0);
         }
-        public static void StartCheck(string fixturePath, string reportPath, string roomPath, bool host, bool publicSearch = false, bool doubles = false, bool pair = false, bool follower = false, bool reconnectCheck = false)
+        public static void StartCheck(string fixturePath, string reportPath, string roomPath, bool host, bool publicSearch = false, bool doubles = false, bool pair = false, bool follower = false, bool reconnectCheck = false, bool serverLoss = false)
         {
             if (!Application.isEditor && !Debug.isDebugBuild)
                 throw new InvalidOperationException("Development build required.");
             var go = new GameObject("Photon Gameplay Verification");
             DontDestroyOnLoad(go);
-            _ = go.AddComponent<PhotonGameplaySmokeRunner>().Run(fixturePath, reportPath, roomPath, host, publicSearch, doubles, pair, follower, reconnectCheck);
+            _ = go.AddComponent<PhotonGameplaySmokeRunner>().Run(fixturePath, reportPath, roomPath, host, publicSearch, doubles, pair, follower, reconnectCheck, serverLoss);
         }
-        async Task Run(string fixturePath, string reportPath, string roomPath, bool host, bool publicSearch, bool doubles, bool pair, bool follower, bool reconnectCheck)
+        async Task Run(string fixturePath, string reportPath, string roomPath, bool host, bool publicSearch, bool doubles, bool pair, bool follower, bool reconnectCheck, bool serverLoss)
         {
             Report = new Dictionary<string, object> { { "host", host }, { "publicSearch", publicSearch }, { "doubles", doubles }, { "passed", false }, { "stage", "login" } };
+            int runtimeExceptions = 0;
+            Application.LogCallback countException = (message, stack, type) => { if (type == LogType.Exception) runtimeExceptions++; };
+            Application.logMessageReceived += countException;
             Application.runInBackground = true;
             void Stage(string name)
             {
@@ -49,7 +52,16 @@ namespace PickleVerse.Multiplayer
             try
             {
                 var fixture = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(fixturePath));
-                var account = AccountRuntime.Ensure().Account;
+                var runtime = AccountRuntime.Ensure();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if (fixture.TryGetValue("baseUrl", out var testUrl))
+                {
+                    if (!Uri.TryCreate(testUrl, UriKind.Absolute, out var target) || !target.IsLoopback)
+                        throw new InvalidOperationException("The smoke test override must use a loopback API.");
+                    runtime.Settings.baseUrl = testUrl;
+                }
+#endif
+                var account = runtime.Account;
                 await account.LoginAsync(fixture["email"], fixture["password"]);
                 await ProgressionRuntime.Instance.EnsureReadyAsync();
                 var app = MultiplayerApp.Ensure();
@@ -79,9 +91,9 @@ namespace PickleVerse.Multiplayer
                 }
                 else if (host)
                 {
-                    await app.CreateCustomAsync(PlayMode.Singles);
+                    await app.CreateCustomAsync(doubles ? PlayMode.Doubles : PlayMode.Singles);
                     File.WriteAllText(roomPath, app.RoomCode);
-                    await PhotonSession.WaitAsync(() => app.Members().Count == 2, "Guest did not join the party.", 150);
+                    await PhotonSession.WaitAsync(() => app.Members().Count == (doubles ? 4 : 2), "Guests did not join the party.", 150);
                     await app.StartCustomAsync();
                 }
                 else
@@ -99,8 +111,21 @@ namespace PickleVerse.Multiplayer
                 var match = NetworkMatch.Instance;
                 Report["matchId"] = match.Roster.matchId;
                 Report["courtStarted"] = match.Started;
+                Report["dedicated"] = app.Match.IsDedicated;
                 Report["replicatedActors"] = NetworkPlayer.All.Count == (doubles ? 4 : 2);
                 Report["onlinePending"] = ProgressionRuntime.Instance.Player.pendingMatch?.id == match.Roster.matchId;
+                if (serverLoss)
+                {
+                    Stage("server loss");
+                    await PhotonSession.WaitAsync(() => app.State == FlowState.WaitingRoom && app.Match == null, "Client did not return to the lobby after server loss.", 75);
+                    Report["returnedToLobby"] = true;
+                    await PhotonSession.WaitAsync(() => ProgressionRuntime.Instance.Player.pendingMatch?.id != Report["matchId"].ToString(), "Interrupted result was not refreshed.", 75);
+                    Report["pendingCleared"] = true;
+                    Report["frames"] = Time.frameCount;
+                    Report["passed"] = runtimeExceptions == 0;
+                    Stage("completed");
+                    return;
+                }
                 Stage("movement");
                 var local = NetworkPlayer.All.Single(p => p.IsLocalHuman);
                 var start = local.Frame.position;
@@ -148,19 +173,26 @@ namespace PickleVerse.Multiplayer
                 {
                     Stage("leave");
                     await app.LeaveGameAsync();
+                    for (int i = 0; i < 20 && ProgressionRuntime.Instance.Player.pendingMatch?.id == Report["matchId"].ToString(); i++)
+                    { await Task.Delay(500); await ProgressionRuntime.Instance.ReloadAsync(); }
                     Report["pendingCleared"] = ProgressionRuntime.Instance.Player.pendingMatch == null;
                 }
                 else
                 {
                     Stage("result");
                     await PhotonSession.WaitAsync(() => match == null || match.Finished, "Host leave did not replicate.", 30);
-                    await ProgressionRuntime.Instance.ReloadAsync();
+                    for (int i = 0; i < 30; i++)
+                    {
+                        await ProgressionRuntime.Instance.ReloadAsync();
+                        if (ProgressionRuntime.Instance.Player.pendingMatch?.id != Report["matchId"].ToString()) break;
+                        await Task.Delay(1000);
+                    }
                     Report["pendingCleared"] = ProgressionRuntime.Instance.Player.pendingMatch == null;
                     await app.ReturnToRoomAsync("Kiểm thử Photon hoàn tất.");
                 }
                 await Task.Delay(1000);
                 Report["frames"] = Time.frameCount;
-                Report["passed"] = new[] { "readyShown", "readyAccepted", "courtStarted", "replicatedActors", "onlinePending", "movementConfirmed", "inputAcknowledged", "sharedReplayProducer", "pendingCleared" }.All(k => Report.TryGetValue(k, out var v) && v is true) && (!reconnectCheck || host || Report.TryGetValue("reconnected", out var connected) && connected is true);
+                Report["passed"] = runtimeExceptions == 0 && new[] { "readyShown", "readyAccepted", "courtStarted", "replicatedActors", "onlinePending", "movementConfirmed", "inputAcknowledged", "sharedReplayProducer", "pendingCleared" }.All(k => Report.TryGetValue(k, out var v) && v is true) && (!reconnectCheck || host || Report.TryGetValue("reconnected", out var connected) && connected is true);
                 Stage("completed");
             }
             catch (Exception error)
@@ -171,6 +203,8 @@ namespace PickleVerse.Multiplayer
             }
             finally
             {
+                Application.logMessageReceived -= countException;
+                Report["runtimeExceptions"] = runtimeExceptions;
                 Report["completed"] = true;
                 Write();
                 if (!Application.isEditor)

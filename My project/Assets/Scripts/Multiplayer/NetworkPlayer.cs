@@ -16,10 +16,11 @@ namespace PickleVerse.Multiplayer
     {
         public Vector3 position, velocity;
         public uint sequence;
+        public ushort motionEpoch;
         public Vector2 movement;
         public NetworkBool running;
         public bool Equals(PlayerFrame other) => position == other.position && velocity == other.velocity &&
-            sequence == other.sequence && movement == other.movement && (bool)running == (bool)other.running;
+            sequence == other.sequence && motionEpoch == other.motionEpoch && movement == other.movement && (bool)running == (bool)other.running;
     }
 
     public sealed partial class NetworkPlayer : NetworkBehaviour, IPhotonMessageTarget
@@ -77,6 +78,9 @@ namespace PickleVerse.Multiplayer
         Vector2 serverAxes;
         bool serverRun;
         uint sequence, lastReceived;
+        readonly MovementInputPlayback inputPlayback = new MovementInputPlayback();
+        PhotonCommandChannel playbackChannel;
+        Func<uint, MovementInputFrame?> readPlaybackInput;
         double rateWindow;
         int receivedThisWindow;
         RoomMember initialMember;
@@ -104,6 +108,7 @@ namespace PickleVerse.Multiplayer
             }
             All.Add(this);
             sequence = Frame.sequence;
+            inputPlayback.Reset(Frame.sequence);
             BuildVisual();
 
 
@@ -144,8 +149,10 @@ namespace PickleVerse.Multiplayer
         }
         void ApplyPaddleSkin()
         {
+#if !UNITY_SERVER
             if (Actor && Actor.paddle)
                 PickleVerse.Shop.PaddleAppearance.Attach(Actor.paddle).Apply(PaddleSkin);
+#endif
         }
 
         void BuildVisual()
@@ -202,7 +209,7 @@ namespace PickleVerse.Multiplayer
             if (!IsServer)
             {
                 if (!IsOwner)
-                    transform.position = Vector3.Lerp(transform.position, Frame.position, 1 - Mathf.Exp(-18 * Time.deltaTime));
+                    transform.position = Frame.position;
                 if (match && !match.Paused)
                     Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.running, Time.deltaTime, CanMove(), (IsLocalHuman ? LocalAxes() : Frame.movement) * -CourtEnd);
             }
@@ -299,12 +306,26 @@ namespace PickleVerse.Multiplayer
                 if (predicted.Count > 150)
                     predicted.RemoveAt(0);
             }
-            PhotonSession.Find(Runner)?.Channel.Input(move.sequence, move.axes, move.run);
+            NetworkQualityDiagnostics.RecordInput(move.sequence, Frame.sequence, predicted.Count);
+            PhotonSession.Find(Runner)?.Channel?.Input(move.sequence, move.axes, move.run);
+        }
+        public DedicatedInput CaptureDedicatedInput()
+        {
+            CollectLocalInput(Runner.DeltaTime);
+            return new DedicatedInput { Movement = CanMove() && !InputBlocked() ? LocalAxes() : Vector2.zero,
+                Running = CanMove() && !InputBlocked() && LocalRun(), Sequence = sequence };
         }
         void Predict(ref Vector3 position, ref Vector3 velocity, Move move)
         {
-            MatchMovement.Step(ref position, ref velocity, move.axes * -CourtEnd, move.run,
-                move.swinging, CourtEnd, move.dt, Actor.walkSpeed, Actor.runSpeed);
+            // Match the authority's 120 Hz movement integration, rather than one large render/network step.
+            float remaining = move.dt;
+            while (remaining > .000001f)
+            {
+                float step = Mathf.Min(1f / 120f, remaining);
+                MatchMovement.Step(ref position, ref velocity, move.axes * -CourtEnd, move.run,
+                    move.swinging, CourtEnd, step, Actor.walkSpeed, Actor.runSpeed);
+                remaining -= step;
+            }
         }
         void MoveFrom(uint seq, Vector2 axes, bool run)
         {
@@ -326,17 +347,42 @@ namespace PickleVerse.Multiplayer
             if (!IsServer || !Actor)
                 return;
             var channel = PhotonCommandChannel.For(Runner, ControllerPeer);
-            if (channel)
-                MoveFrom(channel.InputSequence, channel.Movement, channel.Running);
+            if (PhotonSession.Find(Runner)?.IsDedicated == true && !Automated && Runner.TryGetInputForPlayer<DedicatedInput>(ControllerPeer, out var input))
+                MoveFrom(input.Sequence, input.Movement, input.Running);
             bool moving = canMove && Connected;
-            var axes = moving ? serverAxes * -CourtEnd : Vector2.zero;
-            Actor.Step(axes, moving && serverRun, dt, moving);
+            if (channel && !Automated && PhotonSession.Find(Runner)?.IsDedicated != true)
+            {
+                if (playbackChannel != channel)
+                {
+                    playbackChannel = channel; readPlaybackInput = channel.ReadInput;
+                    inputPlayback.Reset(lastReceived);
+                }
+                if (channel.InputSequence > inputPlayback.Acknowledged + PhotonCommandChannel.InputHistorySize)
+                {
+                    // A gap beyond retained history is an explicit discontinuity, never a false ACK.
+                    inputPlayback.Reset(channel.InputSequence - PhotonCommandChannel.InputHistorySize);
+                    Frame = new PlayerFrame { position = Frame.position, velocity = Frame.velocity,
+                        sequence = inputPlayback.Acknowledged, motionEpoch = unchecked((ushort)(Frame.motionEpoch + 1)) };
+                }
+                float budget = dt;
+                while (budget > .000001f)
+                {
+                    bool available = inputPlayback.Take(budget, Runner.DeltaTime, readPlaybackInput, out var bufferedInput, out float step);
+                    serverAxes = available ? Vector2.ClampMagnitude(bufferedInput.axes, 1) : Vector2.zero;
+                    serverRun = available && bufferedInput.running;
+                    Actor.Step(moving ? serverAxes * -CourtEnd : Vector2.zero, moving && serverRun, step, moving);
+                    budget -= step;
+                }
+                lastReceived = inputPlayback.Acknowledged;
+            }
+            else Actor.Step(moving ? serverAxes * -CourtEnd : Vector2.zero, moving && serverRun, dt, moving);
             // MatchActor owns its child root; publish its position on the NetworkObject root.
             var position = Actor.transform.position;
             transform.position = position;
             Actor.transform.localPosition = Vector3.zero;
             Frame = new PlayerFrame
             {
+                motionEpoch = Frame.motionEpoch,
                 position = position,
                 velocity = Actor.Velocity,
                 sequence = lastReceived,
@@ -384,11 +430,22 @@ namespace PickleVerse.Multiplayer
         {
             if (!IsOwner || IsServer || !Actor)
                 return;
+            if (old.motionEpoch != frame.motionEpoch)
+            {
+                ResetInput(); visualCorrection = Vector3.zero;
+                sequence = Math.Max(sequence, frame.sequence);
+                transform.position = frame.position; predictedVelocity = frame.velocity;
+                return;
+            }
+            if (frame.sequence < old.sequence) return;
             predicted.RemoveAll(move => move.sequence <= frame.sequence);
             var position = frame.position;
             var velocity = frame.velocity;
             foreach (var move in predicted)
                 Predict(ref position, ref velocity, move);
+            var correction = transform.position - position;
+            visualCorrection = Vector3.ClampMagnitude(visualCorrection + correction, 1.5f);
+            NetworkQualityDiagnostics.RecordCorrection(correction.magnitude, predicted.Count, sequence, frame.sequence);
             transform.position = position;
             predictedVelocity = velocity;
         }
@@ -418,9 +475,10 @@ namespace PickleVerse.Multiplayer
             int end = position.z < 0 ? -1 : 1;
             CourtEnd = end;
             ResetInput();
+            inputPlayback.Reset(lastReceived);
             ResetActor(position, end);
             Actor.RefreshPose();
-            Frame = new PlayerFrame { position = position, sequence = lastReceived };
+            Frame = new PlayerFrame { position = position, sequence = lastReceived, motionEpoch = unchecked((ushort)(Frame.motionEpoch + 1)) };
             TeleportClientRpc(position, lastReceived, end);
         }
         void TeleportEffect(Vector3 position, uint acknowledged, int end)
@@ -505,6 +563,7 @@ namespace PickleVerse.Multiplayer
         }
         public void ResetInput()
         {
+            visualCorrection = Vector3.zero;
             shotInput = new LocalShotInput();
             serverAxes = Vector2.zero;
             serverRun = false;

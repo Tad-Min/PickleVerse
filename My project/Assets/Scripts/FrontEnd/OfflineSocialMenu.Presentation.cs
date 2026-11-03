@@ -24,7 +24,7 @@ namespace PickleVerse.FrontEnd
             var subtitle = window.Find("Subtitle")?.GetComponent<TMP_Text>();
             if (subtitle)
             {
-                subtitle.text = "DỮ LIỆU MẪU  /  CHƯA ĐỒNG BỘ ONLINE";
+                subtitle.text = "DỮ LIỆU MẪU  /  CHƯA ĐỒNG BỘ TRỰC TUYẾN";
                 LobbyPanelStyle.Text(subtitle, 10, ScreenUiTheme.Gold);
                 subtitle.characterSpacing = 1;
             }
@@ -68,9 +68,10 @@ namespace PickleVerse.FrontEnd
             Box((RectTransform)friendsTab.transform, 22, 99, (width - 52) * .5f, 44);
             Box((RectTransform)leaderboardTab.transform, width * .5f + 4, 99, (width - 52) * .5f, 44);
             Box((RectTransform)selfName.transform.parent, 22, 157, width - 44, 80);
-            Box((RectTransform)search.transform, 22, 251, (width - 44) * .52f, 48);
-            Box((RectTransform)listButton.transform, 28 + (width - 44) * .52f, 251, (width - 56) * .23f, 48);
-            Box((RectTransform)directoryButton.transform, 34 + (width - 44) * .75f, 251, (width - 56) * .23f, 48);
+            Box((RectTransform)search.transform, 22, 251, (width - 44) * .36f, 48);
+            Box((RectTransform)listButton.transform, 28 + (width - 44) * .36f, 251, (width - 70) * .21f, 48);
+            Box((RectTransform)directoryButton.transform, 34 + (width - 44) * .57f, 251, (width - 70) * .21f, 48);
+            if (blockedButton) Box((RectTransform)blockedButton.transform, 40 + (width - 44) * .78f, 251, (width - 70) * .21f, 48);
             Box((RectTransform)myPositionButton.transform, 30 + (width - 44) * .52f, 251, (width - 60) * .48f, 48);
             var listText = listButton.GetComponentInChildren<TMP_Text>();
             listText.text = "ĐÃ KẾT BẠN";

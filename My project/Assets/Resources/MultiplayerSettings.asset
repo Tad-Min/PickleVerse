@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1df49b7c2ef99488cf3b1143f712db, type: 3}
   m_Name: MultiplayerSettings
   m_EditorClassIdentifier: PickleVerse.Multiplayer::PickleVerse.Multiplayer.MultiplayerSettings
+  photonRegion: asia
   environment: pickleverse-test
   singlesQueue: PickleVerse-1v1
   doublesQueue: PickleVerse-2v2
   reconnectSeconds: 30
   playerPrefab: {fileID: 6737982789964891341, guid: 97c0c37e9d566b242a271bb4b63b2600, type: 3}
   matchPrefab: {fileID: 6210019421029378209, guid: 31efa4cd7424ad04795b6558197fe602, type: 3}
+  dedicatedPlayerPrefab: {fileID: 6737982789964891341, guid: d0760a66386bf59429a4f563757fea76, type: 3}
+  dedicatedMatchPrefab: {fileID: 6210019421029378209, guid: 87809696cda4fb941bf7a0d450e7dd90, type: 3}
   maleActorPrefab: {fileID: 5316423671882641314, guid: 8c9c2d7a3ea992b49932675e903d8556, type: 3}
   femaleActorPrefab: {fileID: 3150955174342796431, guid: ab58f4ffaac0f474f9660285ad13bca6, type: 3}
   ballVisualPrefab: {fileID: 6066316165077980453, guid: 9c678f90529cffa45b45f49882dde567, type: 3}

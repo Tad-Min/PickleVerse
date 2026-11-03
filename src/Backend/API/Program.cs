@@ -63,6 +63,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var principal = context.Principal;
+                if (!Guid.TryParse(principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ||
+                    !int.TryParse(principal?.FindFirst("auth_version")?.Value, out int version) ||
+                    !await context.HttpContext.RequestServices.GetRequiredService<IAuthService>().ValidateSessionAsync(id, version))
+                    context.Fail("Phiên đăng nhập đã hết hiệu lực.");
+            }
+        };
     });
 
 builder.Services.AddAuthorization();

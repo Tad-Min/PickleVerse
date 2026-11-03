@@ -5,12 +5,12 @@ namespace Entities.DTOs
     // Auth
     public class RegisterRequest
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [MinLength(6)]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
+        [MinLength(6, ErrorMessage = "Mật khẩu cần ít nhất 6 ký tự.")]
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
@@ -22,29 +22,29 @@ namespace Entities.DTOs
 
     public class LoginRequest
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string Password { get; set; } = string.Empty;
     }
 
     public class VerifyEmailRequest
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [RegularExpression(@"^\d{6}$")]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Mã xác thực gồm 6 chữ số.")]
         public string Token { get; set; } = string.Empty;
     }
 
     public class ResendOtpRequest
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         [MaxLength(254)]
         public string Email { get; set; } = string.Empty;
     }
@@ -59,7 +59,7 @@ namespace Entities.DTOs
 
     public class RefreshTokenRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string RefreshToken { get; set; } = string.Empty;
     }
 
@@ -96,8 +96,8 @@ namespace Entities.DTOs
 
     public class UpdateProfileRequest
     {
-        [MinLength(3)]
-        [MaxLength(18)]
+        [MinLength(3, ErrorMessage = "Tên người chơi cần ít nhất 3 ký tự.")]
+        [MaxLength(18, ErrorMessage = "Tên người chơi tối đa 18 ký tự.")]
         public string? PlayerName { get; set; }
         public string? Avatar { get; set; }
         public bool? IsMale { get; set; }
@@ -395,7 +395,7 @@ namespace Entities.DTOs
 
     public class CreateLessonRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string LessonName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int RequiredLevel { get; set; } = 1;
@@ -406,7 +406,7 @@ namespace Entities.DTOs
     {
         public int LessonId { get; set; }
         public int TechniqueId { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string DrillName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int Target { get; set; } = 10;
@@ -415,9 +415,9 @@ namespace Entities.DTOs
 
     public class CreateCosmeticRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string ItemCode { get; set; } = string.Empty;
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string CosmeticName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int Price { get; set; } = 100;
@@ -427,7 +427,7 @@ namespace Entities.DTOs
 
     public class CreateMissionRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string MissionName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Type { get; set; } = "DAILY"; // DAILY, WEEKLY

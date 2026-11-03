@@ -86,12 +86,19 @@ namespace PickleVerse.FrontEnd
 
         void Start()
         {
+            if (femaleButton) femaleButton.GetComponentInChildren<TMP_Text>().text = "Nữ";
+            if (maleButton) maleButton.GetComponentInChildren<TMP_Text>().text = "Nam";
             if (EventSystem.current && playButton)
                 EventSystem.current.SetSelectedGameObject(playButton.gameObject);
         }
 
         void Update()
         {
+            var profileAccount = PickleVerse.Services.AccountRuntime.Ensure().Account;
+            var profileApp = PickleVerse.Multiplayer.MultiplayerApp.Instance;
+            bool canChange = !savingCharacter && profileAccount.IsSignedIn && (!profileApp || profileApp.CanChangeLocalProfile);
+            if (femaleButton) femaleButton.interactable = canChange;
+            if (maleButton) maleButton.interactable = canChange;
             DanceTime += Time.unscaledDeltaTime;
             SampleDance(DanceTime);
             float targetAngle = IsMaleSelected ? 180 : 0;
@@ -143,12 +150,30 @@ namespace PickleVerse.FrontEnd
 
         public void SelectFemale()
         {
-            SetCharacter(false, true);
+            SaveCharacter(false);
         }
         public void SelectMale()
         {
-            if (maleRig != null)
-                SetCharacter(true, true);
+            if (maleRig != null) SaveCharacter(true);
+        }
+        bool savingCharacter;
+        async void SaveCharacter(bool male)
+        {
+            var account = PickleVerse.Services.AccountRuntime.Ensure().Account;
+            var app = PickleVerse.Multiplayer.MultiplayerApp.Instance;
+            if (savingCharacter || !account.IsSignedIn || (app && !app.CanChangeLocalProfile)) return;
+            savingCharacter = true;
+            try
+            {
+                await account.UpdateProfileAsync(new PickleVerse.Services.Api.UpdateProfileRequest { IsMale = male });
+                if (this) SetCharacter(account.Profile.IsMale, false);
+                Debug.Log("[Profile] Character selection saved.");
+            }
+            catch (System.Exception error)
+            {
+                if (this && danceLabel) danceLabel.text = error is PickleVerse.Services.Api.ApiException ? error.Message : "Chưa lưu được nhân vật. Vui lòng thử lại.";
+            }
+            finally { savingCharacter = false; }
         }
         public void ApplyAccountCharacter(bool male)
         {

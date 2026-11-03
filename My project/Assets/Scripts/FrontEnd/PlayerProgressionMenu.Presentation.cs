@@ -104,8 +104,10 @@ namespace PickleVerse.FrontEnd
                 face.anchoredPosition = new Vector2(0, -24);
             }
             float leftHeight = height - header - 20;
-            Fixed(identityName.rectTransform, 12, 122, side - 24, 32, true, leftHeight);
-            Fixed(identityId.rectTransform, 12, 157, side - 24, 40, true, leftHeight);
+            Fixed(identityName.rectTransform, 12, 122, side - 60, 32, true, leftHeight);
+            Fixed(identityId.rectTransform, 12, 157, side - 60, 40, true, leftHeight);
+            if (copyIdentity) Fixed((RectTransform)copyIdentity.transform, side - 46, 162, 32, 32, true, leftHeight);
+            if (renameIdentity) Fixed((RectTransform)renameIdentity.transform, side - 46, 122, 32, 32, true, leftHeight);
             Fixed(identityRank.rectTransform, 12, 204, side - 24, 65, true, leftHeight);
             float tabH = Mathf.Clamp((leftHeight - 290) / 3, 42, 58);
             foreach (var b in new[] { statsTab, achievementTab, dailyTab, weeklyTab, trainingTab })

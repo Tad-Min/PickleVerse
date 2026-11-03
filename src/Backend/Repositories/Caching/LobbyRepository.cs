@@ -8,10 +8,38 @@ public sealed class LobbyRepository(IConnectionMultiplexer connection, RedisSett
 {
     IDatabase Redis => connection.GetDatabase();
     RedisKey Key(string value) => settings.KeyPrefix + "{lobby}:" + value;
+    public async Task<bool> ProfileBusy(Guid player, long now)
+    {
+        var presence = await Read<Presence>("presence:" + player.ToString("N"));
+        return presence != null && presence.ExpiresAt > now &&
+            (presence.Value.State != "lobby" || !string.IsNullOrEmpty(presence.Value.RoomCode));
+    }
     public async Task<T?> Read<T>(string key) where T : class
     {
         var value = await Redis.StringGetAsync(Key(key));
         return value.IsNullOrEmpty ? null : GameJson.Read<T>(value.ToString());
+    }
+    public async Task InvalidateInvitations(Guid first, Guid second)
+    {
+        await Redis.ScriptEvaluateAsync("""
+            for i=1,2 do
+              local id=redis.call('GET',KEYS[i])
+              if id then
+                local raw=redis.call('GET',ARGV[1]..id)
+                if raw then
+                  local item=cjson.decode(raw)
+                  if item.value.state=='pending' then
+                    item.value.state='declined'
+                    redis.call('SET',ARGV[1]..id,cjson.encode(item),'KEEPTTL')
+                    redis.call('ZREM',KEYS[i+2],id)
+                  end
+                end
+                redis.call('DEL',KEYS[i])
+              end
+            end
+            return 1
+            """, [Key($"pair:{first:N}:{second:N}"), Key($"pair:{second:N}:{first:N}"),
+                Key($"inbox:{second:N}"), Key($"inbox:{first:N}")], [settings.KeyPrefix + "{lobby}:invite:"]);
     }
     public Task StorePresence(Presence presence, int ttl) => Redis.StringSetAsync(Key("presence:" + presence.PlayerId), GameJson.Write(presence), TimeSpan.FromSeconds(ttl));
     public async Task<bool> RegisterRoom(Presence presence, long now, int ttl)

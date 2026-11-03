@@ -5,6 +5,8 @@ public partial class Gamematch
     public Guid Matchid { get; set; }
     public string Kind { get; set; } = "";
     public string Status { get; set; } = "PREPARING";
+    public string Authoritymode { get; set; } = "shared";
+    public DateTime? Serverheartbeatat { get; set; }
     public string Ratingpolicyversion { get; set; } = "legacy-v1";
     public short Mode { get; set; } = 1;
     public string? Photonsession { get; set; }

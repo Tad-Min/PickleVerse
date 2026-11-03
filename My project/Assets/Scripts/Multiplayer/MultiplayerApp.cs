@@ -18,7 +18,7 @@ namespace PickleVerse.Multiplayer
         public MultiplayerSettings Settings { get; private set; }
         public FlowState State { get; private set; } = FlowState.Menu;
         public PlayMode Mode { get; private set; } = PlayMode.Singles;
-        public string Notice { get; private set; } = "Đăng nhập để chơi online.";
+        public string Notice { get; private set; } = "Đăng nhập để chơi trực tuyến.";
         public string DisplayName { get => identity.DisplayName; set => identity.DisplayName = value; }
         public string Gender { get; set; } = "Male";
         public string PlayerId => identity.PlayerId;
@@ -85,7 +85,7 @@ namespace PickleVerse.Multiplayer
             Settings = Resources.Load<MultiplayerSettings>("MultiplayerSettings");
             RoomService = new RoomService(this, identity);
             MatchmakingService = new MatchmakingService(this);
-            if (!GetComponent<MatchReadyOverlay>())
+            if (!Application.isBatchMode && !GetComponent<MatchReadyOverlay>())
                 gameObject.AddComponent<MatchReadyOverlay>();
         }
         public async Task InitializeAsync(string profile)
@@ -183,6 +183,7 @@ namespace PickleVerse.Multiplayer
                 Mode = session.Data.mode;
                 AttachRoom(session);
                 SetState(FlowState.WaitingRoom, "Đã tham gia phòng.");
+                RoomChanged();
             }
             catch
             {
@@ -258,7 +259,7 @@ namespace PickleVerse.Multiplayer
                 _ = Safe(ClosePartyAsync(data.notice.Length > 0 ? data.notice : Room.Rejected));
                 return;
             }
-            if (data.phase == "searching" && !IsCaptain && State == FlowState.WaitingRoom && !startingSearch)
+            if (!Custom && data.phase == "searching" && !IsCaptain && State == FlowState.WaitingRoom && !startingSearch)
                 _ = Safe(BeginQueueAsync(false));
             if (Custom && data.matchSession.Length > 0 && data.matchSession != lastPartyMatch && !working && !joining && (Match == null || !IsCaptain && Match.Id != data.matchSession))
             {
@@ -319,7 +320,7 @@ namespace PickleVerse.Multiplayer
             assignmentObserved = 0;
             clock.Start(searchBegan);
             startingSearch = true;
-            SetState(FlowState.Delay, "Đang vào hàng chờ online…");
+            SetState(FlowState.Delay, "Đang vào hàng chờ trực tuyến…");
             if (captain)
                 Room?.Lobby.Command("search", "");
             string key = rankedSearchId = Guid.NewGuid().ToString("N");
@@ -340,7 +341,7 @@ namespace PickleVerse.Multiplayer
                     return;
                 }
                 rankedBotDeadline = Time.realtimeSinceStartupAsDouble + ticket.remainingSeconds;
-                SetState(FlowState.Searching, "Đang tìm đối thủ online…");
+                SetState(FlowState.Searching, "Đang tìm đối thủ trực tuyến…");
             }
             catch
             {
@@ -353,7 +354,7 @@ namespace PickleVerse.Multiplayer
                 {
                     CancelLocal();
                     Room?.Lobby.Command("idle", "");
-                    SetState(FlowState.WaitingRoom, "Chưa mở được lượt tìm trận online.");
+                    SetState(FlowState.WaitingRoom, "Chưa mở được lượt tìm trận trực tuyến.");
                 }
                 throw;
             }
@@ -374,6 +375,7 @@ namespace PickleVerse.Multiplayer
             Room.Lobby.Command("search", "");
             await CreateMatchAsync(true, operation);
         }
+#if !UNITY_SERVER
         async void Update()
         {
             if (quitting || closing || navigation.Leaving)
@@ -397,6 +399,7 @@ namespace PickleVerse.Multiplayer
             if (Match != null && Match.Data.phase == "interrupted" && State == FlowState.InMatch)
                 await Safe(ReturnToRoomAsync(Match.Data.notice));
         }
+#endif
         async Task SearchStepAsync(int generation)
         {
             working = true;
@@ -683,6 +686,7 @@ namespace PickleVerse.Multiplayer
         }
         async Task LoadAcceptedCourtAsync()
         {
+            if (Match?.IsDedicated == true) return;
             working = true;
             // SceneStarted/SceneDone own CourtSceneSynchronized. A guest can receive
             // SceneDone while its HTTP request is still in flight; do not reset it here.
@@ -692,6 +696,11 @@ namespace PickleVerse.Multiplayer
                 if (Match == null || Match.Data.phase != "loading")
                     return;
                 await StartOnlineMatchAsync();
+                if (onlineAuthorityMode == "dedicated")
+                {
+                    await ConnectDedicatedAsync(Roster);
+                    return;
+                }
                 courtLoading = true;
                 SetNotice("Mọi người đã xác nhận • Đang tải sân…");
                 PickleVerse.Settings.SceneLoading.BeginExternal("MultiplayerCourt");
@@ -733,6 +742,21 @@ namespace PickleVerse.Multiplayer
             try
             {
                 await LeaveMatchAsync();
+                if (previous.IsDedicated)
+                {
+                    while (generation == operation && Time.realtimeSinceStartupAsDouble < deadline)
+                    {
+                        try { await ConnectDedicatedAsync(previousRoster); return; }
+                        catch (PickleVerse.Services.Api.ApiException error) when (error.StatusCode == 410 || error.StatusCode == 404) { break; }
+                        catch (OperationCanceledException) { return; }
+                        catch { await Task.Delay(1000); }
+                    }
+                    if (generation == operation)
+                    {
+                        await ReturnToRoomAsync("Không thể kết nối lại máy chủ thi đấu. Trạng thái trận sẽ được cập nhật.");
+                    }
+                    return;
+                }
                 while (generation == operation && Time.realtimeSinceStartupAsDouble < deadline)
                 {
                     try
@@ -751,6 +775,23 @@ namespace PickleVerse.Multiplayer
             finally
             {
                 reconnecting = false;
+                if (previous.IsDedicated && State == FlowState.WaitingRoom && previousRoster != null)
+                    _ = RefreshDisconnectedResultAsync(previousRoster.matchId);
+            }
+        }
+        async Task RefreshDisconnectedResultAsync(string matchId)
+        {
+            var account = AccountRuntime.Ensure().Account;
+            int version = account.SessionVersion;
+            for (int i = 0; i < 12 && this && account.IsSignedIn && account.SessionVersion == version; i++)
+            {
+                try
+                {
+                    await ProgressionRuntime.Instance.ReloadAsync();
+                    if (ProgressionRuntime.Instance.Player.pendingMatch?.id != matchId) return;
+                }
+                catch { }
+                await Task.Delay(5000);
             }
         }
         void CancelLocal()
@@ -784,6 +825,7 @@ namespace PickleVerse.Multiplayer
             var old = Match;
             Match = null;
             readyOffer = null;
+            onlineAuthorityMode = "shared";
             serverReadyUntil = double.PositiveInfinity;
             if (old != null)
             {
@@ -857,7 +899,8 @@ namespace PickleVerse.Multiplayer
         public void MatchStarted()
         {
             clock.Stop();
-            if (Match?.IsHost == true)
+            if (Match?.IsDedicated == true) Match.MarkDedicatedPlaying();
+            else if (Match?.IsHost == true)
                 Match.Lobby.Command("playing", "");
             SetState(FlowState.InMatch, "Trận đã bắt đầu.");
         }
@@ -924,5 +967,16 @@ namespace PickleVerse.Multiplayer
             }
         }
     }
-    public static class PlayerSignOut { public static Task FromLobbyAsync() => MultiplayerApp.Instance ? MultiplayerApp.Instance.SignOutFromLobbyAsync() : Task.CompletedTask; }
+    public static class PlayerSignOut
+    {
+        public static async Task FromLobbyAsync()
+        {
+            var app = MultiplayerApp.Instance;
+            if (app && (app.State == FlowState.InMatch || app.State == FlowState.Reconnecting))
+                throw new InvalidOperationException("Rời trận trước khi đăng xuất.");
+            if (app) await app.SignOutFromLobbyAsync();
+            await PickleVerse.Services.AccountRuntime.Ensure().Account.LogoutAsync();
+            Time.timeScale = 1;
+        }
+    }
 }

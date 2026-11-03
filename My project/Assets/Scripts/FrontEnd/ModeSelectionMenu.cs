@@ -100,7 +100,7 @@ namespace PickleVerse.FrontEnd
             botPage.SetActive(true);
             if (tutorialButton)
                 tutorialButton.gameObject.SetActive(false);
-            breadcrumb.text = "CHƠI  /  ĐẤU VỚI BOT";
+            breadcrumb.text = "CHƠI  /  ĐẤU VỚI MÁY";
             title.text = "Chuẩn bị trận đấu";
             subtitle.text = "Chọn đối thủ và bối cảnh phù hợp với bạn.";
             RefreshChoices();
@@ -165,7 +165,7 @@ namespace PickleVerse.FrontEnd
                 return;
             if (!Application.CanStreamedLevelBeLoaded("PlayMultiplayer"))
             {
-                subtitle.text = "Chưa tìm thấy phòng PlayMultiplayer trong bản game.";
+                subtitle.text = "Chưa tìm thấy phòng PlayMultiplayer trong bản ván.";
                 return;
             }
             Loading = true;
@@ -261,12 +261,12 @@ namespace PickleVerse.FrontEnd
                 }
             difficultyDescription.text = new[]
             {
-                "Dễ  ·  Bot phản ứng chậm hơn, phù hợp để làm quen.",
+                "Dễ  ·  Máy phản ứng chậm hơn, phù hợp để làm quen.",
                 "Vừa  ·  Nhịp đấu cân bằng, phù hợp để luyện combo.",
-                "Khó  ·  Bot phản ứng nhanh và đánh chính xác hơn.",
+                "Khó  ·  Máy phản ứng nhanh và đánh chính xác hơn.",
                 "BhTree  ·  Behavior graph thử nghiệm, cấu hình theo Elo local."
             }[SelectedDifficulty];
-            summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ", "BHTREE" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
+            summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ", "THÍCH ỨNG" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
             summary.text += "   /   " + CourtVenueSelection.DisplayName(SelectedVenue);
             var previews = SelectedNight ? venueNightPreviews : venueDayPreviews;
             courtPreview.texture = previews != null && previews.Length > (int)SelectedVenue ? previews[(int)SelectedVenue] : (SelectedNight ? nightPreview : dayPreview);
@@ -301,7 +301,7 @@ namespace PickleVerse.FrontEnd
                 return;
             if (!Application.CanStreamedLevelBeLoaded("BotMatch"))
             {
-                subtitle.text = "Chưa tìm thấy sân BotMatch trong bản game.";
+                subtitle.text = "Chưa tìm thấy sân BotMatch trong bản ván.";
                 return;
             }
             Loading = true;

@@ -8,5 +8,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <!-- Compile the actual pure C# client to verify server/client wire compatibility. -->
     <Compile Include="../../../My project/Assets/Scripts/Services/Api/ApiClient.cs" Link="ClientContracts/ApiClient.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Multiplayer/DedicatedAdmission.cs" Link="ClientContracts/DedicatedAdmission.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Progression/QuickCoachingRules.cs" Link="ClientContracts/QuickCoachingRules.cs" />
   </ItemGroup>
 </Project>

@@ -209,7 +209,7 @@ namespace PickleVerse.LocalMatch
                 Phase = TrainingPhase.Practice;
                 elapsed = lastSave = renderTime = 0;
                 PartnerTurn = false;
-                Feedback = "Theo vùng sáng và chỉ báo timing.";
+                Feedback = "Theo vùng sáng và chỉ báo thời điểm.";
                 PrepareTrial(true);
                 SetTouch(Application.isMobilePlatform);
                 hud.ShowPractice();
@@ -584,6 +584,8 @@ namespace PickleVerse.LocalMatch
             if (refereeFault || error == TrainingError.Kitchen || error == TrainingError.Momentum || error == TrainingError.Net || error == TrainingError.Out || error == TrainingError.ServeFeet)
                 SfxPlayer.Play(GameSfx.FaultWhistle);
             Feedback = TrainingCurriculum.ErrorName(error) + " • " + TrainingCurriculum.Tip(error);
+            string quickTip = QuickCoachingRules.Tip(coachingSession?.shots, Math.Max(0, (coachingSession?.shots.Count ?? 0) - 1));
+            if (!string.IsNullOrEmpty(quickTip)) Feedback = "HLV • " + quickTip;
             AnnounceOutcome();
         }
         void AnnounceOutcome()

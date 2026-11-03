@@ -26,6 +26,15 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
     RedisKey Queue(QueueEntry e) => Prefix + "queue:" + e.mode + ":" + e.region + ":" + e.protocol;
     RedisKey Ready(string match) => Prefix + "ready:" + match;
     public int QueueLeaseSeconds => settings.QueueLeaseSeconds;
+    public async Task<bool> HasActiveSearch(Guid player, long now)
+    {
+        var id = await redis.StringGetAsync(Owner(player.ToString("N")));
+        if (id.IsNullOrEmpty) return false;
+        var raw = await redis.StringGetAsync(Search(id.ToString()));
+        if (raw.IsNullOrEmpty) return false;
+        var entry = GameJson.Read<QueueEntry>(raw.ToString());
+        return entry.state == "SEARCHING" && entry.lastSeen + settings.QueueLeaseSeconds * 1000L > now;
+    }
     static AppException Conflict(string message) => new(message, HttpStatusCode.Conflict);
     public async Task<QueueEntry> Begin(QueueEntry entry)
     {

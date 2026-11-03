@@ -10,6 +10,7 @@ public partial class User
     public string Email { get; set; } = null!;
 
     public string Passwordhash { get; set; } = null!;
+    public int Authversion { get; set; }
 
     public int Roleid { get; set; }
 

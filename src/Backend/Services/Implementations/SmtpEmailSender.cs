@@ -19,16 +19,18 @@ public sealed class SmtpEmailSender(ServerSettings settings, ILogger<SmtpEmailSe
             throw new AppException("Máy chủ chưa được cấu hình gửi email. Vui lòng cấu hình SMTP Gmail tại backend.", HttpStatusCode.ServiceUnavailable);
     }
 
-    public async Task SendVerificationCodeAsync(string email, string code)
+    public Task SendVerificationCodeAsync(string email, string code) => SendCode(email, code, false);
+    public Task SendPasswordResetCodeAsync(string email, string code) => SendCode(email, code, true);
+    async Task SendCode(string email, string code, bool recovery)
     {
         EnsureConfigured();
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(settings.Smtp.FromName, settings.Smtp.FromEmail));
         message.To.Add(MailboxAddress.Parse(email));
-        message.Subject = "Mã xác thực tài khoản PickleVerse";
+        message.Subject = recovery ? "Đặt lại mật khẩu PickleVerse" : "Mã xác thực tài khoản PickleVerse";
         message.Body = new TextPart("plain")
         {
-            Text = $"Mã xác thực PickleVerse của bạn: {code}\nMã có hiệu lực {settings.Otp.LifetimeMinutes} phút và chỉ dùng một lần.\nNếu bạn không đăng ký, hãy bỏ qua email này."
+            Text = $"{(recovery ? "Mã đặt lại mật khẩu" : "Mã xác thực")} PickleVerse của bạn: {code}\nMã có hiệu lực {settings.Otp.LifetimeMinutes} phút và chỉ dùng một lần.\nNếu bạn không yêu cầu thao tác này, hãy bỏ qua email."
         };
         var stage = "connect/starttls";
         try

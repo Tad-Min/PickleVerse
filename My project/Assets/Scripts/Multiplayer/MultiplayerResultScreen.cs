@@ -74,14 +74,18 @@ namespace PickleVerse.Multiplayer
         {
             heading.text = result.outcome == MatchOutcome.Won ? "THẮNG" : result.outcome == MatchOutcome.Lost ? "THUA" : "TRẬN ĐẤU GIÁN ĐOẠN";
             heading.color = result.outcome == MatchOutcome.Won ? new Color(.79f, .96f, .45f) : Color.white;
-            opponent.text = player.playerName + "  vs  " + string.Join(" / ", result.opponents.Select(p => p.name));
+            opponent.text = player.playerName + "  đấu với  " + string.Join(" / ", result.opponents.Select(p => p.name));
             delta.text = (result.eloDelta >= 0 ? "+" : "") + result.eloDelta + " ELO";
             delta.color = result.eloDelta < 0 ? new Color(.98f, .66f, .48f) : new Color(.45f, .86f, .77f);
             elo.text = result.Ranked ? $"{result.ownElo:N0} → {result.ownElo + result.eloDelta:N0} ELO" : $"{player.elo:N0} ELO • Chế độ này không đổi Elo";
-            rank.text = EloPolicy.Rank(player.elo).ToUpperInvariant() + $"\n<size=22>Rank hiện tại • {player.elo:N0} Elo</size>";
-            score.text = $"SỐ GAME THẮNG  {result.gamesWon} – {result.gamesLost}\n<size=20>" + string.Join("    •    ", result.scores.Select((g, i) => $"Game {i + 1}: {g.own}–{g.opponent}" + (g.completed ? "" : " (chưa xong)"))) + "</size>";
-            experience.text = $"LEVEL {player.level}    •    {player.levelXp:N0} / {player.NextLevelXp:N0} XP";
+            rank.text = EloPolicy.Rank(player.elo).ToUpperInvariant() + $"\n<size=22>Hạng hiện tại • {player.elo:N0} Elo</size>";
+            score.text = $"SỐ VÁN THẮNG  {result.gamesWon} – {result.gamesLost}\n<size=20>" + string.Join("    •    ", result.scores.Select((g, i) => $"Ván {i + 1}: {g.own}–{g.opponent}" + (g.completed ? "" : " (chưa xong)"))) + "</size>";
+            experience.text = $"CẤP {player.level}    •    {player.levelXp:N0} / {player.NextLevelXp:N0} XP";
             RenderedMatchId = result.id;
+            score.rectTransform.anchorMax = new Vector2(.49f, .34f);
+            score.enableAutoSizing = true; score.fontSizeMin = 14;
+            PickleVerse.LocalMatch.CoachingSessionView.Attach((RectTransform)experience.transform.parent, result.id, "match", new Vector2(.52f, .24f), new Vector2(.94f, .33f),
+                () => MultiplayerApp.Instance.ReturnToModeSelectionAsync());
         }
         public void Configure(MultiplayerCourtUI ui)
         {
@@ -112,7 +116,7 @@ namespace PickleVerse.Multiplayer
             score = Label("Games", card, font, 24, new Vector2(.06f, .21f), new Vector2(.94f, .34f));
             experience = Label("Experience", card, font, 20, new Vector2(.06f, .15f), new Vector2(.94f, .22f));
             roomButton = Button("ReturnToRoom", card, font, "VỀ PHÒNG CHỜ", new Vector2(.06f, .035f), new Vector2(.48f, .13f), new Color(.45f, .86f, .77f), new Color(.025f, .065f, .095f));
-            menuButton = Button("ReturnToMenu", card, font, "VỀ MENU", new Vector2(.52f, .035f), new Vector2(.94f, .13f), new Color(.075f, .20f, .25f), Color.white);
+            menuButton = Button("ReturnToMenu", card, font, "VỀ TRANG CHỦ", new Vector2(.52f, .035f), new Vector2(.94f, .13f), new Color(.075f, .20f, .25f), Color.white);
             roomButton.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnRight = menuButton, selectOnUp = menuButton, selectOnDown = menuButton };
             menuButton.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnLeft = roomButton, selectOnUp = roomButton, selectOnDown = roomButton };
             panel.gameObject.SetActive(false);

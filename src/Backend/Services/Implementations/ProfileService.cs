@@ -18,11 +18,18 @@ namespace Services.Implementations
         private readonly ILogger<ProfileService> _logger;
 
         readonly LeaderboardCache? _leaderboard;
-        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger, LeaderboardCache? leaderboard = null)
+        readonly Repositories.Caching.LobbyRepository? lobby;
+        readonly Repositories.Caching.RedisGameState? matchmaking;
+        readonly Services.Configuration.ServerSettings settings;
+        readonly TimeProvider clock;
+        public ProfileService(IUnitOfWork unitOfWork, ILogger<ProfileService> logger, Services.Configuration.ServerSettings settings, TimeProvider clock, LeaderboardCache? leaderboard = null,
+            Repositories.Caching.LobbyRepository? lobby = null, Repositories.Caching.RedisGameState? matchmaking = null)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _leaderboard = leaderboard;
+            this.lobby = lobby; this.matchmaking = matchmaking;
+            this.settings = settings; this.clock = clock;
         }
 
         public async Task<PlayerProfileResponse?> GetMyProfileAsync(Guid userId)
@@ -63,15 +70,26 @@ namespace Services.Implementations
         {
             try
             {
+                if (request.PlayerName != null || request.IsMale.HasValue)
+                {
+                    long now = clock.GetUtcNow().ToUnixTimeMilliseconds();
+                    if (await _unitOfWork.Game.InMatch(userId, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds)) ||
+                        lobby != null && await lobby.ProfileBusy(userId, now / 1000) ||
+                        matchmaking != null && await matchmaking.HasActiveSearch(userId, now))
+                        throw new AppException("Hãy rời phòng, dừng tìm trận và kết thúc thi đấu trước khi đổi hồ sơ.", System.Net.HttpStatusCode.Conflict);
+                }
                 var profile = await _unitOfWork.Profiles.GetByUserIdAsync(userId);
                 if (profile == null)
                 {
                     throw new NotFoundException("Không tìm thấy hồ sơ người chơi.");
                 }
 
-                if (!string.IsNullOrWhiteSpace(request.PlayerName) && request.PlayerName != profile.Playername)
+                if (request.PlayerName != null)
                 {
-                    profile.Playername = request.PlayerName;
+                    var name = request.PlayerName.Trim();
+                    if (name.Length is < 3 or > 18 || name.Any(char.IsControl))
+                        throw new AppException("Tên người chơi cần từ 3 đến 18 ký tự, không chứa ký tự điều khiển.", System.Net.HttpStatusCode.BadRequest);
+                    profile.Playername = name;
                 }
 
                 if (!string.IsNullOrWhiteSpace(request.Avatar))
@@ -87,6 +105,10 @@ namespace Services.Implementations
                 await _unitOfWork.Profiles.UpdateProfileAsync(profile);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
+            }
+            catch (Exception ex) when (PersistenceErrors.IsUniqueViolation(ex, "playerprofiles_playername_key"))
+            {
+                throw new AppException("Tên người chơi đã được sử dụng. Hãy chọn tên khác.", System.Net.HttpStatusCode.Conflict);
             }
             catch (AppException)
             {

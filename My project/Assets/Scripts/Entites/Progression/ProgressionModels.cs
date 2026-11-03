@@ -115,7 +115,7 @@ namespace PickleVerse.Progression
         public bool Ranked => kind == MatchKind.RankedSingles || kind == MatchKind.RankedBot;
         public bool Bot => kind == MatchKind.BotPractice || kind == MatchKind.RankedBot;
         public bool Eligible => kind != MatchKind.Custom;
-        public string KindLabel => kind == MatchKind.BotPractice ? "Đấu bot" : kind == MatchKind.RankedBot ? "Rank · Bot" : kind == MatchKind.RankedSingles ? "Rank · 1v1" : kind == MatchKind.MatchedDoubles ? "Tìm trận · 2v2" : "Phòng riêng";
+        public string KindLabel => kind == MatchKind.BotPractice ? "Đấu máy" : kind == MatchKind.RankedBot ? "Xếp hạng · Máy" : kind == MatchKind.RankedSingles ? "Xếp hạng · 1v1" : kind == MatchKind.MatchedDoubles ? "Tìm trận · 2v2" : "Phòng riêng";
         public string OutcomeLabel => outcome == MatchOutcome.Interrupted ? "Gián đoạn" : localForfeit ? "Thua · Bỏ trận" : outcome == MatchOutcome.Won ? "Thắng" : "Thua";
     }
     [Serializable]

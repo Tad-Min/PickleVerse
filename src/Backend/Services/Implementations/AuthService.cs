@@ -15,8 +15,9 @@ using Services.Configuration;
 
 namespace Services.Implementations;
 
-public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles,
-    IConfiguration configuration, IEmailSender emailSender, TimeProvider clock, ServerSettings settings) : IAuthService
+public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService profiles,
+    IConfiguration configuration, IEmailSender emailSender, TimeProvider clock, ServerSettings settings,
+    Services.Workers.PasswordRecoveryMailQueue? recoveryMail = null) : IAuthService
 {
     string SigningKey => configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
     DateTime UtcNow => clock.GetUtcNow().UtcDateTime;
@@ -175,15 +176,22 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await unitOfWork.Users.GetByEmailAsync(NormalizeEmail(request.Email));
-        if (user == null || PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
+        if (user == null)
             return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials");
-        var rejected = await RejectIneligibleUserAsync(user);
-        if (rejected != null)
-            return rejected;
-        var refresh = NewRefreshToken(user.Userid);
-        await unitOfWork.Users.AddRefreshTokenAsync(refresh.Entity);
-        await unitOfWork.SaveChangesAsync();
-        return await SignedInAsync(user, refresh.Raw);
+        await unitOfWork.BeginTransactionAsync();
+        try
+        {
+            await unitOfWork.Users.LockUserAsync(user.Userid);
+            if (PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Passwordhash))
+            { await unitOfWork.RollbackTransactionAsync(); return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials"); }
+            var rejected = await RejectIneligibleUserAsync(user);
+            if (rejected != null) { await unitOfWork.RollbackTransactionAsync(); return rejected; }
+            var refresh = NewRefreshToken(user.Userid);
+            await unitOfWork.Users.AddRefreshTokenAsync(refresh.Entity);
+            await unitOfWork.CommitTransactionAsync();
+            return await SignedInAsync(user, refresh.Raw);
+        }
+        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
     }
 
     async Task<AuthResponse?> RejectIneligibleUserAsync(User user)
@@ -263,7 +271,8 @@ public sealed class AuthService(IUnitOfWork unitOfWork, IProfileService profiles
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()), new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role?.Rolename ?? "Player")
+            new Claim(ClaimTypes.Role, user.Role?.Rolename ?? "Player"),
+            new Claim("auth_version", user.Authversion.ToString(System.Globalization.CultureInfo.InvariantCulture))
         };
         var token = new JwtSecurityToken(configuration["Jwt:Issuer"] ?? "PickleVerseAPI",
             configuration["Jwt:Audience"] ?? "PickleVerseClient", claims,

@@ -4,21 +4,21 @@ from .models import AnalyzeRequest, Shot
 TIPS = {
     "Early": (1, "Thả nút muộn hơn để vợt đến bóng đúng thời điểm."),
     "Late": (1, "Chuẩn bị vợt và thả nút sớm hơn; di chuyển vào vị trí đón bóng."),
-    "LateServe": (1, "Chuẩn bị giao bóng sớm và tiếp xúc trong cửa sổ timing."),
-    "Kitchen": (3, "Đưa cả hai chân ra ngoài Kitchen trước khi volley."),
-    "Momentum": (3, "Giữ thăng bằng sau volley, tránh để đà đưa chân vào Kitchen."),
+    "LateServe": (1, "Chuẩn bị giao bóng sớm và tiếp xúc trong cửa sổ thời điểm."),
+    "Kitchen": (3, "Đưa cả hai chân ra ngoài vùng cấm vô lê trước khi vô lê."),
+    "Momentum": (3, "Giữ thăng bằng sau vô lê, tránh để đà đưa chân vào vùng cấm vô lê."),
     "Net": (2, "Tiếp xúc bóng phía trước người và kiểm tra độ cao qua lưới."),
     "Out": (2, "Ưu tiên kiểm soát hướng và lực để giữ bóng trong sân."),
     "Target": (1, "Điều chỉnh hướng về vùng đích trước khi tăng lực."),
     "Movement": (2, "Hồi vị sau cú đánh và chuẩn bị cho bóng tiếp theo."),
-    "DinkTooHigh": (2, "Giảm lực và giữ quỹ đạo dink thấp qua lưới."),
-    "ServeFeet": (3, "Giữ chân sau baseline và trong ô giao trước khi tiếp bóng."),
+    "DinkTooHigh": (2, "Giảm lực và giữ quỹ đạo bóng ngắn thấp qua lưới."),
+    "ServeFeet": (3, "Giữ chân sau đường biên cuối sân và trong ô giao trước khi tiếp bóng."),
     "WrongInput": (1, "Giữ đúng tổ hợp kỹ thuật theo hướng dẫn."),
     "Spacing": (2, "Giữ cùng hàng với đồng đội và che khoảng trống giữa sân."),
 }
-NAMES = {"Early": "Đánh sớm", "Late": "Đánh muộn", "LateServe": "Giao bóng muộn", "Kitchen": "Volley trong Kitchen",
-         "Momentum": "Đà volley vào Kitchen", "Net": "Bóng chạm lưới", "Out": "Bóng ngoài sân", "Target": "Chưa trúng vùng đích",
-         "Movement": "Chưa hồi vị", "DinkTooHigh": "Dink quá cao", "ServeFeet": "Chân giao bóng sai",
+NAMES = {"Early": "Đánh sớm", "Late": "Đánh muộn", "LateServe": "Giao bóng muộn", "Kitchen": "Vô lê trong vùng cấm vô lê",
+         "Momentum": "Đà vô lê vào vùng cấm vô lê", "Net": "Bóng chạm lưới", "Out": "Bóng ngoài sân", "Target": "Chưa trúng vùng đích",
+         "Movement": "Chưa hồi vị", "DinkTooHigh": "Bóng ngắn quá cao", "ServeFeet": "Chân giao bóng sai",
          "WrongInput": "Sai tổ hợp kỹ thuật", "Spacing": "Khoảng cách đội hình"}
 
 

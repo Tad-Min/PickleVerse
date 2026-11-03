@@ -89,23 +89,23 @@ namespace PickleVerse.Multiplayer
                     {
                         while(Time.realtimeSinceStartupAsDouble-began<PickleVerse.Progression.RankedSearchGate.DeadlineSeconds-1) await Task.Delay(50);
                         await app.CancelSearchAsync(); await Task.Delay(2000);
-                        if(app.Network.IsListening || app.Roster?.RankedBot==true || app.State!=FlowState.WaitingRoom) throw new InvalidOperationException("Bot xuất hiện sau hủy sát hạn.");
+                        if(app.Network.IsListening || app.Roster?.RankedBot==true || app.State!=FlowState.WaitingRoom) throw new InvalidOperationException("Máy xuất hiện sau hủy sát hạn.");
                     }
                     else
                     {
                         while(app.State!=FlowState.InMatch && Time.realtimeSinceStartupAsDouble-began<PickleVerse.Progression.RankedSearchGate.DeadlineSeconds+35) await Task.Delay(50);
                         var pending=PickleVerse.Progression.ProgressionRuntime.Instance.Player.pendingMatch;
-                        if(pending==null || pending.kind!=PickleVerse.Progression.MatchKind.RankedBot || Time.realtimeSinceStartupAsDouble-began<PickleVerse.Progression.RankedSearchGate.DeadlineSeconds) throw new InvalidOperationException("Bot rank không xuất hiện đúng hạn.");
+                        if(pending==null || pending.kind!=PickleVerse.Progression.MatchKind.RankedBot || Time.realtimeSinceStartupAsDouble-began<PickleVerse.Progression.RankedSearchGate.DeadlineSeconds) throw new InvalidOperationException("Máy xếp hạng không xuất hiện đúng hạn.");
                         var match=NetworkMatch.Instance;
-                        if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="MultiplayerCourt" || !app.Roster.RankedBot || NetworkPlayer.All.Count!=2 || NetworkPlayer.All.Count(p=>p.IsLocalHuman)!=1 || !app.Roster.members.Any(m=>m.bot && !string.IsNullOrEmpty(m.name))) throw new InvalidOperationException("Bot chưa dùng đội hình và sân multiplayer.");
+                        if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="MultiplayerCourt" || !app.Roster.RankedBot || NetworkPlayer.All.Count!=2 || NetworkPlayer.All.Count(p=>p.IsLocalHuman)!=1 || !app.Roster.members.Any(m=>m.bot && !string.IsNullOrEmpty(m.name))) throw new InvalidOperationException("Máy chưa dùng đội hình và sân multiplayer.");
                         match.AutomateLocalPlayerForSmoke(); Time.timeScale=4;
                         double gameDeadline=Time.realtimeSinceStartupAsDouble+200;
                         while(PickleVerse.Progression.ProgressionRuntime.Instance.Player.pendingMatch!=null && Time.realtimeSinceStartupAsDouble<gameDeadline) await Task.Delay(50);
                         Time.timeScale=1;
                         var history=PickleVerse.Progression.ProgressionRuntime.Instance.Player.history;
-                        if(history.Count==0 || history[0].kind!=PickleVerse.Progression.MatchKind.RankedBot || history[0].localForfeit || !history[0].scores.Any(s=>s.completed) || match.BotReturns==0) throw new InvalidOperationException("Bot rank chưa hoàn tất trận bằng gameplay thật.");
+                        if(history.Count==0 || history[0].kind!=PickleVerse.Progression.MatchKind.RankedBot || history[0].localForfeit || !history[0].scores.Any(s=>s.completed) || match.BotReturns==0) throw new InvalidOperationException("Máy xếp hạng chưa hoàn tất trận bằng gameplay thật.");
                         await OpenSummaryForSmoke(); var summary=MultiplayerCourtUI.Instance.resultScreen;
-                        if(!summary.IsVisible || summary.RenderedMatchId!=history[0].id || !summary.delta.text.Contains(history[0].eloDelta.ToString()) || !summary.rank.text.Contains(PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo).ToUpperInvariant())) throw new InvalidOperationException("Trang tổng kết bot thiếu Elo/rank đã lưu.");
+                        if(!summary.IsVisible || summary.RenderedMatchId!=history[0].id || !summary.delta.text.Contains(history[0].eloDelta.ToString()) || !summary.rank.text.Contains(PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo).ToUpperInvariant())) throw new InvalidOperationException("Trang tổng kết máy thiếu Elo/xếp hạng đã lưu.");
                         File.WriteAllText(file+"."+profile+".history.json",JsonUtility.ToJson(PickleVerse.Progression.ProgressionRuntime.Instance.Player,true));
                     }
                     string fallbackResult="PASS "+test+" "+profile+": elapsed="+(Time.realtimeSinceStartupAsDouble-began).ToString("0.000")+" state="+app.State+" scene="+UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
@@ -147,18 +147,18 @@ namespace PickleVerse.Multiplayer
                         }
                         await Task.Delay(50);
                     }
-                    if(app.State!=FlowState.Results) throw new InvalidOperationException("Không kết thúc game bằng giao bóng thật: "+NetworkMatch.Instance?.Status.Value);
+                    if(app.State!=FlowState.Results) throw new InvalidOperationException("Không kết thúc ván bằng giao bóng thật: "+NetworkMatch.Instance?.Status.Value);
                     string score=NetworkMatch.Instance.ScoreA.Value+":"+NetworkMatch.Instance.ScoreB.Value;
                     string games=NetworkMatch.Instance.GamesA.Value+":"+NetworkMatch.Instance.GamesB.Value;
-                    if(Math.Max(NetworkMatch.Instance.GamesA.Value,NetworkMatch.Instance.GamesB.Value)!=2) throw new InvalidOperationException("Trận chưa đủ hai game thắng: "+games);
-                    if(NetworkMatch.Instance.Rules!=null && (!NetworkMatch.Instance.Rules.complete || NetworkMatch.Instance.Rules.score.Max()<11)) throw new InvalidOperationException("Game kết thúc do rời/mất kết nối, chưa phải thắng 11 điểm");
-                    if(Math.Max(NetworkMatch.Instance.ScoreA.Value,NetworkMatch.Instance.ScoreB.Value)<11) throw new InvalidOperationException("Kết quả không phải game đủ 11 điểm: "+NetworkMatch.Instance.Status.Value);
+                    if(Math.Max(NetworkMatch.Instance.GamesA.Value,NetworkMatch.Instance.GamesB.Value)!=2) throw new InvalidOperationException("Trận chưa đủ hai ván thắng: "+games);
+                    if(NetworkMatch.Instance.Rules!=null && (!NetworkMatch.Instance.Rules.complete || NetworkMatch.Instance.Rules.score.Max()<11)) throw new InvalidOperationException("Ván kết thúc do rời/mất kết nối, chưa phải thắng 11 điểm");
+                    if(Math.Max(NetworkMatch.Instance.ScoreA.Value,NetworkMatch.Instance.ScoreB.Value)<11) throw new InvalidOperationException("Kết quả không phải ván đủ 11 điểm: "+NetworkMatch.Instance.Status.Value);
                     await OpenSummaryForSmoke();
                     var saved=PickleVerse.Progression.ProgressionRuntime.Instance.Player.history.Find(h=>h.id==app.Roster.matchId);
                     var summary=MultiplayerCourtUI.Instance.resultScreen;
-                    if(saved==null || !summary.IsVisible || summary.RenderedMatchId!=saved.id || !summary.delta.text.Contains(saved.eloDelta.ToString()) || !summary.rank.text.Contains(PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo).ToUpperInvariant())) throw new InvalidOperationException("Trang tổng kết multiplayer thiếu Elo/rank đã lưu.");
+                    if(saved==null || !summary.IsVisible || summary.RenderedMatchId!=saved.id || !summary.delta.text.Contains(saved.eloDelta.ToString()) || !summary.rank.text.Contains(PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo).ToUpperInvariant())) throw new InvalidOperationException("Trang tổng kết multiplayer thiếu Elo/xếp hạng đã lưu.");
                     result+="; summary="+summary.delta.text+" rank="+PickleVerse.Progression.EloPolicy.Rank(PickleVerse.Progression.ProgressionRuntime.Instance.Player.elo);
-                    await app.ReturnToRoomAsync("Smoke game đã kết thúc.");
+                    await app.ReturnToRoomAsync("Smoke ván đã kết thúc.");
                     if(app.State!=FlowState.WaitingRoom || (app.Custom && app.Members().Any(m=>m.ready))) throw new InvalidOperationException("Không trở về phòng đúng.");
                     result+="; lifecycle PASS games="+games+" score="+score+" room="+app.Mode+" members="+app.Members().Count;
                     File.WriteAllText(file+"."+profile+".txt",result); Debug.Log(result);

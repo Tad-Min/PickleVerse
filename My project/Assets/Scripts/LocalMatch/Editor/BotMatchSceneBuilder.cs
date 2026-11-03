@@ -372,7 +372,7 @@ namespace PickleVerse.LocalMatch.Editor
             var eventSystem = new GameObject("Match EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             eventSystem.GetComponent<EventSystem>().sendNavigationEvents = false;
             var scorePanel = Panel("Scoreboard", root, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -14), new Vector2(440, 79), ink);
-            hud.scoreboard = Text("Score", scorePanel, "BẠN  0 : 0  BOT", new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(420, 72), 29);
+            hud.scoreboard = Text("Score", scorePanel, "BẠN  0 : 0  MÁY", new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(420, 72), 29);
             var notice = Panel("RefereeNotice", root, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -100), new Vector2(760, 40), ink);
             hud.status = Text("RefereeText", notice, "", new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(740, 36), 18);
             hud.serveClock = Text("ServeClock", root, "", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -20), new Vector2(260, 36), 20, TextAlignmentOptions.Left);
@@ -383,7 +383,7 @@ namespace PickleVerse.LocalMatch.Editor
             Button("Help", root, "F1 / Hướng dẫn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -59), new Vector2(150, 36), hud.ToggleHelp);
             Button("Touch", root, "Cảm ứng", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -102), new Vector2(130, 36), hud.ToggleTouch);
             Button("Timeout", root, "T / Time-out", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -62), new Vector2(140, 36), hud.Timeout);
-            hud.difficultyLabel = Text("Difficulty", root, "Bot: Vừa", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -110), new Vector2(390, 78), 18, TextAlignmentOptions.TopLeft);
+            hud.difficultyLabel = Text("Difficulty", root, "Máy: Vừa", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -110), new Vector2(390, 78), 18, TextAlignmentOptions.TopLeft);
             var touch = Rect("TouchControls", root, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
             touch.anchorMax = Vector2.one;
             touch.offsetMax = touch.offsetMin = Vector2.zero;
@@ -415,7 +415,7 @@ namespace PickleVerse.LocalMatch.Editor
             touch.gameObject.SetActive(false);
             var help = Panel("ControlsHelp", root, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(730, 370), ink);
             hud.help = help.gameObject;
-            Text("HelpText", help, "<size=28><color=#83E6CD>ĐIỀU KHIỂN & LUẬT</color></size>\n\nWASD di chuyển • Shift chạy • Không có nhảy\nJ Drive sau nảy | K Dink sau nảy | L Volley trước nảy\nJ+K Drop | J+L Smash bóng cao | K+L Reset volley\nJ/K/L + U tấn công | J/K/L + I chéo • Tối đa hai nút\n\nGiữ để chọn, thả phím gốc để swing; swing trễ có thể trượt.\nReturn và cú thứ ba phải nảy. Volley trong Kitchen hoặc đà vào Kitchen là lỗi.\nT gọi time-out trước giao • Esc dừng • Enter tiếp tục\nCảm ứng: joystick và giữ/thả nút; U/I bật tắt làm bổ trợ.", new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 15), new Vector2(690, 310), 19);
+            Text("HelpText", help, "<size=28><color=#83E6CD>ĐIỀU KHIỂN & LUẬT</color></size>\n\nWASD di chuyển • Shift chạy • Không có nhảy\nJ Đánh bạt sau nảy | K Bóng ngắn sau nảy | L Vô lê trước nảy\nJ+K Bỏ nhỏ | J+L Đập bóng bóng cao | K+L Hãm bóng vô lê\nJ/K/L + U tấn công | J/K/L + I chéo • Tối đa hai nút\n\nGiữ để chọn, thả phím gốc để swing; swing trễ có thể trượt.\nReturn và cú thứ ba phải nảy. Vô lê trong vùng cấm vô lê hoặc đà vào vùng cấm vô lê là lỗi.\nT gọi hội ý trước giao • Esc dừng • Enter tiếp tục\nCảm ứng: cần điều khiển và giữ/thả nút; U/I bật tắt làm bổ trợ.", new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 15), new Vector2(690, 310), 19);
             Button("CloseHelp", help, "Đóng / F1", new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 15), new Vector2(180, 36), hud.ToggleHelp);
             help.gameObject.SetActive(false);
             var modal = Panel("MatchDialog", root, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 5), new Vector2(760, 370), ink);

@@ -1,8 +1,31 @@
-// TypeScript DTOs matching src/Backend/Services/DTOs/AllDTOs.cs
+// TypeScript DTOs matching src/Backend/Entities/DTOs.
 
 export interface LoginRequest {
-  emailOrUsername: string;
-  passwordHash: string;
+  email: string;
+  password: string;
+}
+
+export interface PlayerAuthResponse {
+  success: boolean;
+  message: string;
+  code: string;
+  accessToken?: string;
+  refreshToken?: string;
+  profile?: { userId: string; playerName: string };
+}
+
+export interface PasswordRecoveryReceipt {
+  code: string;
+  message: string;
+  otpLifetimeMinutes: number;
+  otpResendCooldownSeconds: number;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  token: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface AuthResponse {

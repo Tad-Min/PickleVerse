@@ -15,16 +15,26 @@ namespace PickleVerse.Multiplayer
         }
         void EnsureReplay()
         {
-            if (!IsServer || replay || !Started || Finished || Roster == null || !PickleVerse.Progression.ProgressionRuntime.Exists)
+            if (!IsServer || replay || !Started || Finished || Roster == null)
                 return;
+#if !UNITY_SERVER
+            if (!PickleVerse.Progression.ProgressionRuntime.Exists) return;
+#endif
             var actors = NetworkPlayer.All.Where(p => p && p.IsSpawned && p.Actor).OrderBy(p => p.Identity.ToString()).ToArray();
             if (actors.Length != Roster.Count)
                 return;
             replay = gameObject.AddComponent<ReplayRecorder>();
-            replay.Begin(new ReplayMetadata { playerId = PickleVerse.Progression.ProgressionRuntime.Instance.Player.id, matchId = Roster.matchId, startedUtcTicks = StartedUtc, night = Roster.night },
+#if UNITY_SERVER
+            string writer = DedicatedWorker.Instance.ReplayWriter;
+            IReplayRepository storage = DedicatedWorker.Instance.Replays;
+#else
+            string writer = PickleVerse.Progression.ProgressionRuntime.Instance.Player.id;
+            IReplayRepository storage = null;
+#endif
+            replay.Begin(new ReplayMetadata { playerId = writer, matchId = Roster.matchId, startedUtcTicks = StartedUtc, night = Roster.night },
                 actors.Select(p => new ReplayActorSource { root = p.Actor.transform, paddle = p.Actor.paddle ? p.Actor.paddle.transform : null, id = p.Identity.ToString(), name = Roster.Find(p.Identity.ToString())?.name, team = p.Team, visualId = p.Female ? "Female" : "Male", paddleId = p.PaddleSkin.ToString() }).ToArray(),
                 () => Body ? Body.transform.position : BallPosition,
-                () => new ReplayFrame { scoreA = ScoreA, scoreB = ScoreB, gamesA = GamesA, gamesB = GamesB, status = Status.ToString() }, visualBall: Body ? Body.transform : null);
+                () => new ReplayFrame { scoreA = ScoreA, scoreB = ScoreB, gamesA = GamesA, gamesB = GamesB, status = Status.ToString() }, storage: storage, visualBall: Body ? Body.transform : null);
         }
     }
 }

@@ -10,7 +10,18 @@ using Services.Interfaces;
 using Services.Security;
 using Entities.Exceptions;
 
+if (args.Contains("--cleanup-acceptance-bucket"))
+{
+    await AcceptanceCleanup.RemoveBucket();
+    return;
+}
+
 // Uses an isolated temporary database on the dev PostgreSQL server. No real email is sent.
+if (args.Contains("--check-client-security"))
+{
+    ClientSecurityChecks.Run();
+    return;
+}
 if (args.Contains("--check-api-contract"))
 {
     await ApiContractChecks.Run();
@@ -61,7 +72,7 @@ async Task<T> Call<T>(Func<AuthService, Task<T>> action)
 {
     using var context = new PickleVerseContext(options);
     using var uow = new UnitOfWork(context);
-    return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, time, new Services.Configuration.ServerSettings(config)));
+    return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance, new(config), time), config, mail, time, new Services.Configuration.ServerSettings(config)));
 }
 var generatedNames = new HashSet<string>(StringComparer.Ordinal);
 async Task<string> Register(string email, string label, bool isMale = true)
@@ -90,6 +101,18 @@ try
     {
         await SchemaMappingChecks.Run(options, Check);
         Console.WriteLine($"SUCCESS: {checks} EF/schema mapping checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-password-recovery"))
+    {
+        await PasswordRecoveryChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} password recovery checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-dedicated"))
+    {
+        await DedicatedChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} dedicated backend/lease checks; disposable database removed.");
         return;
     }
     if (args.Contains("--check-normalized-participants"))
@@ -498,7 +521,7 @@ static class UnityFixture
         using var uow = new UnitOfWork(context);
         var config = TestSettings.Configuration();
         var mail = new CapturedMail();
-        var auth = new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, TimeProvider.System, new Services.Configuration.ServerSettings(config));
+        var auth = new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance, new(config), TimeProvider.System), config, mail, TimeProvider.System, new Services.Configuration.ServerSettings(config));
         var suffix = Guid.NewGuid().ToString("N");
         var email = "unity-smoke-" + suffix + "@example.invalid";
         var password = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24));

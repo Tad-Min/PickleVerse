@@ -42,6 +42,8 @@ namespace PickleVerse.FrontEnd
         bool loading, mutating;
         int fetchGeneration;
         float searchAt = -1;
+        UnityEngine.UI.Button blockedButton;
+        bool blockedView;
         float DeviceDpi => GetComponent<HomeMenuShell>()?.Dpi ?? Screen.dpi;
 
         void Awake()
@@ -52,10 +54,16 @@ namespace PickleVerse.FrontEnd
             if (!modal)
                 BuildShell();
             ConfigureOverlay();
+            blockedButton = Button("BlockedPlayers", window, "ĐÃ CHẶN", new Vector2(.76f, .51f), new Vector2(.98f, .58f), Card, White, 12);
+            blockedButton.onClick.AddListener(() =>
+            {
+                blockedView = true; directory = false; search.SetTextWithoutNotify("");
+                searchAt = -1; feedback.text = ""; _ = FetchAsync(0);
+            });
             ApplyPresentation();
             var subtitle = window.Find("Subtitle")?.GetComponent<TMP_Text>();
             if (subtitle)
-                subtitle.text = "BẠN BÈ / XẾP HẠNG ELO · ONLINE";
+                subtitle.text = "BẠN BÈ / XẾP HẠNG ELO · TRỰC TUYẾN";
             var safe = transform.Find("HomeSafeArea");
             menuInteraction = safe.GetComponent<CanvasGroup>();
             if (!menuInteraction)
@@ -150,6 +158,7 @@ namespace PickleVerse.FrontEnd
             }
             leaderboard = ranking;
             directory = false;
+            blockedView = false;
             search.SetTextWithoutNotify("");
             searchAt = -1;
             feedback.text = "";
@@ -220,6 +229,7 @@ namespace PickleVerse.FrontEnd
         }
         void SetDirectory(bool value)
         {
+            blockedView = false;
             directory = value;
             search.SetTextWithoutNotify("");
             searchAt = -1;
@@ -236,7 +246,7 @@ namespace PickleVerse.FrontEnd
             Refresh();
             try
             {
-                string view = leaderboard ? "leaderboard" : directory ? "directory" : "friends";
+                string view = leaderboard ? "leaderboard" : blockedView ? "blocked" : directory ? "directory" : "friends";
                 var result = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<OnlinePage>("GET", "api/Game/social?view=" + view + "&q=" + Uri.EscapeDataString(search.text) + "&offset=" + offset);
                 if (!this || !opened || generation != fetchGeneration)
                     return;
@@ -269,19 +279,21 @@ namespace PickleVerse.FrontEnd
             var player = ProgressionRuntime.Instance.Player;
             title.text = leaderboard ? "BẢNG XẾP HẠNG" : "BẠN BÈ";
             selfName.text = player.playerName;
-            selfId.text = "ID  " + player.id;
+            selfId.text = "MÃ  " + player.id;
             selfElo.text = EloPolicy.Rank(player.elo) + "\n" + player.elo.ToString("N0") + " ELO";
-            selfPosition.text = page.myPosition > 0 ? $"VỊ TRÍ CỦA BẠN\n#{page.myPosition} / {page.playerCount}" : "Đang tải vị trí…";
+            selfPosition.text = blockedView ? "DANH SÁCH BẠN ĐÃ CHẶN" : page.myPosition > 0 ? $"VỊ TRÍ CỦA BẠN\n#{page.myPosition} / {page.playerCount}" : "Đang tải vị trí…";
             Select(friendsTab, !leaderboard);
             Select(leaderboardTab, leaderboard);
             listButton.gameObject.SetActive(!leaderboard);
             directoryButton.gameObject.SetActive(!leaderboard);
+            blockedButton.gameObject.SetActive(!leaderboard);
             myPositionButton.gameObject.SetActive(leaderboard);
-            Select(listButton, !directory);
+            Select(listButton, !directory && !blockedView);
             Select(directoryButton, directory);
+            Select(blockedButton, blockedView);
             if (listPages == null)
                 listPages = new PickleVerse.Settings.UiListPages(scroll, content);
-            var listPage = listPages.Select(leaderboard ? "Ranking" : directory ? "Directory" : "Friends");
+            var listPage = listPages.Select(leaderboard ? "Ranking" : blockedView ? "Blocked" : directory ? "Directory" : "Friends");
             if (content != listPage.content)
             {
                 content = listPage.content;
@@ -306,7 +318,7 @@ namespace PickleVerse.FrontEnd
             }
             else
             {
-                count.text = directory ? $"{page.total} người chơi  ·  {page.friendCount} bạn" : $"{page.friendCount} bạn  ·  {page.total} mục";
+                count.text = blockedView ? $"{page.total} người chơi đã chặn" : directory ? $"{page.total} người chơi  ·  {page.friendCount} bạn" : $"{page.friendCount} bạn  ·  {page.total} mục";
                 foreach (var entry in page.players)
                     AddPlayer(new SocialPlayer(entry.id, entry.name, entry.elo), 0, false);
             }
@@ -349,8 +361,8 @@ namespace PickleVerse.FrontEnd
             {
                 var entry = page.players.Single(p => p.id == player.Id);
                 string relation = entry.relationship;
-                string label = relation == "friend" ? "XÓA BẠN" : relation == "outgoing" ? "ĐÃ GỬI" : relation == "incoming" ? "ĐỒNG Ý" : "KẾT BẠN";
-                var action = Button("FriendAction", row, label, new Vector2(.68f, relation == "incoming" ? .25f : .08f), new Vector2(.975f, .48f), Mint, Ink, 12);
+                string label = relation == "blocked" ? "BỎ CHẶN" : relation == "friend" ? "XÓA BẠN" : relation == "outgoing" ? "ĐÃ GỬI" : relation == "incoming" ? "ĐỒNG Ý" : "KẾT BẠN";
+                var action = Button("FriendAction", row, label, new Vector2(.68f, .27f), new Vector2(.975f, .49f), Mint, Ink, 11);
                 var elo = row.Find("Elo") as RectTransform;
                 elo.anchorMin = new Vector2(.68f, .52f);
                 elo.anchorMax = new Vector2(.97f, .75f);
@@ -358,10 +370,16 @@ namespace PickleVerse.FrontEnd
                 rank.anchorMin = new Vector2(.68f, .75f);
                 rank.anchorMax = new Vector2(.97f, .97f);
                 action.interactable = !mutating && relation != "outgoing";
-                action.onClick.AddListener(() => ChangeFriend(entry, relation == "friend" ? "remove" : relation == "incoming" ? "accept" : "request"));
+                action.onClick.AddListener(() => ChangeFriend(entry, relation == "blocked" ? "unblock" : relation == "friend" ? "remove" : relation == "incoming" ? "accept" : "request"));
+                if (relation != "blocked")
+                {
+                    var block = Button("Block", row, "CHẶN", new Vector2(.83f, .02f), new Vector2(.975f, .23f), Surface, Muted, 10);
+                    block.interactable = !mutating;
+                    block.onClick.AddListener(() => ChangeFriend(entry, "block"));
+                }
                 if (relation == "incoming")
                 {
-                    var decline = Button("Decline", row, "TỪ CHỐI", new Vector2(.68f, .02f), new Vector2(.975f, .23f), Surface, Muted, 11);
+                    var decline = Button("Decline", row, "TỪ CHỐI", new Vector2(.68f, .02f), new Vector2(.825f, .23f), Surface, Muted, 10);
                     decline.interactable = !mutating;
                     decline.onClick.AddListener(() => ChangeFriend(entry, "decline"));
                 }
@@ -455,13 +473,13 @@ namespace PickleVerse.FrontEnd
             outline.effectColor = new Color(.45f, .86f, .77f, .3f);
             outline.effectDistance = new Vector2(1, -1);
             title = Caption("Title", window, "BẠN BÈ", 29, White, new Vector2(.02f, .90f), new Vector2(.85f, .985f), TextAlignmentOptions.MidlineLeft);
-            Caption("Subtitle", window, "Bạn bè và thứ hạng được cập nhật từ tài khoản online", 13, Mint, new Vector2(.02f, .855f), new Vector2(.90f, .905f), TextAlignmentOptions.MidlineLeft);
+            Caption("Subtitle", window, "Bạn bè và thứ hạng được cập nhật từ tài khoản trực tuyến", 13, Mint, new Vector2(.02f, .855f), new Vector2(.90f, .905f), TextAlignmentOptions.MidlineLeft);
             closeButton = Button("Close", window, "×", new Vector2(.925f, .895f), new Vector2(.98f, .977f), Card, White, 28);
             friendsTab = Button("FriendsTab", window, "BẠN BÈ", new Vector2(.02f, .77f), new Vector2(.25f, .845f), Mint, Ink);
             leaderboardTab = Button("LeaderboardTab", window, "BẢNG XẾP HẠNG", new Vector2(.265f, .77f), new Vector2(.51f, .845f), Card, White);
             count = Caption("Count", window, "", 14, Muted, new Vector2(.52f, .77f), new Vector2(.98f, .845f), TextAlignmentOptions.MidlineRight);
             var identity = ui.Panel("CurrentPlayer", window, Surface, new Vector2(.02f, .60f), new Vector2(.98f, .75f));
-            selfName = Caption("Name", identity, "PLAYER", 22, White, new Vector2(.01f, .44f), new Vector2(.50f, .96f), TextAlignmentOptions.MidlineLeft);
+            selfName = Caption("Name", identity, "NGƯỜI CHƠI", 22, White, new Vector2(.01f, .44f), new Vector2(.50f, .96f), TextAlignmentOptions.MidlineLeft);
             selfName.richText = false;
             selfId = Caption("Id", identity, "ID", 13, Muted, new Vector2(.01f, .05f), new Vector2(.50f, .44f), TextAlignmentOptions.MidlineLeft);
             selfId.richText = false;

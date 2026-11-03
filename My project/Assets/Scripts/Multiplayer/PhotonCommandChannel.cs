@@ -22,6 +22,16 @@ namespace PickleVerse.Multiplayer
         public NetworkBool Running { get; set; }
         [Networked]
         public uint InputSequence { get; set; }
+        public const int InputHistorySize = 32;
+        [Networked, Capacity(InputHistorySize)]
+        public NetworkArray<MovementInputFrame> InputHistory => default;
+        public MovementInputFrame? ReadInput(uint sequence)
+        {
+            var input = InputHistory[(int)(sequence % InputHistorySize)];
+            if (float.IsNaN(input.axes.x) || float.IsNaN(input.axes.y) || float.IsInfinity(input.axes.x) || float.IsInfinity(input.axes.y))
+                input.axes = Vector2.zero;
+            return input.sequence == sequence ? input : (MovementInputFrame?)null;
+        }
         public static PhotonCommandChannel For(NetworkRunner runner, PlayerRef peer) => channels.FirstOrDefault(c => c && c.Runner == runner && c.Object.IsValid && c.Object.StateAuthority == peer);
         public void Input(uint sequence, Vector2 movement, bool running)
         {
@@ -30,6 +40,7 @@ namespace PickleVerse.Multiplayer
             InputSequence = sequence;
             Movement = movement;
             Running = running;
+            InputHistory.Set((int)(sequence % InputHistorySize), new MovementInputFrame { sequence = sequence, axes = movement, running = running });
         }
         static readonly List<PhotonCommandChannel> channels = new List<PhotonCommandChannel>();
         readonly List<Envelope> pending = new List<Envelope>();

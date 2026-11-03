@@ -53,7 +53,7 @@ static class ConfigurationChecks
         {
             using var db = new PickleVerseContext(options);
             using var uow = new UnitOfWork(db);
-            return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance), config, mail, clock, settings));
+            return await action(new AuthService(uow, new ProfileService(uow, NullLogger<ProfileService>.Instance, settings, clock), config, mail, clock, settings));
         }
         async Task<T> Game<T>(Func<OnlineGameService, Task<T>> action)
         {

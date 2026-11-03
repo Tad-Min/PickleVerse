@@ -59,6 +59,9 @@ MonoBehaviour:
     m_path: Assets/Scenes/PhotonLobby.unity
     m_guid: 9ba7abb1ee0a67243ad0b8598b794461
   - m_enabled: 1
+    m_path: Assets/Scenes/UI/Authentication.unity
+    m_guid: 0b36a84cad6a9f74e9a1bff786116cf5
+  - m_enabled: 1
     m_path: Assets/Scenes/UI/Settings.unity
     m_guid: e7c64f24456b07649be4287d45df91dc
   m_HasScriptingDefines: 0

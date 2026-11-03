@@ -32,7 +32,8 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("summary")]
-        public async Task<IActionResult> Summary() => Ok(await _hybrid.Summary(GetCurrentUserId()));
+        public async Task<IActionResult> Summary([FromQuery] Guid? sessionId = null, [FromQuery] string sessionType = "match") =>
+            Ok(await _hybrid.Summary(GetCurrentUserId(), sessionId, sessionType));
 
         private Guid GetCurrentUserId()
         {

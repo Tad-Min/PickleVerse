@@ -47,6 +47,14 @@ namespace PickleVerse.Services
             OtpLifetimeMinutes = minutes;
             OtpResendCooldownSeconds = cooldown;
         }
+        public async Task<ResendOtpResponse> ForgotPasswordAsync(string email, CancellationToken cancellation = default)
+        {
+            var result = await api.SendAsync<ResendOtpResponse>("POST", "api/Auth/forgot-password", new EmailRequest { Email = email }, cancellation: cancellation);
+            ApplyOtpPolicy(result.OtpLifetimeMinutes, result.OtpResendCooldownSeconds);
+            return result;
+        }
+        public Task<ApiMessage> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellation = default) =>
+            api.SendAsync<ApiMessage>("POST", "api/Auth/reset-password", request, cancellation: cancellation);
 
         public async Task LoginAsync(string email, string password, CancellationToken cancellation = default)
         {

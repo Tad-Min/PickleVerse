@@ -33,8 +33,10 @@ public sealed class MatchReplayService : IMatchReplayService
     static string ChunkFile(int index, string hash) => $"{index:D6}-{hash}.json.gz";
     static string ChunkKey(Guid match, ReplayChunkInfo chunk) => $"replays/{match:N}/{chunk.file}";
     async Task Lock(Guid match) => await _unitOfWork.Game.Lock("replay:" + match.ToString("N"));
-    async Task<DateTime> GuardWriter(Guid player, Guid match)
+    async Task<DateTime> GuardWriter(Guid player, Guid match, bool trustedServer = false)
     {
+        if (!trustedServer && await _unitOfWork.Game.IsDedicated(match))
+            throw new AppException("Replay trận dedicated do máy chủ ghi.", HttpStatusCode.Forbidden);
         var access=await _unitOfWork.Game.ReplayWriter(player, match) ?? throw Missing();
         if(access.Status is not ("PLAYING" or "FINISHED"))throw Missing();
         if (!access.writer)
@@ -85,11 +87,11 @@ public sealed class MatchReplayService : IMatchReplayService
         await Index(match);
         return header;
     }
-    public async Task<ReplayMetadata> Save(Guid player, Guid match, ReplayMetadata input)
+    public async Task<ReplayMetadata> Save(Guid player, Guid match, ReplayMetadata input, bool trustedServer = false)
     {
         await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
         await Lock(match);
-        var started = await GuardWriter(player, match);
+        var started = await GuardWriter(player, match, trustedServer);
         if (input.version != 1 || input.sampleRate != 30 || !Guid.TryParse(input.playerId, out var recorder) || recorder != player
             || !Guid.TryParse(input.matchId, out var id) || id != match || input.actors == null || input.actors.Count is < 2 or > 4
             || input.actors.Any(a => a == null || !Guid.TryParse(a.id, out _) || a.bones == null || a.bones.Length > 1024 || a.bones.Any(b => b == null || b.Length > 1000)
@@ -110,7 +112,7 @@ public sealed class MatchReplayService : IMatchReplayService
         await tx.CommitAsync();
         return header;
     }
-    public async Task<ReplayChunkInfo> Upload(Guid player, Guid match, int index, ReplayChunkUpload input)
+    public async Task<ReplayChunkInfo> Upload(Guid player, Guid match, int index, ReplayChunkUpload input, bool trustedServer = false)
     {
         if (index < 0 || index >= 10000 || input.Data == null || input.Data.Length > 2800000) throw Bad("Chunk replay vượt giới hạn.");
         byte[] bytes;
@@ -130,7 +132,7 @@ public sealed class MatchReplayService : IMatchReplayService
         if (chunk.frames == null || chunk.frames.Count is < 1 or > 120 || chunk.events == null || chunk.events.Count > 512
             || chunk.frames.Any(f => f == null || !double.IsFinite(f.time) || f.time < 0 || f.time > 21600 || f.ball?.Length != 3 || f.ball.Any(v => !float.IsFinite(v)))) throw Bad("Snapshot replay không hợp lệ.");
         await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
-        await Lock(match); await GuardWriter(player, match);
+        await Lock(match); await GuardWriter(player, match, trustedServer);
         var header = await LoadManifest(match) ?? throw Missing();
         if (chunk.frames.Any(f => f.actors == null || f.actors.Length != header.actors.Count || f.actors.Where((a, i) => a == null || a.root?.Length != 10 || a.bones?.Length != header.actors[i].bones.Length * 10 || a.root.Any(v => !float.IsFinite(v)) || a.bones.Any(v => !float.IsFinite(v))).Any())) throw Bad("Pose replay không hợp lệ.");
         for (int i = 1; i < chunk.frames.Count; i++) if (chunk.frames[i].time < chunk.frames[i - 1].time) throw Bad("Thời gian replay không tăng dần.");

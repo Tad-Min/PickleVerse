@@ -152,6 +152,19 @@ static class HybridChecks
             var payloads = handler.Payloads.Select(p=>System.Text.Json.Nodes.JsonNode.Parse(p)).ToArray();
             check(payloads.All(p=>System.Text.Json.Nodes.JsonNode.DeepEquals(p,payloads[0])), "retry retains the frozen analysis request");
             check(await sql.One("SELECT count(*) FROM aicoachingsessions WHERE batchid=@batch",r=>r.GetInt64(0),P("batch",batch))==1, "worker commits one analysis session");
+            var session = await db.AiTelemetrySessions.AsNoTracking().SingleAsync(s => s.BatchId == batch);
+            var coaching = new HybridCoachingService(sqlData, new GameCatalogService(sqlData, new ServerSettings(workerConfig)), settings, TimeProvider.System);
+            var exact = await coaching.Summary(player, session.SessionId, session.SessionType);
+            check(exact.status == "ready" && exact.analysis?.sessionId == session.SessionId.ToString("N"), "result analysis belongs to the requested session");
+            bool hidden = false;
+            try { await coaching.Summary(Guid.NewGuid(), session.SessionId, session.SessionType); }
+            catch (AppException e) when (e.StatusCode == HttpStatusCode.NotFound) { hidden = true; }
+            check(hidden, "another player cannot read the session analysis");
+            var pending = Guid.NewGuid();
+            await sql.Run("INSERT INTO gamematches(matchid,kind,status,endedat,sequence) VALUES(@match,'BotPractice','FINISHED',CURRENT_TIMESTAMP,nextval('gamematches_history_seq'))", P("match", pending));
+            await sql.Run("INSERT INTO gamematchplayers(matchid,playerid,team,outcome,finalizedat) VALUES(@match,@player,0,'WIN',CURRENT_TIMESTAMP)", P("match", pending), P("player", player));
+            var waiting = await coaching.Summary(player, pending, "match");
+            check(waiting.status == "pending" && waiting.analysis == null, "a new session never falls back to an older player analysis");
             long findings = await sql.One("SELECT count(*) FROM playertechniqueserrors WHERE playerid=@player",r=>r.GetInt64(0),P("player",player));
             await sql.Run("UPDATE aianalysisjobs SET state='processing',attempts=1,leaseuntil=now()-interval '1 second',leasetoken=@token WHERE batchid=@batch",P("token",Guid.NewGuid()),P("batch",batch));
             await WaitFor("completed");

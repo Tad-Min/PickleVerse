@@ -57,7 +57,7 @@ namespace PickleVerse.LocalMatch
                 if (shownDifficulty != match.botDifficulty)
                 {
                     shownDifficulty = match.botDifficulty;
-                    broadcast.SetTeams("BẠN", "BOT", "ĐẤU BOT · " + new[] { "DỄ", "VỪA", "KHÓ", "THÍCH ỨNG" }[shownDifficulty]);
+                    broadcast.SetTeams("BẠN", "BOT", "ĐẤU MÁY · " + new[] { "DỄ", "VỪA", "KHÓ", "THÍCH ỨNG" }[shownDifficulty]);
                 }
                 broadcast.SetScores(rules.Points[0], rules.Points[1], rules.Games[0], rules.Games[1], Mathf.Min(3, rules.GameNumber), rules.Server);
                 if (match.Phase == MatchPhase.Rally && rules.ExpectedHitter == 0)
@@ -70,9 +70,9 @@ namespace PickleVerse.LocalMatch
                 }
                 else rallyHint = "";
                 var phase = match.Phase;
-                broadcast.SetClock(phase == MatchPhase.PreServe ? CourtClockMode.Serve : phase == MatchPhase.Rally ? CourtClockMode.Rally : phase == MatchPhase.Timeout ? CourtClockMode.Timeout : phase == MatchPhase.MatchOver ? CourtClockMode.Finished : phase == MatchPhase.BetweenGames ? CourtClockMode.Break : CourtClockMode.Waiting, phase == MatchPhase.Timeout ? match.TimeoutRemaining : 10 - match.ServeElapsed, rules.Bounces > 0, phase == MatchPhase.PreServe ? (rules.Server == 0 ? "BẠN ĐANG GIAO" : "BOT ĐANG GIAO") : rallyHint);
+                broadcast.SetClock(phase == MatchPhase.PreServe ? CourtClockMode.Serve : phase == MatchPhase.Rally ? CourtClockMode.Rally : phase == MatchPhase.Timeout ? CourtClockMode.Timeout : phase == MatchPhase.MatchOver ? CourtClockMode.Finished : phase == MatchPhase.BetweenGames ? CourtClockMode.Break : CourtClockMode.Waiting, phase == MatchPhase.Timeout ? match.TimeoutRemaining : 10 - match.ServeElapsed, rules.Bounces > 0, phase == MatchPhase.PreServe ? (rules.Server == 0 ? "BẠN ĐANG GIAO" : "MÁY ĐANG GIAO") : rallyHint);
             }
-            else scoreboard.text = "<color=#83E6CD>BẠN</color>  " + rules.Points[0] + "   :   " + rules.Points[1] + "  <color=#F9BC7A>BOT</color>\n<size=17>GAME " + Mathf.Min(3, rules.GameNumber) + "    •    Số game thắng " + rules.Games[0] + "–" + rules.Games[1] + "    •    Đấu đơn 1v1</size>";
+            else scoreboard.text = "<color=#83E6CD>BẠN</color>  " + rules.Points[0] + "   :   " + rules.Points[1] + "  <color=#F9BC7A>BOT</color>\n<size=17>GAME " + Mathf.Min(3, rules.GameNumber) + "    •    Số ván thắng " + rules.Games[0] + "–" + rules.Games[1] + "    •    Đấu đơn 1v1</size>";
             status.text = match.Message;
             bool refereeBanner = match.Phase == MatchPhase.Settling || match.Phase == MatchPhase.BetweenPoints || match.Phase == MatchPhase.BetweenGames || match.Phase == MatchPhase.MatchOver;
             status.transform.parent.gameObject.SetActive(!refereeBanner);
@@ -81,6 +81,8 @@ namespace PickleVerse.LocalMatch
             {
                 bool newlyVisible = results && !resultActions.activeSelf;
                 resultActions.SetActive(results);
+                if (newlyVisible && !string.IsNullOrEmpty(match.CoachingMatchId))
+                    CoachingSessionView.Attach((RectTransform)resultActions.transform, match.CoachingMatchId, "match", new Vector2(.05f, 1.05f), new Vector2(.95f, 1.55f));
                 if (newlyVisible && UnityEngine.EventSystems.EventSystem.current)
                     UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(resultActions.GetComponentInChildren<UnityEngine.UI.Button>().gameObject);
             }
@@ -130,8 +132,8 @@ namespace PickleVerse.LocalMatch
             modalBody.rectTransform.anchoredPosition = new Vector2(0, 6);
             modalBody.rectTransform.sizeDelta = new Vector2(710, 235);
             modalBody.fontSize = 19;
-            modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI BOT" : match.Phase == MatchPhase.MatchOver ? match.Message : match.Phase == MatchPhase.Timeout ? "TIME-OUT" : "KẾT THÚC GAME";
-            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài Kitchen • 11 điểm, cách 2 • Thắng 2/3 game\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi time-out trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 time-out trong game này." : match.Phase == MatchPhase.MatchOver ? "Game thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố rally: " + match.TotalRallies + " • Rally dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; bot đồng ý.\nĐổi sân giữa các game và tại 6 điểm trong game quyết định.";
+            modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI MÁY" : match.Phase == MatchPhase.MatchOver ? match.Message : match.Phase == MatchPhase.Timeout ? "TIME-OUT" : "KẾT THÚC GAME";
+            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài vùng cấm vô lê • 11 điểm, cách 2 • Thắng 2/3 ván\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi hội ý trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 hội ý trong ván này." : match.Phase == MatchPhase.MatchOver ? "Ván thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố pha bóng: " + match.TotalRallies + " • Pha bóng dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; máy đồng ý.\nĐổi sân giữa các ván và tại 6 điểm trong ván quyết định.";
             continueButton.GetComponentInChildren<TMP_Text>().text = intro ? "Vào sân / Enter" : "Enter / Tiếp tục";
             ((RectTransform)continueButton.transform).anchoredPosition = new Vector2(-245, 20);
             ((RectTransform)restartButton.transform).anchoredPosition = new Vector2(0, 20);
@@ -198,10 +200,10 @@ namespace PickleVerse.LocalMatch
             if (text)
                 text.text = "<size=28><color=#83E6CD>ĐIỀU KHIỂN VÀ LUẬT</color></size>\n\n" +
                                 K(GameAction.Forward) + " / " + K(GameAction.Backward) + " / " + K(GameAction.Left) + " / " + K(GameAction.Right) + " di chuyển • " + K(GameAction.Run) + " chạy\n" +
-                                K(GameAction.Drive) + " Drive/giao bóng | " + K(GameAction.Dink) + " Dink | " + K(GameAction.Volley) + " Volley\n" +
+                                K(GameAction.Drive) + " Đánh bạt/giao bóng | " + K(GameAction.Dink) + " Dink | " + K(GameAction.Volley) + " Volley\n" +
                                 K(GameAction.Drive) + "+" + K(GameAction.Dink) + " Drop | " + K(GameAction.Drive) + "+" + K(GameAction.Volley) + " Smash | " + K(GameAction.Dink) + "+" + K(GameAction.Volley) + " Reset\n" +
-                                K(GameAction.Power) + " tăng lực • " + K(GameAction.Cross) + " đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Volley và đà volley vào Kitchen là lỗi.\n" +
-                                K(GameAction.Timeout) + " time-out • Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nCảm ứng: joystick và các nút kỹ thuật; chỉnh bố trí trong Cài đặt.";
+                                K(GameAction.Power) + " tăng lực • " + K(GameAction.Cross) + " đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Vô lê và đà vô lê vào vùng cấm vô lê là lỗi.\n" +
+                                K(GameAction.Timeout) + " hội ý • Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nCảm ứng: cần điều khiển và các nút kỹ thuật; chỉnh bố trí trong Cài đặt.";
             if (text && mobile)
                 text.text = TouchShotGesture.HelpText;
             if (layout)

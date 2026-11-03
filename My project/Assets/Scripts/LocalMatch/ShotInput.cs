@@ -17,7 +17,9 @@ namespace PickleVerse.LocalMatch
         public bool BeforeBounce => kind == ShotKind.Volley || kind == ShotKind.Reset;
         public float ContactDelay => kind == ShotKind.Serve ? .8f : kind == ShotKind.Dink ? .367f : kind == ShotKind.Drop ? .533f : kind == ShotKind.Smash ? .5f : BeforeBounce ? .233f : .433f;
         public float Duration => kind == ShotKind.Serve ? 1.5f : kind == ShotKind.Dink ? .8f : kind == ShotKind.Drop ? 1.2f : BeforeBounce ? .6f : 1f;
-        public override string ToString() => kind + (power ? " + lực" : "") + (cross ? " chéo" : "");
+        static readonly string[] Names = { "Đánh bạt", "Bóng ngắn", "Vô lê", "Bỏ nhỏ", "Đập bóng", "Hãm bóng", "Giao bóng" };
+        public static string Name(ShotKind kind) => Names[(int)kind];
+        public override string ToString() => Name(kind) + (power ? " + lực" : "") + (cross ? " chéo" : "");
     }
     // Bits: J=1 K=2 L=4 U=8 I=16. Commit once, on first base-key release.
     public sealed class ShotInput

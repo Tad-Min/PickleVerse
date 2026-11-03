@@ -40,9 +40,11 @@ namespace PickleVerse.Multiplayer
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot()
         {
+#if !UNITY_SERVER
             var account = AccountRuntime.Ensure();
             if (!account.GetComponent<RoomInvitationsRuntime>())
                 account.gameObject.AddComponent<RoomInvitationsRuntime>();
+#endif
         }
         void Awake()
         {
@@ -154,6 +156,7 @@ namespace PickleVerse.Multiplayer
         }
         void Update()
         {
+            if (account == null) return;
             if (account.IsSignedIn && !polling && Time.unscaledTime >= nextPoll)
             {
                 nextPoll = Time.unscaledTime + 3;
@@ -175,7 +178,7 @@ namespace PickleVerse.Multiplayer
             if (!visible)
                 return;
             sender.text = Current.SenderName + " mời bạn vào phòng";
-            details.text = (Current.Custom ? "CUSTOM" : "ĐẤU ĐÔI ONLINE") + "  •  " + (Current.Mode == 1 ? "1vs1" : "2vs2");
+            details.text = (Current.Custom ? "PHÒNG TÙY CHỈNH" : "ĐẤU ĐÔI TRỰC TUYẾN") + "  •  " + (Current.Mode == 1 ? "1 đấu 1" : "2 đấu 2");
             timer.text = "Còn " + Math.Max(0, Current.ExpiresAt - DateTimeOffset.UtcNow.ToUnixTimeSeconds()) + " giây";
             feedback.text = Error;
             accept.interactable = decline.interactable = !responding;

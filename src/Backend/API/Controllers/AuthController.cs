@@ -50,8 +50,8 @@ namespace API.Controllers
         {
             var success = await _authService.VerifyEmailAsync(request);
             if (!success)
-                return BadRequest(new { message = "Mã xác thực không hợp lệ hoặc đã hết hạn!" });
-            return Ok(new { message = "Xác thực email thành công! Tài khoản đã được kích hoạt." });
+                return BadRequest(new MessageResponse { Message = "Mã xác thực không hợp lệ hoặc đã hết hạn!" });
+            return Ok(new MessageResponse { Message = "Xác thực email thành công! Tài khoản đã được kích hoạt." });
         }
 
         [HttpPost("refresh-token")]
@@ -75,7 +75,17 @@ namespace API.Controllers
         {
             var userId = GetCurrentUserId();
             await _authService.LogoutAsync(userId, request.RefreshToken);
-            return Ok(new { message = "Đăng xuất thành công." });
+            return Ok(new MessageResponse { Message = "Đăng xuất thành công." });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request) => Ok(await _authService.ForgotPasswordAsync(request));
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            await _authService.ResetPasswordAsync(request);
+            return Ok(new MessageResponse { Message = "Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới." });
         }
     }
 }

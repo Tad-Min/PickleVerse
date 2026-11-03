@@ -120,7 +120,7 @@ namespace PickleVerse.Multiplayer
             }
             if (volley && (feetInKitchen ?? InKitchen(feet)))
             {
-                Fault(team, "Volley trong kitchen hoặc chạm vạch");
+                Fault(team, "Vô lê trong vùng cấm vô lê hoặc chạm vạch");
                 return false;
             }
             // A requested technique never silently changes into a different legal shot.
@@ -163,7 +163,7 @@ namespace PickleVerse.Multiplayer
             {
                 if (Mathf.Abs(contact.z) <= Kitchen || contact.x * Mathf.Sign(serverWorldX) > Court.LineWidth / 2f)
                 {
-                    Fault(servingTeam, "Giao bóng sai ô hoặc chạm kitchen");
+                    Fault(servingTeam, "Giao bóng sai ô hoặc chạm vùng cấm vô lê");
                     return;
                 }
                 serveFlight = false;
@@ -183,7 +183,7 @@ namespace PickleVerse.Multiplayer
                 // Momentum faults can override the provisional dead-ball outcome before scoring.
                 live = waitingServe = false;
                 pendingFault = team;
-                reason = "Đà volley đưa người vào kitchen";
+                reason = "Đà vô lê đưa người vào vùng cấm vô lê";
                 volleyMomentum[slot] = false;
                 return;
             }
@@ -203,7 +203,7 @@ namespace PickleVerse.Multiplayer
             {
                 live = waitingServe = false;
                 pendingFault = team;
-                reason = "Đà volley đưa người vào kitchen";
+                reason = "Đà vô lê đưa người vào vùng cấm vô lê";
                 volleyMomentum[team * 2 + index] = false;
             }
         }

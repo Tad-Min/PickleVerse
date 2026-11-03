@@ -1,5 +1,5 @@
+#if !UNITY_SERVER
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,460 +16,219 @@ using UnityEngine.SceneManagement;
 
 namespace PickleVerse.FrontEnd
 {
-    /// <summary>Persistent online sign-in gate, using the lobby's Vietnamese font and palette.</summary>
+    /// <summary>Scene-local authentication view. Credentials remain in AccountRuntime only.</summary>
     public sealed class AccountScreen : MonoBehaviour
     {
-        enum Page { Login, Register, Verify, Profile, Sync }
-        static AccountScreen instance;
+        enum Page { Login, Register, Verify, Forgot, ResetPassword, Sync }
         AccountService account;
         CancellationTokenSource lifetime;
         RectTransform root, card, brand;
-        GameObject cover;
         TMP_Text title, subtitle, feedback, submitLabel;
-        TMP_InputField email, password, confirmPassword, playerName, otp;
-        UnityEngine.UI.Button loginTab, registerTab, submit, verifyLink, resend, close, logout, accountButton, maleButton, femaleButton;
+        TMP_InputField email, password, confirmPassword, otp;
+        UnityEngine.UI.Button loginTab, registerTab, submit, verifyLink, resend, forgot, back;
         UnityEngine.CanvasGroup formGroup;
         readonly List<UnityEngine.UI.Selectable> navigation = new List<UnityEngine.UI.Selectable>();
         Page page;
-        bool busy, male = true;
+        bool busy, leaving;
         double resendAt;
-        float priorTimeScale = 1;
-        bool pausedByGate;
         static readonly Color Ink = new Color32(20, 30, 47, 255), Surface = new Color32(15, 40, 51, 255),
             Muted = new Color32(164, 181, 207, 255), Mint = new Color32(143, 233, 216, 255), Text = new Color32(241, 245, 255, 255);
         TMP_FontAsset font;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Reset()
-        {
-            instance = null;
-        }
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Boot()
-        {
-            if (!instance)
-                AccountRuntime.Ensure().gameObject.AddComponent<AccountScreen>();
-        }
         void Awake()
         {
-            if (instance && instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-            instance = this;
             account = AccountRuntime.Ensure().Account;
             lifetime = new CancellationTokenSource();
             font = ScreenUiTheme.Current ? ScreenUiTheme.Current.font : TMP_Settings.defaultFontAsset;
             Build();
+            if (!FindAnyObjectByType<EventSystem>())
+                new GameObject("Authentication EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule))
+                    .GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
             account.Changed += OnAccountChanged;
             ProgressionRuntime.Changed += OnGameChanged;
-            SceneManager.sceneLoaded += SceneLoaded;
-            Show(Page.Login);
-            OnAccountChanged();
+            Show(account.IsSignedIn ? Page.Sync : Page.Login);
+            OnGameChanged();
+            Debug.Log("[Authentication] Scene ready.");
         }
-        void SceneLoaded(Scene scene, LoadSceneMode mode)
+        void OnAccountChanged()
         {
-            EnsureEventSystem();
-            RefreshVisibility();
-            if (!account.IsSignedIn && scene.name != "Menu" && scene.name != "Login" && scene.name != "Settings" && scene.name != "PhotonLobby")
-                SceneManager.LoadSceneAsync("Menu");
-            else StartCoroutine(ApplyScopeAfterSceneReady());
+            if (!this) return;
+            password.text = confirmPassword.text = otp.text = "";
+            Show(account.IsSignedIn ? Page.Sync : Page.Login);
         }
-        IEnumerator ApplyScopeAfterSceneReady()
+        async void OnGameChanged()
         {
-            yield return null;
-            ApplyOnlineScope();
-        }
-        void ApplyOnlineScope()
-        {
+            if (!this || leaving || !account.IsSignedIn) return;
             var runtime = ProgressionRuntime.Instance;
-            if (!runtime)
-                return;
-            bool available = account.IsSignedIn && runtime.Ready;
-            foreach (var home in FindObjectsByType<HomeMenuShell>(FindObjectsInactive.Include))
+            if (runtime.Ready)
             {
-                if (home.playButton)
-                    home.playButton.interactable = available;
-                if (home.wallet)
-                    home.wallet.gameObject.SetActive(available);
-                if (home.nav)
-                    foreach (var button in home.nav.GetComponentsInChildren<UnityEngine.UI.Button>(true))
-                        if (!button.name.Contains("Setting") && !button.name.Contains("Music"))
-                            button.interactable = available;
+                leaving = true;
+                Debug.Log("[Authentication] Account and game data ready; entering menu.");
+                SceneManager.LoadSceneAsync("Menu");
             }
-            foreach (var menu in FindObjectsByType<PlayerProgressionMenu>(FindObjectsInactive.Include))
+            else
             {
-                if (!available)
-                    menu.Close();
-                menu.enabled = available;
-                foreach (var button in new[] { menu.profileButton, menu.missionsButton, menu.careerButton, menu.progressionButton })
-                    if (button)
-                        button.interactable = available;
-                if (menu.editButton)
-                    menu.editButton.gameObject.SetActive(false);
+                Show(Page.Sync, false);
+                if (!string.IsNullOrEmpty(runtime.Error)) feedback.text = runtime.Error;
+                await Task.CompletedTask;
             }
-            foreach (var social in FindObjectsByType<OfflineSocialMenu>(FindObjectsInactive.Include))
-            {
-                if (!available)
-                    social.Close();
-                social.enabled = available;
-                if (social.friendsButton)
-                    social.friendsButton.interactable = available;
-                if (social.leaderboardButton)
-                    social.leaderboardButton.interactable = available;
-            }
-            foreach (var home in FindObjectsByType<HomeLobbyPresentation>(FindObjectsInactive.Include))
-            {
-                home.ApplyAccountCharacter(account.Profile?.IsMale == true);
-                if (home.maleButton)
-                    home.maleButton.interactable = false;
-                if (home.femaleButton)
-                    home.femaleButton.interactable = false;
-            }
-        }
-        void OnGameChanged()
-        {
-            if (!root || !ProgressionRuntime.Exists)
-                return;
-            if (ProgressionRuntime.Instance.Ready && page == Page.Sync)
-                page = Page.Login;
-            RefreshVisibility();
-            ApplyOnlineScope();
-            if (page == Page.Sync && !string.IsNullOrEmpty(ProgressionRuntime.Instance.Error))
-                feedback.text = ProgressionRuntime.Instance.Error;
-        }
-        public void OpenAccount()
-        {
-            if (!account.IsSignedIn || !FrontEndModalInput.TryAcquire(this))
-                return;
-            Show(Page.Profile);
-            cover.SetActive(true);
-            accountButton.gameObject.SetActive(false);
-        }
-        void EnsureEventSystem()
-        {
-            if (FindAnyObjectByType<EventSystem>())
-                return;
-            var go = new GameObject("Account EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            // The temporary system belongs to this scene and is replaced by authored scene systems.
-            go.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
         }
         void Update()
         {
-            if (cover && cover.activeSelf && Keyboard.current?.tabKey.wasPressedThisFrame == true)
+            if (!root) return;
+            if (resend) resend.interactable = !busy && Time.realtimeSinceStartupAsDouble >= resendAt;
+            bool compact = Screen.width / (float)Mathf.Max(1, Screen.height) < 1.4f;
+            brand.gameObject.SetActive(!compact);
+            card.anchorMin = card.anchorMax = new Vector2(compact ? .5f : .74f, .5f);
+            float height = page == Page.ResetPassword ? 690 : page == Page.Register ? 610 : 570;
+            card.sizeDelta = new Vector2(Mathf.Min(500, root.rect.width - 32), Mathf.Min(height, root.rect.height - 20));
+            if (Keyboard.current?.tabKey.wasPressedThisFrame == true && EventSystem.current)
             {
                 var active = navigation.FindAll(s => s && s.gameObject.activeInHierarchy && s.IsInteractable());
-                if (active.Count == 0 || !EventSystem.current)
-                    return;
+                if (active.Count == 0) return;
                 int index = active.FindIndex(s => s.gameObject == EventSystem.current.currentSelectedGameObject);
                 int direction = Keyboard.current.shiftKey.isPressed ? -1 : 1;
                 active[(index + direction + active.Count) % active.Count].Select();
             }
-            if (resend)
-                resend.interactable = !busy && Time.realtimeSinceStartupAsDouble >= resendAt;
-            if (!root)
-                return;
-            bool compact = Screen.width / (float)Mathf.Max(1, Screen.height) < 1.4f;
-            brand.gameObject.SetActive(!compact);
-            card.anchorMin = card.anchorMax = new Vector2(compact ? .5f : .74f, .5f);
-            float height = page == Page.Register ? 660 : page == Page.Profile ? 560 : page == Page.Verify ? 510 : 500;
-            card.sizeDelta = new Vector2(Mathf.Min(500, root.rect.width - 40), Mathf.Min(height, root.rect.height - 32));
         }
-        void OnAccountChanged()
+        void Show(Page next, bool clear = true)
         {
-            if (!root || !ProgressionRuntime.Instance)
-                return;
-            if (account.IsSignedIn)
-            {
-                var p = account.Profile;
-                playerName.SetTextWithoutNotify(p.PlayerName);
-                male = p.IsMale;
-                password.text = confirmPassword.text = otp.text = "";
-            }
-            else
-            {
-                page = Page.Login;
-                password.text = confirmPassword.text = "";
-            }
-            RefreshVisibility();
-            ApplyOnlineScope();
-        }
-        void RefreshVisibility()
-        {
-            var runtime = ProgressionRuntime.Instance;
-            if (!root || !runtime)
-                return;
-            bool required = !account.IsSignedIn || !runtime.Ready;
-            if (required)
-            {
-                FrontEndModalInput.TryAcquire(this);
-                if (!pausedByGate)
-                {
-                    priorTimeScale = Time.timeScale;
-                    Time.timeScale = 0;
-                    pausedByGate = true;
-                }
-                cover.SetActive(true);
-                Show(account.IsSignedIn ? Page.Sync : page == Page.Profile || page == Page.Sync ? Page.Login : page, false);
-            }
-            else
-            {
-                if (pausedByGate)
-                {
-                    Time.timeScale = priorTimeScale;
-                    pausedByGate = false;
-                }
-                cover.SetActive(page == Page.Profile);
-                if (page != Page.Profile)
-                    FrontEndModalInput.Release(this);
-            }
-            accountButton.gameObject.SetActive(!required && page != Page.Profile && SceneManager.GetActiveScene().name == "Menu");
-        }
-        void Show(Page next, bool clearFeedback = true)
-        {
-            bool changedPage = page != next;
             page = next;
-            bool syncing = next == Page.Sync;
-            title.text = syncing ? "TẢI DỮ LIỆU TRÒ CHƠI" : next == Page.Login ? "CHÀO MỪNG TRỞ LẠI" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC EMAIL" : "TÀI KHOẢN CỦA BẠN";
-            subtitle.text = next == Page.Verify ? account.OtpLifetimeMinutes > 0
-                ? $"Nhập mã 6 chữ số trong email. Mã có hiệu lực {account.OtpLifetimeMinutes} phút."
-                : "Nhập mã 6 chữ số trong email. Thời hạn của mã được ghi trong email."
-                : syncing ? "Đang tải hồ sơ, cửa hàng và bài học trực tuyến. Nếu mất kết nối, hãy thử lại." : next == Page.Profile ? $"LV {account.Profile.Level}  ·  {account.Profile.Elo} ELO  ·  {account.Profile.WinCount} thắng / {account.Profile.LoseCount} thua" : "Đăng nhập để tiếp tục hành trình PickleVerse.";
-            loginTab.gameObject.SetActive(next != Page.Profile && !syncing);
-            registerTab.gameObject.SetActive(next != Page.Profile && !syncing);
-            loginTab.transform.parent.gameObject.SetActive(next != Page.Profile && !syncing);
-            email.transform.parent.gameObject.SetActive(next != Page.Profile && !syncing);
-            password.transform.parent.gameObject.SetActive(next == Page.Login || next == Page.Register);
-            confirmPassword.transform.parent.gameObject.SetActive(next == Page.Register);
-            playerName.transform.parent.gameObject.SetActive(next == Page.Profile);
-            otp.transform.parent.gameObject.SetActive(next == Page.Verify);
-            maleButton.transform.parent.gameObject.SetActive(next == Page.Register || next == Page.Profile);
-            verifyLink.gameObject.SetActive(next == Page.Login || next == Page.Register);
-            resend.gameObject.SetActive(next == Page.Verify);
-            logout.gameObject.SetActive(next == Page.Profile || syncing);
-            close.gameObject.SetActive(next == Page.Profile);
-            submitLabel.text = syncing ? "THỬ TẢI LẠI" : next == Page.Login ? "ĐĂNG NHẬP" : next == Page.Register ? "TẠO TÀI KHOẢN" : next == Page.Verify ? "XÁC THỰC" : "LƯU HỒ SƠ";
-            SetGender(male);
-            if (clearFeedback || changedPage)
-                feedback.text = "";
-        }
-        void SetGender(bool value)
-        {
-            male = value;
-            ScreenUiTheme.Selection(maleButton, value);
-            ScreenUiTheme.Selection(femaleButton, !value);
+            bool sync = page == Page.Sync, reset = page == Page.ResetPassword;
+            title.text = sync ? "TẢI DỮ LIỆU TRÒ CHƠI" : reset ? "ĐẶT LẠI MẬT KHẨU" : page == Page.Forgot ? "QUÊN MẬT KHẨU" :
+                page == Page.Verify ? "XÁC THỰC EMAIL" : page == Page.Register ? "TẠO TÀI KHOẢN" : "CHÀO MỪNG TRỞ LẠI";
+            subtitle.text = sync ? "Đang tải hồ sơ và nội dung trò chơi. Bạn có thể thử lại khi mất kết nối." :
+                reset || page == Page.Verify ? "Nhập mã 6 chữ số trong email. Thời hạn của mã được ghi trong email." :
+                page == Page.Forgot ? "Nhập email đã xác thực để nhận mã đặt lại mật khẩu." : "Đăng nhập để tiếp tục hành trình PickleVerse.";
+            loginTab.transform.parent.gameObject.SetActive(page == Page.Login || page == Page.Register);
+            email.transform.parent.gameObject.SetActive(!sync);
+            password.transform.parent.gameObject.SetActive(page == Page.Login || page == Page.Register || reset);
+            confirmPassword.transform.parent.gameObject.SetActive(page == Page.Register || reset);
+            otp.transform.parent.gameObject.SetActive(page == Page.Verify || reset);
+            verifyLink.gameObject.SetActive(page == Page.Login || page == Page.Register);
+            forgot.gameObject.SetActive(page == Page.Login);
+            resend.gameObject.SetActive(page == Page.Verify || reset);
+            back.gameObject.SetActive(page != Page.Login && page != Page.Register);
+            back.GetComponentInChildren<TMP_Text>().text = sync ? "ĐỔI TÀI KHOẢN" : "VỀ ĐĂNG NHẬP";
+            submitLabel.text = sync ? "THỬ TẢI LẠI" : reset ? "LƯU MẬT KHẨU MỚI" : page == Page.Forgot ? "GỬI MÃ" :
+                page == Page.Verify ? "XÁC THỰC" : page == Page.Register ? "TẠO TÀI KHOẢN" : "ĐĂNG NHẬP";
+            if (clear) feedback.text = "";
         }
         async void Submit() => await Run(async () =>
         {
-            var cancellation = lifetime.Token;
-            if (page == Page.Sync)
-            {
-                await ProgressionRuntime.Instance.ReloadAsync();
-                RefreshVisibility();
-                return;
-            }
+            if (page == Page.Sync) { await ProgressionRuntime.Instance.EnsureReadyAsync(); OnGameChanged(); return; }
             string mail = email.text.Trim();
-            if (page != Page.Profile && (mail.Length == 0 || !mail.Contains("@")))
-                throw new ArgumentException("Vui lòng nhập địa chỉ email hợp lệ.");
-            if (page == Page.Login)
+            if (mail.Length == 0 || !mail.Contains("@")) throw new ArgumentException("Vui lòng nhập địa chỉ email hợp lệ.");
+            if (page == Page.Forgot) { await SendRecovery(); return; }
+            if (page == Page.Verify)
             {
-                if (password.text.Length == 0)
-                    throw new ArgumentException("Vui lòng nhập mật khẩu.");
-                await account.LoginAsync(mail, password.text, cancellation);
-                await ProgressionRuntime.Instance.EnsureReadyAsync();
-                if (SceneManager.GetActiveScene().name != "Menu")
-                    await LoadMenu();
+                if (otp.text.Length != 6) throw new ArgumentException("Mã xác thực gồm 6 chữ số.");
+                var result = await account.VerifyEmailAsync(mail, otp.text, lifetime.Token);
+                otp.text = ""; Show(Page.Login); feedback.text = result.Message; return;
             }
-            else if (page == Page.Register)
+            if (page == Page.Register || page == Page.ResetPassword)
             {
-                if (password.text.Length < 6)
-                    throw new ArgumentException("Mật khẩu cần ít nhất 6 ký tự.");
-                if (password.text != confirmPassword.text)
-                    throw new ArgumentException("Mật khẩu xác nhận chưa khớp.");
-                await account.RegisterAsync(new RegisterRequest { Email = mail, Password = password.text, ConfirmPassword = confirmPassword.text, IsMale = male }, cancellation);
+                if (password.text.Length < 6) throw new ArgumentException("Mật khẩu cần ít nhất 6 ký tự.");
+                if (password.text != confirmPassword.text) throw new ArgumentException("Mật khẩu xác nhận chưa khớp.");
+                if (page == Page.ResetPassword)
+                {
+                    var result = await account.ResetPasswordAsync(new ResetPasswordRequest { Email = mail, Token = otp.text,
+                        Password = password.text, ConfirmPassword = confirmPassword.text }, lifetime.Token);
+                    password.text = confirmPassword.text = otp.text = "";
+                    Show(Page.Login); feedback.text = result.Message; return;
+                }
+                await account.RegisterAsync(new RegisterRequest { Email = mail, Password = password.text,
+                    ConfirmPassword = confirmPassword.text }, lifetime.Token);
                 password.text = confirmPassword.text = "";
                 resendAt = Time.realtimeSinceStartupAsDouble + account.OtpResendCooldownSeconds;
-                Show(Page.Verify);
-                feedback.text = "Mã xác thực đã được gửi. Hãy kiểm tra cả thư rác.";
+                Show(Page.Verify); feedback.text = "Mã xác thực đã được gửi. Hãy kiểm tra cả thư rác."; return;
             }
-            else if (page == Page.Verify)
-            {
-                if (otp.text.Length != 6)
-                    throw new ArgumentException("Mã xác thực gồm 6 chữ số.");
-                var result = await account.VerifyEmailAsync(mail, otp.text, cancellation);
-                otp.text = "";
-                Show(Page.Login);
-                feedback.text = result.Message;
-            }
-            else
-            {
-                if (playerName.text.Trim().Length < 3)
-                    throw new ArgumentException("Tên người chơi cần từ 3 đến 18 ký tự.");
-                await account.UpdateProfileAsync(new UpdateProfileRequest { PlayerName = playerName.text.Trim(), IsMale = male }, cancellation);
-                feedback.text = "Đã lưu hồ sơ.";
-            }
+            if (password.text.Length == 0) throw new ArgumentException("Vui lòng nhập mật khẩu.");
+            await account.LoginAsync(mail, password.text, lifetime.Token);
+            await ProgressionRuntime.Instance.EnsureReadyAsync();
+            OnGameChanged();
         });
-        async Task LoadMenu()
+        async Task SendRecovery()
         {
-            var operation = SceneManager.LoadSceneAsync("Menu");
-            while (operation != null && !operation.isDone)
-                await Task.Yield();
-        }
-        async Task Run(Func<Task> action)
-        {
-            if (busy)
-                return;
-            busy = true;
-            formGroup.interactable = false;
-            feedback.text = "Đang xử lý…";
-            try
-            {
-                await action();
-                RefreshVisibility();
-            }
-            catch (OperationCanceledException) { }
-            catch (ApiException error)
-            {
-                if (error.Code == "email_not_verified" || error.Code == "email_exists")
-                    Show(Page.Verify);
-                if (feedback)
-                    feedback.text = error.Message;
-            }
-            catch (ArgumentException error)
-            {
-                if (feedback)
-                    feedback.text = error.Message;
-            }
-            catch (Exception)
-            {
-                if (feedback)
-                    feedback.text = "Chưa hoàn tất thao tác. Vui lòng thử lại.";
-            }
-            finally
-            {
-                busy = false;
-                if (formGroup)
-                    formGroup.interactable = true;
-            }
+            var result = await account.ForgotPasswordAsync(email.text.Trim(), lifetime.Token);
+            resendAt = Time.realtimeSinceStartupAsDouble + account.OtpResendCooldownSeconds;
+            Show(Page.ResetPassword); feedback.text = result.Message;
         }
         async void Resend() => await Run(async () =>
         {
-            if (string.IsNullOrWhiteSpace(email.text))
-                throw new ArgumentException("Vui lòng nhập email.");
+            if (page == Page.ResetPassword) { await SendRecovery(); return; }
             var result = await account.ResendOtpAsync(email.text.Trim(), lifetime.Token);
-            if (result.Code == "email_already_verified")
-            {
-                otp.text = "";
-                Show(Page.Login);
-            }
+            if (result.Code == "email_already_verified") Show(Page.Login);
             else resendAt = Time.realtimeSinceStartupAsDouble + account.OtpResendCooldownSeconds;
             feedback.text = result.Message;
         });
-        async void Logout() => await Run(async () =>
+        async Task Run(Func<Task> action)
         {
-            await account.LogoutAsync(lifetime.Token);
-            Show(Page.Login);
-            RefreshVisibility();
-        });
+            if (busy) return;
+            busy = true; formGroup.interactable = false; feedback.text = "Đang xử lý…";
+            try { await action(); }
+            catch (OperationCanceledException) { }
+            catch (ApiException error)
+            {
+                if (error.Code == "email_not_verified" || error.Code == "email_exists") Show(Page.Verify);
+                if (feedback) feedback.text = error.Message;
+            }
+            catch (ArgumentException error) { if (feedback) feedback.text = error.Message; }
+            catch (Exception) { if (feedback) feedback.text = "Chưa hoàn tất thao tác. Vui lòng thử lại."; }
+            finally { busy = false; if (formGroup) formGroup.interactable = true; }
+        }
         void OnDestroy()
         {
-            if (instance != this)
-                return;
-            lifetime?.Cancel();
-            lifetime?.Dispose();
-            account.Changed -= OnAccountChanged;
+            lifetime?.Cancel(); lifetime?.Dispose();
+            if (account != null) account.Changed -= OnAccountChanged;
             ProgressionRuntime.Changed -= OnGameChanged;
-            SceneManager.sceneLoaded -= SceneLoaded;
-            FrontEndModalInput.Release(this);
-            if (pausedByGate)
-                Time.timeScale = priorTimeScale;
-            if (root)
-                Destroy(root.gameObject);
-            instance = null;
         }
-
         void Build()
         {
-            var canvasObject = new GameObject("Account Canvas", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster));
-            DontDestroyOnLoad(canvasObject);
+            var backgroundCamera = new GameObject("Authentication Camera", typeof(Camera)).GetComponent<Camera>();
+            backgroundCamera.transform.SetParent(transform, false);
+            backgroundCamera.tag = "MainCamera";
+            backgroundCamera.clearFlags = CameraClearFlags.SolidColor;
+            backgroundCamera.backgroundColor = Ink; backgroundCamera.cullingMask = 0;
+            var canvasObject = new GameObject("Authentication Canvas", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster));
+            canvasObject.transform.SetParent(transform, false);
             root = (RectTransform)canvasObject.transform;
-            var canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 30000;
+            var canvas = canvasObject.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = canvasObject.GetComponent<UnityEngine.UI.CanvasScaler>();
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280, 720);
-            scaler.matchWidthOrHeight = 1;
-            cover = Box(root, "Account Gate", Ink).gameObject;
-            Stretch((RectTransform)cover.transform);
-            brand = Rect(cover.transform, "Brand");
-            brand.anchorMin = new Vector2(.06f, .15f);
-            brand.anchorMax = new Vector2(.48f, .88f);
-            brand.offsetMin = brand.offsetMax = Vector2.zero;
-            var wordmark = Label(brand, "Wordmark", "PICKLEVERSE", 42, Mint);
-            Place(wordmark.rectTransform, new Vector2(.5f, .87f), new Vector2(480, 70));
-            var tagline = Label(brand, "Tagline", "LUYỆN KỸ THUẬT.\nVÀO SÂN THI ĐẤU.", 34, Text);
-            Place(tagline.rectTransform, new Vector2(.5f, .62f), new Vector2(480, 130));
-            var note = Label(brand, "Note", "Mỗi buổi tập là một bước tiến.\nLưu hành trình của bạn với tài khoản PickleVerse.", 18, Muted);
-            Place(note.rectTransform, new Vector2(.5f, .32f), new Vector2(460, 100));
-            card = Box(cover.transform, "Account Card", Surface);
-            Place(card, new Vector2(.74f, .5f), new Vector2(500, 660));
-            var outline = card.gameObject.AddComponent<UnityEngine.UI.Outline>();
-            outline.effectColor = new Color(Mint.r, Mint.g, Mint.b, .2f);
-            outline.effectDistance = Vector2.one;
-            formGroup = card.gameObject.AddComponent<UnityEngine.CanvasGroup>();
+            scaler.referenceResolution = new Vector2(1280, 720); scaler.matchWidthOrHeight = 1;
+            var cover = Box(root, "Authentication Background", Ink); Stretch(cover);
+            brand = Rect(cover, "Brand"); brand.anchorMin = new Vector2(.06f, .15f); brand.anchorMax = new Vector2(.48f, .88f); brand.offsetMin = brand.offsetMax = Vector2.zero;
+            Place(Label(brand, "Wordmark", "PICKLEVERSE", 42, Mint).rectTransform, new Vector2(.5f, .87f), new Vector2(480, 70));
+            Place(Label(brand, "Tagline", "LUYỆN KỸ THUẬT.\nVÀO SÂN THI ĐẤU.", 34, Text).rectTransform, new Vector2(.5f, .62f), new Vector2(480, 130));
+            Place(Label(brand, "Note", "Mỗi buổi tập là một bước tiến.\nLưu hành trình của bạn với PickleVerse.", 18, Muted).rectTransform, new Vector2(.5f, .32f), new Vector2(460, 100));
+            card = Box(cover, "Authentication Card", Surface); Place(card, new Vector2(.74f, .5f), new Vector2(500, 610));
+            formGroup = card.gameObject.AddComponent<CanvasGroup>();
             var layout = card.gameObject.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
-            layout.padding = new RectOffset(32, 32, 24, 24);
-            layout.spacing = 7;
-            layout.childControlHeight = layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            var tabs = Row(card, "Account Tabs", 36);
+            layout.padding = new RectOffset(32, 32, 16, 16); layout.spacing = 6;
+            layout.childControlHeight = layout.childControlWidth = true; layout.childForceExpandHeight = false;
+            var tabs = Row(card, "Authentication Tabs", 36);
             loginTab = Button(tabs, "Login Tab", "ĐĂNG NHẬP", () => Show(Page.Login));
             registerTab = Button(tabs, "Register Tab", "ĐĂNG KÝ", () => Show(Page.Register));
-            title = Label(card, "Title", "", 25, Text);
-            Height(title.gameObject, 38);
-            subtitle = Label(card, "Subtitle", "", 14, Muted);
-            Height(subtitle.gameObject, 42);
+            title = Label(card, "Title", "", 25, Text); Height(title.gameObject, 38);
+            subtitle = Label(card, "Subtitle", "", 14, Muted); Height(subtitle.gameObject, 36);
             email = Field(card, "Email", "EMAIL", "ban@example.com", 254);
             password = Field(card, "Password", "MẬT KHẨU", "Nhập mật khẩu", 128, true);
             confirmPassword = Field(card, "Confirm Password", "NHẬP LẠI MẬT KHẨU", "Xác nhận mật khẩu", 128, true);
-            playerName = Field(card, "Player Name", "TÊN NGƯỜI CHƠI", "Từ 3 đến 18 ký tự", 18);
-            otp = Field(card, "OTP", "MÃ XÁC THỰC", "000000", 6);
-            otp.characterValidation = TMP_InputField.CharacterValidation.Digit;
-            var gender = Row(card, "Character", 35);
-            maleButton = Button(gender, "Male", "NAM", () => SetGender(true));
-            femaleButton = Button(gender, "Female", "NỮ", () => SetGender(false));
-            submit = Button(card, "Submit", "ĐĂNG NHẬP", Submit, true);
-            Height(submit.gameObject, 46);
+            otp = Field(card, "OTP", "MÃ XÁC THỰC", "000000", 6); otp.characterValidation = TMP_InputField.CharacterValidation.Digit;
+            submit = Button(card, "Submit", "ĐĂNG NHẬP", Submit, true); Height(submit.gameObject, 44);
             submitLabel = submit.GetComponentInChildren<TMP_Text>();
-            verifyLink = Button(card, "Verify Link", "Đã có tài khoản, cần xác thực email", () => Show(Page.Verify));
-            Height(verifyLink.gameObject, 30);
+            verifyLink = Button(card, "Verify Link", "Cần xác thực email", () => Show(Page.Verify));
+            forgot = Button(card, "Forgot Password", "QUÊN MẬT KHẨU", () => Show(Page.Forgot));
             resend = Button(card, "Resend OTP", "GỬI LẠI MÃ", Resend);
-            Height(resend.gameObject, 32);
-            logout = Button(card, "Logout", "ĐĂNG XUẤT", Logout);
-            Height(logout.gameObject, 36);
-            close = Button(card, "Close Account", "TRỞ VỀ SẢNH", () =>
+            back = Button(card, "Back To Login", "VỀ ĐĂNG NHẬP", async () =>
             {
-                page = Page.Login;
-                RefreshVisibility();
+                if (account.IsSignedIn) await Run(async () => await account.LogoutAsync(lifetime.Token));
+                else { password.text = confirmPassword.text = otp.text = ""; Show(Page.Login); }
             });
-            Height(close.gameObject, 32);
-            feedback = Label(card, "Feedback", "", 14, Mint);
-            feedback.richText = false;
-            Height(feedback.gameObject, 62);
-            accountButton = Button(root, "Online Account Button", "TÀI KHOẢN", OpenAccount);
-            var buttonRect = (RectTransform)accountButton.transform;
-            buttonRect.anchorMin = buttonRect.anchorMax = new Vector2(.5f, 1);
-            buttonRect.pivot = new Vector2(.5f, 1);
-            buttonRect.anchoredPosition = new Vector2(0, -14);
-            buttonRect.sizeDelta = new Vector2(150, 38);
-            password.onSubmit.AddListener(_ =>
-            {
-                if (page == Page.Login)
-                    Submit();
-            });
-            otp.onSubmit.AddListener(_ => Submit());
+            feedback = Label(card, "Feedback", "", 14, Mint); feedback.richText = false; Height(feedback.gameObject, 48);
+            password.onSubmit.AddListener(_ => { if (page == Page.Login) Submit(); });
+            otp.onSubmit.AddListener(_ => { if (page == Page.Verify) Submit(); });
         }
         RectTransform Rect(Transform parent, string objectName)
         {
@@ -573,3 +332,5 @@ namespace PickleVerse.FrontEnd
         }
     }
 }
+
+#endif

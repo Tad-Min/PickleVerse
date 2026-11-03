@@ -15,6 +15,8 @@ namespace PickleVerse.Multiplayer
         public List<SessionInfo> Sessions = new List<SessionInfo>();
         public bool HasSessionList;
         public Action<PlayerRef, byte[]> Reliable;
+        public Action<NetworkRunner, NetworkInput> Input;
+        public Func<byte[], bool> Admission;
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) => Joined?.Invoke(runner, player);
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) => Left?.Invoke(runner, player);
         public void OnShutdown(NetworkRunner runner, ShutdownReason reason) => Stopped?.Invoke(runner, reason);
@@ -27,11 +29,12 @@ namespace PickleVerse.Multiplayer
         }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
-        public void OnInput(NetworkRunner runner, NetworkInput input) { }
+        public void OnInput(NetworkRunner runner, NetworkInput input) => Input?.Invoke(runner, input);
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
         public void OnConnectedToServer(NetworkRunner runner) { }
         public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
-        public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) => request.Accept();
+        public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
+        { if (Admission == null || Admission(token)) request.Accept(); else request.Refuse(); }
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ReadOnlySpan<byte> data)

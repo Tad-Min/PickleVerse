@@ -10,9 +10,8 @@ namespace PickleVerse.Multiplayer
 {
     public sealed partial class NetworkMatch
     {
-        [Networked]
-        [Capacity(4096)]
-        public string ProgressionResults { get; set; } = "";
+        // End-of-match JSON is streamed once, rather than reserved in every snapshot.
+        public string ProgressionResults { get; private set; } = "";
         [Networked]
         public long StartedUtc { get; set; }
         [Networked]
@@ -25,11 +24,16 @@ namespace PickleVerse.Multiplayer
         CoachingSession coachingSession;
         void EnsureCoaching()
         {
+#if UNITY_SERVER
+            return;
+#else
+            if (PhotonSession.Find(Runner)?.IsDedicated == true) return;
             if (coachingSession != null || !Started || Roster == null || !ProgressionRuntime.Exists) return;
             if (ProgressionRuntime.Instance.Snapshot?.catalog?.hybridTelemetryEnabled != true) return;
             var local = NetworkPlayer.All.FirstOrDefault(p => p && p.IsLocalHuman && p.Actor);
             if (!local) return;
             coachingSession = CoachingRuntime.Instance.Begin(Roster.matchId, "match");
+#endif
         }
         MatchResult localProgression;
         void BindProgression()
@@ -50,6 +54,7 @@ namespace PickleVerse.Multiplayer
             return new MatchResult
             {
                 id = Roster.matchId,
+                playerId = member.id,
                 startedUtcTicks = StartedUtc,
                 kind = Roster.custom ? MatchKind.Custom : Roster.mode == PlayMode.Singles ? MatchKind.RankedSingles : MatchKind.MatchedDoubles,
                 ownElo = member.elo,
@@ -59,6 +64,9 @@ namespace PickleVerse.Multiplayer
         }
         void BeginLocalProgression()
         {
+#if UNITY_SERVER
+            return;
+#else
             if (localProgression != null || !Application.isPlaying)
                 return;
             var app = MultiplayerApp.Instance;
@@ -68,6 +76,7 @@ namespace PickleVerse.Multiplayer
             localProgression = Template(member);
             localProgression.playerId = ProgressionRuntime.Instance.Player.id;
             ProgressionRuntime.Instance.BeginMatch(localProgression);
+#endif
         }
         void CaptureProgressionGame()
         {
@@ -103,16 +112,23 @@ namespace PickleVerse.Multiplayer
             var envelope = JsonConvert.SerializeObject(completed);
             ProgressionResults = envelope;
             ResultsAvailable(default, envelope);
+            SendProgressionResultsToPeers();
+#if UNITY_SERVER
+            DedicatedWorker.Instance.SubmitResults(envelope);
+#else
             _ = MultiplayerApp.Instance.PersistProgressionResultsAsync(envelope);
+#endif
         }
         void ResultsAvailable(string old, string value)
         {
+#if !UNITY_SERVER
             if (Application.isPlaying)
             {
                 // Final authoritative coaching records arrive in a reliable message batch
                 // from LateUpdate; its checkpoint closes the spool after every shot.
                 MultiplayerApp.Instance.ApplyOnlineProgressionResults(value);
             }
+#endif
         }
         public void RecordLocalExit(bool forfeit, string reason)
         {

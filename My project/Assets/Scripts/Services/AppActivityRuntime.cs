@@ -30,7 +30,9 @@ namespace PickleVerse.Services
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot()
         {
+#if !UNITY_SERVER
             Ensure();
+#endif
         }
         public static AppActivityRuntime Ensure()
         {
@@ -147,7 +149,7 @@ namespace PickleVerse.Services
         }
         void OnApplicationQuit()
         {
-            if (!allowQuit && account.IsSignedIn)
+            if (!allowQuit && account != null && account.IsSignedIn)
                 _ = FlushAsync(true);
         }
         void OnDestroy()

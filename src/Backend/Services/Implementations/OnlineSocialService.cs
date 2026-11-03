@@ -9,16 +9,18 @@ public sealed class OnlineSocialService : IOnlineSocialService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly LeaderboardCache leaderboard;
+    private readonly LobbyRepository? lobby;
 
-    public OnlineSocialService(IUnitOfWork unitOfWork, LeaderboardCache leaderboard)
+    public OnlineSocialService(IUnitOfWork unitOfWork, LeaderboardCache leaderboard, LobbyRepository? lobby = null)
     {
         _unitOfWork = unitOfWork;
         this.leaderboard = leaderboard;
+        this.lobby = lobby;
     }
 
     public async Task<OnlineSocialPage> Read(Guid self, string view, string? query, int offset)
     {
-        if (view is not ("friends" or "directory" or "leaderboard"))
+        if (view is not ("friends" or "directory" or "leaderboard" or "blocked"))
             throw new AppException("Danh sách không hợp lệ.", HttpStatusCode.BadRequest);
         query = (query ?? "").Trim();
         if (query.Length > 64 || offset < 0 || offset > 10000000)
@@ -73,7 +75,10 @@ public sealed class OnlineSocialService : IOnlineSocialService
             await _unitOfWork.Game.RemoveFriendship(self, target);
             await _unitOfWork.Game.DeclineRequests(self, target);
             if (input.Action == "block")
+            {
                 await _unitOfWork.Game.Block(self, target);
+                if (lobby != null) await lobby.InvalidateInvitations(self, target);
+            }
         }
         else if (input.Action == "unblock")
             await _unitOfWork.Game.Unblock(self, target);

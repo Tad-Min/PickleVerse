@@ -12,7 +12,8 @@ namespace PickleVerse.Multiplayer
     public sealed partial class MultiplayerApp
     {
         [Serializable]
-        sealed class MatchTicket { public MatchRoster roster; public bool allAccepted; public string phase; public double readyRemainingSeconds; }
+        sealed class MatchTicket { public MatchRoster roster; public bool allAccepted; public string phase, authorityMode = "shared"; public double readyRemainingSeconds; }
+        string onlineAuthorityMode = "shared";
         MatchRoster canonicalRoster;
         Task readyOffer;
         double serverReadyUntil = double.PositiveInfinity;
@@ -24,6 +25,7 @@ namespace PickleVerse.Multiplayer
             if (Match != match)
                 throw new OperationCanceledException();
             canonicalRoster = ticket.roster;
+            onlineAuthorityMode = ticket.authorityMode;
             Roster = canonicalRoster;
             serverReadyUntil = Time.realtimeSinceStartupAsDouble + ticket.readyRemainingSeconds;
         }
@@ -70,6 +72,7 @@ namespace PickleVerse.Multiplayer
             if (Match != match)
                 throw new OperationCanceledException();
             canonicalRoster = ticket.roster;
+            onlineAuthorityMode = ticket.authorityMode;
             Roster = canonicalRoster;
         }
         async Task StartOnlineMatchAsync()
@@ -79,6 +82,7 @@ namespace PickleVerse.Multiplayer
             if (Match != match)
                 throw new OperationCanceledException();
             canonicalRoster = ticket.roster;
+            onlineAuthorityMode = ticket.authorityMode;
             Roster = canonicalRoster;
             await ProgressionRuntime.Instance.ReloadAsync();
         }
@@ -100,7 +104,9 @@ namespace PickleVerse.Multiplayer
         {
             try
             {
-                if (result.localForfeit)
+                if (Match?.IsDedicated == true)
+                    await ProgressionRuntime.Instance.ReloadAsync();
+                else if (result.localForfeit)
                     await ProgressionRuntime.Instance.CommandAsync("match/online/leave", new { MatchId = result.id, RequestId = Guid.NewGuid().ToString("N") });
                 else if (result.scores.All(g => g.completed) && Math.Max(result.gamesWon, result.gamesLost) == 2)
                     await ProgressionRuntime.Instance.CommandAsync("match/online/report", new { Result = result, RequestId = Guid.NewGuid().ToString("N") });
@@ -113,7 +119,7 @@ namespace PickleVerse.Multiplayer
             }
             catch (Exception error)
             {
-                SetNotice("Chưa lưu kết quả online: " + error.Message);
+                SetNotice("Chưa lưu kết quả trực tuyến: " + error.Message);
                 throw;
             }
         }
@@ -126,6 +132,7 @@ namespace PickleVerse.Multiplayer
         }
         async Task ForfeitOnlineMatchAsync()
         {
+            if (Match?.IsDedicated == true) return; // RequestLeave goes to the authoritative simulation.
             if (Roster == null || !ProgressionRuntime.Instance.Ready || ProgressionRuntime.Instance.Player.pendingMatch?.id != Roster.matchId)
                 return;
             await ProgressionRuntime.Instance.CommandAsync("match/online/leave", new { MatchId = Roster.matchId, RequestId = Guid.NewGuid().ToString("N") });

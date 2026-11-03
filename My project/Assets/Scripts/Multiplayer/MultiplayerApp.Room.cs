@@ -104,7 +104,7 @@ namespace PickleVerse.Multiplayer
             // Validate before subscribing: a Changed event from an incompatible room
             // must never start network scene synchronization in this build.
             if (!joined.Properties.TryGetValue("protocol", out var protocol) || protocol.Value != MultiplayerSceneConfiguration.ProtocolVersion.ToString())
-            { await joined.LeaveAsync(); throw new InvalidOperationException("Phòng dùng bản game khác. Hãy dùng cùng bản multiplayer mới trên mọi máy."); }
+            { await joined.LeaveAsync(); throw new InvalidOperationException("Phòng dùng bản ván khác. Hãy dùng cùng bản multiplayer mới trên mọi máy."); }
             if (joined.Players.Any(m => m.Id != PlayerId && string.Equals(Prop(m,"name"), DisplayName, StringComparison.OrdinalIgnoreCase)))
             { await joined.LeaveAsync(); throw new InvalidOperationException("Tên này đã có trong phòng. Hãy đổi tên rồi tham gia lại."); }
             var data=joined.Properties.TryGetValue("room",out var property)?JsonConvert.DeserializeObject<RoomData>(property.Value):null;

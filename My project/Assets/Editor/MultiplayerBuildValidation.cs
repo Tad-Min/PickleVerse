@@ -19,6 +19,8 @@ namespace PickleVerse.EditorTools
             var settings = UnityEngine.Resources.Load<MultiplayerSettings>("MultiplayerSettings");
             if (!settings || !settings.maleActorPrefab || !settings.femaleActorPrefab || !settings.ballVisualPrefab)
                 throw new BuildFailedException("Run PlayMultiplayer integration to assign BotMatch actor and ball prefabs.");
+            if (!settings.dedicatedMatchPrefab || !settings.dedicatedPlayerPrefab)
+                throw new BuildFailedException("Assign the dedicated match and player prefabs before building.");
         }
     }
 }

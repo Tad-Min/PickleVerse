@@ -79,7 +79,7 @@ namespace PickleVerse.LocalMatch
             catch (Exception error)
             {
                 if (this)
-                    Message = "Chưa tạo được trận online: " + error.Message + " • Bấm Chơi lại để thử lại.";
+                    Message = "Chưa tạo được trận trực tuyến: " + error.Message + " • Bấm Chơi lại để thử lại.";
                 throw;
             }
             finally
@@ -117,6 +117,8 @@ namespace PickleVerse.LocalMatch
             savingProgression = SaveProgressionAsync();
             RankedBotLaunch.Clear();
         }
+        int quickCoachingStart;
+        public string CoachingMatchId => progressionResult?.id;
         async Task SaveProgressionAsync()
         {
             var payload = resultToSave;
@@ -133,7 +135,7 @@ namespace PickleVerse.LocalMatch
                 catch (Exception error)
                 {
                     if (this)
-                        Message = "Chưa lưu được kết quả online: " + error.Message + " • Chơi lại hoặc Thoát sẽ thử gửi lại.";
+                        Message = "Chưa lưu được kết quả trực tuyến: " + error.Message + " • Chơi lại hoặc Thoát sẽ thử gửi lại.";
                     if (attempt >= 2)
                         throw;
                     await Task.Delay(1000 * (attempt + 1));

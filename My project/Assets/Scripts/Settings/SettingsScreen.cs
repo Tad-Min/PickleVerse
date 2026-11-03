@@ -118,7 +118,7 @@ namespace PickleVerse.Settings
             resumeButton.gameObject.SetActive(game);
             leaveButton.gameObject.SetActive(game);
             signOutButton.gameObject.SetActive(SettingsOverlay.Host?.CanSignOut ?? false);
-            contextLabel.text = game ? "TRẬN ĐẤU BOT ĐANG TẠM DỪNG" : "THIẾT LẬP TRẢI NGHIỆM CỦA BẠN";
+            contextLabel.text = game ? "TRẬN ĐẤU MÁY ĐANG TẠM DỪNG" : "THIẾT LẬP TRẢI NGHIỆM CỦA BẠN";
             var hint = pages[0].transform.Find("PauseHint").GetComponent<TMP_Text>();
             if (!game)
                 hint.text = "Tùy chỉnh trước khi vào sân. Nút đăng xuất áp dụng cho phiên hiện tại.";
@@ -343,7 +343,7 @@ namespace PickleVerse.Settings
         }
         public void LeaveMatch()
         {
-            var message = SettingsOverlay.Host is ISettingsLeaveConfirmation context ? context.LeaveConfirmation : "Rời trận đấu bot? Trận đang chơi sẽ kết thúc và bạn trở về đại sảnh.";
+            var message = SettingsOverlay.Host is ISettingsLeaveConfirmation context ? context.LeaveConfirmation : "Rời trận đấu máy? Trận đang chơi sẽ kết thúc và bạn trở về đại sảnh.";
             Confirm(message, () =>
             {
                 Discard();
@@ -352,7 +352,7 @@ namespace PickleVerse.Settings
         }
         public void SignOut()
         {
-            Confirm("Đăng xuất phiên hiện tại? Cài đặt và dữ liệu khách được giữ trên thiết bị.", SignOutConfirmed);
+            Confirm("Đăng xuất tài khoản và trở về màn hình đăng nhập?", SignOutConfirmed);
         }
         async void SignOutConfirmed()
         {
@@ -361,7 +361,7 @@ namespace PickleVerse.Settings
             try
             {
                 await (SettingsOverlay.Host?.SignOutAsync() ?? System.Threading.Tasks.Task.CompletedTask);
-                status.text = "Đã đăng xuất. Bạn đang ở chế độ khách.";
+                if (status) status.text = "Đã đăng xuất.";
             }
             catch (Exception e)
             {

@@ -16,6 +16,8 @@ public static class DependencyInjection
         services.AddSingleton(new ServerSettings(configuration));
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton<PasswordRecoveryMailQueue>();
+        services.AddHostedService(sp => sp.GetRequiredService<PasswordRecoveryMailQueue>());
         services.AddScoped<IStorageService, StorageService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProfileService, ProfileService>();
@@ -43,6 +45,8 @@ public static class DependencyInjection
         services.AddSingleton(sp => sp.GetRequiredService<ServerSettings>().HybridAi);
         services.AddHttpClient("hybrid-ai", client => client.Timeout = TimeSpan.FromSeconds(15));
         services.AddHostedService<HybridAiWorker>();
+        services.AddScoped<IDedicatedServerService, DedicatedServerService>();
+        services.AddHostedService<DedicatedLeaseMonitor>();
         return services;
     }
 }

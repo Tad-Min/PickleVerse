@@ -59,7 +59,7 @@ namespace PickleVerse.FrontEnd
             }
             if (text)
             {
-                text.text = currentState == EquipState.Unowned ? "UNOWNED" : currentState == EquipState.Equipped ? "EQUIPPED" : "EQUIP";
+                text.text = currentState == EquipState.Unowned ? "CHƯA SỞ HỮU" : currentState == EquipState.Equipped ? "ĐÃ TRANG BỊ" : "TRANG BỊ";
                 text.color = available ? glow ? cream : navy : grey;
             }
             if (hoverGradient)

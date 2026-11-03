@@ -16,6 +16,14 @@ public sealed partial class GameRepository
     public Task<AiTelemetrySession?> TelemetrySession(Guid player, Guid session, string type) => db.AiTelemetrySessions.AsNoTracking()
         .SingleOrDefaultAsync(s => s.PlayerId == player && s.SessionId == session && s.SessionType == type);
     public Task<AiTelemetrySession?> TelemetryBatch(Guid batch) => db.AiTelemetrySessions.AsNoTracking().SingleOrDefaultAsync(s => s.BatchId == batch);
+    public Task<AiCoachingSession?> SessionCoaching(Guid player, Guid session, string type) => db.AiCoachingSessions.AsNoTracking()
+        .SingleOrDefaultAsync(s => s.PlayerId == player && s.SessionId == session && s.SessionType == type);
+    public Task<bool> OwnsCoachingSession(Guid player, Guid session, string type) => type == "match"
+        ? db.Gamematchplayers.AnyAsync(p => p.Playerid == player && p.Matchid == session)
+        : db.TrainingSessionRecords.AnyAsync(s => s.PlayerId == player && s.AttemptId == session);
+    public Task<string?> SessionAnalysisState(Guid player, Guid session, string type) =>
+        (from telemetry in db.AiTelemetrySessions join job in db.AiAnalysisJobs on telemetry.BatchId equals job.BatchId
+         where telemetry.PlayerId == player && telemetry.SessionId == session && telemetry.SessionType == type select job.State).SingleOrDefaultAsync();
     public async Task CreateTelemetry(AiTelemetrySession session)
     { db.AiTelemetrySessions.Add(session); await db.SaveChangesAsync(); }
     public Task<string?> TelemetryFingerprint(Guid batch, int part) => db.AiTelemetryParts.Where(p => p.BatchId == batch && p.PartIndex == part)

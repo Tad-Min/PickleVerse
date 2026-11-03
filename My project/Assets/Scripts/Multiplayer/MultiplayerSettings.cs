@@ -9,6 +9,9 @@ namespace PickleVerse.Multiplayer
         public string singlesQueue = "PickleVerse-1v1", doublesQueue = "PickleVerse-2v2";
         public float reconnectSeconds = 30;
         public GameObject playerPrefab, matchPrefab;
+        public GameObject dedicatedPlayerPrefab, dedicatedMatchPrefab;
+        public GameObject PlayerPrefab(bool dedicated) => dedicated ? dedicatedPlayerPrefab : playerPrefab;
+        public GameObject MatchPrefab(bool dedicated) => dedicated ? dedicatedMatchPrefab : matchPrefab;
         public GameObject maleActorPrefab, femaleActorPrefab, ballVisualPrefab;
         public GameObject landingMarkerPrefab, aimMarkerPrefab;
         public float contactAssistRadius = .45f;

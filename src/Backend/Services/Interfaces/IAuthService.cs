@@ -12,5 +12,8 @@ namespace Services.Interfaces
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request);
         Task<bool> LogoutAsync(Guid userId, string refreshToken);
+        Task<ResendOtpResponse> ForgotPasswordAsync(ForgotPasswordRequest request);
+        Task ResetPasswordAsync(ResetPasswordRequest request);
+        Task<bool> ValidateSessionAsync(Guid userId, int version);
     }
 }

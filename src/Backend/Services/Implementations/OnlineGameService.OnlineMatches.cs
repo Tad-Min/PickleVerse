@@ -12,6 +12,7 @@ public sealed partial class OnlineGameService
 {
     sealed class OnlineMatch
     {
+        public string authorityMode = "shared";
         public string ratingPolicyVersion = EloPolicy.LegacyVersion;
         public MatchRoster roster = new();
         public string session = "", host = "", phase = "PREPARING", searchId = "";
@@ -66,7 +67,7 @@ public sealed partial class OnlineGameService
     }
     static OnlineMatch OnlineRecord(Gamematch record) => new()
     {
-        ratingPolicyVersion = record.Ratingpolicyversion, roster = RelationalMatch.Roster(record),
+        authorityMode = record.Authoritymode, ratingPolicyVersion = record.Ratingpolicyversion, roster = RelationalMatch.Roster(record),
         session = record.Photonsession ?? "", searchId = record.Searchid?.ToString("N") ?? "",
         host = record.Gamematchplayers.SingleOrDefault(p => p.Isreplaywriter)?.Playerid.ToString("N") ?? "",
         phase = record.Status, startedUtcTicks = record.Startedat?.Ticks ?? 0
@@ -90,7 +91,7 @@ public sealed partial class OnlineGameService
         {
             if (create == null)
                 throw new AppException("Không tìm thấy trận online.", HttpStatusCode.NotFound);
-            stored = new OnlineMatch { ratingPolicyVersion = settings.HybridAi.RatingPolicyVersion, roster = GameJson.Read<MatchRoster>(GameJson.Write(create.Roster)), session = create.Session, host = create.HostPlayerId, searchId = create.SearchId };
+            stored = new OnlineMatch { authorityMode = settings.Dedicated.Enabled ? "dedicated" : "shared", ratingPolicyVersion = settings.HybridAi.RatingPolicyVersion, roster = GameJson.Read<MatchRoster>(GameJson.Write(create.Roster)), session = create.Session, host = create.HostPlayerId, searchId = create.SearchId };
         }
         else stored = OnlineRecord(saved);
         if (RankedBotAccounts.Contains(caller.ToString("N")) || !stored.roster.members.Any(m => MatchId(m.id) == caller))
@@ -138,6 +139,7 @@ public sealed partial class OnlineGameService
         {
             string kind = OnlineKind(stored.roster).ToString();
             _unitOfWork.Game.AddMatch(new Gamematch {Matchid=match,Kind=kind,Status=stored.phase,Ratingpolicyversion=stored.ratingPolicyVersion,
+                Authoritymode=stored.authorityMode,
                 Mode=(short)stored.roster.mode,Photonsession=stored.session,Searchid=string.IsNullOrEmpty(stored.searchId)?null:Guid.Parse(stored.searchId),
                 Region=stored.roster.region,Night=stored.roster.night,Venue=(short)stored.roster.venue,Createdat=Now,Updatedat=Now});
             for(short index=0;index<stored.roster.members.Count;index++)
@@ -169,7 +171,7 @@ public sealed partial class OnlineGameService
     {
         foreach (var member in m.roster.members)
             member.ready = participants.Single(p => p.id == MatchId(member.id)).accepted;
-        return new() { roster = m.roster, allAccepted = participants.All(p => p.accepted), phase = m.phase };
+        return new() { authorityMode = m.authorityMode, roster = m.roster, allAccepted = participants.All(p => p.accepted), phase = m.phase };
     }
     MatchResult OnlineResult(OnlineMatch match, RoomMember member) => new()
     {
@@ -268,6 +270,7 @@ public sealed partial class OnlineGameService
         var match = MatchId(input.id);
         return OnlineTransaction(id, match, null, async (m, players, participants) =>
         {
+            if (await _unitOfWork.Game.IsDedicated(match)) throw new Entities.Exceptions.AppException("Chỉ máy chủ thi đấu được xác nhận kết quả trận này.", System.Net.HttpStatusCode.Forbidden);
             ValidateReport(m, id, input);
             var self = participants.Single(p => p.id == id);
             int team = m.roster.Find(id.ToString("N")).team;
@@ -372,7 +375,11 @@ public sealed partial class OnlineGameService
                 await SaveOnline(match, m);
             }
             else if (m.phase == "PLAYING")
+            {
+                if (await _unitOfWork.Game.IsDedicated(match))
+                    throw new AppException("Hãy gửi yêu cầu rời trận tới máy chủ thi đấu.", HttpStatusCode.Forbidden);
                 await EndOnline(match, m, players, m.roster.Find(id.ToString("N")).team, "Người chơi chủ động rời trận.", [id]);
+            }
             return players[id].Snapshot();
         });
     }
@@ -380,6 +387,7 @@ public sealed partial class OnlineGameService
     {
         if (m.phase != "PLAYING")
             return false;
+        if (await _unitOfWork.Game.IsDedicated(match)) return false; // The server and lease monitor own disconnect decisions.
         var stale = participants.Where(p => !RankedBotAccounts.Contains(p.id.ToString("N")) && p.lastSeen < Now.AddSeconds(-settings.OnlineMatch.DisconnectTimeoutSeconds) && p.result == null).Select(p => p.id).ToHashSet();
         if (stale.Count == 0)
             return false;

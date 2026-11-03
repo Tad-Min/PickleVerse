@@ -17,7 +17,9 @@ namespace PickleVerse.Services
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot()
         {
+#if !UNITY_SERVER
             Ensure();
+#endif
         }
         public static AccountRuntime Ensure()
         {

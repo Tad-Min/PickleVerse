@@ -230,7 +230,7 @@ namespace PickleVerse.Multiplayer
                     var player = players.Find(p => p.Id == id);
                     var data = player?.CustomData?.GetAs<TicketPlayerData>() ?? new TicketPlayerData();
                     if (data.protocol != Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString())
-                        throw new InvalidOperationException("Ghép phải bản game khác. Cần cập nhật cùng bản multiplayer mới trên mọi máy.");
+                        throw new InvalidOperationException("Ghép phải bản ván khác. Cần cập nhật cùng bản multiplayer mới trên mọi máy.");
                     result.members.Add(new RoomMember { id=id, team=t, name=data.name??"Player", gender=data.gender??"Male", group=data.group??id, elo=data.elo });
                 }
             if (!result.IsValid()) throw new InvalidOperationException("Kết quả ghép sai số người hoặc đội.");

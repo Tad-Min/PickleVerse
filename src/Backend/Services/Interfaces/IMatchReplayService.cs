@@ -9,7 +9,7 @@ public interface IMatchReplayService
     Task PublishAvailable(Guid match);
     Task<List<ReplayMetadata>> List(Guid player, bool admin = false);
     Task<ReplayMetadata> Read(Guid player, Guid match, bool admin = false);
-    Task<ReplayMetadata> Save(Guid player, Guid match, ReplayMetadata input);
-    Task<ReplayChunkInfo> Upload(Guid player, Guid match, int index, ReplayChunkUpload input);
+    Task<ReplayMetadata> Save(Guid player, Guid match, ReplayMetadata input, bool trustedServer = false);
+    Task<ReplayChunkInfo> Upload(Guid player, Guid match, int index, ReplayChunkUpload input, bool trustedServer = false);
     Task<ReplayChunkUpload> Chunk(Guid player, Guid match, int index, bool admin = false);
 }

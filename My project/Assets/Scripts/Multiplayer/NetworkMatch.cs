@@ -19,8 +19,9 @@ namespace PickleVerse.Multiplayer
     {
         public Vector3 position, velocity;
         public double time;
+        public ushort motionEpoch;
         public NetworkBool live, released;
-        public bool Equals(BallFrame o) => position == o.position && velocity == o.velocity && (bool)live == (bool)o.live && (bool)released == (bool)o.released && time == o.time;
+        public bool Equals(BallFrame o) => position == o.position && velocity == o.velocity && motionEpoch == o.motionEpoch && (bool)live == (bool)o.live && (bool)released == (bool)o.released && time == o.time;
     }
     public sealed partial class NetworkMatch : NetworkBehaviour, IPhotonMessageTarget
     {
@@ -101,6 +102,7 @@ namespace PickleVerse.Multiplayer
         Transform landingMarker, aimMarker;
         float accumulator;
         bool releasedServe;
+        ushort ballMotionEpoch;
         double nextGameDeadline;
         double timeoutDeadline;
         int countdownSecond = -1;
@@ -136,11 +138,15 @@ namespace PickleVerse.Multiplayer
             if (IsServer)
             {
                 Rules = new PickleballRules(Roster.mode, Roster.members.Count(p => p.team == 0), Roster.members.Count(p => p.team == 1), UnityEngine.Random.Range(0, 2));
-                _ = SpawnPlayers();
+                SpawnPlayersGuarded();
                 MultiplayerApp.Instance.PeerConnected += PlayerConnected;
                 Body.isKinematic = true;
             }
-            else StartCoroutine(ClientCamera());
+            else
+            {
+                StartCoroutine(ClientCamera());
+                if (Finished) Send("request-results");
+            }
         }
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
@@ -177,6 +183,11 @@ namespace PickleVerse.Multiplayer
         void BuildBall()
         {
             var settings = MultiplayerApp.Instance.Settings;
+#if UNITY_SERVER
+            var ball = new GameObject("Server Ball");
+            Body = ball.AddComponent<Rigidbody>(); Body.isKinematic = true; Body.useGravity = false;
+            return;
+#else
             var ball = settings.ballVisualPrefab ? Instantiate(settings.ballVisualPrefab) : GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.name = "NetworkPickleball";
             if (!settings.ballVisualPrefab)
@@ -213,6 +224,18 @@ namespace PickleVerse.Multiplayer
                 aimMarker = Instantiate(settings.aimMarkerPrefab).transform;
                 aimMarker.gameObject.SetActive(false);
             }
+#endif
+        }
+        async void SpawnPlayersGuarded()
+        {
+            try { await SpawnPlayers(); }
+            catch (Exception error)
+            {
+                Debug.LogError("[Court] Không tải được đội hình: " + error.GetType().Name + ": " + error.Message + "\n" + error.StackTrace);
+#if UNITY_SERVER
+                DedicatedWorker.Instance?.Abort();
+#endif
+            }
         }
         async Task SpawnPlayers()
         {
@@ -220,7 +243,10 @@ namespace PickleVerse.Multiplayer
             foreach (var m in Roster.members)
             {
                 int index = Roster.members.Where(p => p.team == m.team).ToList().FindIndex(p => p.id == m.id);
-                var networkObject = await Runner.SpawnAsync(app.Settings.playerPrefab, onBeforeSpawned: (runner, obj) =>
+                var controller = m.bot ? PlayerRef.None : PlayerRef.FromEncoded((int)app.ClientIdentities.First(p => p.Value == m.id).Key);
+                var prefab = app.Settings.PlayerPrefab(app.Match?.IsDedicated == true);
+                if (!prefab) throw new InvalidOperationException("Thiếu prefab người chơi cho cấu hình máy chủ.");
+                var networkObject = await Runner.SpawnAsync(prefab, inputAuthority: Runner.IsServer ? controller : (PlayerRef?)null, onBeforeSpawned: (runner, obj) =>
                 {
                     var created = obj.GetComponent<NetworkPlayer>();
                     created.Initialize(m, index, StartingPosition(m.team, index));
@@ -230,7 +256,9 @@ namespace PickleVerse.Multiplayer
                     bots[m.id] = new MultiplayerBot(m.id.GetHashCode());
                 players[m.id] = networkObject.GetComponent<NetworkPlayer>();
             }
+#if !UNITY_SERVER
             StartCoroutine(ClientCamera());
+#endif
         }
         Vector3 StartingPosition(int team, int index)
         {
@@ -321,6 +349,8 @@ namespace PickleVerse.Multiplayer
         }
         void BeginRally()
         {
+            ballMotionEpoch++;
+            confirmedContact = default;
             CoachingNewRally();
             ReplayEventRpc("NewRally", "");
             Rules.NewRally();
@@ -385,7 +415,7 @@ namespace PickleVerse.Multiplayer
                 accumulator -= tick;
             }
             SetBallPosition(ballPosition);
-            Ball = new BallFrame { position = ballPosition, velocity = ballVelocity, live = Rules.live, released = releasedServe, time = Runner.SimulationTime };
+            Ball = new BallFrame { position = ballPosition, velocity = ballVelocity, live = Rules.live, released = releasedServe, time = Runner.SimulationTime, motionEpoch = ballMotionEpoch };
             Publish();
         }
         void StepSimulation(float dt)
@@ -583,8 +613,8 @@ namespace PickleVerse.Multiplayer
                     MatchSoundRpc((int)GameSfx.GameWhistle);
                     BetweenGames = true;
                     nextGameDeadline = Time.realtimeSinceStartupAsDouble + 4.2;
-                    AnnouncementRpc("GAME " + endedGame + " KẾT THÚC", "Số game thắng " + Rules.games[0] + " - " + Rules.games[1], (int)AnnouncementTone.Neutral, 1.6f);
-                    AnnouncementRpc("ĐỔI BÊN", "CHANGE ENDS • Chuẩn bị game " + (endedGame + 1), (int)AnnouncementTone.ChangeEnds, 1.4f);
+                    AnnouncementRpc("GAME " + endedGame + " KẾT THÚC", "Số ván thắng " + Rules.games[0] + " - " + Rules.games[1], (int)AnnouncementTone.Neutral, 1.6f);
+                    AnnouncementRpc("ĐỔI BÊN", "ĐỔI BÊN • Chuẩn bị ván " + (endedGame + 1), (int)AnnouncementTone.ChangeEnds, 1.4f);
                 }
                 else if (Rules.endChangeDue)
                 {
@@ -593,7 +623,7 @@ namespace PickleVerse.Multiplayer
                     EndsSwapped = Rules.ends[0] > 0;
                     ReplayEventRpc("EndChange", "");
                     rallyDeadline = Time.realtimeSinceStartupAsDouble + 2.6;
-                    AnnouncementRpc("ĐỔI BÊN", "CHANGE ENDS • Mốc 6 điểm trong game quyết định", (int)AnnouncementTone.ChangeEnds, 1.4f);
+                    AnnouncementRpc("ĐỔI BÊN", "ĐỔI BÊN • Mốc 6 điểm trong ván quyết định", (int)AnnouncementTone.ChangeEnds, 1.4f);
                 }
             }
         }
@@ -612,7 +642,7 @@ namespace PickleVerse.Multiplayer
             ServeElapsed = Rules.waitingServe && !TimedOut ? Mathf.Clamp((float)(10 - (serveDeadline - Time.realtimeSinceStartupAsDouble)), 0, 10) : 0;
             TimeoutRemaining = TimedOut ? Mathf.Max(0, (float)(timeoutDeadline - Time.realtimeSinceStartupAsDouble)) : 0;
             if (!Finished)
-                Status = TimedOut ? "Time-out • đội " + (TimeoutTeam == 0 ? "A" : "B") + " • tối đa 60 giây" : BetweenGames ? "Hết game • đổi sân, tự tiếp tục game kế tiếp." : Rules.live && Time.realtimeSinceStartupAsDouble < shotLabelUntil ? shotLabel : Rules.reason;
+                Status = TimedOut ? "Tạm dừng • đội " + (TimeoutTeam == 0 ? "A" : "B") + " • tối đa 60 giây" : BetweenGames ? "Hết ván • đổi sân, tự tiếp tục ván kế tiếp." : Rules.live && Time.realtimeSinceStartupAsDouble < shotLabelUntil ? shotLabel : Rules.reason;
         }
         void LateUpdate()
         {
@@ -631,7 +661,14 @@ namespace PickleVerse.Multiplayer
                     frame = confirmedContact;
                 float age = frame.live || frame.released ? (float)Math.Max(0, Math.Min(.08, Runner.SimulationTime - frame.time)) : 0;
                 Vector3 p = frame.position, v = frame.velocity;
-                BallFlight.Integrate(ref p, ref v, age);
+                if (TryGetSnapshotsBuffers(out var fromBuffer, out var toBuffer, out float alpha))
+                {
+                    var (from, to) = GetPropertyReader<BallFrame>(nameof(Ball)).Read(fromBuffer, toBuffer);
+                    if (confirmedContact.time <= to.time)
+                        p = from.motionEpoch == to.motionEpoch ? Vector3.Lerp(from.position, to.position, alpha) : to.position;
+                    else BallFlight.Integrate(ref p, ref v, age);
+                }
+                else BallFlight.Integrate(ref p, ref v, age);
                 p.y = Mathf.Max(Court.BallRadius, p.y);
                 SetBallPosition(p);
             }
@@ -698,7 +735,7 @@ namespace PickleVerse.Multiplayer
             foreach (var p in players.Values)
                 p.ResetInput();
             SfxPlayer.Stop(GameSfx.Countdown);
-            AnnouncementRpc("TIME-OUT", "Đội " + (player.Team == 0 ? "A" : "B") + " • tối đa 60 giây • Enter để tiếp tục", (int)AnnouncementTone.Neutral, 1.4f);
+            AnnouncementRpc("TẠM DỪNG", "Đội " + (player.Team == 0 ? "A" : "B") + " • tối đa 60 giây • Enter để tiếp tục", (int)AnnouncementTone.Neutral, 1.4f);
             Publish();
         }
         public void ResumeTimeout(NetworkPlayer player)
@@ -739,6 +776,7 @@ namespace PickleVerse.Multiplayer
             if (!app.ClientIdentities.TryGetValue(client, out var id) || !reservations.Remove(id) || !players.TryGetValue(id, out var player))
                 return;
             player.ControllerPeer = PlayerRef.FromEncoded((int)client);
+            if (Runner.IsServer) player.Object.AssignInputAuthority(player.ControllerPeer);
             player.Connected = true;
             player.ResetInput();
             if (reservations.Count == 0)
@@ -786,8 +824,9 @@ namespace PickleVerse.Multiplayer
             Body.isKinematic = true;
             Publish();
             PublishProgressionResults();
+            replay?.Finish(true);
             WinningTeam = Rules.winner;
-            Status = $"Đội {(Rules.winner == 0 ? "A" : "B")} thắng trận {Rules.games[0]} : {Rules.games[1]} game — điểm game cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}";
+            Status = $"Đội {(Rules.winner == 0 ? "A" : "B")} thắng trận {Rules.games[0]} : {Rules.games[1]} ván — điểm ván cuối {Rules.score[0]} : {Rules.score[1]}\n{Rules.reason}";
             Finished = true;
             AnnouncementRpc("KẾT THÚC TRẬN ĐẤU", Status.ToString(), (int)AnnouncementTone.Success, 2.1f);
         }
@@ -802,7 +841,9 @@ namespace PickleVerse.Multiplayer
         }
         void SoundEffect(int sound)
         {
+#if !UNITY_SERVER
             SfxPlayer.Play((GameSfx)sound);
+#endif
         }
         void AnnouncementEffect(string title, string detail, int tone, float duration)
         {

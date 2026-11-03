@@ -10,6 +10,7 @@
     "PickleVerse.Settings",
     "PickleVerse.Audio",
     "PickleVerse.Progression",
+    "PickleVerse.Services",
     "PickleVerse.Shop",
     "PickleVerse.Entites",
     "PickleVerse.Replays",

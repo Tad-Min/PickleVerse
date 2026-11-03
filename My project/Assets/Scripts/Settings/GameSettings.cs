@@ -110,7 +110,7 @@ namespace PickleVerse.Settings
             SettingsRuntime.Apply(current);
             Changed?.Invoke();
         }
-        public static string ActionName(GameAction action) => new[] { "Tiến lên", "Lùi", "Sang trái", "Sang phải", "Chạy", "Drive / Giao bóng", "Dink", "Volley", "Tăng lực", "Đánh chéo", "Hủy chọn cú", "Time-out", "Hướng dẫn", "Tiếp tục / Bỏ qua intro", "Mở cài đặt (cố định)" }[(int)action];
+        public static string ActionName(GameAction action) => new[] { "Tiến lên", "Lùi", "Sang trái", "Sang phải", "Chạy", "Đánh bạt / Giao bóng", "Bóng ngắn", "Vô lê", "Tăng lực", "Đánh chéo", "Hủy chọn cú", "Hội ý", "Hướng dẫn", "Tiếp tục / Bỏ qua giới thiệu", "Mở cài đặt (cố định)" }[(int)action];
         public static string KeyName(Key key) => key == Key.LeftShift ? "Shift trái" : key == Key.RightShift ? "Shift phải" : key == Key.Space ? "Space" : key.ToString();
         public static bool TryBind(SettingsData data, GameAction action, Key key, out string error)
         {

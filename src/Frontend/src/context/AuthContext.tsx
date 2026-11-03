@@ -48,10 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (emailOrUsername: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      // In PickleVerse backend, AuthController expects password or hash. Send directly:
       const res = await adminApi.login({
-        emailOrUsername,
-        passwordHash: password,
+        email: emailOrUsername,
+        password,
       });
 
       if (res.role !== 'Admin') {

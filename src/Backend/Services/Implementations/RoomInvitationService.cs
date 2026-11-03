@@ -15,12 +15,14 @@ public sealed class RoomInvitationService : IRoomInvitationService
     private readonly IUnitOfWork _unitOfWork;
     private readonly LobbyRepository lobby;
     private readonly TimeProvider clock;
+    private readonly ServerSettings settings;
 
-    public RoomInvitationService(IUnitOfWork unitOfWork, LobbyRepository lobby, TimeProvider clock)
+    public RoomInvitationService(IUnitOfWork unitOfWork, LobbyRepository lobby, TimeProvider clock, ServerSettings settings)
     {
         _unitOfWork = unitOfWork;
         this.lobby = lobby;
         this.clock = clock;
+        this.settings = settings;
     }
 
     public const int PresenceSeconds = 20, InvitationSeconds = 60;
@@ -33,7 +35,7 @@ public sealed class RoomInvitationService : IRoomInvitationService
         return p != null && p.ExpiresAt > Now ? p : null;
     }
     Task<bool> Friends(Guid a, Guid b) => _unitOfWork.Game.CanInvite(a, b);
-    Task<bool> InMatch(Guid player) => _unitOfWork.Game.InMatch(player);
+    Task<bool> InMatch(Guid player) => _unitOfWork.Game.InMatch(player, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds));
     static int Capacity(Presence p) => p.Value.Custom ? 2 * p.Value.Mode : 2;
     async Task<Presence?> Room(string code)
     {
@@ -117,13 +119,15 @@ public sealed class RoomInvitationService : IRoomInvitationService
     {
         if (!Guid.TryParse(input.PlayerId, out var target) || target == self)
             throw Bad("Chọn một người bạn khác.", HttpStatusCode.BadRequest);
+        await using var transaction = await _unitOfWork.Game.BeginTransactionAsync();
+        await _unitOfWork.Game.LockPlayers(self, target);
         if (!await Friends(self, target))
             throw Bad("Chỉ có thể mời người trong danh sách bạn bè.", HttpStatusCode.Forbidden);
         var sender = await Online(self.ToString("N"));
         var receiver = await Online(target.ToString("N"));
         var room = sender == null ? null : await Room(sender.Value.RoomCode);
         if (sender?.Value.State != "lobby" || receiver?.Value.State != "lobby" || await InMatch(target))
-            throw Bad("Người chơi hiện không ở lobby hoặc đang bận.");
+            throw Bad("Người chơi hiện không ở đại sảnh hoặc đang bận.");
         if (room == null || !room.Value.Members.Contains(self.ToString("N")))
             throw Bad("Phòng đã đóng hoặc chưa sẵn sàng.");
         if (room.Value.Members.Length >= Capacity(room) || room.Value.Members.Contains(target.ToString("N")))
@@ -146,7 +150,9 @@ public sealed class RoomInvitationService : IRoomInvitationService
             throw Bad("Vui lòng chờ vài giây trước khi mời lại.", HttpStatusCode.TooManyRequests);
         if (id == "full")
             throw Bad("Người chơi đang có quá nhiều lời mời. Hãy thử lại sau.");
-        return (await Read<StoredInvitation>("invite:" + id))!.Value;
+        var result = (await Read<StoredInvitation>("invite:" + id))!.Value;
+        await transaction.CommitAsync();
+        return result;
     }
     public async Task<RoomInvitation> Respond(Guid self, string id, bool accept)
     {
@@ -161,11 +167,13 @@ public sealed class RoomInvitationService : IRoomInvitationService
             return stored.Value;
         if (stored.Value.State != "pending")
             throw Bad("Lời mời đã được xử lý.", HttpStatusCode.Gone);
+        await using var transaction = await _unitOfWork.Game.BeginTransactionAsync();
+        await _unitOfWork.Game.LockPlayers(self, Guid.Parse(stored.Value.SenderId));
         if (accept)
         {
             var presence = await Online(self.ToString("N"));
             if (presence?.Value.State != "lobby" || await InMatch(self))
-                throw Bad("Chỉ có thể nhận lời mời khi đang ở lobby.");
+                throw Bad("Chỉ có thể nhận lời mời khi đang ở đại sảnh.");
             if (!await Friends(Guid.Parse(stored.Value.SenderId), self) || await ValidRoom(stored) == null)
                 throw Bad("Phòng đã đóng, đã đầy hoặc lời mời không còn hiệu lực.");
         }
@@ -173,6 +181,7 @@ public sealed class RoomInvitationService : IRoomInvitationService
         var changed = await lobby.Respond(self, id, state, Now);
         if (changed == null)
             throw Bad("Lời mời đã được xử lý hoặc đã hết hạn.", HttpStatusCode.Gone);
+        await transaction.CommitAsync();
         return changed.Value;
     }
 }

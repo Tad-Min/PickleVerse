@@ -69,11 +69,13 @@ namespace PickleVerse.Settings
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Bootstrap()
         {
+#if !UNITY_SERVER
             if (instance)
                 return;
             var go = new GameObject("Settings Runtime");
             go.AddComponent<SettingsRuntime>();
             DontDestroyOnLoad(go);
+#endif
         }
         void Awake()
         {

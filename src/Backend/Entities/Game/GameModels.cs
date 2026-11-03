@@ -33,6 +33,7 @@ public sealed class GameCatalog
 {
     public BotPolicy botPolicy = new();
     public bool hybridTelemetryEnabled, hybridCoachingEnabled;
+    public bool dedicatedServerEnabled;
     public string version = "";
     public int winXp, lossXp;
     public RewardBundle dailyBonus, weeklyBonus;
@@ -164,6 +165,7 @@ public sealed class RankedBotRequest
 }
 public sealed class OnlineMatchTicket
 {
+    public string authorityMode = "shared";
     public PickleVerse.Multiplayer.MatchRoster roster = new();
     public bool allAccepted;
     public string phase = "PREPARING";

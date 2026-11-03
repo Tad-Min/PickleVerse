@@ -45,6 +45,7 @@ namespace PickleVerse.FrontEnd
             else ConfigureEditForm();
             ConfigureTrainingUI();
             ApplyPresentation();
+            ConfigureIdentityActions();
             if (!progressionButton)
                 progressionButton = GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name == "BtnProgression");
             if (progressionButton)
@@ -89,6 +90,7 @@ namespace PickleVerse.FrontEnd
         {
             if (!opened)
                 return;
+            RefreshIdentityActions();
             ApplySafeArea();
             if (Keyboard.current?.escapeKey.wasPressedThisFrame == true)
                 Close();
@@ -158,6 +160,7 @@ namespace PickleVerse.FrontEnd
         }
         public void Close()
         {
+            if (renameDialog) renameDialog.gameObject.SetActive(false);
             if (!modal)
                 return;
             opened = false;
@@ -189,7 +192,7 @@ namespace PickleVerse.FrontEnd
             var player = ProgressionRuntime.Instance.Player;
             var engine = ProgressionRuntime.Instance.Engine;
             menuName.text = player.playerName;
-            menuLevel.text = $"LV {player.level}  ·  {EloPolicy.Rank(player.elo)}  {player.elo}";
+            menuLevel.text = $"CẤP {player.level}  ·  {EloPolicy.Rank(player.elo)}  {player.elo}";
             wallet.text = $"<color=#8FE9D8>TOKENPAD</color>  {player.coins:N0}    <color=#E8CD9E>ELITE TOKEN</color>  {player.gems:N0}";
             if (!opened)
                 return;
@@ -197,6 +200,7 @@ namespace PickleVerse.FrontEnd
         }
         void Render(PlayerProfile p, ProgressionEngine engine)
         {
+            RefreshIdentityActions();
             PickleVerse.Settings.UiListPages.Page page = null;
             bool rebuild = false;
             if (view != View.Edit)
@@ -215,8 +219,8 @@ namespace PickleVerse.FrontEnd
                 else activeTime = page.context as TMP_Text;
             }
             bool profile = view == View.Statistics || view == View.Achievements, missions = view == View.Daily || view == View.Weekly, training = view == View.Training;
-            title.text = training ? "Tiến trình luyện tập" : view == View.Achievements ? "Thành tựu" : profile ? "Hồ sơ" : missions ? "Nhiệm vụ" : view == View.Career ? "Lịch sử thi đấu" : "Chỉnh player";
-            subtitle.text = training ? "THÀNH THẠO KỸ THUẬT • LỖI THƯỜNG GẶP • TIẾP TỤC LUYỆN" : profile ? "THỐNG KÊ VÀ TIẾN TRÌNH" : missions ? "TÍCH LŨY TIẾN TRÌNH • NHẬN PHẦN THƯỞNG" : view == View.Career ? "20 TRẬN GẦN NHẤT • GIỜ VIỆT NAM" : "EDITOR / DEVELOPMENT BUILD";
+            title.text = training ? "Tiến trình luyện tập" : view == View.Achievements ? "Thành tựu" : profile ? "Hồ sơ" : missions ? "Nhiệm vụ" : view == View.Career ? "Lịch sử thi đấu" : "Chỉnh hồ sơ";
+            subtitle.text = training ? "THÀNH THẠO KỸ THUẬT • LỖI THƯỜNG GẶP • TIẾP TỤC LUYỆN" : profile ? "THỐNG KÊ VÀ TIẾN TRÌNH" : missions ? "TÍCH LŨY TIẾN TRÌNH • NHẬN PHẦN THƯỞNG" : view == View.Career ? "20 TRẬN GẦN NHẤT • GIỜ VIỆT NAM" : "BẢN PHÁT TRIỂN";
             identityName.text = p.playerName;
             identityId.text = "ID\n" + p.id;
             UpdateAvatar(p);
@@ -241,7 +245,7 @@ namespace PickleVerse.FrontEnd
             summaryFill.transform.parent.gameObject.SetActive(missions || training);
             bonusButton.gameObject.SetActive(missions || training);
             summaryText.gameObject.SetActive(missions || training);
-            levelText.text = $"LEVEL {p.level}";
+            levelText.text = $"CẤP {p.level}";
             levelText.color = Lime;
             xpText.text = $"{p.levelXp:N0} / {p.NextLevelXp:N0} XP";
             Fill(xpFill, p.levelXp / (float)p.NextLevelXp);
@@ -380,8 +384,8 @@ namespace PickleVerse.FrontEnd
             Text("Opponent", row, opponents, 20, White, new Vector2(0, .55f), new Vector2(.68f, 1), new Vector2(18, 0), new Vector2(-12, -6));
             string time = new DateTime(result.endedUtcTicks, DateTimeKind.Utc).AddHours(7).ToString("dd/MM/yyyy  HH:mm");
             Text("Time", row, result.KindLabel + "  ·  " + time, 14, Muted, new Vector2(0, .29f), new Vector2(.73f, .57f), new Vector2(18, 0), Vector2.zero);
-            Text("Outcome", row, $"{result.OutcomeLabel}\n{result.gamesWon} : {result.gamesLost} game  ·  {(result.eloDelta >= 0 ? "+" : "")}{result.eloDelta} Elo", 17, result.outcome == MatchOutcome.Won ? Lime : Mint, new Vector2(.71f, .26f), new Vector2(.98f, .97f), Vector2.zero, Vector2.zero, TextAlignmentOptions.MidlineRight);
-            var detail = Text("Detail", row, "Bấm để xem tỷ số từng game", 13, Muted, new Vector2(0, 0), new Vector2(.98f, .28f), new Vector2(18, 4), new Vector2(-12, 0));
+            Text("Outcome", row, $"{result.OutcomeLabel}\n{result.gamesWon} : {result.gamesLost} ván  ·  {(result.eloDelta >= 0 ? "+" : "")}{result.eloDelta} Elo", 17, result.outcome == MatchOutcome.Won ? Lime : Mint, new Vector2(.71f, .26f), new Vector2(.98f, .97f), Vector2.zero, Vector2.zero, TextAlignmentOptions.MidlineRight);
+            var detail = Text("Detail", row, "Bấm để xem tỷ số từng ván", 13, Muted, new Vector2(0, 0), new Vector2(.98f, .28f), new Vector2(18, 4), new Vector2(-12, 0));
             var button = row.GetComponent<Button>() ?? row.gameObject.AddComponent<Button>();
             button.targetGraphic = row.GetComponent<Image>();
             StyleButton(button, Card);
@@ -416,7 +420,7 @@ namespace PickleVerse.FrontEnd
             {
                 expanded = !expanded;
                 row.GetComponent<LayoutElement>().preferredHeight = expanded ? 158 : 112;
-                detail.text = expanded ? string.Join("   ·   ", result.scores.Select((s, i) => $"Game {i + 1}: {s.own}–{s.opponent}{(s.completed ? "" : " (chưa xong)")}")) + (string.IsNullOrEmpty(result.reason) ? "" : "\n" + result.reason) : "Bấm để xem tỷ số từng game";
+                detail.text = expanded ? string.Join("   ·   ", result.scores.Select((s, i) => $"Ván {i + 1}: {s.own}–{s.opponent}{(s.completed ? "" : " (chưa xong)")}")) + (string.IsNullOrEmpty(result.reason) ? "" : "\n" + result.reason) : "Bấm để xem tỷ số từng ván";
                 LayoutRebuilder.ForceRebuildLayoutImmediate(content);
             });
         }
@@ -441,7 +445,7 @@ namespace PickleVerse.FrontEnd
                     throw new InvalidOperationException("Chỉ chỉnh player trong Editor hoặc Development Build.");
                 var app = MultiplayerApp.Instance;
                 if (app && !app.CanChangeLocalProfile)
-                    throw new InvalidOperationException("Kết thúc phiên mạng và trở về Menu trước khi đổi player.");
+                    throw new InvalidOperationException("Kết thúc phiên mạng và trở về đại sảnh trước khi đổi player.");
                 if (switchId)
                 {
                     // Switching an existing ID preserves that player's stored name.
@@ -487,7 +491,7 @@ namespace PickleVerse.FrontEnd
             face.anchorMin = face.anchorMax = new Vector2(.5f, .84f);
             face.sizeDelta = new Vector2(96, 96);
             face.anchoredPosition = Vector2.zero;
-            identityName = Text("PlayerName", left, "PLAYER", 23, White, new Vector2(.05f, .64f), new Vector2(.95f, .72f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
+            identityName = Text("PlayerName", left, "NGƯỜI CHƠI", 23, White, new Vector2(.05f, .64f), new Vector2(.95f, .72f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
             identityId = Text("PlayerId", left, "ID", 12, Muted, new Vector2(.06f, .51f), new Vector2(.94f, .64f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
             identityRank = Text("Rank", left, "ĐỒNG\n100 ELO", 22, White, new Vector2(.05f, .33f), new Vector2(.95f, .49f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
             statsTab = MakeButton("Statistics", left, "THỐNG KÊ", () => Open(View.Statistics), new Vector2(.08f, .18f), new Vector2(.92f, .29f), Card, White, 16);
@@ -496,11 +500,11 @@ namespace PickleVerse.FrontEnd
             weeklyTab = MakeButton("Weekly", left, "NHIỆM VỤ TUẦN", () => Open(View.Weekly), new Vector2(.08f, .04f), new Vector2(.92f, .15f), Card, White, 16);
             right = Rect("Body", window, new Vector2(.27f, .025f), new Vector2(.982f, .827f));
             summary = Panel("Summary", right, Surface, new Vector2(0, .765f), Vector2.one);
-            levelText = Text("Level", summary, "LEVEL 1", 25, Lime, new Vector2(0, .5f), new Vector2(.6f, 1), new Vector2(20, 0), Vector2.zero);
+            levelText = Text("Level", summary, "CẤP 1", 25, Lime, new Vector2(0, .5f), new Vector2(.6f, 1), new Vector2(20, 0), Vector2.zero);
             xpText = Text("XP", summary, "0 / 10 XP", 17, White, new Vector2(.55f, .5f), Vector2.one, Vector2.zero, new Vector2(-20, 0), TextAlignmentOptions.MidlineRight);
             xpFill = Bar("XPBar", summary, new Vector2(.025f, .19f), new Vector2(.975f, .39f));
             summaryText = Text("MissionSummary", summary, "NHIỆM VỤ NGÀY", 17, White, new Vector2(.025f, .33f), new Vector2(.67f, .95f), Vector2.zero, Vector2.zero);
-            countdown = Text("Countdown", summary, "RESET SAU", 13, Mint, new Vector2(.64f, .69f), new Vector2(.975f, .98f), Vector2.zero, Vector2.zero, TextAlignmentOptions.MidlineRight);
+            countdown = Text("Countdown", summary, "LÀM MỚI SAU", 13, Mint, new Vector2(.64f, .69f), new Vector2(.975f, .98f), Vector2.zero, Vector2.zero, TextAlignmentOptions.MidlineRight);
             summaryFill = Bar("MissionBar", summary, new Vector2(.025f, .14f), new Vector2(.655f, .26f));
             bonusButton = MakeButton("Bonus", summary, "THƯỞNG TỔNG", () => { }, new Vector2(.70f, .15f), new Vector2(.975f, .59f), Lime, Ink, 13);
             var scrollRoot = Rect("Scroll", right, Vector2.zero, new Vector2(1, .738f));
@@ -540,7 +544,7 @@ namespace PickleVerse.FrontEnd
         void BuildEditForm()
         {
             editForm = Panel("EditForm", right, Surface);
-            Text("Help", editForm, "PLAYER CỤC BỘ\n<size=16>Đổi ID tại Menu khi đã kết thúc phiên mạng.</size>", 24, Mint, new Vector2(.035f, .76f), new Vector2(.96f, .97f), Vector2.zero, Vector2.zero);
+            Text("Help", editForm, "NGƯỜI CHƠI CỤC BỘ\n<size=16>Đổi ID tại đại sảnh khi đã kết thúc phiên mạng.</size>", 24, Mint, new Vector2(.035f, .76f), new Vector2(.96f, .97f), Vector2.zero, Vector2.zero);
             Text("NameLabel", editForm, "Tên (tối đa 18 ký tự)", 16, Muted, new Vector2(.04f, .66f), new Vector2(.96f, .75f), Vector2.zero, Vector2.zero);
             editName = Input("NameInput", editForm, new Vector2(.04f, .54f), new Vector2(.70f, .66f), 18);
             MakeButton("SaveName", editForm, "LƯU TÊN", () => SaveEditor(false), new Vector2(.73f, .54f), new Vector2(.96f, .66f), Mint, Ink, 15);
@@ -554,7 +558,7 @@ namespace PickleVerse.FrontEnd
         public void ConfigureEditForm()
         {
             PlaceEdit("Help", .04f, .89f, .96f, .99f);
-            editForm.Find("Help").GetComponent<TMP_Text>().text = "PLAYER CỤC BỘ  <size=14>·  CHỈNH DỮ LIỆU TEST</size>";
+            editForm.Find("Help").GetComponent<TMP_Text>().text = "NGƯỜI CHƠI CỤC BỘ  <size=14>·  CHỈNH DỮ LIỆU KIỂM THỬ</size>";
             editForm.Find("Help").GetComponent<TMP_Text>().fontSize = 21;
             PlaceEdit("NameLabel", .04f, .81f, .96f, .88f);
             PlaceEdit("NameInput", .04f, .70f, .96f, .81f);
@@ -566,7 +570,7 @@ namespace PickleVerse.FrontEnd
             editTokenpad = NumberInput("TokenpadInput", "TokenpadLabel", "TOKENPAD", .32f, .62f, 19);
             editEliteToken = NumberInput("EliteTokenInput", "EliteTokenLabel", "ELITE TOKEN", .65f, .96f, 19);
             PlaceEdit("SaveName", .04f, .15f, .96f, .27f);
-            Label(editForm.Find("SaveName").GetComponent<Button>()).text = "LƯU PLAYER";
+            Label(editForm.Find("SaveName").GetComponent<Button>()).text = "LƯU NGƯỜI CHƠI";
             PlaceEdit("Feedback", .04f, .01f, .96f, .13f);
             feedback.fontSize = 14;
         }

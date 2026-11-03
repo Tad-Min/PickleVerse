@@ -29,7 +29,7 @@ namespace PickleVerse.Multiplayer
             int end = target.GetComponent<NetworkPlayer>()?.CourtEnd ?? (target.forward.z > 0 ? -1 : 1);
             if (previousEnd != end)
                 SnapToPlayer();
-            var desired = target.position + new Vector3(.05f, 0, end * settings.cameraDistance);
+            var desired = (player ? player.PresentedPosition : target.position) + new Vector3(.05f, 0, end * settings.cameraDistance);
             desired.y = settings.cameraHeight;
             transform.position = Vector3.Lerp(transform.position, desired, 1 - Mathf.Exp(-5 * Time.unscaledDeltaTime));
             transform.rotation = Quaternion.Euler(settings.cameraPitch, end < 0 ? 0 : 180, 0);

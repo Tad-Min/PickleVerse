@@ -22,11 +22,15 @@ namespace PickleVerse.Progression
         {
             get
             {
+#if UNITY_SERVER
+                return null;
+#else
                 if (!Application.isPlaying || shuttingDown)
                     return null;
                 if (!instance)
                     new GameObject("Online Player Profile").AddComponent<ProgressionRuntime>();
                 return instance;
+#endif
             }
         }
         public static bool Exists => !shuttingDown && instance && instance.player != null;
@@ -50,7 +54,9 @@ namespace PickleVerse.Progression
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot()
         {
+#if !UNITY_SERVER
             var runtime = Instance;
+#endif
         }
         void Awake()
         {

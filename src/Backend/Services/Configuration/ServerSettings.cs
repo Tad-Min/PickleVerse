@@ -26,10 +26,14 @@ public sealed class ServerSettings
     public OnlineMatchSettings OnlineMatch { get; }
     public ProgressionSettings Progression { get; }
     public HybridAiSettings HybridAi { get; }
+    public Entities.Configuration.DedicatedServerSettings Dedicated { get; }
 
     public ServerSettings(IConfiguration configuration)
     {
         HybridAi = new(configuration);
+        Dedicated = configuration.GetSection("DedicatedServer").Get<Entities.Configuration.DedicatedServerSettings>() ?? new();
+        if (Dedicated.Enabled && (Dedicated.ServiceKey.Length < 32 || Dedicated.LeaseSeconds < 30 || Dedicated.LeaseSeconds > 120))
+            throw new InvalidOperationException("DedicatedServer requires a service key of at least 32 characters and a 30–120 second lease.");
         int Number(string key, int minimum, int maximum)
         {
             if (!int.TryParse(configuration[key], out int value) || value < minimum || value > maximum)
@@ -61,6 +65,7 @@ public sealed class ServerSettings
         botPolicy = HybridAi.BotPolicy,
         hybridTelemetryEnabled = HybridAi.IngestEnabled,
         hybridCoachingEnabled = HybridAi.CoachingEnabled,
+        dedicatedServerEnabled = Dedicated.Enabled,
         winXp = Progression.WinXp,
         lossXp = Progression.LossXp,
         dailyBonus = Progression.DailyBonus.Bundle(),

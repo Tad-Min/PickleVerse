@@ -28,7 +28,12 @@ namespace PickleVerse.Multiplayer
         static int CoachingSlot(NetworkPlayer player) => player.Team * 2 + player.Index;
         void CoachingNewRally()
         {
-            if (coachingRally == 0) captureCoaching = ProgressionRuntime.Instance?.Snapshot?.catalog?.hybridTelemetryEnabled == true;
+            if (coachingRally == 0)
+#if UNITY_SERVER
+                captureCoaching = DedicatedWorker.Instance?.TelemetryEnabled == true;
+#else
+                captureCoaching = ProgressionRuntime.Instance?.Snapshot?.catalog?.hybridTelemetryEnabled == true;
+#endif
             coachingRally++;
             coachingAttempts.Clear(); coachingContacts.Clear();
         }
@@ -116,19 +121,25 @@ namespace PickleVerse.Multiplayer
             foreach (var delivery in coachingRallyShots) coachingDeliveries.Enqueue(delivery);
             coachingRallyShots.Clear();
             var session = PhotonSession.Find(Runner);
-            if (session.Channel.PendingCount >= 12) return;
+            if (session.Channel != null && session.Channel.PendingCount >= 12) return;
             int budget = 2;
             while (coachingDeliveries.Count > 0 && budget-- > 0)
             {
                 var delivery = coachingDeliveries.Peek();
+#if UNITY_SERVER
+                DedicatedWorker.Instance.Record(delivery.playerId, delivery.shot);
+#else
                 var peer = Runner.ActivePlayers.FirstOrDefault(p => MultiplayerApp.Instance.ClientIdentities.TryGetValue((ulong)p.RawEncoded, out var id) && id == delivery.playerId);
                 if (peer != PlayerRef.None)
                     session.Send(peer, Object, "coaching-shot", new[] {JsonConvert.SerializeObject(delivery)});
+#endif
                 coachingDeliveries.Dequeue();
             }
             if (coachingDeliveries.Count > 0) return;
+#if !UNITY_SERVER
             foreach (var peer in Runner.ActivePlayers)
                 session.Send(peer, Object, "coaching-checkpoint", new object[] {coachingFinalPending});
+#endif
             coachingCheckpointPending = coachingFinalPending = false;
         }
         void ReceiveCoachingShot(string json)

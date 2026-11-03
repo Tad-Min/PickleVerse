@@ -22,5 +22,9 @@ namespace Repositories.Interfaces
         Task AddVerificationEmailAsync(Verificationemail ve);
         Task<Verificationemail?> GetLatestVerificationEmailAsync(Guid userId);
         Task LockUserAsync(Guid userId);
+        Task<Passwordresetchallenge?> GetPasswordResetAsync(Guid userId);
+        Task SavePasswordResetAsync(Passwordresetchallenge challenge);
+        Task RevokeAllRefreshTokensAsync(Guid userId);
+        Task<bool> IsAuthVersionValidAsync(Guid userId, int version);
     }
 }

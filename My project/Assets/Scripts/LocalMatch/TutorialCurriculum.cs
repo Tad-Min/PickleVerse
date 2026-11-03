@@ -22,23 +22,23 @@ namespace PickleVerse.LocalMatch
         public const int FirstShot = 8, ShotCount = 9;
         public static readonly TutorialLesson[] Lessons = {
             new TutorialLesson(TutorialKind.Court, "Làm quen sân đấu", "Sân dài 13,41 m và rộng 6,10 m. Lưới chia sân thành hai nửa. Bóng chạm vạch biên vẫn ở trong sân.", 4),
-            new TutorialLesson(TutorialKind.Kitchen, "Kitchen • Vùng không volley", "Mỗi bên lưới có vùng sâu 2,13 m, gồm cả vạch kitchen. Bạn được vào đây để đánh bóng đã nảy; không được volley khi chạm vùng này.", 4),
-            new TutorialLesson(TutorialKind.Serve, "Giao bóng và hai lần nảy", "Giao dưới tay từ sau đường cuối sân, vào ô chéo và vượt kitchen. Bóng phải nảy bên nhận, rồi nảy bên giao. Sau đó mới được volley.", 6),
+            new TutorialLesson(TutorialKind.Kitchen, "vùng cấm vô lê • Vùng không vô lê", "Mỗi bên lưới có vùng sâu 2,13 m, gồm cả vạch vùng cấm vô lê. Bạn được vào đây để đánh bóng đã nảy; không được vô lê khi chạm vùng này.", 4),
+            new TutorialLesson(TutorialKind.Serve, "Giao bóng và hai lần nảy", "Giao dưới tay từ sau đường cuối sân, vào ô chéo và vượt vùng cấm vô lê. Bóng phải nảy bên nhận, rồi nảy bên giao. Sau đó mới được vô lê.", 6),
             new TutorialLesson(TutorialKind.Net, "Lỗi • Bóng không qua lưới", "Bóng mắc lưới và rơi lại phía bạn sẽ kết thúc pha bóng. Chạm lưới rồi vẫn qua sân hợp lệ không tự động là lỗi.", 3),
-            new TutorialLesson(TutorialKind.Out, "Lỗi • Bóng ra ngoài", "Bóng chạm đất ngoài đường biên là out. Bóng chạm vạch biên vẫn trong sân. Riêng khi giao bóng, vạch kitchen thuộc vùng không được rơi vào.", 3),
+            new TutorialLesson(TutorialKind.Out, "Lỗi • Bóng ra ngoài", "Bóng chạm đất ngoài đường biên là out. Bóng chạm vạch biên vẫn trong sân. Riêng khi giao bóng, vạch vùng cấm vô lê thuộc vùng không được rơi vào.", 3),
             new TutorialLesson(TutorialKind.DoubleBounce, "Lỗi • Nảy hai lần", "Đỡ bóng trước khi nó nảy lần thứ hai trên phía sân của bạn. Hãy nhìn bóng đang tới và chuẩn bị vợt sớm.", 3),
-            new TutorialLesson(TutorialKind.KitchenVolley, "Lỗi • Volley trong kitchen", "Không volley khi chân chạm kitchen hoặc vạch kitchen. Sau volley, đà lao vào vùng này cũng là lỗi. Đánh bóng đã nảy trong kitchen thì được phép.", 4),
+            new TutorialLesson(TutorialKind.KitchenVolley, "Lỗi • Vô lê trong vùng cấm vô lê", "Không vô lê khi chân chạm vùng cấm vô lê hoặc vạch vùng cấm vô lê. Sau vô lê, đà lao vào vùng này cũng là lỗi. Đánh bóng đã nảy trong vùng cấm vô lê thì được phép.", 4),
             new TutorialLesson(TutorialKind.Movement, "Di chuyển vào vị trí", "Di chuyển một đoạn ngắn bằng các phím hướng, rồi thử chạy. Trên điện thoại, kéo cần để đi; giữ nút CHẠY bên phải để chạy nhanh.", 0),
-            new TutorialLesson(TutorialKind.Shot, "Drive • Đánh sau nảy", "Đối phương sẽ đưa bóng tới. Drive đẩy bóng sâu qua sân. Bấm rồi thả nút đánh; bài tập sẽ giúp bạn canh lúc bóng đến.", 0, 1),
-            new TutorialLesson(TutorialKind.Shot, "Dink • Đánh nhẹ", "Chờ bóng nảy rồi đánh nhẹ qua lưới vào kitchen bên kia. Bạn có thể bước vào kitchen để đánh bóng đã nảy.", 0, 2),
-            new TutorialLesson(TutorialKind.Shot, "Volley • Đánh trên không", "Đánh bóng trước khi nó nảy và đứng ngoài kitchen. Pha luyện này bắt đầu sau hai lần nảy bắt buộc ở đầu rally.", 0, 4),
-            new TutorialLesson(TutorialKind.Shot, "Drive + Lực", "Giữ nút Lực, bấm rồi thả nút Drive. Bóng đi nhanh hơn. Chỉ cần thực hiện một lần để làm quen.", 0, 9),
-            new TutorialLesson(TutorialKind.Shot, "Tăng tốc", "Giữ nút Lực, bấm rồi thả nút Dink. Tổ hợp này chuyển sang cú tăng tốc sau nảy.", 0, 10),
-            new TutorialLesson(TutorialKind.Shot, "Volley + Lực", "Giữ nút Lực, bấm rồi thả nút Volley. Đây là cú đẩy volley mạnh hơn; chân vẫn phải ngoài kitchen.", 0, 12),
-            new TutorialLesson(TutorialKind.Shot, "Drive chéo", "Giữ nút Chéo, bấm rồi thả nút Drive. Đưa bóng chéo về nửa sân đối diện để thay đổi hướng đánh.", 0, 17),
-            new TutorialLesson(TutorialKind.Shot, "Dink chéo", "Giữ nút Chéo, bấm rồi thả nút Dink. Bóng nảy trước khi đánh, rồi được đưa nhẹ theo hướng chéo.", 0, 18),
-            new TutorialLesson(TutorialKind.Shot, "Volley chéo", "Giữ nút Chéo, bấm rồi thả nút Volley. Đánh trên không và hướng bóng chéo, từ vị trí ngoài kitchen.", 0, 20),
-            new TutorialLesson(TutorialKind.Complete, "Sẵn sàng vào sân", "Bạn đã biết sân, kitchen, hai lần nảy và 9 thao tác đánh cơ bản. Đấu đơn thường chơi đến 11 điểm, cách 2; chỉ bên giao bóng ghi điểm. Những bài nâng cao sẽ ở phần luyện tập khác.", 0)
+            new TutorialLesson(TutorialKind.Shot, "Đánh bạt • Đánh sau nảy", "Đối phương sẽ đưa bóng tới. Đánh bạt đẩy bóng sâu qua sân. Bấm rồi thả nút đánh; bài tập sẽ giúp bạn canh lúc bóng đến.", 0, 1),
+            new TutorialLesson(TutorialKind.Shot, "Bóng ngắn • Đánh nhẹ", "Chờ bóng nảy rồi đánh nhẹ qua lưới vào vùng cấm vô lê bên kia. Bạn có thể bước vào vùng cấm vô lê để đánh bóng đã nảy.", 0, 2),
+            new TutorialLesson(TutorialKind.Shot, "Vô lê • Đánh trên không", "Đánh bóng trước khi nó nảy và đứng ngoài vùng cấm vô lê. Pha luyện này bắt đầu sau hai lần nảy bắt buộc ở đầu pha bóng.", 0, 4),
+            new TutorialLesson(TutorialKind.Shot, "Đánh bạt + Lực", "Giữ nút Lực, bấm rồi thả nút Đánh bạt. Bóng đi nhanh hơn. Chỉ cần thực hiện một lần để làm quen.", 0, 9),
+            new TutorialLesson(TutorialKind.Shot, "Tăng tốc", "Giữ nút Lực, bấm rồi thả nút Bóng ngắn. Tổ hợp này chuyển sang cú tăng tốc sau nảy.", 0, 10),
+            new TutorialLesson(TutorialKind.Shot, "Vô lê + Lực", "Giữ nút Lực, bấm rồi thả nút Vô lê. Đây là cú đẩy vô lê mạnh hơn; chân vẫn phải ngoài vùng cấm vô lê.", 0, 12),
+            new TutorialLesson(TutorialKind.Shot, "Đánh bạt chéo", "Giữ nút Chéo, bấm rồi thả nút Đánh bạt. Đưa bóng chéo về nửa sân đối diện để thay đổi hướng đánh.", 0, 17),
+            new TutorialLesson(TutorialKind.Shot, "Bóng ngắn chéo", "Giữ nút Chéo, bấm rồi thả nút Bóng ngắn. Bóng nảy trước khi đánh, rồi được đưa nhẹ theo hướng chéo.", 0, 18),
+            new TutorialLesson(TutorialKind.Shot, "Vô lê chéo", "Giữ nút Chéo, bấm rồi thả nút Vô lê. Đánh trên không và hướng bóng chéo, từ vị trí ngoài vùng cấm vô lê.", 0, 20),
+            new TutorialLesson(TutorialKind.Complete, "Sẵn sàng vào sân", "Bạn đã biết sân, vùng cấm vô lê, hai lần nảy và 9 thao tác đánh cơ bản. Đấu đơn thường chơi đến 11 điểm, cách 2; chỉ bên giao bóng ghi điểm. Những bài nâng cao sẽ ở phần luyện tập khác.", 0)
         };
         public static ShotIntent Intent(int mask)
         {
