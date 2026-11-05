@@ -88,9 +88,7 @@ namespace PickleVerse.LocalMatch
             foreach (Transform child in detailCard) Destroy(child.gameObject);
             Text(detailCard, "Title", "HUẤN LUYỆN VIÊN", new Vector2(.05f, .86f), new Vector2(.95f, .98f), 26, ScreenUiTheme.Mint);
             var analysis = summary?.status == "ready" ? summary.analysis : null;
-            string body = analysis == null ? "Phân tích chưa sẵn sàng. Bạn có thể tiếp tục chơi và xem lại trong Tiến trình luyện tập." :
-                analysis.findings.Count == 0 ? "Chưa đủ bằng chứng để kết luận lỗi kỹ thuật trong phiên này." :
-                string.Join("\n", analysis.findings.Select(f => f.tip).Distinct().Take(3));
+            string body = CoachingAnalysisText.Describe(analysis);
             Text(detailCard, "Findings", body, new Vector2(.05f, .57f), new Vector2(.95f, .85f), 18, ScreenUiTheme.Text);
             int row = 0;
             if (analysis?.recommendations != null) foreach (var drill in analysis.recommendations.Take(3))

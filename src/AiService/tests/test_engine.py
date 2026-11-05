@@ -70,6 +70,42 @@ def test_model_disabled_and_missing_artifact_are_safe():
     assert TierPredictor("missing.joblib", True).predict(r)["status"] == "model_unavailable"
 
 
+def test_clean_session_gets_measured_summary_without_inventing_a_fault():
+    r = request([dict(shotId=str(i), sequence=i, kind="Serve" if i == 0 else "Drive", technique="Drive",
+                      outcome="Contact", contact=[0, 1, 2]) for i in range(4)])
+    result = analyze(r)
+    assert result["findings"] == []
+    assert "4 lượt đánh, 4 lần tiếp xúc bóng và 1 lượt giao bóng" in result["summary"]
+    assert "Chưa ghi nhận lỗi trong các tiêu chí đã đo" in result["summary"]
+
+
+def test_short_session_reports_observed_misses_without_lowering_recommendation_gate():
+    r = request([dict(shotId="x", sequence=0, kind="Drive", technique="Drive", outcome="Miss")])
+    result = analyze(r)
+    assert [f["code"] for f in result["findings"]] == ["Miss"]
+    assert "Đánh hụt 1/1 lần quan sát" in result["summary"]
+    assert result["recommendations"][0]["id"] == "serve"
+
+
+def test_empty_and_unobserved_sessions_do_not_claim_good_technique():
+    assert "chưa ghi nhận được cú đánh" in analyze(request([]))["summary"]
+    result = analyze(request([dict(shotId="x", sequence=0, kind="Drive", technique="Drive")]))
+    assert "Chưa ghi nhận lần tiếp xúc bóng" in result["summary"]
+    assert result["findings"] == []
+
+
+def test_bot_serve_miss_is_not_lost_by_the_rally_outcome_name():
+    result = analyze(request([dict(shotId="x", sequence=0, kind="Serve", technique="Serve", outcome="ServeMiss")]))
+    assert [f["code"] for f in result["findings"]] == ["Miss"]
+    assert "Đánh hụt 1/1" in result["summary"]
+
+
+def test_unclassified_referee_fault_does_not_get_a_clean_session_message():
+    result = analyze(request([dict(shotId="x", sequence=0, kind="Drive", technique="Drive", outcome="Fault", contact=[0, 1, 2])]))
+    assert "1 lượt ghi nhận vi phạm luật" in result["summary"]
+    assert "Chưa ghi nhận lỗi" not in result["summary"]
+
+
 def test_assisted_timing_and_generated_target_not_classifier_features():
     r = request([dict(shotId="x", sequence=0, kind="Drive", technique="Drive", assisted=True,
                       engineAimed=True, timingError=.9, targetHit=False)])

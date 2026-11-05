@@ -484,10 +484,10 @@ namespace PickleVerse.LocalMatch
             countdown.Reset();
             SfxPlayer.Play(GameSfx.FaultWhistle);
             Message = FaultText(Rules.LastFault) + " • " + (Rules.FaultPlayer == 0 ? "Bạn" : "Bot") + " phạm lỗi";
+            pendingQuickTip = PickleVerse.Progression.QuickCoachingRules.RallyTip(Rules.FaultPlayer == 0, Rules.LastFault.ToString());
         }
         void FinishRally()
         {
-            CoachingQuickToast.Show(gameObject, PickleVerse.Progression.QuickCoachingRules.Tip(coachingSession?.shots, quickCoachingStart));
             int loser = Rules.FaultPlayer;
             Fault fault = Rules.LastFault;
             int endedGame = Rules.GameNumber;
@@ -568,7 +568,7 @@ namespace PickleVerse.LocalMatch
         }
         void PreparePoint()
         {
-            quickCoachingStart = coachingSession?.shots.Count ?? 0;
+            pendingQuickTip = null;
             CoachingQuickToast.Show(gameObject, "");
             progressStrokes.NewRally();
             rankedBotContact.Reset();

@@ -605,7 +605,7 @@ namespace PickleVerse.Multiplayer
                 rallyCommitted = true;
                 BetweenPoints = true;
                 rallyDeadline = Time.realtimeSinceStartupAsDouble + 2.1;
-                AnnouncementRpc(fault.Contains("ngoài sân") ? "OUT" : "FAULT / LỖI", fault + " • Đội " + (loser == 0 ? "A" : "B") + " phạm lỗi\n" + (priorServer == 1 - loser ? "Đội " + (priorServer == 0 ? "A" : "B") + " ghi điểm" : "Đổi giao bóng / Side Out"), (int)AnnouncementTone.Fault, 1.2f);
+                AnnouncementRpc(fault.Contains("ngoài sân") ? "NGOÀI SÂN" : "LỖI", fault + " • Đội " + (loser == 0 ? "A" : "B") + " phạm lỗi\n" + (priorServer == 1 - loser ? "Đội " + (priorServer == 0 ? "A" : "B") + " ghi điểm" : "Đổi quyền giao bóng"), (int)AnnouncementTone.Fault, 1.2f);
                 foreach (var player in players.Values)
                     player.React(player.Team != loser, Rules.complete);
                 if (Rules.complete)
@@ -852,6 +852,11 @@ namespace PickleVerse.Multiplayer
         }
         void AnnouncementEffect(string title, string detail, int tone, float duration)
         {
+            // Protocol 18 servers from the previous release use these labels.
+            // Localize them here as well so updating the clients is sufficient.
+            if (title == "OUT") title = "NGOÀI SÂN";
+            if (title == "FAULT / LỖI") title = "LỖI";
+            detail = detail?.Replace("Đổi giao bóng / Side Out", "Đổi quyền giao bóng");
             var ui = MultiplayerCourtUI.Instance;
             if (ui)
                 ui.ShowAnnouncement(title, detail, duration, (AnnouncementTone)tone);

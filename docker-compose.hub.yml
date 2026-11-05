@@ -1,9 +1,19 @@
 # Apply after docker-compose.yml and docker-compose.dedicated.yml.
-# One Docker Hub repository, three independently versioned component tags.
+# Use release.env from a successful workflow; never mix the mutable component aliases.
 services:
   backend-api:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:api-${PKV_RELEASE:-20261103-p18-53871c6-hub1}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:api-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
   ai-service:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:ai-${PKV_RELEASE:-20261103-p18-53871c6-hub1}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:ai-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
   game-server:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:server-${PKV_RELEASE:-20261103-p18-53871c6-hub1}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:server-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
+  web:
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:web-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
+    profiles: [admin]
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://backend-api:8080
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:80"
+    depends_on: [backend-api]
+    networks: [pickleverse_network]

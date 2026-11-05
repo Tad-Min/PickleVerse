@@ -45,7 +45,8 @@ static class ApiContractChecks
         var builder = WebApplication.CreateBuilder();
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls("http://127.0.0.1:0");
-        builder.Services.AddControllers(o => o.Filters.Add<ApiResponseFilter>()).AddApplicationPart(typeof(ContractController).Assembly);
+        builder.Services.AddControllers(o => o.Filters.Add<ApiResponseFilter>()).AddApplicationPart(typeof(ContractController).Assembly)
+            .AddJsonOptions(o => o.JsonSerializerOptions.IncludeFields = true);
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails();
         builder.Services.AddAuthentication("contract").AddScheme<AuthenticationSchemeOptions, ContractAuthentication>("contract", _ => { });
@@ -94,6 +95,9 @@ static class ApiContractChecks
         var client = new ApiClient(new ContractTransport(http));
         var dto = await client.SendAsync<ContractDto>("GET", "api/contract/success");
         Check(dto.Name == "fixture", "the actual Unity ApiClient unwraps server DTOs");
+        var coaching = await client.SendAsync<PickleVerse.Progression.CoachingSummary>("GET", "api/contract/coaching");
+        Check(coaching.analysis?.summary == "Đã ghi nhận 4 lượt đánh." && coaching.analysis.sessionId == "current-session",
+            "coaching summary and session survive API field serialization and the actual Unity ApiClient");
         bool missing = false;
         try { await client.SendAsync<ContractDto>("GET", "api/contract/missing"); }
         catch (ApiException error) { missing = error.StatusCode == 404 && error.Message == "fixture missing"; }
@@ -120,6 +124,8 @@ public sealed class ContractController : ControllerBase
 {
     [HttpGet("success")] public IActionResult Success() => Ok(new ContractDto());
     [HttpGet("typed")] public ContractDto Typed() => new();
+    [HttpGet("coaching")] public PickleVerse.Progression.CoachingSummary Coaching() => new() {
+        status = "ready", analysis = new() { sessionId = "current-session", summary = "Đã ghi nhận 4 lượt đánh." } };
     [HttpGet("already-wrapped")] public IActionResult Wrapped() => Ok(ApiResponse<ContractDto>.SuccessResponse(new()));
     [HttpGet("missing")] public IActionResult Missing() => throw new KeyNotFoundException("fixture missing");
     [HttpGet("forbidden")] public IActionResult Forbidden() => throw new UnauthorizedAccessException("fixture denied");

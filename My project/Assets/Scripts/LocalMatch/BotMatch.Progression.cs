@@ -117,7 +117,13 @@ namespace PickleVerse.LocalMatch
             savingProgression = SaveProgressionAsync();
             RankedBotLaunch.Clear();
         }
-        int quickCoachingStart;
+        string pendingQuickTip;
+        void LateUpdate()
+        {
+            if (string.IsNullOrEmpty(pendingQuickTip)) return;
+            CoachingQuickToast.Show(gameObject, pendingQuickTip);
+            pendingQuickTip = null;
+        }
         public string CoachingMatchId => progressionResult?.id;
         async Task SaveProgressionAsync()
         {

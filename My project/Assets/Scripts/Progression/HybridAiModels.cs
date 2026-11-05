@@ -109,7 +109,7 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class CoachingAnalysis
     {
-        public string sessionId = "", ruleVersion = "rules-v1";
+        public string sessionId = "", ruleVersion = "rules-v1", summary = "";
         public List<CoachingFinding> findings = new List<CoachingFinding>();
         public List<TechniqueMetric> metrics = new List<TechniqueMetric>();
         public List<DrillRecommendation> recommendations = new List<DrillRecommendation>();

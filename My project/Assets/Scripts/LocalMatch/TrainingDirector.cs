@@ -791,15 +791,8 @@ namespace PickleVerse.LocalMatch
             }
             else
             {
-                goal = new Vector3(player.transform.position.x, 5.3f, player.transform.position.z - 4.25f);
-                look = new Vector3(player.transform.position.x, .6f, -.5f);
-                if (Lesson.Doubles)
-                {
-                    goal.x = 0;
-                    goal.y = 6.5f;
-                    fov = 64;
-                    look.x = 0;
-                }
+                CourtFollowView.Apply(view, player.transform.position, player.end, Lesson.Doubles, dt);
+                return;
             }
             float weight = 1 - Mathf.Exp(-dt * 3);
             view.transform.position = Vector3.Lerp(view.transform.position, goal, weight);

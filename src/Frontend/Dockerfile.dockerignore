@@ -1,0 +1,12 @@
+**
+!src/
+!src/Frontend/
+!src/Frontend/**
+!deploy/
+!deploy/web/
+!deploy/web/default.conf.template
+src/Frontend/node_modules/
+src/Frontend/dist/
+src/Frontend/.vite/
+src/Frontend/.env*
+src/Frontend/*.tsbuildinfo

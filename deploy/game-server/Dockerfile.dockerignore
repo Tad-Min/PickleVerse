@@ -5,3 +5,8 @@
 !artifacts/account-multiplayer-ai-20261103/linux-server/**
 artifacts/account-multiplayer-ai-20261103/linux-server/*_BackUpThisFolder_ButDontShipItWithYourGame/
 artifacts/account-multiplayer-ai-20261103/linux-server/**/.unity-pipeline*
+!artifacts/ci/
+!artifacts/ci/dedicatedserver/
+!artifacts/ci/dedicatedserver/**
+artifacts/ci/dedicatedserver/*_BackUpThisFolder_ButDontShipItWithYourGame/
+artifacts/ci/dedicatedserver/**/.unity-pipeline*

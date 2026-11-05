@@ -4,9 +4,12 @@ namespace PickleVerse.LocalMatch
     public sealed class MatchCamera : MonoBehaviour
     {
         public MatchActor player;
-        public float height = 5.3f, followDistance = 4.21f, pitch = 31f, fieldOfView = 60f;
-        public Vector3 DesiredPosition => new Vector3(player.transform.position.x + .05f, height, player.transform.position.z + player.end * followDistance);
-        public Quaternion DesiredRotation => Quaternion.Euler(pitch, player.end < 0 ? 0 : 180, 0);
+        public float height => CourtFollowView.Height;
+        public float followDistance => CourtFollowView.Distance;
+        public float pitch => DesiredRotation.eulerAngles.x;
+        public float fieldOfView => CourtFollowView.FieldOfView;
+        public Vector3 DesiredPosition => CourtFollowView.Position(player.transform.position, player.end);
+        public Quaternion DesiredRotation => Quaternion.LookRotation(CourtFollowView.LookAt(player.transform.position, player.end) - DesiredPosition);
         void OnEnable()
         {
             if (player)
@@ -16,17 +19,13 @@ namespace PickleVerse.LocalMatch
         {
             if (!player)
                 return;
-            transform.SetPositionAndRotation(DesiredPosition, DesiredRotation);
-            GetComponent<Camera>().fieldOfView = fieldOfView;
+            CourtFollowView.Apply(GetComponent<Camera>(), player.transform.position, player.end, false, 0, true);
         }
         void LateUpdate()
         {
             if (!player)
                 return;
-            Vector3 position = DesiredPosition;
-            transform.position = Vector3.Lerp(transform.position, position, 1f - Mathf.Exp(-5f * Time.unscaledDeltaTime));
-            transform.rotation = DesiredRotation;
-            GetComponent<Camera>().fieldOfView = fieldOfView;
+            CourtFollowView.Apply(GetComponent<Camera>(), player.transform.position, player.end, false, Time.unscaledDeltaTime);
         }
     }
 }

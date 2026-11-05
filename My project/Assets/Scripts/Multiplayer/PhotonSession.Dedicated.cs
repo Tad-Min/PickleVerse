@@ -53,10 +53,15 @@ namespace PickleVerse.Multiplayer
                 seats = roster.members.Select(m => new PhotonSeat { member = m, decision = ReadyDecision.Accepted }).ToList() };
             Callbacks.Reliable = (source, bytes) =>
             {
-                try { var message = JsonConvert.DeserializeObject<PhotonMessage>(Encoding.UTF8.GetString(bytes)); if (message != null) Deliver(source, message); }
+                // On a client this callback identifies the receiving player, not the
+                // server's state authority (None). Only the server can send this stream
+                // to clients. Preserve the actual sender on the server for admission/input checks.
+                try { var message = JsonConvert.DeserializeObject<PhotonMessage>(Encoding.UTF8.GetString(bytes)); if (message != null) Deliver(DedicatedMessageSource(Runner.IsServer, source), message); }
                 catch (JsonException) { }
             };
         }
+        public static PlayerRef DedicatedMessageSource(bool server, PlayerRef callbackPlayer)
+            => server ? callbackPlayer : PlayerRef.None;
         void SendDedicated(PlayerRef destination, PhotonMessage message)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));

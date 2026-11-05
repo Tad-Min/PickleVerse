@@ -1,4 +1,5 @@
 using UnityEngine;
+using PickleVerse.LocalMatch;
 namespace PickleVerse.Multiplayer
 {
     public sealed class CourtCamera : MonoBehaviour
@@ -12,10 +13,8 @@ namespace PickleVerse.Multiplayer
             var player = target.GetComponent<NetworkPlayer>();
             if (player && !player.IsSpawned)
                 return;
-            var settings = MultiplayerApp.Instance.Settings;
             int end = target.GetComponent<NetworkPlayer>()?.CourtEnd ?? (target.forward.z > 0 ? -1 : 1);
-            transform.SetPositionAndRotation(target.position + new Vector3(.05f, settings.cameraHeight - target.position.y, end * settings.cameraDistance), Quaternion.Euler(settings.cameraPitch, end < 0 ? 0 : 180, 0));
-            GetComponent<Camera>().fieldOfView = settings.cameraFieldOfView;
+            CourtFollowView.Apply(GetComponent<Camera>(), player ? player.PresentedPosition : target.position, end, Doubles, 0, true);
             previousEnd = end;
         }
         void LateUpdate()
@@ -25,15 +24,11 @@ namespace PickleVerse.Multiplayer
             var player = target.GetComponent<NetworkPlayer>();
             if (player && !player.IsSpawned)
                 return;
-            var settings = MultiplayerApp.Instance.Settings;
             int end = target.GetComponent<NetworkPlayer>()?.CourtEnd ?? (target.forward.z > 0 ? -1 : 1);
             if (previousEnd != end)
                 SnapToPlayer();
-            var desired = (player ? player.PresentedPosition : target.position) + new Vector3(.05f, 0, end * settings.cameraDistance);
-            desired.y = settings.cameraHeight;
-            transform.position = Vector3.Lerp(transform.position, desired, 1 - Mathf.Exp(-5 * Time.unscaledDeltaTime));
-            transform.rotation = Quaternion.Euler(settings.cameraPitch, end < 0 ? 0 : 180, 0);
-            GetComponent<Camera>().fieldOfView = settings.cameraFieldOfView;
+            CourtFollowView.Apply(GetComponent<Camera>(), player ? player.PresentedPosition : target.position, end, Doubles, Time.unscaledDeltaTime);
         }
+        bool Doubles => NetworkMatch.Instance?.Roster?.mode == PlayMode.Doubles;
     }
 }

@@ -1,5 +1,15 @@
 # PickleVerse
 
+## CI/CD Docker Hub
+
+Build Unity Dedicated Server trên máy đã có license bằng
+`scripts/Publish-DockerHubRelease.ps1`. Script đóng gói binary theo commit rồi,
+khi có `-Publish`, push `main` và phát hành asset GitHub Release.
+GitHub Actions tải binary đó, build/push bốn image `api`, `ai`, `web`, `server`
+vào `tadminm/pickelverse`, kiểm tra cả stack và xuất gói Compose ghim digest.
+Push/PR chỉ kiểm thử; CI chỉ cần secret `DOCKERHUB_TOKEN`, không cần license Unity.
+Xem [hướng dẫn CI/CD và triển khai Ubuntu](Doc/CI_CD_DockerHub.md).
+
 ## Khởi tạo database mới
 
 Chỉ dùng **[`src/Database.sql`](src/Database.sql)**. File này chứa toàn bộ schema,
