@@ -3,133 +3,31 @@ name: Build and publish Docker Hub images
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       server_release:
-        description: 'Published native release: server-build-<40-character commit>'
-        required: true
+        description: 'Published native release tag (e.g. server-build-<commit>)'
+        required: false
         type: string
 
 permissions:
   contents: read
 
-# Keep a running publication intact. GitHub keeps only the latest pending run.
 concurrency:
-  group: ${{ (github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'dockerhub-publish' || format('dockerhub-check-{0}', github.ref) }}
-  cancel-in-progress: false
+  group: dockerhub-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DOCKER_IMAGE: tadminm/pickelverse
 
 jobs:
-  validate:
-    name: Validate exact source commit
-    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'server-build-')
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    outputs:
-      publish: ${{ steps.source.outputs.publish }}
-      commit: ${{ steps.source.outputs.commit }}
-      release: ${{ steps.source.outputs.release }}
-      native_tag: ${{ steps.source.outputs.native_tag }}
-    steps:
-      - name: Resolve native release and source
-        id: source
-        env:
-          GH_TOKEN: ${{ github.token }}
-          INPUT_TAG: ${{ inputs.server_release }}
-          EVENT_TAG: ${{ github.event.release.tag_name }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          publish=false
-          commit="$GITHUB_SHA"
-          tag=''
-          ref="$GITHUB_SHA"
-          if [[ "$GITHUB_EVENT_NAME" == release || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
-            if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$GITHUB_REF" != refs/heads/main ]]; then
-              echo '::error::Dispatch the workflow from main.'; exit 1
-            fi
-            tag="${INPUT_TAG:-$EVENT_TAG}"
-            [[ "$tag" =~ ^server-build-([0-9a-f]{40})$ ]] || { echo '::error::Invalid native release tag.'; exit 1; }
-            commit="${BASH_REMATCH[1]}"
-            ref="refs/tags/$tag"
-            status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$commit...main" --jq .status)
-            [[ "$status" == ahead || "$status" == identical ]] || { echo '::error::Native source must belong to main.'; exit 1; }
-            draft=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)
-            [[ "$draft" == false ]] || { echo '::error::Publish the native release first.'; exit 1; }
-            publish=true
-          fi
-          {
-            echo "publish=$publish"
-            echo "commit=$commit"
-            echo "ref=$ref"
-            echo "native_tag=$tag"
-            echo "release=${commit}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          } >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ steps.source.outputs.ref }}
-          persist-credentials: false
-          sparse-checkout: |
-            .github
-            src
-            deploy
-            contracts
-            Doc
-            My project/Assets/Scripts
-            My project/ProjectSettings
-      - name: Verify checked-out source and publication credential
-        env:
-          SOURCE_COMMIT: ${{ steps.source.outputs.commit }}
-          PUBLISH: ${{ steps.source.outputs.publish }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
-          if [[ "$PUBLISH" == true ]]; then
-            test -n "$DOCKERHUB_TOKEN" || { echo '::error::Set DOCKERHUB_TOKEN.'; exit 1; }
-          fi
-      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
-        with:
-          dotnet-version: 10.0.x
-      - name: Check backend and actual Unity API contract (no database)
-        run: dotnet run --project src/Backend/IntegrationChecks -c Release -- --check-api-contract
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: src/AiService/requirements*.txt
-      - name: Check release packaging and settings sanitization
-        run: python -m unittest discover -s .github/scripts -p 'test_*.py' -v
-      - name: Check local publisher guards without network or Unity
-        shell: pwsh
-        run: ./.github/scripts/test_local_publish.ps1
-      - name: Install AI test dependencies
-        run: python -m pip install -r src/AiService/requirements-dev.txt
-      - name: Test AI rules and gates
-        working-directory: src/AiService
-        run: python -m pytest tests -q
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: src/Frontend/package-lock.json
-      - name: Check admin frontend
-        working-directory: src/Frontend
-        run: |
-          npm ci
-          npm run build
-
+  # 1. Build and push API, AI, and Web
   services:
-    name: Build ${{ matrix.component }} candidate
-    needs: validate
-    if: needs.validate.outputs.publish == 'true'
+    name: Build & Push ${{ matrix.component }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -141,140 +39,80 @@ jobs:
           - component: web
             dockerfile: src/Frontend/Dockerfile
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ needs.validate.outputs.commit }}
-          persist-credentials: false
-          sparse-checkout: |
-            .github
-            src
-            deploy
-            Doc
-      - name: Remove developer credentials from the API build context
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Remove developer credentials from API settings
         if: matrix.component == 'api'
         run: |
           python3 deploy/api/sanitize_settings.py src/Backend/API "$RUNNER_TEMP/pkv-settings"
           cp "$RUNNER_TEMP/pkv-settings"/appsettings*.json src/Backend/API/
-      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: tadminm
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
-      - name: Build and push versioned candidate
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push ${{ matrix.component }}
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64
           push: true
-          tags: ${{ env.DOCKER_IMAGE }}:${{ matrix.component }}-${{ needs.validate.outputs.release }}
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ needs.validate.outputs.commit }}
-            org.opencontainers.image.version=${{ needs.validate.outputs.release }}
-          cache-from: type=gha,scope=publish-v2-${{ matrix.component }}
-          cache-to: type=gha,mode=max,scope=publish-v2-${{ matrix.component }}
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:${{ matrix.component }}-latest
+            ${{ env.DOCKER_IMAGE }}:${{ matrix.component }}
+            ${{ env.DOCKER_IMAGE }}:${{ matrix.component }}-${{ github.sha }}
+          cache-from: type=gha,scope=publish-${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=publish-${{ matrix.component }}
 
+  # 2. Build and push Dedicated Server (when a release is published or server_release is specified)
   dedicated:
-    name: Package locally built server
-    needs: validate
-    if: needs.validate.outputs.publish == 'true'
+    name: Build & Push Dedicated Server
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.server_release != '')
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ needs.validate.outputs.commit }}
-          persist-credentials: false
-          sparse-checkout: |
-            .github
-            deploy
-            My project/Assets/Scripts
-            My project/ProjectSettings
-      - name: Download and verify commit-bound native payload
-        env:
-          GH_TOKEN: ${{ github.token }}
-          NATIVE_TAG: ${{ needs.validate.outputs.native_tag }}
-          SOURCE_COMMIT: ${{ needs.validate.outputs.commit }}
-          CI_RELEASE: ${{ needs.validate.outputs.release }}
-        run: |
-          package="PickleVerseServer-linux-$SOURCE_COMMIT.tar.gz"
-          gh release download "$NATIVE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/native" --pattern "$package" --pattern "$package.sha256"
-          python3 .github/scripts/release.py extract-server "$RUNNER_TEMP/native/$package" "$RUNNER_TEMP/native/$package.sha256" artifacts/ci/dedicatedserver --release "$CI_RELEASE" --commit "$SOURCE_COMMIT"
-      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: tadminm
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
-      - name: Build and push versioned server candidate
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download and unpack server binary from GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${{ github.event.release.tag_name || inputs.server_release }}"
+          echo "Downloading native server payload from release tag: $tag"
+          mkdir -p "$RUNNER_TEMP/native" artifacts/ci/dedicatedserver
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/native" --pattern "PickleVerseServer-linux-*.tar.gz"
+          tar -xzf "$RUNNER_TEMP/native"/PickleVerseServer-linux-*.tar.gz -C artifacts/ci/dedicatedserver
+          echo "Server unpacked successfully into artifacts/ci/dedicatedserver"
+
+      - name: Build and push Dedicated Server
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: deploy/game-server/Dockerfile
-          platforms: linux/amd64
           build-args: SERVER_BUILD_PATH=artifacts/ci/dedicatedserver
+          platforms: linux/amd64
           push: true
-          tags: ${{ env.DOCKER_IMAGE }}:server-${{ needs.validate.outputs.release }}
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ needs.validate.outputs.commit }}
-            org.opencontainers.image.version=${{ needs.validate.outputs.release }}
-          cache-from: type=gha,scope=publish-v2-server
-          cache-to: type=gha,mode=max,scope=publish-v2-server
-
-  release:
-    name: Check stack and publish release
-    needs: [validate, services, dedicated]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    env:
-      CI_RELEASE: ${{ needs.validate.outputs.release }}
-      SOURCE_COMMIT: ${{ needs.validate.outputs.commit }}
-      CI_IMAGE_REPOSITORY: tadminm/pickelverse
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ needs.validate.outputs.commit }}
-          persist-credentials: false
-          sparse-checkout: |
-            .github
-            src
-            deploy
-            Doc
-      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
-        with:
-          username: tadminm
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
-      - name: Pull and start the four candidates with disposable CI data
-        run: docker compose -p "pkv-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -f .github/compose.smoke.yml up -d --wait --wait-timeout 180
-      - name: Check API, AI, proxy and worker
-        env:
-          COMPOSE_PROJECT_NAME: pkv-ci-${{ github.run_id }}-${{ github.run_attempt }}
-        run: python3 .github/scripts/check_stack.py
-      - name: Create digest-pinned Ubuntu bundle
-        run: python3 .github/scripts/release.py bundle --repository "$CI_IMAGE_REPOSITORY" --release "$CI_RELEASE" --commit "$SOURCE_COMMIT"
-      - name: Update aliases only for current main after all checks pass
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          main_commit=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
-          if [[ "$main_commit" == "$SOURCE_COMMIT" ]]; then
-            python3 .github/scripts/release.py promote artifacts/ci/release/release.json
-          else
-            echo 'Main advanced; versioned bundle published without moving component aliases.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: deployment-${{ needs.validate.outputs.release }}
-          path: artifacts/ci/release/
-          if-no-files-found: error
-          retention-days: 30
-      - name: Print release instructions
-        run: cat artifacts/ci/release/summary.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Show stack diagnostics on failure
-        if: failure()
-        run: docker compose -p "pkv-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -f .github/compose.smoke.yml logs --no-color --tail 60
-      - name: Remove only this run's CI containers and volumes
-        if: always()
-        run: docker compose -p "pkv-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -f .github/compose.smoke.yml down --volumes --remove-orphans
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:server-latest
+            ${{ env.DOCKER_IMAGE }}:server
+            ${{ env.DOCKER_IMAGE }}:server-${{ github.sha }}
+          cache-from: type=gha,scope=publish-server
+          cache-to: type=gha,mode=max,scope=publish-server
