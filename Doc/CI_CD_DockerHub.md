@@ -1,157 +1,63 @@
-# Phát hành Docker Hub với Unity build cục bộ
-
-Theo quyết định ngày 05/11/2026: máy có license build **Linux x86_64 Dedicated Server**;
-GitHub Actions chỉ build/push Docker. Binary được gửi bằng **GitHub Release asset**,
-không commit vào Git. Cache `Library` trên máy được tái sử dụng; CI không tải Unity Editor,
-không chạy GameCI và không cần Unity Secrets.
+# CI/CD PickleVerse trên GitHub Actions
 
 ## Luồng phát hành
 
-1. Review và commit mã nguồn. Script từ chối working tree còn thay đổi, kể cả file mới.
-2. Build dedicated trong Editor có license, đóng gói `.tar.gz` và SHA-256 theo full commit.
-3. Khi gọi `-Publish`, script push `main` không force, tạo draft release
-   `server-build-<full-commit>`, tải lên binary/checksum rồi mới publish draft.
-4. Sự kiện `release.published` chạy workflow. Workflow kiểm tra tag trỏ đúng commit thuộc
-   `main`, chạy kiểm thử, tải asset và kiểm tra checksum, metadata Unity/protocol cùng ELF x86_64.
-5. Build/push bốn image candidate với cùng mã `<commit>-<run-id>-<attempt>`.
-6. Khởi động stack CI dùng dữ liệu tạm, kiểm tra API, AI, Nginx và heartbeat worker.
-7. Chỉ khi đạt, xuất artifact `deployment-<mã>` chứa bộ Compose ghim digest và checksum.
-   Các alias `api`, `ai`, `web`, `server` chỉ được cập nhật nếu source vẫn là HEAD `main`.
+Workflow `Build, publish and deploy PickleVerse` chạy khi push vào `main`. Nó kiểm tra backend, FastAPI và web admin, đồng thời dùng GameCI để build Unity Dedicated Server Linux x86-64 trực tiếp từ commit đó. Job publish xác minh ELF, phiên bản Unity, protocol và checksum trước khi build bốn image `api`, `ai`, `web`, `server` trong `tadminm/pickelverse`.
 
-Push/PR `main` chỉ chạy kiểm thử, không publish image. Một commit chưa có native release
-không tự dùng binary cũ. Run lỗi có thể để lại tag candidate trên Docker Hub; chỉ dùng bộ
-deployment của run thành công. Các alias không cập nhật nguyên tử, vì vậy Ubuntu dùng digest
-trong bộ deployment, không ghép các alias. Các run publish dùng chung concurrency lock;
-GitHub chỉ giữ run đang chạy và run chờ mới nhất, không bảo đảm hàng đợi FIFO cho mọi run.
+Mỗi lượt publish dùng tag `<component>-<commit>-<run_id>-<attempt>`. Sau khi smoke test với PostgreSQL và Redis tạm, workflow tạo artifact `release-<commit>-<run_id>-<attempt>` gồm Compose, `Database.sql`, digest của các image và checksum SHA-256. Job deploy dùng đúng artifact của lượt build đã qua kiểm tra. Các lần deploy nối tiếp nhau qua GitHub concurrency và khóa trên Linux. Lượt build của commit cũ bỏ qua deploy nếu `main` đã tiến lên.
 
-## Chuẩn bị một lần
+Pull request chạy validation. **Run workflow** từ `main` có thể build và publish lại. Chọn `deploy` nếu muốn lượt chạy thủ công cũng deploy. Thiết lập GitHub Environment `development` cho nhánh `main` và để job chạy tự động theo lựa chọn đã chốt.
 
-Máy Windows build:
+## GitHub Secrets và Variables
 
-- Unity đúng version trong `My project/ProjectSettings/ProjectVersion.txt` (hiện `6000.6.2f1`),
-  license hợp lệ, module **Linux Dedicated Server Build Support** và backend Mono.
-- Unity CLI beta.16 trở lên; project đã có package `com.unity.pipeline`.
-- Git, Windows `tar.exe`, PowerShell và GitHub CLI `gh`.
-- Đăng nhập GitHub CLI bằng tài khoản có quyền push code và tạo release cho repository:
+Thêm giá trị trong **Settings → Secrets and variables → Actions**. Dùng repository secrets cho Unity và token publish. Có thể đặt SSH và token pull trong environment `development` để chỉ job deploy nhận chúng.
 
-```powershell
-gh auth login --hostname github.com
-gh auth setup-git
-```
+| Secret | Giá trị |
+| --- | --- |
+| `UNITY_EMAIL` | Email tài khoản Unity dùng để kích hoạt CI. |
+| `UNITY_PASSWORD` | Mật khẩu tài khoản Unity. |
+| `UNITY_LICENSE` | Nội dung đầy đủ file `.ulf` cho Unity Personal theo hướng dẫn GameCI. Chọn đúng một trong secret này và `UNITY_SERIAL`. |
+| `UNITY_SERIAL` | Serial Unity Pro hoặc Enterprise. Dùng cho cơ chế cấp phép bằng serial. |
+| `DOCKERHUB_TOKEN` | Docker Hub PAT có quyền đọc và ghi `tadminm/pickelverse`. |
+| `DOCKERHUB_PULL_TOKEN` | Docker Hub PAT chỉ đọc image trên Linux. Docker CLI nhận qua stdin và dùng thư mục cấu hình tạm. |
+| `SSH_HOST` | DNS name hoặc IPv4 mà GitHub-hosted runner có thể truy cập. |
+| `SSH_PORT` | Cổng SSH thực tế. |
+| `SSH_PASSWORD` | Mật khẩu SSH của tài khoản triển khai. |
+| `SSH_KNOWN_HOSTS` | Dòng public host key lấy từ máy Linux qua kênh tin cậy. Với cổng 22 dùng `HOST <key-type> <public-key>`. Với cổng khác dùng `[HOST]:PORT <key-type> <public-key>`. |
 
-GitHub repository:
+Variables tùy chọn gồm `DOCKERHUB_USERNAME` mặc định `tadminm` và `SSH_USER` mặc định `min`. Tài khoản Docker Hub phải có quyền với repository `tadminm/pickelverse`. Workflow dùng `github.token` tự cấp để đối chiếu HEAD của `main`.
 
-- Có Docker Hub repository **`tadminm/pickelverse`**.
-- Tạo Docker Hub access token có quyền Read/Write, thêm vào
-  **Settings → Secrets and variables → Actions → Repository secrets** với tên **`DOCKERHUB_TOKEN`**.
-- Không cần `UNITY_EMAIL`, `UNITY_PASSWORD`, `UNITY_LICENSE` hoặc `UNITY_SERIAL` cho workflow này.
-  Có thể xóa các Unity Secrets trước đây nếu không workflow nào khác sử dụng.
-- Đưa workflow và script vào `main` trước lần phát hành đầu. Actions dùng `contents: read`;
-  việc tạo/publish native release do `gh` trên máy build thực hiện.
+Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print $1, $2}' /etc/ssh/ssh_host_ed25519_key.pub`. Giữ đúng kiểu key và hostname/cổng của endpoint. Có thể đối chiếu fingerprint bằng `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. OpenSSH trên runner kiểm tra host key trước khi gửi mật khẩu.
 
-## Build và push từ Windows
+## Chuẩn bị Linux một lần
 
-Trong `D:\Repository\PickleVerse`, review/commit các thay đổi cần phát hành trước.
-`git status --short` phải không có dòng nào. Script không tự stage, commit hay stash.
-Không chạy Play Mode hoặc sửa code trong khi build.
+1. Dùng Linux amd64, Docker Engine local, Docker Compose có `up --wait-timeout`, `bash`, `curl`, `tar`, `sha256sum`, `mountpoint`, `realpath` và `flock`. Tài khoản SSH cần chạy Docker và ghi được vào `/run/media/min/Data/pickleverse`.
+2. Mount ổ dữ liệu tại `/run/media/min/Data` trước khi deploy. Ổ phải hỗ trợ quyền POSIX và ownership mà PostgreSQL và Unity cần. Script kiểm tra mount mỗi lượt chạy để tránh ghi nhầm xuống ổ hệ thống.
+3. Dùng `deploy/linux/runtime.env.example` làm mẫu cho `/run/media/min/Data/pickleverse/.env`. Giữ cấu hình này trên host với quyền đọc giới hạn cho tài khoản deploy. Các khóa bắt buộc gồm `POSTGRES_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `JWT_KEY`, `AI_SERVICE_KEY` và `PKV_GAME_SERVER_KEY`. Ba key JWT, AI và Dedicated cần tối thiểu 32 ký tự. Dùng mật khẩu PostgreSQL không chứa dấu nháy kép hoặc xuống dòng để dùng được trong connection string.
+4. Khi giữ database và S3 hiện có, điền đúng thông tin đăng nhập đang dùng trên stack cũ. PostgreSQL chỉ áp dụng `POSTGRES_PASSWORD` khi khởi tạo cluster rỗng. Giữ JWT key hiện tại nếu muốn duy trì các phiên đang dùng. Điền `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` khi cần gửi OTP và khôi phục mật khẩu. Giữ các bind và cổng hiện dùng nếu Linux có reverse proxy.
 
-Chỉ build/đóng gói để xem trước, chưa push:
+Các thư mục sau nằm trong `/run/media/min/Data/pickleverse`.
 
-```powershell
-.\scripts\Publish-DockerHubRelease.ps1
-```
+| Dữ liệu | Thư mục host | Điểm mount trong container |
+| --- | --- | --- |
+| PostgreSQL | `PostgresData` | `/var/lib/postgresql/data` |
+| Redis | `RedisData` | `/data` |
+| S3 | `S3Data` | `/data` |
+| AI artifact | `AiService/models` | `/models`, chỉ đọc |
+| Dedicated | `GameServerData` | `/home/unity/.config/unity3d` |
 
-Sau đó phát hành đúng gói vừa build, không build lại:
+## Chuyển dữ liệu và kiểm tra deploy
 
-```powershell
-.\scripts\Publish-DockerHubRelease.ps1 -Publish -SkipBuild
-```
+- Nếu phát hiện container PickleVerse cũ cùng Compose project dùng named volume hoặc bind mount khác trong cây dự án, deploy kiểm tra PostgreSQL 16, schema và trận đang hoạt động. Sau đó nó tạo `pg_dump` vào `.deploy/backup.*`, dừng các dịch vụ liên quan rồi sao chép dữ liệu sang thư mục mới. Nguồn cũ được giữ để phục hồi. Khi đã có dữ liệu ở cả hai nơi hoặc phát hiện volume cũ chưa gắn container, job dừng để tránh chọn nhầm bản dữ liệu.
+- Schema được đối chiếu với PostgreSQL khởi tạo từ `src/Database.sql` trong CI. Database mới dùng file này trong lần khởi tạo đầu. Nếu schema cũ khác, workflow báo lỗi và giữ dữ liệu. Cần xử lý riêng trên development với backup và quy trình đã chốt cho database trước khi chạy lại.
+- Deploy dùng digest đã smoke test, đợi PostgreSQL, Redis, AI, web và Dedicated báo sẵn sàng, rồi xác minh HTTP API và web. `.deploy/current` chỉ cập nhật sau khi tất cả kiểm tra đạt. Khi có release trước do workflow quản lý và schema tương thích, lỗi khởi động sẽ thử khôi phục bộ image trước. Lần chuyển đầu giữ nguyên nguồn cũ và backup để phục hồi bằng lệnh Compose cũ đã biết.
+- `AI_ENABLE_MODEL` và `HybridAi__ModelEnabled` bật ở development. `AiService/models/tier.joblib` và `tier.json` phải qua cổng model mới được phục vụ. Trong lúc thiếu artifact đạt cổng, FastAPI báo `model=unavailable` và tiếp tục coaching theo luật. Đặt thư mục và file artifact đủ quyền đọc cho user của container AI.
 
-Hoặc build và phát hành trong một lệnh:
+Xem workflow run và artifact phát hành ở tab **Actions**. Các script phát hành native cục bộ cũ có thể dùng để kiểm tra binary. Workflow này nhận trực tiếp commit `main` và tự build native.
 
-```powershell
-.\scripts\Publish-DockerHubRelease.ps1 -Publish
-```
+## Tài liệu tham chiếu
 
-`-Publish` yêu cầu branch `main` và `origin` thuộc github.com. Nếu main có branch protection,
-merge PR trước, cập nhật main cục bộ rồi build commit đã merge; script không vượt bảo vệ nhánh.
-Unity CLI tái sử dụng Editor đang mở và giữ Editor đó chạy; nếu chưa mở, CLI khởi động Editor
-headless. Helper chọn hai scene server, loại App UI native plugin, chỉ bật HTTP nội bộ trong
-build server và khôi phục thiết lập build sau khi xong. Đầu ra mới dùng thư mục riêng mỗi lần,
-không trộn với lần build trước.
-
-Gói nằm tại `artifacts/native-server/packages/<commit>/`; thư mục artifacts được Git bỏ qua.
-Script kiểm tra lại HEAD, working tree, metadata và checksum trước khi push. Nếu Unity làm
-thay đổi source/asset trong build, script dừng để bạn kiểm tra; không tự xóa thay đổi đó.
-`-SkipBuild` chỉ dùng gói đúng commit hiện tại, không dùng build cũ cho commit mới.
-
-Nếu upload gián đoạn khi release còn draft, chạy lại `-Publish -SkipBuild`: script tải lại
-hai asset trong draft rồi publish. Release đã publish không bị thay binary. Để thử lại CI,
-vào **Actions → Build and publish Docker Hub images → Run workflow**, chọn **main** và nhập
-`server_release = server-build-<full-commit>`. Mỗi lần thử có mã image mới theo run/attempt.
-
-## Lấy bộ deployment xuống Ubuntu
-
-Sau khi workflow thành công, tải artifact `deployment-<mã>` ở cuối trang run. Giải nén ZIP
-artifact để lấy `PickleVerse-deployment-<mã>.tar.gz` và `.sha256`, chuyển hai file đó sang Ubuntu.
-Bộ này nhỏ: binary nằm trên Docker Hub. Đây là gói đã vượt smoke test, khác native release
-đầu vào chỉ chứa binary.
-
-Trong thư mục đã nhận hai file, thay `<mã>` bằng mã thực của run:
-
-```bash
-sha256sum -c PickleVerse-deployment-<mã>.tar.gz.sha256
-mkdir -p release
-tar -xzf PickleVerse-deployment-<mã>.tar.gz -C release
-cd release
-cp .env.example .env
-```
-
-Chỉnh `.env` theo máy Ubuntu: JWT, SMTP, AI service key, dedicated service key và các biến
-cấu hình cần thiết. Đặt `PKV_DEDICATED_ENABLED=true` và một `PKV_GAME_SERVER_KEY` riêng.
-`release.env` chỉ chứa repository/mã phát hành, không chứa secret. Nếu thay stack đang có,
-dùng đúng thư mục/project Compose của stack đó và chuyển `.env` của bạn vào thư mục release;
-việc reset dữ liệu development thực hiện riêng theo hướng dẫn vận hành hiện có.
-
-```bash
-docker compose --env-file .env --env-file release.env \
-  -f docker-compose.yml -f docker-compose.dedicated.yml \
-  -f docker-compose.hub.yml -f docker-compose.release.yml \
-  --profile dedicated pull
-
-docker compose --env-file .env --env-file release.env \
-  -f docker-compose.yml -f docker-compose.dedicated.yml \
-  -f docker-compose.hub.yml -f docker-compose.release.yml \
-  --profile dedicated up -d --no-build
-
-docker compose --env-file .env --env-file release.env \
-  -f docker-compose.yml -f docker-compose.dedicated.yml \
-  -f docker-compose.hub.yml -f docker-compose.release.yml \
-  --profile dedicated ps
-```
-
-Yêu cầu Compose ≥ 2.24.4. Thêm `--profile admin` cạnh `--profile dedicated` để bật web admin.
-Web mặc định chỉ mở `127.0.0.1:3000`; đặt reverse proxy/TLS hoặc SSH tunnel khi dùng từ xa.
-Nginx dùng `API_UPSTREAM=http://backend-api:8080`, hỗ trợ route SPA `/login` và proxy `/api`.
-Không sửa `image` thành alias chung. Rollback image bằng bộ deployment cũ tương thích với
-schema hiện tại; workflow không tự thay database hoặc tự deploy lên Ubuntu.
-
-## Phạm vi kiểm thử
-
-Workflow kiểm tra API/client contract không cần database, Python rules, frontend build,
-độ nhất quán gói phát hành và stack Docker mới khởi tạo từ `src/Database.sql`.
-Smoke test kiểm tra readiness API, SPA/auth proxy, AI có service authentication và heartbeat
-worker. Stack CI có project riêng `pkv-ci-*`, không dùng volume/database development.
-Đây chưa phải kiểm thử trận Photon 1v1/2v2, animation, reconnect hay đo hiệu năng gameplay.
-
-Kiểm chứng cục bộ 05/11/2026: xem phần bàn giao CI cùng ngày trong
-`Remember/PickleVerse_Codex_Handover.md`. Chưa coi việc kiểm tra local là một run GitHub
-hoặc một lần publish Docker Hub thành công.
-
-## Nguồn chính thức
-
-- [Docker Build với GitHub Actions](https://docs.docker.com/build/ci/github-actions/)
-- [GitHub sự kiện release.published](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#release)
-- [GitHub CLI tạo release và tải asset](https://cli.github.com/manual/gh_release_create)
-- [GitHub CLI publish draft](https://cli.github.com/manual/gh_release_edit)
-- [Unity 6000.6 Dedicated Server build](https://docs.unity.com/en-us/engine/6000.6/manual/platform-specific/dedicated-server/build)
+- [GameCI Unity Builder](https://game.ci/docs/github/builder/) và [kích hoạt Unity trên CI](https://game.ci/docs/github/activation/)
+- [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax) và [GitHub deployment environments](https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments)
+- [Docker Compose bind mounts và service config](https://docs.docker.com/reference/compose-file/services/) và [Docker login qua stdin](https://docs.docker.com/reference/cli/docker/login/)
+- [Docker Official Image PostgreSQL và init database](https://hub.docker.com/_/postgres)

@@ -2,13 +2,7 @@
 
 ## CI/CD Docker Hub
 
-Build Unity Dedicated Server trên máy đã có license bằng
-`scripts/Publish-DockerHubRelease.ps1`. Script đóng gói binary theo commit rồi,
-khi có `-Publish`, push `main` và phát hành asset GitHub Release.
-GitHub Actions tải binary đó, build/push bốn image `api`, `ai`, `web`, `server`
-vào `tadminm/pickelverse`, kiểm tra cả stack và xuất gói Compose ghim digest.
-Push/PR chỉ kiểm thử; CI chỉ cần secret `DOCKERHUB_TOKEN`, không cần license Unity.
-Xem [hướng dẫn CI/CD và triển khai Ubuntu](Doc/CI_CD_DockerHub.md).
+Push vào `main` kích hoạt GitHub Actions build Unity Dedicated Server, API, AI và web, đẩy bốn image vào `tadminm/pickelverse` và kiểm tra release theo digest. Sau đó workflow deploy tự động lên Linux development qua SSH. [Cách thiết lập secrets, dữ liệu bền vững và vận hành](Doc/CI_CD_DockerHub.md)
 
 ## Khởi tạo database mới
 
@@ -78,3 +72,7 @@ Xem [triển khai và kết quả kiểm tra](Doc/Proccess/Friend_Room_Invitatio
 Kiến trúc Unity-local bot + FastAPI analytics, khởi tạo database, cờ triển khai và hướng dẫn kiểm thử nằm tại [Hybrid AI](Doc/Hybrid_AI_Implementation.md). Các bảng Hybrid và Elo ledger được tạo trực tiếp bởi `src/Database.sql`.
 
 Hướng dẫn thử coaching trên môi trường development đã bật ngày 31/10/2026: [AI service và cách test trong game](Doc/AI_Service_Activation_20261031.md).
+
+## Kiểm thử
+
+Các bộ kiểm thử .NET, FastAPI và Unity nằm trong `src/Testing`. [Cách chạy và đề xuất kiến trúc kiểm thử](src/Testing/README.md)

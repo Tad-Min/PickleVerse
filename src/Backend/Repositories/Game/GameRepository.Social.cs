@@ -6,7 +6,7 @@ namespace Repositories.Game;
 
 public sealed partial class GameRepository
 {
-    IQueryable<Playerprofile> VerifiedPlayers => db.Playerprofiles.AsNoTracking().Where(p => p.User.Status == "ACTIVE"
+    IQueryable<Playerprofile> VerifiedPlayers => db.Playerprofiles.AsNoTracking().Where(p => p.User.Status == UserStatus.Active
         && p.User.Verificationemails.OrderByDescending(v => v.Createdat).ThenByDescending(v => v.Verificationemailid)
             .Select(v => v.Isverified).FirstOrDefault());
     public async Task<List<(Guid id, int elo)>> LeaderboardScores() => (await VerifiedPlayers.OrderByDescending(p => p.Elo).ThenBy(p => p.Userid)
@@ -33,7 +33,7 @@ public sealed partial class GameRepository
             .Select(f => f.Userid1 == self ? f.Userid2 : f.Userid1).ToListAsync();
         var blocked = await db.Blockedusers.Where(b => b.Userid == self || b.Blockeduserid == self)
             .Select(b => b.Userid == self ? b.Blockeduserid : b.Userid).ToListAsync();
-        var requests = await db.Friendrequests.AsNoTracking().Where(r => r.Status == "PENDING" && (r.Senderid == self || r.Receiverid == self))
+        var requests = await db.Friendrequests.AsNoTracking().Where(r => r.Status == FriendRequestStatus.Pending && (r.Senderid == self || r.Receiverid == self))
             .OrderByDescending(r => r.Createdat).ThenByDescending(r => r.Requestid).ToListAsync();
         var visible = players.Where(p => !blocked.Contains(p.Id)).ToList();
         foreach (var p in visible)
@@ -70,7 +70,7 @@ public sealed partial class GameRepository
     public Task<bool> Blocked(Guid a, Guid b) => db.Blockedusers.AnyAsync(x => x.Userid == a && x.Blockeduserid == b || x.Userid == b && x.Blockeduserid == a);
     public Task<bool> Friends(Guid a, Guid b) => db.Friendships.AnyAsync(f => f.Userid1 == a && f.Userid2 == b || f.Userid1 == b && f.Userid2 == a);
     public Task<bool> ActiveVerified(Guid player) => VerifiedPlayers.AnyAsync(p => p.Userid == player);
-    public Task<int> PendingIncoming(Guid self, Guid target) => db.Friendrequests.Where(r => r.Senderid == target && r.Receiverid == self && r.Status == "PENDING")
+    public Task<int> PendingIncoming(Guid self, Guid target) => db.Friendrequests.Where(r => r.Senderid == target && r.Receiverid == self && r.Status == FriendRequestStatus.Pending)
         .Select(r => r.Requestid).FirstOrDefaultAsync();
     public Task<Guid?> FriendRequestSender(Guid receiver, int request) => db.Friendrequests.Where(r => r.Requestid == request && r.Receiverid == receiver)
         .Select(r => (Guid?)r.Senderid).SingleOrDefaultAsync();
@@ -79,22 +79,22 @@ public sealed partial class GameRepository
         ON CONFLICT(senderid,receiverid) DO UPDATE SET requestid=nextval(pg_get_serial_sequence('friendrequests','requestid')),
             status='PENDING',createdat=CURRENT_TIMESTAMP,respondedat=NULL WHERE friendrequests.status<>'PENDING'
         """);
-    public Task<int> RespondFriendRequest(Guid self, Guid target, int request, string status) => db.Friendrequests
-        .Where(r => r.Requestid == request && r.Senderid == target && r.Receiverid == self && r.Status == "PENDING")
+    public Task<int> RespondFriendRequest(Guid self, Guid target, int request, FriendRequestStatus status) => db.Friendrequests
+        .Where(r => r.Requestid == request && r.Senderid == target && r.Receiverid == self && r.Status == FriendRequestStatus.Pending)
         .ExecuteUpdateAsync(s => s.SetProperty(r => r.Status, status).SetProperty(r => r.Respondedat, DateTime.UtcNow));
-    public Task<bool> FriendRequestHasStatus(Guid self, Guid target, int request, string status) => db.Friendrequests
+    public Task<bool> FriendRequestHasStatus(Guid self, Guid target, int request, FriendRequestStatus status) => db.Friendrequests
         .AnyAsync(r => r.Requestid == request && r.Senderid == target && r.Receiverid == self && r.Status == status);
     public Task AddFriendship(Guid a, Guid b) => db.Database.ExecuteSqlInterpolatedAsync($"""
         INSERT INTO friendships(userid1,userid2) VALUES(LEAST({a},{b}),GREATEST({a},{b})) ON CONFLICT DO NOTHING
         """);
     public Task RemoveFriendship(Guid a, Guid b) => db.Friendships.Where(f => f.Userid1 == a && f.Userid2 == b || f.Userid1 == b && f.Userid2 == a).ExecuteDeleteAsync();
     public Task DeclineRequests(Guid a, Guid b) => db.Friendrequests.Where(r => r.Senderid == a && r.Receiverid == b || r.Senderid == b && r.Receiverid == a)
-        .ExecuteUpdateAsync(s => s.SetProperty(r => r.Status, "DECLINED").SetProperty(r => r.Respondedat, DateTime.UtcNow));
+        .ExecuteUpdateAsync(s => s.SetProperty(r => r.Status, FriendRequestStatus.Declined).SetProperty(r => r.Respondedat, DateTime.UtcNow));
     public Task Block(Guid self, Guid target) => db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO blockedusers(userid,blockeduserid) VALUES({self},{target}) ON CONFLICT DO NOTHING");
     public Task Unblock(Guid self, Guid target) => db.Blockedusers.Where(b => b.Userid == self && b.Blockeduserid == target).ExecuteDeleteAsync();
-    public async Task<bool> CanInvite(Guid a, Guid b) => await Friends(a, b) && !await Blocked(a, b) && await db.Users.AnyAsync(u => u.Userid == b && u.Status == "ACTIVE");
+    public async Task<bool> CanInvite(Guid a, Guid b) => await Friends(a, b) && !await Blocked(a, b) && await db.Users.AnyAsync(u => u.Userid == b && u.Status == UserStatus.Active);
     public Task<List<InvitableFriend>> InvitableFriends(Guid self, string query, int offset) => db.Playerprofiles.AsNoTracking()
-        .Where(p => p.User.Status == "ACTIVE" && p.Userid != self
+        .Where(p => p.User.Status == UserStatus.Active && p.Userid != self
             && db.Friendships.Any(f => f.Userid1 == self && f.Userid2 == p.Userid || f.Userid1 == p.Userid && f.Userid2 == self)
             && !db.Blockedusers.Any(b => b.Userid == self && b.Blockeduserid == p.Userid || b.Userid == p.Userid && b.Blockeduserid == self)
             && (p.Playername.ToLower().Contains(query.ToLower()) || p.Userid.ToString().Replace("-", "").Contains(query.ToLower().Replace("-", ""))))

@@ -8,6 +8,7 @@ namespace PickleVerse.Services
     {
         public static AccountRuntime Instance { get; private set; }
         public AccountService Account { get; private set; }
+        internal ApiClient Api { get; private set; }
         public BackendApiSettings Settings { get; private set; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
@@ -41,7 +42,8 @@ namespace PickleVerse.Services
                 Settings = ScriptableObject.CreateInstance<BackendApiSettings>();
             var transport = gameObject.AddComponent<UnityApiTransport>();
             transport.Settings = Settings;
-            Account = new AccountService(new ApiClient(transport));
+            Api = new ApiClient(transport);
+            Account = new AccountService(Api);
         }
         void OnDestroy()
         {

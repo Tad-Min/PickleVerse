@@ -37,6 +37,7 @@ public sealed class RedisAppActivity(IConnectionMultiplexer connection, RedisSet
         public long notBefore;
         public Dictionary<string, Counter> sessions = [];
         public List<Interval> coverage = [];
+        public Dictionary<string,long> daily = [];
     }
     public static AppException Expired() => new("Phiên hoạt động đã hết hạn. Hãy bắt đầu phiên mới.", HttpStatusCode.Gone);
 

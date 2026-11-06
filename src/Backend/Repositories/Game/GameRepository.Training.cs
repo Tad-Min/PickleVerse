@@ -9,6 +9,7 @@ public sealed partial class GameRepository
 {
     public async Task<TrainingProfile> Training(Guid player)
     {
+        long epoch = await LearningEpoch(player);
         var records = await db.Playerlessondrills.AsNoTracking().Where(p => p.Playerid == player && p.LessonDrill.Lesson.Code != null)
             .OrderBy(p => p.LessonDrill.Lesson.SortOrder).ThenBy(p => p.Lessonid)
             .Select(p => new { Code = p.LessonDrill.Lesson.Code!, Row = p }).ToListAsync();
@@ -16,11 +17,11 @@ public sealed partial class GameRepository
             attempts = p.Row.Attempts, retries = p.Row.Retries, completions = p.Row.Completions, bestStars = p.Row.Score,
             trials = p.Row.Trials, successes = p.Row.Successes, seconds = p.Row.Seconds, bestAccuracy = p.Row.BestAccuracy,
             errors = GameJson.Read<List<TrainingErrorCount>>(p.Row.Errors) }).ToList() };
-        var active = await db.TrainingSessionRecords.AsNoTracking().Where(s => s.PlayerId == player && s.IsCurrent).Select(s => s.Data).SingleOrDefaultAsync();
+        var active = await db.TrainingSessionRecords.AsNoTracking().Where(s => s.PlayerId == player && s.IsCurrent && s.ProgressEpoch == epoch).Select(s => s.Data).SingleOrDefaultAsync();
         if (active != null) { training.active = GameJson.Read<TrainingAttempt>(active); training.lastLesson = training.active.lessonId; }
         var completed = await (from session in db.TrainingSessionRecords.AsNoTracking()
             join lesson in db.Lessons on session.LessonId equals lesson.Lessonid
-            where session.PlayerId == player && session.Completed
+            where session.PlayerId == player && session.Completed && session.ProgressEpoch == epoch
             orderby session.Sequence
             select new { session.AttemptId, session.LessonId, session.Data, lesson.Code }).ToListAsync();
         training.completedAttempts = completed.Select(s => s.AttemptId.ToString("N")).ToList();
@@ -49,14 +50,16 @@ public sealed partial class GameRepository
         await db.TrainingSessionRecords.Where(s => s.PlayerId == player && s.IsCurrent).ExecuteUpdateAsync(s => s.SetProperty(x => x.IsCurrent, false));
         var row = links[0];
         db.TrainingSessionRecords.Add(new TrainingSessionRecord { AttemptId = Guid.Parse(attempt.id), PlayerId = player,
-            LessonId = row.lesson, DrillId = row.drill, Data = GameJson.Write(attempt), IsCurrent = true, CreatedAt = now, UpdatedAt = now });
+            LessonId = row.lesson, DrillId = row.drill, Data = GameJson.Write(attempt), CatalogVersion = attempt.catalogVersion ?? "",
+            ProgressEpoch = attempt.progressEpoch, IsCurrent = true, CreatedAt = now, UpdatedAt = now });
         await db.SaveChangesAsync();
         return 1;
     }
     public Task<TrainingSessionRecord?> TrainingAttempt(Guid player, Guid attempt) => db.TrainingSessionRecords.AsNoTracking()
         .SingleOrDefaultAsync(s => s.PlayerId == player && s.AttemptId == attempt);
-    public Task UpdateTraining(Guid attempt, string data, bool completed, DateTime now) => db.TrainingSessionRecords.Where(s => s.AttemptId == attempt)
-        .ExecuteUpdateAsync(s => s.SetProperty(x => x.Data, data).SetProperty(x => x.Completed, completed).SetProperty(x => x.UpdatedAt, now));
+    public Task UpdateTraining(Guid attempt, string data, bool completed, DateTime now, string? fingerprint = null) => db.TrainingSessionRecords.Where(s => s.AttemptId == attempt)
+        .ExecuteUpdateAsync(s => s.SetProperty(x => x.Data, data).SetProperty(x => x.Completed, completed).SetProperty(x => x.UpdatedAt, now)
+            .SetProperty(x => x.Fingerprint, x => fingerprint ?? x.Fingerprint));
     public Task RecordLesson(Guid player, string code, int stars, bool claimed) => db.Database.ExecuteSqlInterpolatedAsync($"""
         INSERT INTO playerlessondrills(playerid,lessonid,drillid,score,isclaimedreward)
         SELECT {player},l.lessonid,d.drillid,{stars},{claimed} FROM lessons l JOIN drills d ON d.code=l.code WHERE l.code={code}

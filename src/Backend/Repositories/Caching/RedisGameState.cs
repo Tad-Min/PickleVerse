@@ -7,9 +7,10 @@ namespace Repositories.Caching;
 
 public sealed class QueueEntry
 {
-    public string searchId = "", playerId = "", group = "", region = "asia", state = "SEARCHING", matchId = "", session = "", host = "";
+    public string searchId = "", playerId = "", group = "", region = "asia", matchId = "", session = "", host = "";
+    public MatchmakingSearchStatus state = MatchmakingSearchStatus.Searching;
     public int mode = 1, protocol, elo, losses, botElo;
-    public long started, lastSeen, assigned;
+    public long started, lastSeen, assigned, lastRecorded;
     public string[] party = [];
     public RoomMember member = new();
     public MatchRoster? roster;
@@ -18,7 +19,6 @@ public sealed class QueueEntry
 /// <summary>Transient state only. Every transition compares the previous value inside Redis.</summary>
 public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSettings settings)
 {
-    public RedisAppActivity Activity { get; } = new(connection, settings);
     readonly IDatabase redis = connection.GetDatabase();
     public string Prefix => settings.KeyPrefix + "{matchmaking}:";
     RedisKey Search(string id) => Prefix + "search:" + id;
@@ -33,16 +33,18 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
         var raw = await redis.StringGetAsync(Search(id.ToString()));
         if (raw.IsNullOrEmpty) return false;
         var entry = GameJson.Read<QueueEntry>(raw.ToString());
-        return entry.state == "SEARCHING" && entry.lastSeen + settings.QueueLeaseSeconds * 1000L > now;
+        return entry.state == MatchmakingSearchStatus.Searching && entry.lastSeen + settings.QueueLeaseSeconds * 1000L > now;
     }
     static AppException Conflict(string message) => new(message, HttpStatusCode.Conflict);
+    RedisKey Journal => Prefix + "journal";
     public async Task<QueueEntry> Begin(QueueEntry entry)
     {
+        entry.lastRecorded = entry.started;
         var raw = await redis.ScriptEvaluateAsync("""
             local old=redis.call('GET',KEYS[1])
             if old then
               local e=cjson.decode(old)
-              if e.playerId~=ARGV[1] or e.state=='CANCELLED' then return false end
+              if e.playerId~=ARGV[1] or e.state=='CANCELLED' or e.state=='TIMEOUT' then return false end
               return old
             end
             local previous=redis.call('GET',KEYS[2])
@@ -50,8 +52,9 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
             redis.call('SET',KEYS[1],ARGV[3],'EX',ARGV[4])
             redis.call('SET',KEYS[2],ARGV[2],'EX',ARGV[4])
             redis.call('ZADD',KEYS[3],ARGV[5],ARGV[2])
+            redis.call('XADD',KEYS[4],'*','data',ARGV[3])
             return ARGV[3]
-            """, [Search(entry.searchId), Owner(entry.playerId), Queue(entry)],
+            """, [Search(entry.searchId), Owner(entry.playerId), Queue(entry), Journal],
             [entry.playerId, entry.searchId, GameJson.Write(entry), settings.SearchRetentionSeconds, entry.started]);
         if (raw.IsNull)
             throw Conflict("Bạn đang có lượt tìm trận khác hoặc lượt tìm trận đã hết hiệu lực.");
@@ -68,7 +71,7 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
             if (raw.IsNullOrEmpty)
                 throw Conflict("Lượt tìm trận đã hết hiệu lực. Hãy tìm trận lại.");
             var entry = GameJson.Read<QueueEntry>(raw!);
-            if (entry.playerId != player.ToString("N") || entry.state == "CANCELLED")
+            if (entry.playerId != player.ToString("N") || entry.state is MatchmakingSearchStatus.Cancelled or MatchmakingSearchStatus.TimedOut)
                 throw Conflict("Lượt tìm trận không còn hiệu lực.");
             if (!touch)
                 return entry;
@@ -85,6 +88,9 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
         var args = new List<RedisValue> { after.Length, settings.SearchRetentionSeconds, bot ?? "" };
         for (int i = 0; i < after.Length; i++)
         {
+            var previous = GameJson.Read<QueueEntry>(before[i]);
+            after[i].lastRecorded = after[i].state != previous.state || after[i].lastSeen - previous.lastRecorded >= 15000
+                ? after[i].lastSeen : previous.lastRecorded;
             keys.Add(Search(after[i].searchId));
             keys.Add(Owner(after[i].playerId));
             args.Add(before[i]);
@@ -93,17 +99,21 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
             args.Add(after[i].started);
         }
         args.Add(botLeaseSeconds);
+        keys.Add(Journal);
         var result = await redis.ScriptEvaluateAsync("""
             local n=tonumber(ARGV[1])
             for i=1,n do if redis.call('GET',KEYS[2*i+1])~=ARGV[4*(i-1)+4] then return 0 end end
             if ARGV[3]~='' and redis.call('EXISTS',KEYS[2])==1 then return 0 end
             for i=1,n do
               local a=4*(i-1)+4
-              redis.call('SET',KEYS[2*i+1],ARGV[a+1],'EX',ARGV[2])
               local e=cjson.decode(ARGV[a+1])
+              local previous=cjson.decode(ARGV[a])
+              local journal=e.state~=previous.state or e.lastRecorded~=(previous.lastRecorded or 0)
+              redis.call('SET',KEYS[2*i+1],ARGV[a+1],'EX',ARGV[2])
+              if journal then redis.call('XADD',KEYS[#KEYS],'*','data',ARGV[a+1]) end
               if e.state=='SEARCHING' then redis.call('ZADD',KEYS[1],ARGV[a+3],ARGV[a+2])
               else redis.call('ZREM',KEYS[1],ARGV[a+2]) end
-              if e.state=='CANCELLED' then
+              if e.state=='CANCELLED' or e.state=='TIMEOUT' then
                 if redis.call('GET',KEYS[2*i+2])==ARGV[a+2] then redis.call('DEL',KEYS[2*i+2]) end
               else redis.call('SET',KEYS[2*i+2],ARGV[a+2],'EX',ARGV[2]) end
             end
@@ -133,9 +143,9 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
             else
             {
                 var entry = GameJson.Read<QueueEntry>(values[i]!);
-                if (staleBefore.HasValue && entry.state == "SEARCHING" && entry.lastSeen < staleBefore.Value)
+                if (staleBefore.HasValue && entry.state == MatchmakingSearchStatus.Searching && entry.lastSeen < staleBefore.Value)
                 {
-                    entry.state = "CANCELLED";
+                    entry.state = MatchmakingSearchStatus.TimedOut;
                     await Compare([values[i]!], [entry]);
                 }
                 else result.Add((values[i]!, entry));
@@ -156,7 +166,7 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
                 if (raw.IsNullOrEmpty)
                     break;
                 var e = GameJson.Read<QueueEntry>(raw!);
-                e.state = "CANCELLED";
+                e.state = MatchmakingSearchStatus.Cancelled;
                 if (await Compare([raw!], [e]))
                 {
                     await ReleaseBot(e);
@@ -177,7 +187,7 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
         if (raw.IsNullOrEmpty)
             return;
         var current = GameJson.Read<QueueEntry>(raw!);
-        current.state = "CANCELLED";
+        current.state = MatchmakingSearchStatus.Cancelled;
         if (await Compare([raw!], [current]))
             await ReleaseBot(current);
     }
@@ -205,7 +215,7 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
     }
     public async Task PublishRoom(QueueEntry entry)
     {
-        if (entry.state != "MATCHED" || entry.host != entry.playerId)
+        if (entry.state != MatchmakingSearchStatus.Matched || entry.host != entry.playerId)
             throw Conflict("Chỉ người tạo phòng đã được ghép mới được báo phòng sẵn sàng.");
         await redis.StringSetAsync(Prefix + "room:" + entry.matchId, entry.session, TimeSpan.FromSeconds(settings.SearchRetentionSeconds));
     }
@@ -264,5 +274,10 @@ public sealed class RedisGameState(IConnectionMultiplexer connection, RedisSetti
         await redis.HashSetAsync(Ready(match), "cancelled", "1");
         await redis.KeyExpireAsync(Ready(match), TimeSpan.FromSeconds(settings.SearchRetentionSeconds));
     }
+    public async Task<List<(string id,string data)>> ReadJournal() => (await redis.StreamRangeAsync(Journal,"-","+",100))
+        .Select(x=>(x.Id.ToString(),x.Values.Single(v=>v.Name=="data").Value.ToString())).ToList();
+    public Task AcknowledgeJournal(string id) => redis.StreamDeleteAsync(Journal,[id]);
+    public async Task<QueueEntry?> SearchSnapshot(Guid id)
+    { var raw=await redis.StringGetAsync(Search(id.ToString("N")));return raw.IsNullOrEmpty?null:GameJson.Read<QueueEntry>(raw.ToString()); }
     public sealed record ReadyState(bool AllAccepted, long Deadline, HashSet<string> Accepted);
 }

@@ -17,7 +17,7 @@ namespace Repositories.Interfaces
         Task AddTelemetryReplayAsync(Matchhistoryreplay replay);
         Task UpdateTelemetryReplayAsync(Matchhistoryreplay replay);
         Task AddReportAsync(Reportplayerinmatch report);
-        Task<List<Reportplayerinmatch>> GetReportsAsync(string? status);
+        Task<List<Reportplayerinmatch>> GetReportsAsync(ReportStatus? status);
         Task<Reportplayerinmatch?> GetReportAsync(Guid reporterId, Guid reportedPlayerId, Guid matchId);
         Task UpdateReportAsync(Reportplayerinmatch report);
     }

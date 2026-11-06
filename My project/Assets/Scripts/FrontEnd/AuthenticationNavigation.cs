@@ -27,6 +27,8 @@ namespace PickleVerse.FrontEnd
             // Authentication and Menu warm-up share an opaque Loading scene. The
             // prepared transition owns rollback until both account and game data are ready.
             if (SceneLoading.IsPreparedTransition && SceneLoading.Destination == "Menu") return;
+            if (ProgressionRuntime.Instance.IsOffline && ProgressionRuntime.Instance.Ready &&
+                (SceneManager.GetActiveScene().name == "Menu" || SceneManager.GetActiveScene().name == "Training" || SceneManager.GetActiveScene().name == "Tutorial")) return;
             if (AccountRuntime.Ensure().Account.IsSignedIn && ProgressionRuntime.Instance.Ready) return;
             navigating = true;
             Time.timeScale = 1;

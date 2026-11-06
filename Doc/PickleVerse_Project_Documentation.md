@@ -301,7 +301,7 @@ Chạy lại kiểm thử backend (mặc định không gửi thư):
 
 ```powershell
 $env:PKV_TEST_POSTGRES = 'Host=127.0.0.1;Port=15432;Database=postgres;Username=sa;Password=12345'
-dotnet run --project src/Backend/IntegrationChecks/IntegrationChecks.csproj
+dotnet run --project src/Testing/Backend/IntegrationChecks.csproj
 ```
 
 Chỉ bật `PKV_RUN_SMTP_TEST=1` khi chủ động muốn gửi một OTP tới Gmail gửi đang cấu hình. Không đưa output chứa token hoặc credential vào log.

@@ -62,9 +62,9 @@ export const adminApi = {
     return res.data;
   },
 
-  unbanUser: async (userId: string): Promise<{ message: string }> => {
+  unbanUser: async (userId: string, reason: string): Promise<{ message: string }> => {
     if (isMockMode) return mockAdminApi.unbanUser(userId);
-    const res = await apiClient.post<{ message: string }>(`/api/Admin/users/${userId}/unban`);
+    const res = await apiClient.post<{ message: string }>(`/api/Admin/users/${userId}/unban`, { reason });
     return res.data;
   },
 

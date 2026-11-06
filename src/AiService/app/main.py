@@ -4,9 +4,11 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from .engine import analyze
 from .models import AnalyzeRequest
 from .tier import TierPredictor
+from .calibration import CoachingCalibration
 
 app = FastAPI(title="PickleVerse Hybrid AI", docs_url=None, redoc_url=None)
 predictor = TierPredictor(os.getenv("AI_MODEL_PATH"), os.getenv("AI_ENABLE_MODEL", "false").lower() == "true")
+calibration = CoachingCalibration(os.getenv("AI_COACHING_CALIBRATION_PATH"), os.getenv("AI_COACHING_CALIBRATION_SHA256"))
 
 
 def authorize(x_ai_key: str = Header(default="")):
@@ -24,12 +26,12 @@ def health():
 def ready():
     if len(os.getenv("AI_SERVICE_KEY", "")) < 32:
         raise HTTPException(503, "Service key is not configured")
-    return {"status": "ready", "ruleVersion": "rules-v1", "model": predictor.status}
+    return {"status": "ready", "ruleVersion": "rules-v1", "model": predictor.status, "coachingCalibration": calibration.status}
 
 
 @app.post("/v1/analyze-session", dependencies=[Depends(authorize)])
 def analyze_session(request: AnalyzeRequest):
     try:
-        return analyze(request, predictor.predict)
+        return analyze(calibration.bind(request), predictor.predict)
     except ValueError as error:
         raise HTTPException(422, str(error)) from error

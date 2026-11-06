@@ -303,7 +303,7 @@ public partial class PickleVerseContext : DbContext
             entity.ToTable("gamematches");
             entity.Property(e => e.Matchid).ValueGeneratedNever().HasColumnName("matchid");
             entity.Property(e => e.Kind).HasMaxLength(32).HasColumnName("kind");
-            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("PREPARING").HasColumnName("status");
+            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue(MatchStatus.Preparing).HasColumnName("status");
             entity.Property(e => e.Ratingpolicyversion).HasMaxLength(64).HasDefaultValue("legacy-v1").HasColumnName("ratingpolicyversion");
             entity.Property(e => e.Mode).HasDefaultValue((short)1).HasColumnName("mode");
             entity.Property(e => e.Photonsession).HasMaxLength(100).HasColumnName("photonsession");

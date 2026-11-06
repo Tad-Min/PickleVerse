@@ -64,7 +64,7 @@ namespace Repositories.Implementations
         public async Task<Friendrequest?> GetPendingFriendRequestAsync(Guid senderId, Guid receiverId)
         {
             return await _context.Friendrequests
-                .FirstOrDefaultAsync(f => f.Senderid == senderId && f.Receiverid == receiverId && f.Status == "PENDING");
+                .FirstOrDefaultAsync(f => f.Senderid == senderId && f.Receiverid == receiverId && f.Status == FriendRequestStatus.Pending);
         }
 
         public async Task AddFriendRequestAsync(Friendrequest request)

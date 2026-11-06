@@ -26,11 +26,13 @@ namespace PickleVerse.Multiplayer
             public MatchRoster roster;
         }
         Allocation job;
+        [Serializable] sealed class HeartbeatReply { public string stopOperationId, reason; }
         string serviceKey, url, results, abandonedLease;
-        bool stopping, fenced;
+        bool stopping, fenced, handlingStop;
         PhotonSession session;
         readonly Dictionary<string, CoachingSession> telemetry = new Dictionary<string, CoachingSession>();
         readonly HashSet<string> usedNonces = new HashSet<string>();
+        readonly HashSet<string> pendingAdmissions = new HashSet<string>();
         readonly string workerId = Guid.NewGuid().ToString("N");
         public LocalReplayRepository Replays { get; private set; }
         public string ReplayWriter => job.replayWriter;
@@ -64,7 +66,7 @@ namespace PickleVerse.Multiplayer
                     await MarkHealthy();
                     if (job == null || job.leaseId == abandonedLease) { job = null; await Task.Delay(1000); continue; }
                     if (job.protocol != Services.MultiplayerSceneConfiguration.ProtocolVersion) throw new InvalidOperationException("Protocol mismatch.");
-                    fenced = false; results = null; telemetry.Clear(); usedNonces.Clear();
+                    fenced = false; handlingStop = false; results = null; telemetry.Clear(); usedNonces.Clear(); pendingAdmissions.Clear();
                     session = PhotonSession.Create("Dedicated Fusion Server"); session.PrepareDedicated(job.roster);
                     var app = MultiplayerApp.Ensure(); app.AttachDedicatedServer(session, job.roster);
                     session.PeerJoined += (runner, peer) =>
@@ -72,8 +74,8 @@ namespace PickleVerse.Multiplayer
                         var claims = Claims(runner.GetPlayerConnectionToken(peer));
                         string rejected = claims == null ? "invalid-ticket" : !usedNonces.Add(claims.nonce) ? "used-ticket" : runner.GetPlayerUserId(peer) != claims.playerId ? "identity-mismatch" : app.ClientIdentities.Values.Contains(claims.playerId) ? "duplicate-player" : null;
                         if (rejected != null) { Debug.LogWarning("[Dedicated] Admission rejected: " + rejected); runner.Disconnect(peer); return; }
-                        app.RegisterDedicatedPeer(peer, claims.playerId);
-                        Debug.Log("[Dedicated] Roster peer admitted (" + app.ClientIdentities.Count + "/" + job.roster.HumanCount + ").");
+                        if (!pendingAdmissions.Add(claims.playerId)) { runner.Disconnect(peer); return; }
+                        _ = Admit(runner, peer, claims.playerId, job.leaseId);
                     };
                     _ = Heartbeat(job.leaseId);
                     ushort port = ushort.TryParse(Environment.GetEnvironmentVariable("PKV_GAME_PORT"), out var configured) ? configured : (ushort)3669;
@@ -83,7 +85,8 @@ namespace PickleVerse.Multiplayer
                         if (!valid) Debug.LogWarning("[Dedicated] Connection refused: invalid-ticket (bytes=" + (bytes?.Length ?? 0) + ").");
                         return valid;
                     });
-                    await Post<JToken>("ready", Command());
+                    if (fenced) throw new IOException("Allocation interrupted during startup.");
+                    await HandleOperation(await Post<HeartbeatReply>("ready", Command()));
                     Debug.Log("[Dedicated] Session ready: " + job.matchId);
                     double until = Time.realtimeSinceStartupAsDouble + 7200;
                     while (!stopping && !fenced && results == null && Time.realtimeSinceStartupAsDouble < until) await Task.Delay(100);
@@ -125,15 +128,46 @@ namespace PickleVerse.Multiplayer
             var claims = DedicatedAdmission.Verify(token, serviceKey, job.matchId, job.leaseId, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             return claims != null && !usedNonces.Contains(claims.nonce) && job.roster.members.Any(m => m.id == claims.playerId && !m.bot) ? claims : null;
         }
+        async Task Admit(Fusion.NetworkRunner runner, Fusion.PlayerRef peer, string player, string lease)
+        {
+            try
+            {
+                await Post<JToken>("admission", new { LeaseId = lease, PlayerId = player });
+                if (fenced || job?.leaseId != lease || !runner || !runner.ActivePlayers.Contains(peer)) return;
+                var app = MultiplayerApp.Instance;
+                app.RegisterDedicatedPeer(peer, player);
+                Debug.Log("[Dedicated] Roster peer admitted (" + app.ClientIdentities.Count + "/" + job.roster.HumanCount + ").");
+            }
+            catch (Exception error)
+            {
+                if (runner && runner.ActivePlayers.Contains(peer)) runner.Disconnect(peer);
+                Debug.LogWarning("[Dedicated] Admission denied (" + error.GetType().Name + ").");
+            }
+            finally { if (job?.leaseId == lease) pendingAdmissions.Remove(player); }
+        }
         object Command() => new { LeaseId = job.leaseId, MatchId = job.matchId };
         async Task Heartbeat(string lease)
         {
             try
             {
                 while (!stopping && !fenced && job?.leaseId == lease)
-                { await Post<JToken>("heartbeat", new { LeaseId = lease }); await MarkHealthy(); await Task.Delay(5000); }
+                {
+                    var reply = await Post<HeartbeatReply>("heartbeat", new { LeaseId = lease, Live = NetworkMatch.Instance?.LiveStatus() });
+                    await HandleOperation(reply); await MarkHealthy(); await Task.Delay(5000);
+                }
             }
             catch { if (job?.leaseId == lease) { fenced = true; if (session?.Runner) await session.Runner.Shutdown(); } }
+        }
+        async Task HandleOperation(HeartbeatReply reply)
+        {
+            if (job == null || string.IsNullOrEmpty(reply?.stopOperationId) || fenced || handlingStop) return;
+            handlingStop = true;
+            NetworkMatch.Instance?.InterruptFromServer(reply.reason);
+            await Retry(() => Post<JToken>("operations/ack", new { LeaseId = job.leaseId, OperationId = reply.stopOperationId }));
+            Debug.Log("[Dedicated] Stop operation acknowledged: " + reply.stopOperationId);
+            await Task.Delay(1500);
+            await Post<JToken>("release", Command());
+            fenced = true;
         }
         static Task MarkHealthy() => Task.Run(() =>
         {

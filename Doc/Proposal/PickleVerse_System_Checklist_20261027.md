@@ -337,7 +337,7 @@ Các artifact dưới `artifacts/` có thể bị Git ignore. Khi bàn giao chec
 | <a id="e-catalog"></a>CATALOG | [Game catalog loader](../../src/Backend/Services/Game/GameCatalogService.cs) | 17 |
 | <a id="e-coachui"></a>COACHUI | [Coaching UI](../../My%20project/Assets/Scripts/FrontEnd/PlayerProgressionMenu.Training.cs) | 124 |
 | <a id="e-collect"></a>COLLECT | [Online coaching collector](../../My%20project/Assets/Scripts/Multiplayer/NetworkMatch.Coaching.cs) | 1 |
-| <a id="e-configsrc"></a>CONFIGSRC | [Configuration test expectations](../../src/Backend/IntegrationChecks/ConfigurationChecks.cs) | 96 |
+| <a id="e-configsrc"></a>CONFIGSRC | [Configuration test expectations](../../src/Testing/Backend/ConfigurationChecks.cs) | 96 |
 | <a id="e-contact"></a>CONTACT | [Paddle contact](../../My%20project/Assets/Scripts/LocalMatch/PaddleContact.cs) | 1 |
 | <a id="e-criteria"></a>CRITERIA | [Tiêu chí tiến độ đã đề xuất](PickleVerse_Progress_Evaluation_Criteria.md) | 31 |
 | <a id="e-d-hybrid"></a>D-HYBRID | [Hybrid implementation và giới hạn](../Hybrid_AI_Implementation.md) | 1 |

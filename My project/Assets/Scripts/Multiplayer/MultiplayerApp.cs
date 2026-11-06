@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Fusion;
@@ -11,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 namespace PickleVerse.Multiplayer
 {
-    public sealed partial class MultiplayerApp : MonoBehaviour, IMultiplayerBackend
+    public sealed partial class MultiplayerApp : MonoBehaviour, IRoomBackend, IMatchmakingBackend
     {
         public static MultiplayerApp Instance { get; private set; }
         public static bool OpenDefaultRoomOnLoad;
@@ -41,7 +42,9 @@ namespace PickleVerse.Multiplayer
         public string Elapsed => clock.Display(Time.realtimeSinceStartupAsDouble);
         public event Action Changed;
         public event Action<ulong> PeerConnected;
-        public readonly Dictionary<ulong, string> ClientIdentities = new Dictionary<ulong, string>();
+        readonly Dictionary<ulong, string> clientIdentities = new Dictionary<ulong, string>();
+        public IReadOnlyDictionary<ulong, string> ClientIdentities { get; private set; }
+        internal void RemoveClientIdentity(ulong client) => clientIdentities.Remove(client);
         readonly SearchClock clock = new SearchClock();
         readonly ModeNavigationGuard navigation = new ModeNavigationGuard();
         readonly RoomOperationGate roomOperations = new RoomOperationGate();
@@ -54,7 +57,7 @@ namespace PickleVerse.Multiplayer
         string rankedSearchId = "";
         bool startingSearch;
         [Serializable]
-        sealed class RankedSearchTicket { public double remainingSeconds; public bool roomReady; public string state, matchId, session, hostPlayerId, region; public MatchRoster roster; }
+        sealed class RankedSearchTicket { public double remainingSeconds; public bool roomReady; public PickleVerse.Services.Api.RankedSearchState state; public string matchId, session, hostPlayerId, region; public MatchRoster roster; }
         double assignmentObserved;
         string lastPartyMatch = "";
         GameObject StatePrefab => Resources.Load<GameObject>("Photon/Session State");
@@ -80,6 +83,7 @@ namespace PickleVerse.Multiplayer
                 return;
             }
             Instance = this;
+            ClientIdentities = new ReadOnlyDictionary<ulong, string>(clientIdentities);
             DontDestroyOnLoad(gameObject);
             Application.runInBackground = true;
             Settings = Resources.Load<MultiplayerSettings>("MultiplayerSettings");
@@ -410,7 +414,7 @@ namespace PickleVerse.Multiplayer
                 var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST", "api/Game/ranked/poll", new { SearchId = Guid.Parse(rankedSearchId) });
                 if (generation != operation)
                     return;
-                if (ticket.state == "MATCHED")
+                if (ticket.state == PickleVerse.Services.Api.RankedSearchState.Matched)
                 {
                     if (assignmentObserved == 0)
                         assignmentObserved = Time.realtimeSinceStartupAsDouble;
@@ -436,7 +440,7 @@ namespace PickleVerse.Multiplayer
                         }
                     }
                 }
-                else if (ticket.state == "SEARCHING")
+                else if (ticket.state == PickleVerse.Services.Api.RankedSearchState.Searching)
                 {
                     if (Mode == PlayMode.Singles && ticket.remainingSeconds <= 0)
                     {
@@ -630,7 +634,7 @@ namespace PickleVerse.Multiplayer
             {
                 ulong key = (ulong)seat.peer;
                 bool joined = !ClientIdentities.ContainsKey(key);
-                ClientIdentities[key] = seat.member.id;
+                clientIdentities[key] = seat.member.id;
                 if (joined)
                     PeerConnected?.Invoke(key);
             }
@@ -836,7 +840,7 @@ namespace PickleVerse.Multiplayer
             }
             Roster = null;
             canonicalRoster = null;
-            ClientIdentities.Clear();
+            clientIdentities.Clear();
             courtLoading = false;
             CourtSceneSynchronized = true;
             PickleVerse.Settings.SceneLoading.CancelExternal();

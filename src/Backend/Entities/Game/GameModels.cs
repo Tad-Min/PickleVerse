@@ -13,7 +13,7 @@ public static class GameJson
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         IgnoreReadOnlyProperties = true,
-        Converters = { new JsonStringEnumConverter() }
+        Converters = { new Entities.Enums.GameplayEnumConverter() }
     };
     public static string Write<T>(T value) => JsonSerializer.Serialize(value, Options);
     // Anonymous request fingerprints expose get-only properties. Snapshot options omit those
@@ -31,6 +31,7 @@ public sealed class CosmeticOffer
 }
 public sealed class GameCatalog
 {
+    public int contentSchemaVersion = 2;
     public BotPolicy botPolicy = new();
     public bool hybridTelemetryEnabled, hybridCoachingEnabled;
     public bool dedicatedServerEnabled;
@@ -58,6 +59,8 @@ public sealed class OnlineInventory
 public sealed class GameSnapshot
 {
     public long revision;
+    public long learningEpoch;
+    public string? experienceChoice;
     public bool isMale;
     public PlayerProfile player = new();
     public OnlineInventory inventory = new();
@@ -109,13 +112,14 @@ public sealed class MatchFinishRequest
 }
 public sealed class TutorialUpdateRequest
 {
+    [Range(0,17)] public int Step { get; set; }
     [Required]
     [StringLength(64, MinimumLength = 8)]
     public string RequestId { get; set; } = "";
     [Required]
     public string Key { get; set; } = "";
 }
-public sealed class TutorialState { public bool completed, skipped; }
+public sealed class TutorialState { public bool completed, skipped; public int checkpoint; }
 
 public sealed class OnlineMatchRequest
 {
@@ -152,7 +156,8 @@ public sealed class RankedSearchTicket
 {
     public double remainingSeconds;
     public bool roomReady;
-    public string state = "SEARCHING", matchId = "", session = "", hostPlayerId = "", region = "";
+    public Entities.Enums.MatchmakingSearchStatus state = Entities.Enums.MatchmakingSearchStatus.Searching;
+    public string matchId = "", session = "", hostPlayerId = "", region = "";
     public PickleVerse.Multiplayer.MatchRoster? roster;
 }
 public sealed class RankedBotRequest

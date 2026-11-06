@@ -39,12 +39,17 @@ public sealed partial class OnlineGameService
         var previous = await matchmaking.Active(id);
         if (previous != null && previous.searchId != entry.searchId)
         {
-            bool expired = previous.state == "SEARCHING" ? previous.lastSeen < Milliseconds - matchmaking.QueueLeaseSeconds * 1000L :
+            bool expired = previous.state == MatchmakingSearchStatus.Searching ? previous.lastSeen < Milliseconds - matchmaking.QueueLeaseSeconds * 1000L :
                 previous.assigned < Milliseconds - (settings.Matchmaking.ReadyConfirmationSeconds + 35) * 1000L;
             bool ended = previous.matchId.Length > 0 && await _unitOfWork.Game.MatchEnded(Guid.Parse(previous.matchId));
             if (expired || ended)
                 await matchmaking.Cancel(id, Guid.Parse(previous.searchId));
         }
+        var history=await _unitOfWork.Game.SearchRecord(request.SearchId);
+        if(history!=null && (history.PlayerId!=id || await matchmaking.SearchSnapshot(request.SearchId)==null))
+            throw Conflict("Mã lượt tìm trận đã được sử dụng hoặc hết hạn.");
+        if(history!=null)entry.started=new DateTimeOffset(history.StartedAt).ToUnixTimeMilliseconds();
+        await _unitOfWork.Game.RecordSearch(entry,matchmaking.QueueLeaseSeconds);
         await matchmaking.Begin(entry);
         await tx.CommitAsync();
         return await PollRankedSearch(id, new() { SearchId = request.SearchId });
@@ -63,6 +68,11 @@ public sealed partial class OnlineGameService
     public async Task<RankedSearchTicket> PollRankedSearch(Guid id, RankedSearchRequest request)
     {
         var entry = await matchmaking.Get(id, request.SearchId, false);
+        if(entry.state==MatchmakingSearchStatus.Searching && entry.lastSeen<Milliseconds-matchmaking.QueueLeaseSeconds*1000L)
+        {
+            var before=GameJson.Write(entry);entry.state=MatchmakingSearchStatus.TimedOut;await matchmaking.Compare([before],[entry]);
+            throw Conflict("Lượt tìm trận đã hết hạn. Hãy tìm trận lại.");
+        }
         for (int retry = 0; retry < 8; retry++)
         {
             var before = GameJson.Write(entry);
@@ -71,13 +81,13 @@ public sealed partial class OnlineGameService
                 break;
             entry = await matchmaking.Get(id, request.SearchId, false);
         }
-        if (entry.state != "SEARCHING")
+        if (entry.state != MatchmakingSearchStatus.Searching)
         {
             if (await matchmaking.ReadyCancelled(entry.matchId) || entry.assigned < Milliseconds - (settings.Matchmaking.ReadyConfirmationSeconds + 35) * 1000L)
                 throw Conflict("Lượt ghép trận đã bị hủy hoặc hết hạn.");
             return await QueueTicket(entry);
         }
-        var candidates = (await matchmaking.Candidates(entry, Milliseconds - matchmaking.QueueLeaseSeconds * 1000L)).Where(x => x.entry.state == "SEARCHING" && x.entry.mode == entry.mode && x.entry.region == entry.region
+        var candidates = (await matchmaking.Candidates(entry, Milliseconds - matchmaking.QueueLeaseSeconds * 1000L)).Where(x => x.entry.state == MatchmakingSearchStatus.Searching && x.entry.mode == entry.mode && x.entry.region == entry.region
             && x.entry.protocol == entry.protocol && x.entry.lastSeen >= Milliseconds - matchmaking.QueueLeaseSeconds * 1000L).ToList();
         var groups = candidates.GroupBy(x => x.entry.group).Select(g => g.OrderBy(x => x.entry.playerId, StringComparer.Ordinal).ToList())
             .Where(g => g.Count == g[0].entry.party.Length && g.Select(x => x.entry.playerId).SequenceEqual(g[0].entry.party)
@@ -153,7 +163,7 @@ public sealed partial class OnlineGameService
         };
         foreach (var x in seats)
         {
-            x.entry.state = "MATCHED";
+            x.entry.state = MatchmakingSearchStatus.Matched;
             x.entry.matchId = match;
             x.entry.session = "PKV-" + match;
             x.entry.host = host;
@@ -178,7 +188,7 @@ public sealed partial class OnlineGameService
         }
         catch (Entities.Exceptions.AppException e) when (e.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            return new() { state = "CANCELLED" };
+            return new() { state = MatchmakingSearchStatus.Cancelled };
         }
         await matchmaking.Cancel(id, request.SearchId);
         if (entry.matchId.Length > 0)
@@ -186,7 +196,7 @@ public sealed partial class OnlineGameService
             var match=Guid.Parse(entry.matchId);var now=Now;
             await _unitOfWork.Game.CancelPreparation(match, now);
         }
-        return new() { state = "CANCELLED" };
+        return new() { state = MatchmakingSearchStatus.Cancelled };
     }
     public async Task<RoomMember> AssignRankedBot(Guid id, RankedBotRequest request)
     {
@@ -197,15 +207,20 @@ public sealed partial class OnlineGameService
         if (s.Player.pendingMatch != null)
             throw Conflict("Bạn vẫn còn trận chưa hoàn tất.");
         var search = await matchmaking.Get(id, request.SearchId, false);
+        if(search.state==MatchmakingSearchStatus.Searching && search.lastSeen<Milliseconds-matchmaking.QueueLeaseSeconds*1000L)
+        {
+            var before=GameJson.Write(search);search.state=MatchmakingSearchStatus.TimedOut;await matchmaking.Compare([before],[search]);
+            throw Conflict("Lượt tìm trận đã hết hạn. Hãy tìm trận lại.");
+        }
         if (search.mode != 1 || Milliseconds < search.started + settings.Matchmaking.BotFallbackSeconds * 1000L)
             throw Conflict($"Chưa đủ {settings.Matchmaking.BotFallbackSeconds} giây tìm đối thủ thật.");
-        if (search.state == "BOT")
+        if (search.state == MatchmakingSearchStatus.Bot)
         {
             if (search.matchId != request.MatchId.ToString("N") || search.session != request.Session)
                 throw Conflict("Bot đã được cấp cho phòng khác.");
             return search.roster!.members.Single(m => m.bot);
         }
-        if (search.state != "SEARCHING")
+        if (search.state != MatchmakingSearchStatus.Searching)
             throw Conflict("Lượt tìm trận đã có đối thủ thật.");
         var available = await _unitOfWork.Game.AvailableBots(RankedBotAccounts.Ids.Select(Guid.Parse).ToArray(), Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds));
         foreach (var bot in available)
@@ -216,7 +231,7 @@ public sealed partial class OnlineGameService
             if (member == null) continue;
             member.elo = Math.Max(EloPolicy.Minimum, EloPolicy.BotElo(s.Player.elo, s.Player.rankLossStreak));
             var before = GameJson.Write(search);
-            search.state = "BOT";
+            search.state = MatchmakingSearchStatus.Bot;
             search.matchId = request.MatchId.ToString("N");
             search.session = request.Session;
             search.host = id.ToString("N");
@@ -231,7 +246,7 @@ public sealed partial class OnlineGameService
                 return member;
             }
             search = await matchmaking.Get(id, request.SearchId, false);
-            if (search.state != "SEARCHING")
+            if (search.state != MatchmakingSearchStatus.Searching)
                 throw Conflict("Lượt tìm trận vừa được xử lý. Vui lòng thử lại.");
         }
         throw Conflict("Các đối thủ dự phòng đang bận. Đang tiếp tục tìm trận.");

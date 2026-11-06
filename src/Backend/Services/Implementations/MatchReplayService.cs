@@ -38,7 +38,7 @@ public sealed class MatchReplayService : IMatchReplayService
         if (!trustedServer && await _unitOfWork.Game.IsDedicated(match))
             throw new AppException("Replay trận dedicated do máy chủ ghi.", HttpStatusCode.Forbidden);
         var access=await _unitOfWork.Game.ReplayWriter(player, match) ?? throw Missing();
-        if(access.Status is not ("PLAYING" or "FINISHED"))throw Missing();
+        if(access.Status is not (MatchStatus.Playing or MatchStatus.Finished))throw Missing();
         if (!access.writer)
             throw new AppException("Chỉ máy điều phối được ghi replay chung của trận.", HttpStatusCode.Forbidden);
         return access.started;

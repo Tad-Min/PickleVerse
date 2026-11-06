@@ -1,6 +1,4 @@
-using System;
 using System.Threading.Tasks;
-using PickleVerse.Services.Api;
 using UnityEngine;
 
 namespace PickleVerse.Services
@@ -8,20 +6,12 @@ namespace PickleVerse.Services
     // App lifetime telemetry is independent of scenes, match clocks and Time.timeScale.
     public sealed class AppActivityRuntime : MonoBehaviour
     {
-        [Serializable]
-        sealed class Receipt { public long totalSeconds, elapsedSeconds; }
         public static AppActivityRuntime Instance { get; private set; }
         AccountService account;
-        ApiClient api;
-        string session = Guid.NewGuid().ToString("N"), previousOwner = "";
-        double began, next;
-        int generation;
-        bool opened, allowQuit, quitRequested, closing;
-        Receipt receipt;
-        Task pending = Task.CompletedTask;
-        public string Error { get; private set; }
-        public double Seconds => receipt == null ? 0 : receipt.totalSeconds + Math.Max(0, Elapsed - receipt.elapsedSeconds);
-        double Elapsed => Math.Max(0, Time.realtimeSinceStartupAsDouble - began);
+        AppActivitySession session;
+        bool allowQuit, quitRequested;
+        public string Error => session?.Error;
+        public double Seconds => session?.Seconds ?? 0;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
         {
@@ -51,85 +41,12 @@ namespace PickleVerse.Services
             DontDestroyOnLoad(gameObject);
             var runtime = AccountRuntime.Ensure();
             account = runtime.Account;
-            api = new ApiClient(runtime.GetComponent<UnityApiTransport>());
+            session = new AppActivitySession(account, runtime.Api, () => Time.realtimeSinceStartupAsDouble);
             account.BeforeSessionEnd = () => FlushAsync(true);
-            account.Changed += AccountChanged;
             Application.wantsToQuit += WantsToQuit;
         }
-        void AccountChanged()
-        {
-            string owner = account.IsSignedIn ? account.Profile.UserId.ToString("N") : "";
-            if (previousOwner.Length > 0 && owner != previousOwner)
-            {
-                generation++;
-                session = Guid.NewGuid().ToString("N");
-                began = Time.realtimeSinceStartupAsDouble;
-                opened = false;
-                receipt = null;
-                closing = false;
-            }
-            previousOwner = owner;
-            next = 0;
-        }
-        void Update()
-        {
-            if (!closing && pending.IsCompleted && Time.realtimeSinceStartupAsDouble >= next)
-            {
-                next = Time.realtimeSinceStartupAsDouble + 15;
-                pending = SendAsync(false);
-            }
-        }
-        async Task SendAsync(bool close, bool renewExpired = true)
-        {
-            int version = generation;
-            string key = session;
-            object Request(bool final) => new { SessionId = Guid.Parse(key), ElapsedSeconds = (long)Elapsed, Close = final };
-            try
-            {
-                if (!opened)
-                {
-                    await api.SendAsync<Receipt>("POST", "api/Game/activity/open", Request(false));
-                    if (version != generation || !this)
-                        return;
-                    opened = true;
-                }
-                if (account.IsSignedIn)
-                {
-                    var saved = await account.SendAuthorizedAsync<Receipt>("POST", "api/Game/activity/checkpoint", Request(close));
-                    if (version != generation || !this)
-                        return;
-                    receipt = saved;
-                }
-                if (version == generation)
-                    Error = null;
-            }
-            catch (ApiException error) when (error.StatusCode == 410 && renewExpired && version == generation && this)
-            {
-                // Redis expired/restarted. Keep the persisted total, but never replay the
-                // old elapsed time into a new session (that would count it twice).
-                generation++;
-                session = Guid.NewGuid().ToString("N");
-                began = Time.realtimeSinceStartupAsDouble;
-                opened = false;
-                closing = close;
-                if (receipt != null)
-                    receipt.elapsedSeconds = 0;
-                await SendAsync(close, false);
-            }
-            catch (Exception error)
-            {
-                if (version == generation && this)
-                    Error = error.Message;
-            }
-        }
-        public async Task FlushAsync(bool close = false)
-        {
-            if (close)
-                closing = true;
-            await pending;
-            pending = SendAsync(close);
-            await pending;
-        }
+        void Update() => session?.Tick();
+        public Task FlushAsync(bool close = false) => session?.FlushAsync(close) ?? Task.CompletedTask;
         bool WantsToQuit()
         {
             if (allowQuit || !account.IsSignedIn)
@@ -156,11 +73,9 @@ namespace PickleVerse.Services
         {
             if (Instance != this)
                 return;
+            session?.Dispose();
             if (account != null)
-            {
-                account.Changed -= AccountChanged;
                 account.BeforeSessionEnd = null;
-            }
             Application.wantsToQuit -= WantsToQuit;
             Instance = null;
         }

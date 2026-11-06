@@ -10,6 +10,7 @@ using Services.Interfaces;
 namespace API.Controllers
 {
     [ApiController]
+    [API.Filters.AllowRestrictedSession]
     [Route("api/[controller]")]
     [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase

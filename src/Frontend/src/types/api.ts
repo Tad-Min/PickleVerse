@@ -1,3 +1,4 @@
+import { UserStatus, ReportStatus, AppealStatus, MatchStatus } from "./status";
 // TypeScript DTOs matching src/Backend/Entities/DTOs.
 
 export interface LoginRequest {
@@ -51,7 +52,8 @@ export interface AdminUserDto {
   playerName: string;
   roleId: number;
   roleName: string;
-  status: string; // "ACTIVE", "BANNED", "UNVERIFIED"
+  status: `${UserStatus}`;
+  emailVerified?: boolean;
   elo: number;
   timePlayedSeconds: number;
   createdAt: string;
@@ -66,6 +68,7 @@ export interface BanUserRequest {
   userId: string;
   reason: string;
   bannedUntil?: string | null;
+  restriction?: UserStatus.Banned | UserStatus.Suspended;
 }
 
 // W02 - Content CMS
@@ -99,20 +102,13 @@ export interface CreateMissionRequest {
   description: string;
   type: string; // "DAILY", "WEEKLY"
   target: number;
-  reward: string;
+  reward: { coins: number; gems: number; xp: number };
 }
 
 // W03 - Match Monitoring
 export interface MatchItemDto {
-  matchId: string;
-  mode: string; // "1v1", "2v2"
-  courtName: string;
-  startTime: string;
-  endTime?: string | null;
-  winner?: string | null;
-  scoreSummary?: string | null;
-  status: string; // "IN_PROGRESS", "COMPLETED", "ABANDONED"
-  playerCount?: number;
+  matchId: string; matchType: string; teamAScore: number; teamBScore: number; createdAt: string;
+  isWinner?: boolean; receivedElo?: number; replayUrl?: string | null;
 }
 
 // W04 - Moderation & Tribunal
@@ -123,7 +119,9 @@ export interface AdminReportDto {
   reportedPlayerName: string;
   matchId: string;
   reason: string;
-  status: string; // "PENDING", "RESOLVED", "DISMISSED"
+  status: `${ReportStatus}`;
+  reviewerId?: string;
+  decisionReason?: string;
   createdAt: string;
   replayUrl?: string | null;
 }
@@ -132,7 +130,10 @@ export interface ReviewReportRequest {
   reporterId: string;
   reportedPlayerId: string;
   matchId: string;
-  status: 'RESOLVED' | 'DISMISSED';
+  status: `${ReportStatus.Accepted}` | `${ReportStatus.Declined}` | `${ReportStatus.Checking}`;
+  decisionReason: string;
+  restriction?: UserStatus.Banned | UserStatus.Suspended;
+  bannedUntil?: string | null;
   banReportedPlayer: boolean;
   banReason?: string;
 }
@@ -156,4 +157,38 @@ export interface AiTechniqueErrorHeatmapDto {
   techniqueName: string;
   totalErrorsCount: number;
   errorBreakdown: ErrorTypeBreakdownDto[];
+}
+
+export interface SanctionDecision {
+  sanctionId: string; userId: string; actorId: string; restriction: UserStatus; reason: string;
+  createdAt: string; expiresAt?: string | null; revokedAt?: string | null; revocationReason?: string | null;
+  reportMatchId?: string | null; reporterId?: string | null;
+}
+export interface SanctionAppeal {
+  appealId: string; sanctionId: string; userId: string; statement: string; status: AppealStatus;
+  createdAt: string; updatedAt: string; reviewerId?: string | null; decisionReason?: string | null;
+}
+
+export interface StopOperation {
+  operationId: string; matchId: string; leaseId: string; actorId: string; reason: string; createdAt: string; acknowledgedAt?: string | null;
+}
+export interface LiveMatch {
+  matchId: string; status: MatchStatus; authorityMode: 'shared' | 'dedicated'; createdAt: string; startedAt?: string | null;
+  heartbeatAt?: string | null; heartbeatStale: boolean;
+  roster: { members: { id: string; name: string; team: number; bot: boolean }[] };
+  live?: { scoreA: number; scoreB: number; gamesA: number; gamesB: number; started: boolean; paused: boolean; finished: boolean; observedAt: string;
+    players: { id: string; connected: boolean; reconnectUntil?: string | null }[] } | null;
+  stopOperation?: StopOperation | null;
+}
+
+export interface QueueHealth {
+  searches: number; searching: number; matched: number; cancelled: number; timedOut: number; botFallback: number;
+  cancelledAfterAssignment: number; averageWaitSeconds?: number | null; p95WaitSeconds?: number | null;
+}
+export interface AnalyticsReport {
+  timeZone: string; from: string; to: string; dauDefinition: string; retentionDefinition: string; timeDefinition: string;
+  summary: AdminAnalyticsResponse; daily: { day: string; players: number }[];
+  retention: { day: string; players: number; d1?: number | null; d7?: number | null; d30?: number | null }[];
+  lessons: { lessonId: number; code: string; title: string; starts: number; finished: number; passed: number; players: number; completionRate: number }[];
+  matchmaking: QueueHealth; errors: AiTechniqueErrorHeatmapDto[];
 }

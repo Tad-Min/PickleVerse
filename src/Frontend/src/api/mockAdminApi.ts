@@ -24,25 +24,21 @@ let users: AdminUserDto[] = [
   { userId: 'player-002', email: 'linh.tran@example.com', playerName: 'LinhSmash', roleId: 1, roleName: 'Player', status: 'ACTIVE', elo: 1695, timePlayedSeconds: 49200, createdAt: makeDate(25) },
   { userId: 'player-003', email: 'bao.le@example.com', playerName: 'BảoLê', roleId: 1, roleName: 'Player', status: 'SUSPENDED', elo: 1430, timePlayedSeconds: 18400, createdAt: makeDate(17) },
   { userId: 'player-004', email: 'an.pham@example.com', playerName: 'AnDink', roleId: 1, roleName: 'Player', status: 'ACTIVE', elo: 2018, timePlayedSeconds: 110300, createdAt: makeDate(93) },
-  { userId: 'player-005', email: 'khoa.vo@example.com', playerName: 'KhoaVolley', roleId: 1, roleName: 'Player', status: 'UNVERIFIED', elo: 1000, timePlayedSeconds: 0, createdAt: makeDate(1) },
+  { userId: 'player-005', email: 'khoa.vo@example.com', playerName: 'KhoaVolley', roleId: 1, roleName: 'Player', status: 'ACTIVE', emailVerified: false, elo: 1000, timePlayedSeconds: 0, createdAt: makeDate(1) },
   { userId: 'player-006', email: 'thao.do@example.com', playerName: 'ThaoDrop', roleId: 1, roleName: 'Player', status: 'BANNED', elo: 1320, timePlayedSeconds: 35700, createdAt: makeDate(61) },
   { userId: 'player-007', email: 'nam.bui@example.com', playerName: 'NamKitchen', roleId: 1, roleName: 'Player', status: 'ACTIVE', elo: 1764, timePlayedSeconds: 61800, createdAt: makeDate(12) },
 ];
 
 const matches: MatchItemDto[] = [
-  { matchId: 'match-live-01', mode: '1v1', courtName: 'Neon Harbor', startTime: makeDate(0, 0.3), status: 'IN_PROGRESS', playerCount: 2 },
-  { matchId: 'match-live-02', mode: '2v2', courtName: 'Sunset Club', startTime: makeDate(0, 0.7), status: 'IN_PROGRESS', playerCount: 4 },
-  { matchId: 'match-2026-01', mode: '1v1', courtName: 'Neon Harbor', startTime: makeDate(0, 2), endTime: makeDate(0, 1.6), winner: 'MinhNguyen', scoreSummary: '11–8, 9–11, 11–6', status: 'COMPLETED', playerCount: 2 },
-  { matchId: 'match-2026-02', mode: '2v2', courtName: 'Garden Court', startTime: makeDate(0, 4), endTime: makeDate(0, 3.4), winner: 'AnDink / LinhSmash', scoreSummary: '11–5, 11–9', status: 'COMPLETED', playerCount: 4 },
-  { matchId: 'match-2026-03', mode: '1v1', courtName: 'Rooftop Arena', startTime: makeDate(1, 5), endTime: makeDate(1, 4.5), winner: 'NamKitchen', scoreSummary: '7–11, 11–7, 11–9', status: 'COMPLETED', playerCount: 2 },
-  { matchId: 'match-2026-04', mode: '1v1', courtName: 'Garden Court', startTime: makeDate(1, 8), endTime: makeDate(1, 7.7), scoreSummary: '6–11, 4–11', status: 'ABANDONED', playerCount: 2 },
+  { matchId: 'match-2026-01', matchType: 'RankedSingles', teamAScore: 2, teamBScore: 1, createdAt: makeDate(0, 2) },
+  { matchId: 'match-2026-02', matchType: 'MatchedDoubles', teamAScore: 2, teamBScore: 0, createdAt: makeDate(1) },
 ];
 
 let reports: AdminReportDto[] = [
   { reporterId: 'player-001', reporterName: 'MinhNguyen', reportedPlayerId: 'player-003', reportedPlayerName: 'BảoLê', matchId: 'match-2026-04', reason: 'Thoát trận liên tục khi đang thua', status: 'PENDING', createdAt: makeDate(0, 1), replayUrl: null },
   { reporterId: 'player-004', reporterName: 'AnDink', reportedPlayerId: 'player-006', reportedPlayerName: 'ThaoDrop', matchId: 'match-2026-03', reason: 'Có hành vi xúc phạm trong trận', status: 'PENDING', createdAt: makeDate(0, 3), replayUrl: null },
-  { reporterId: 'player-007', reporterName: 'NamKitchen', reportedPlayerId: 'player-002', reportedPlayerName: 'LinhSmash', matchId: 'match-2026-02', reason: 'Nghi ngờ cố tình kéo dài thời gian', status: 'RESOLVED', createdAt: makeDate(2), replayUrl: null },
-  { reporterId: 'player-002', reporterName: 'LinhSmash', reportedPlayerId: 'player-001', reportedPlayerName: 'MinhNguyen', matchId: 'match-2026-01', reason: 'Va chạm không chủ ý', status: 'DISMISSED', createdAt: makeDate(4), replayUrl: null },
+  { reporterId: 'player-007', reporterName: 'NamKitchen', reportedPlayerId: 'player-002', reportedPlayerName: 'LinhSmash', matchId: 'match-2026-02', reason: 'Nghi ngờ cố tình kéo dài thời gian', status: 'ACCEPTED', createdAt: makeDate(2), replayUrl: null },
+  { reporterId: 'player-002', reporterName: 'LinhSmash', reportedPlayerId: 'player-001', reportedPlayerName: 'MinhNguyen', matchId: 'match-2026-01', reason: 'Va chạm không chủ ý', status: 'DECLINED', createdAt: makeDate(4), replayUrl: null },
 ];
 
 let nextLessonId = 8;
@@ -101,7 +97,7 @@ export const mockAdminApi = {
 
   manualVerifyEmail: async (userId: string) => {
     const user = users.find((item) => item.userId === userId);
-    if (user?.status === 'UNVERIFIED') user.status = 'ACTIVE';
+    if (user) user.emailVerified = true;
     return waitForDemo({ message: 'Đã xác thực email demo.' });
   },
 

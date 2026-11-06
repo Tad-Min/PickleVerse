@@ -36,6 +36,13 @@ namespace PickleVerse.Progression
         public double time;
         // Signed seconds: negative = early, positive = late. Null means unobserved.
         public float? timingError;
+        // Recorded before the game assists contact timing or chooses a target.
+        public double? rawPressedAt, rawReleasedAt;
+        public float? rawTimingError;
+        public int? rawInputMask;
+        public bool? rawCrossCourt, rawPower;
+        public string rawTechnique, referenceId;
+        public float[] rawPosition;
         public float[] contact, leftFoot, rightFoot, intendedTarget, landing;
         public bool? kitchen, volley, momentum, recovered, targetHit;
         public int? bounces;

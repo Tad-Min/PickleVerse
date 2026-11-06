@@ -67,15 +67,15 @@ public sealed partial class OnlineGameService
     }
     static OnlineMatch OnlineRecord(Gamematch record) => new()
     {
-        authorityMode = record.Authoritymode, ratingPolicyVersion = record.Ratingpolicyversion, roster = RelationalMatch.Roster(record),
+        authorityMode = StatusWire.Format(record.Authoritymode), ratingPolicyVersion = record.Ratingpolicyversion, roster = RelationalMatch.Roster(record),
         session = record.Photonsession ?? "", searchId = record.Searchid?.ToString("N") ?? "",
         host = record.Gamematchplayers.SingleOrDefault(p => p.Isreplaywriter)?.Playerid.ToString("N") ?? "",
-        phase = record.Status, startedUtcTicks = record.Startedat?.Ticks ?? 0
+        phase = StatusWire.Format(record.Status), startedUtcTicks = record.Startedat?.Ticks ?? 0
     };
     async Task SaveOnline(Guid match,OnlineMatch stored)
     {
         var now=Now;DateTime? started=stored.startedUtcTicks>0?new DateTime(stored.startedUtcTicks,DateTimeKind.Utc):null;
-        await _unitOfWork.Game.SaveOnline(match, stored.phase, started, now);
+        await _unitOfWork.Game.SaveOnline(match, StatusWire.Parse<MatchStatus>(stored.phase), started, now);
     }
 
     // A match advisory lock serializes consent/results. Profile locks always use UUID order,
@@ -101,7 +101,7 @@ public sealed partial class OnlineGameService
         if (create != null && !stored.roster.custom && !stored.roster.RankedBot && !string.IsNullOrEmpty(create.SearchId))
         {
             var assigned = await matchmaking.Get(caller, MatchId(create.SearchId), false);
-            if (assigned.state != "MATCHED" || assigned.matchId != match.ToString("N") || assigned.session != stored.session || assigned.host != stored.host
+            if (assigned.state != MatchmakingSearchStatus.Matched || assigned.matchId != match.ToString("N") || assigned.session != stored.session || assigned.host != stored.host
                 || assigned.roster == null || RosterKey(assigned.roster) != RosterKey(stored.roster))
                 throw Conflict("Phòng không khớp đội hình API đã ghép.");
         }
@@ -110,11 +110,13 @@ public sealed partial class OnlineGameService
         {
             var bot = stored.roster.members.Single(m => m.bot);
             var assigned = await matchmaking.Get(MatchId(stored.host), MatchId(stored.searchId), false);
-            if (!await matchmaking.OwnsBot(bot.id, assigned.searchId) || assigned.state != "BOT" || assigned.matchId != match.ToString("N") || assigned.session != stored.session
+            if (!await matchmaking.OwnsBot(bot.id, assigned.searchId) || assigned.state != MatchmakingSearchStatus.Bot || assigned.matchId != match.ToString("N") || assigned.session != stored.session
                 || assigned.roster?.members.SingleOrDefault(m => m.bot)?.id != bot.id || Milliseconds < assigned.started + settings.Matchmaking.BotFallbackSeconds * 1000L)
                 throw Conflict("Lượt tìm trận chưa đủ hạn, đã hủy hoặc đối thủ dự phòng không khớp.");
             botElo = assigned.botElo;
         }
+        if (saved == null)
+            foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order()) await _unitOfWork.Users.LockUserAsync(id);
         var catalog = await catalogs.Load();
         var players = new Dictionary<Guid, Session>();
         foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order())
@@ -125,7 +127,7 @@ public sealed partial class OnlineGameService
             {
                 if (s.Player.pendingMatch != null)
                     throw Conflict("Một người chơi vẫn còn trận chưa hoàn tất.");
-                if (await _unitOfWork.Game.AccountStatus(id) != "ACTIVE")
+                if (await _unitOfWork.Game.AccountStatus(id) != UserStatus.Active)
                     throw Bad("Người chơi không còn hoạt động.");
                 var member = stored.roster.members.Single(m => MatchId(m.id) == id);
                 member.name = s.Player.playerName;
@@ -138,8 +140,8 @@ public sealed partial class OnlineGameService
         if (saved == null)
         {
             string kind = OnlineKind(stored.roster).ToString();
-            _unitOfWork.Game.AddMatch(new Gamematch {Matchid=match,Kind=kind,Status=stored.phase,Ratingpolicyversion=stored.ratingPolicyVersion,
-                Authoritymode=stored.authorityMode,
+            _unitOfWork.Game.AddMatch(new Gamematch {Matchid=match,Kind=kind,Status=StatusWire.Parse<MatchStatus>(stored.phase),Ratingpolicyversion=stored.ratingPolicyVersion,
+                Authoritymode=StatusWire.Parse<MatchAuthorityMode>(stored.authorityMode),
                 Mode=(short)stored.roster.mode,Photonsession=stored.session,Searchid=string.IsNullOrEmpty(stored.searchId)?null:Guid.Parse(stored.searchId),
                 Region=stored.roster.region,Night=stored.roster.night,Venue=(short)stored.roster.venue,Createdat=Now,Updatedat=Now});
             for(short index=0;index<stored.roster.members.Count;index++)

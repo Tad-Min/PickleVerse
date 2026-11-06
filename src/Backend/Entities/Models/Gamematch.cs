@@ -1,11 +1,12 @@
+using Entities.Enums;
 namespace Entities.Models;
 
 public partial class Gamematch
 {
     public Guid Matchid { get; set; }
     public string Kind { get; set; } = "";
-    public string Status { get; set; } = "PREPARING";
-    public string Authoritymode { get; set; } = "shared";
+    public MatchStatus Status { get; set; } = MatchStatus.Preparing;
+    public MatchAuthorityMode Authoritymode { get; set; } = MatchAuthorityMode.Shared;
     public DateTime? Serverheartbeatat { get; set; }
     public string Ratingpolicyversion { get; set; } = "legacy-v1";
     public short Mode { get; set; } = 1;

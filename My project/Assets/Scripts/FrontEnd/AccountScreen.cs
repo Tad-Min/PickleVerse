@@ -101,10 +101,10 @@ namespace PickleVerse.FrontEnd
         {
             var runtime = ProgressionRuntime.Instance;
             if (!runtime) return;
-            bool available = account.IsSignedIn && runtime.Ready;
+            bool available = runtime.Ready && !account.IsRestricted;
             foreach (var home in FindObjectsByType<HomeMenuShell>(FindObjectsInactive.Include))
             {
-                if (home.playButton) home.playButton.interactable = available;
+                if (home.playButton) home.playButton.interactable = available && runtime.IsAuthenticated;
                 if (home.wallet) home.wallet.gameObject.SetActive(available);
                 if (home.nav)
                     foreach (var button in home.nav.GetComponentsInChildren<UnityEngine.UI.Button>(true))
@@ -119,10 +119,10 @@ namespace PickleVerse.FrontEnd
             }
             foreach (var social in FindObjectsByType<OfflineSocialMenu>(FindObjectsInactive.Include))
             {
-                if (!available) social.Close();
-                social.enabled = available;
-                if (social.friendsButton) social.friendsButton.interactable = available;
-                if (social.leaderboardButton) social.leaderboardButton.interactable = available;
+                if (!runtime.IsAuthenticated) social.Close();
+                social.enabled = runtime.IsAuthenticated;
+                if (social.friendsButton) social.friendsButton.interactable = runtime.IsAuthenticated;
+                if (social.leaderboardButton) social.leaderboardButton.interactable = runtime.IsAuthenticated;
             }
         }
         void OnGameChanged()
@@ -140,7 +140,7 @@ namespace PickleVerse.FrontEnd
         {
             if (SceneLoading.IsPreparedTransition) return;
             if (!sceneBound || navigating || !SceneManager.GetActiveScene().isLoaded) return;
-            if (account.IsSignedIn && SceneManager.GetActiveScene().name == LoginScene && view && !busy && !loginRetryPending)
+            if (account.IsSignedIn && !account.IsRestricted && SceneManager.GetActiveScene().name == LoginScene && view && !busy && !loginRetryPending)
                 BeginMenuLoading(sessionEmail, null, true);
         }
         void ClearSecrets()
@@ -284,6 +284,7 @@ namespace PickleVerse.FrontEnd
                     password = null;
                 }
                 token.ThrowIfCancellationRequested();
+                if (account.IsRestricted) throw new ApiException(403, "Tài khoản đang bị hạn chế. Bạn có thể xem quyết định và gửi khiếu nại.", "account_restricted");
                 report(.65f, "Đang tải hồ sơ và hành trình");
                 await ProgressionRuntime.Instance.EnsureReadyAsync();
                 token.ThrowIfCancellationRequested();

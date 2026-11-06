@@ -9,7 +9,7 @@ public sealed partial class OnlineGameService
     {
         var p=s.Player;var row=s.profile;
         s.revision=row.Revision;
-        s.state.tutorial=new TutorialState {completed=row.TutorialCompleted,skipped=row.TutorialSkipped};
+        s.state.tutorial=new TutorialState {completed=row.TutorialCompleted,skipped=row.TutorialSkipped,checkpoint=row.TutorialCheckpoint};
         p.totalXp=100L*row.Level*(row.Level-1)+row.Exp;
         p.rankWinStreak=row.RankWinStreak;p.rankLossStreak=row.RankLossStreak;
         p.createdUtcTicks=(await _unitOfWork.Game.AccountCreated(id)).Ticks;
@@ -85,7 +85,7 @@ public sealed partial class OnlineGameService
     async Task PersistProgress(Session s,Guid id)
     {
         var p=s.Player;var row=s.profile;var c=p.lifetime;
-        row.TutorialCompleted=s.state.tutorial.completed;row.TutorialSkipped=s.state.tutorial.skipped;
+        row.TutorialCompleted=s.state.tutorial.completed;row.TutorialSkipped=s.state.tutorial.skipped;row.TutorialCheckpoint=s.state.tutorial.checkpoint;
         row.RankWinStreak=p.rankWinStreak;row.RankLossStreak=p.rankLossStreak;row.BestWinStreak=c.bestStreak;
         row.LifetimeMatches=c.matches;row.LifetimePoints=c.points;row.LifetimeReturns=c.returns;row.LifetimeServes=c.serves;
         row.LifetimeBotMatches=c.botMatches;row.LifetimeHumanMatches=c.humanMatches;row.LifetimeHumanWins=c.humanWins;

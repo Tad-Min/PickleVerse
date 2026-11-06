@@ -25,7 +25,7 @@ namespace PickleVerse.Multiplayer
                 SetConnectionIdentity();
                 await MatchRelayConnection.StartAsync(Roster.region,options=>session.AsHost().Network.StartRelayNetworkAsync(options),
                     ()=>Match==session && operation==generation && !quitting && !leavingModePage);
-                if(Match==session && generation==operation && Network.IsHost)ClientIdentities[Network.LocalClientId]=PlayerId;
+                if(Match==session && generation==operation && Network.IsHost)clientIdentities[Network.LocalClientId]=PlayerId;
             }
             catch(OperationCanceledException) { }
             catch(Exception e)

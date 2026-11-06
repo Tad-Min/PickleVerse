@@ -59,7 +59,7 @@ public sealed class OnlineSocialService : IOnlineSocialService
         }
         else if (input.Action is "accept" or "decline")
         {
-            string status = input.Action == "accept" ? "ACCEPTED" : "DECLINED";
+            var status = input.Action == "accept" ? FriendRequestStatus.Accepted : FriendRequestStatus.Declined;
             int updated = await _unitOfWork.Game.RespondFriendRequest(self, target, input.RequestId, status);
             if (updated == 0)
             {

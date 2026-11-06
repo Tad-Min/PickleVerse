@@ -1,0 +1,18 @@
+{
+  "name": "PickleVerse.Progression.Tests",
+  "references": [
+    "PickleVerse.Progression",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "PickleVerse.Entites"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "Newtonsoft.Json.dll"
+  ],
+  "autoReferenced": false
+}

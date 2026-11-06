@@ -64,18 +64,21 @@ namespace PickleVerse.Progression
         {
             if (ProgressionRuntime.Instance?.Snapshot?.catalog?.hybridTelemetryEnabled != true) return null;
             var account = AccountRuntime.Ensure().Account;
-            if (!account.IsSignedIn || !Guid.TryParse(sessionId, out _)) return null;
-            string directory = Path.Combine(root, account.Profile.UserId.ToString("N"));
+            if (account.IsRestricted || !Guid.TryParse(sessionId, out _)) return null;
+            var runtime = ProgressionRuntime.Instance;
+            string owner = account.IsSignedIn ? account.Profile.UserId.ToString("N") : type == "training" && runtime.Ready ? runtime.Player.id : null;
+            if (!Guid.TryParseExact(owner, "N", out _)) return null;
+            string directory = Path.Combine(root, owner);
             foreach (var file in SessionFiles(directory))
                     try
                     {
                         var saved = JsonConvert.DeserializeObject<CoachingSession>(File.ReadAllText(file));
-                        if (saved != null && saved.playerId == account.Profile.UserId.ToString("N") && !saved.closed && saved.createdUtcTicks>=DateTime.UtcNow.AddDays(-30).Ticks && saved.sessionId == sessionId && saved.sessionType == type) return saved;
+                        if (saved != null && saved.playerId == owner && !saved.closed && saved.createdUtcTicks>=DateTime.UtcNow.AddDays(-30).Ticks && saved.sessionId == sessionId && saved.sessionType == type) return saved;
                     }
                     catch (IOException) { }
                     catch (UnauthorizedAccessException) { }
                     catch (JsonException) { }
-            return new CoachingSession { playerId = account.Profile.UserId.ToString("N"), sessionId = sessionId,
+            return new CoachingSession { playerId = owner, sessionId = sessionId,
                 sessionType = type, gameVersion = Application.version };
         }
         static string[] SessionFiles(string directory)
@@ -99,6 +102,8 @@ namespace PickleVerse.Progression
         }
         static ShotTelemetry Clone(ShotTelemetry s) => new ShotTelemetry {
             shotId=s.shotId,kind=s.kind,technique=s.technique,source=s.source,outcome=s.outcome,sequence=s.sequence,rally=s.rally,time=s.time,
+            rawPressedAt=s.rawPressedAt,rawReleasedAt=s.rawReleasedAt,rawTimingError=s.rawTimingError,rawInputMask=s.rawInputMask,
+            rawPosition=s.rawPosition?.ToArray(),rawTechnique=s.rawTechnique,rawCrossCourt=s.rawCrossCourt,rawPower=s.rawPower,referenceId=s.referenceId,
             timingError=s.timingError,contact=s.contact?.ToArray(),leftFoot=s.leftFoot?.ToArray(),rightFoot=s.rightFoot?.ToArray(),
             intendedTarget=s.intendedTarget?.ToArray(),landing=s.landing?.ToArray(),kitchen=s.kitchen,volley=s.volley,momentum=s.momentum,
             recovered=s.recovered,targetHit=s.targetHit,bounces=s.bounces,netClearance=s.netClearance,engineAimed=s.engineAimed,assisted=s.assisted };
@@ -129,7 +134,7 @@ namespace PickleVerse.Progression
         {
             if (ProgressionRuntime.Instance?.Snapshot?.catalog?.hybridTelemetryEnabled != true) return;
             var account = AccountRuntime.Ensure().Account;
-            if (!account.IsSignedIn) return;
+            if (!account.IsSignedIn || account.IsRestricted) return;
             var owner = account.Profile.UserId.ToString("N");
             string dir = Path.Combine(root, owner);
             foreach (var file in SessionFiles(dir))

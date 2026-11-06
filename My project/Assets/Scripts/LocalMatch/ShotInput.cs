@@ -32,15 +32,20 @@ namespace PickleVerse.LocalMatch
         public string CommittedKeys { get; private set; } = "";
         public int SelectionMask { get; private set; }
         public int CommittedMask { get; private set; }
+        public double? PressedAt { get; private set; }
+        public double? ReleasedAt { get; private set; }
+        public int ObservedMask { get; private set; }
         public void Cancel()
         {
             bases = 0;
+            PressedAt = ReleasedAt = null;
+            ObservedMask = 0;
             invalid = true;
             locked = true;
             Selection = SelectionKeys = "";
             SelectionMask = 0;
         }
-        public bool Tick(int mask, bool cancel, bool serve, out ShotIntent intent)
+        public bool Tick(int mask, bool cancel, bool serve, out ShotIntent intent, double? observedTime = null)
         {
             intent = default;
             if (cancel)
@@ -61,9 +66,13 @@ namespace PickleVerse.LocalMatch
             int currentBases = mask & 7;
             int released = (previous & 7) & ~currentBases;
             if (bases == 0)
+            {
                 bases = currentBases;
+                if (bases != 0) { PressedAt = observedTime; ReleasedAt = null; }
+            }
             else bases |= currentBases;
             int modifiers = mask & 24;
+            ObservedMask = bases | modifiers;
             int count = Count(bases) + Count(modifiers);
             if (count > 2)
             {
@@ -81,6 +90,7 @@ namespace PickleVerse.LocalMatch
             previous = mask;
             if (released == 0 || bases == 0 || invalid)
                 return false;
+            ReleasedAt = observedTime;
             CommittedKeys = SelectionKeys;
             CommittedMask = SelectionMask;
             locked = true;

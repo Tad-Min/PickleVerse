@@ -9,9 +9,11 @@ public sealed partial class GameRepository
 {
     public sealed record CompletedSession(string mode, DateTime ended);
     public Task<CompletedSession?> CompletedSessionOwner(Guid player, Guid session, string type) => type == "match"
-        ? db.Gamematches.Where(m => m.Matchid == session && m.Status == "FINISHED" && m.Gamematchplayers.Any(p => p.Playerid == player && p.Finalizedat != null))
+        ? db.Gamematches.Where(m => m.Matchid == session && m.Status == MatchStatus.Finished && m.Gamematchplayers.Any(p => p.Playerid == player && p.Finalizedat != null)
+            && db.Playerprofiles.Any(p => p.Userid == player && (p.LearningResetAt == null || m.Endedat > p.LearningResetAt)))
             .Select(m => new CompletedSession(m.Kind, m.Endedat!.Value)).SingleOrDefaultAsync()
-        : db.TrainingSessionRecords.Where(s => s.AttemptId == session && s.PlayerId == player && s.Completed)
+        : db.TrainingSessionRecords.Where(s => s.AttemptId == session && s.PlayerId == player && s.Completed
+            && db.Playerprofiles.Any(p => p.Userid == player && p.LearningEpoch == s.ProgressEpoch))
             .Select(s => new CompletedSession("training", s.UpdatedAt)).SingleOrDefaultAsync();
     public Task<AiTelemetrySession?> TelemetrySession(Guid player, Guid session, string type) => db.AiTelemetrySessions.AsNoTracking()
         .SingleOrDefaultAsync(s => s.PlayerId == player && s.SessionId == session && s.SessionType == type);
@@ -38,12 +40,23 @@ public sealed partial class GameRepository
         .SingleOrDefaultAsync(p => p.PlayerId == player && p.UpdatedAt >= cutoff);
     public Task<string?> LatestAnalysisState(Guid player) => (from job in db.AiAnalysisJobs join session in db.AiTelemetrySessions on job.BatchId equals session.BatchId
         where session.PlayerId == player orderby session.CreatedAt descending select job.State).FirstOrDefaultAsync();
-    public Task<List<string>> OnboardingShots(Guid player, string mode, DateTime cutoff) => (from part in db.AiTelemetryParts
-        join session in db.AiTelemetrySessions on part.BatchId equals session.BatchId
-        where session.PlayerId == player && session.CreatedAt >= cutoff
-            && EF.Functions.JsonContains(session.Metadata, GameJson.Payload(new { mode }))
-            && db.AiAnalysisJobs.Any(j => j.BatchId == session.BatchId)
-        orderby session.CreatedAt, part.PartIndex select part.Shots).Take(3).ToListAsync();
+    public Task<List<string>> OnboardingShots(Guid player, string mode, DateTime cutoff)
+    {
+        if (mode != "training") return Task.FromResult(new List<string>());
+        var first = (from session in db.AiTelemetrySessions
+                     join attempt in db.TrainingSessionRecords on session.SessionId equals attempt.AttemptId
+                     where session.PlayerId == player && session.SessionType == "training" && attempt.Completed
+                         && attempt.PlayerId == player && db.Playerprofiles.Any(p => p.Userid == player && p.LearningEpoch == attempt.ProgressEpoch)
+                         && !EF.Functions.JsonContains(session.Metadata, "{\"partial\":true}")
+                         && db.AiAnalysisJobs.Any(j => j.BatchId == session.BatchId)
+                     orderby session.CreatedAt, session.BatchId
+                     select session.BatchId).Take(3);
+        return (from part in db.AiTelemetryParts
+                join session in db.AiTelemetrySessions on part.BatchId equals session.BatchId
+                where first.Contains(part.BatchId) && session.CreatedAt >= cutoff
+                orderby session.CreatedAt, session.BatchId, part.PartIndex
+                select part.Shots).ToListAsync();
+    }
     public async Task<List<List<TechniqueMetric>>> CoachingHistory(Guid player, DateTime cutoff) =>
         (await db.AiCoachingSessions.Where(s => s.PlayerId == player && s.CreatedAt >= cutoff).OrderByDescending(s => s.CreatedAt)
             .Take(9).Select(s => s.Result).ToListAsync()).Select(s => GameJson.Read<CoachingAnalysis>(s).metrics).ToList();
@@ -92,10 +105,16 @@ public sealed partial class GameRepository
     public async Task<bool> CompleteAnalysis(Guid batch, Guid token, CoachingAnalysis result, CancellationToken cancellationToken)
     {
         await using var tx = await BeginTransactionAsync(cancellationToken: cancellationToken);
-        var job = await db.AiAnalysisJobs.FromSqlInterpolated($"SELECT * FROM aianalysisjobs WHERE batchid={batch} FOR UPDATE").SingleAsync(cancellationToken);
-        if (job.LeaseToken != token) return false;
         var session = await db.AiTelemetrySessions.AsNoTracking().SingleAsync(s => s.BatchId == batch, cancellationToken);
         await Lock("ai-profile:" + session.PlayerId);
+        var job = await db.AiAnalysisJobs.FromSqlInterpolated($"SELECT * FROM aianalysisjobs WHERE batchid={batch} FOR UPDATE").SingleOrDefaultAsync(cancellationToken);
+        if (job == null || job.LeaseToken != token) return false;
+        var resetAt = await db.Playerprofiles.Where(p => p.Userid == session.PlayerId).Select(p => p.LearningResetAt).SingleAsync(cancellationToken);
+        if (resetAt.HasValue && session.CreatedAt <= resetAt.Value)
+        {
+            job.State = "failed"; job.LeaseToken = null; job.LeaseUntil = null; job.LastError = "Progress reset"; job.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync(cancellationToken); await tx.CommitAsync(cancellationToken); return false;
+        }
         int inserted = await db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO aicoachingsessions(batchid,playerid,sessionid,sessiontype,result,createdat)
             VALUES({batch},{session.PlayerId},{session.SessionId},{session.SessionType},{GameJson.Write(result)}::jsonb,{session.CreatedAt}) ON CONFLICT DO NOTHING
@@ -110,8 +129,16 @@ public sealed partial class GameRepository
                     db.Playertechniqueserrors.Add(new Playertechniqueserror { Playerid = session.PlayerId, Techniqueid = technique,
                         Matchid = session.SessionType == "match" ? session.SessionId : null, Lessonid = lesson, Errortype = finding.code, Coachingtip = finding.tip });
         }
+        var tier = result.tier;
+        if (tier is { status: "insufficient_data", modelVersion: not null })
+        {
+            var previous = await db.AiCoachingProfiles.Where(p => p.PlayerId == session.PlayerId).Select(p => p.Result).SingleOrDefaultAsync(cancellationToken);
+            var accepted = previous == null ? null : GameJson.Read<CoachingAnalysis>(previous).tier;
+            if (accepted is { status: "ready", confidence: >= .65, opportunities: >= 20 } && accepted.modelVersion == tier.modelVersion)
+                tier = accepted;
+        }
         var compact = new CoachingAnalysis { sessionId = result.sessionId, ruleVersion = result.ruleVersion, metrics = result.metrics,
-            recommendations = result.recommendations, tier = result.tier, findings = result.findings.DistinctBy(f => (f.technique, f.code)).Take(20).ToList() };
+            recommendations = result.recommendations, tier = tier, findings = result.findings.DistinctBy(f => (f.technique, f.code)).Take(20).ToList() };
         await db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO aicoachingprofiles(playerid,batchid,result,updatedat) VALUES({session.PlayerId},{batch},{HybridJson.Write(compact)}::jsonb,{session.CreatedAt})
             ON CONFLICT(playerid) DO UPDATE SET batchid=EXCLUDED.batchid,result=EXCLUDED.result,updatedat=EXCLUDED.updatedat

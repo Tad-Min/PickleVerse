@@ -9,7 +9,10 @@ public interface IDedicatedServerService
     bool Authenticate(string key);
     Task<DedicatedTicket> Ticket(Guid player, DedicatedCommand request);
     Task<DedicatedAllocation?> Poll(string workerId);
-    Task Renew(DedicatedCommand request, bool ready);
+    Task<DedicatedHeartbeat> Renew(DedicatedCommand request, bool ready);
+    Task Acknowledge(DedicatedCommand request);
+    Task AuthorizeAdmission(DedicatedAdmissionCommand request);
+    Task<List<Entities.DTOs.LiveMatchDto>> LiveMatches();
     Task Complete(DedicatedCompletion request);
     Task Release(DedicatedCommand request);
     Task InterruptExpired();

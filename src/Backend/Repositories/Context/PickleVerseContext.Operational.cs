@@ -17,6 +17,10 @@ public partial class PickleVerseContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
+        ConfigureStatusMappings(modelBuilder);
+        ConfigureFunctional(modelBuilder);
+        ConfigureModeration(modelBuilder);
+        ConfigureAnalytics(modelBuilder);
         modelBuilder.Entity<CosmeticPrice>(entity =>
         {
             entity.ToTable("cosmeticprices");
@@ -59,6 +63,9 @@ public partial class PickleVerseContext
             entity.Property(e => e.LessonId).HasColumnName("lessonid");
             entity.Property(e => e.DrillId).HasColumnName("drillid");
             entity.Property(e => e.Data).HasColumnName("data").HasColumnType("jsonb");
+            entity.Property(e => e.CatalogVersion).HasColumnName("catalogversion");
+            entity.Property(e => e.ProgressEpoch).HasColumnName("progressepoch");
+            entity.Property(e => e.Fingerprint).HasColumnName("fingerprint");
             entity.Property(e => e.Completed).HasColumnName("completed");
             entity.Property(e => e.IsCurrent).HasColumnName("iscurrent").HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasColumnName("createdat").HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -89,6 +96,7 @@ public partial class PickleVerseContext
         {
             entity.ToTable("aianalysisjobs");
             entity.HasKey(e => e.BatchId);
+            entity.HasOne<AiTelemetrySession>().WithMany().HasForeignKey(e => e.BatchId).OnDelete(DeleteBehavior.Cascade);
             entity.Property(e => e.BatchId).HasColumnName("batchid");
             entity.Property(e => e.State).HasColumnName("state").HasDefaultValue("pending");
             entity.Property(e => e.Attempts).HasColumnName("attempts");

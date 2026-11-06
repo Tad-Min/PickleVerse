@@ -45,6 +45,11 @@ namespace PickleVerse.Progression
                 if (!shot.assisted && shot.timingError.HasValue && shot.outcome == "LateServe")
                     return "Cú giao bóng vừa bị trễ. Hãy chuẩn bị sớm hơn trước khi tiếp xúc.";
                 if (shot.recovered == false) return "Sau cú đánh, hãy trở về vị trí sẵn sàng cho bóng tiếp theo.";
+                if (shot.rawReleasedAt.HasValue && shot.rawPosition != null && shot.rawTimingError.HasValue)
+                {
+                    if (shot.rawTimingError.Value < -.065f) return "Bạn thả nút hơi sớm. Hãy đợi bóng tiến gần hơn.";
+                    if (shot.rawTimingError.Value > .065f) return "Bạn thả nút hơi muộn. Hãy chuẩn bị vợt và thả nút sớm hơn.";
+                }
             }
             return "";
         }

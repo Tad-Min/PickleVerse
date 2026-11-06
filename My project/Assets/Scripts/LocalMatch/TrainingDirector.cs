@@ -68,7 +68,7 @@ namespace PickleVerse.LocalMatch
                 return;
             input.Cancel();
             input.Tick(0, false, TouchServing, out _);
-            Input(mask);
+            Input(mask, false);
             Input(mask & 24);
         }
         public Vector2 TouchMovement { get; set; }
@@ -200,6 +200,8 @@ namespace PickleVerse.LocalMatch
                 if (!this)
                     return;
                 Session = Clone(state.player.training.active);
+                if (Session.definition != null) Lesson = Session.definition;
+                Debug.Log("[Training] Started " + Lesson.id + " catalog=" + Session.catalogVersion);
                 coachingSession = CoachingRuntime.Instance.Begin(Session.id, "training");
                 telemetry = ActorTelemetry.Bind(player, coachingSession);
                 completionRequest = null;
@@ -320,11 +322,11 @@ namespace PickleVerse.LocalMatch
             float depth = Lesson.skill == TrainingSkill.Serve ? -7.3f : soft ? -2.95f : -5.05f;
             if (Lesson.skill == TrainingSkill.DoublesTransition && expected.kind != ShotKind.Drop)
                 depth = -2.95f;
-            bool side = Lesson.skill == TrainingSkill.Footwork || Lesson.skill == TrainingSkill.DoublesCover;
+            bool side = Lesson.skill == TrainingSkill.Footwork || Lesson.skill == TrainingSkill.DoublesCover || Lesson.alternateTargets || Lesson.requireRecovery;
             float x = side ? (Session.trials % 2 == 0 ? 1.35f : -1.35f) : 1.15f;
             ReceivePosition = new Vector3(x, 0, depth);
             RecoveryPosition = new Vector3(Lesson.Doubles ? x : side ? 0 : 1.15f, 0, Lesson.skill == TrainingSkill.Approach || Lesson.skill == TrainingSkill.DoublesTransition ? -2.8f : depth);
-            if (initial || !side)
+            if (initial || !side || Lesson.alternateTargets)
                 player.ResetAt(ReceivePosition, -1);
             else player.ResetAt(new Vector3(0, 0, depth), -1);
             coach.ResetAt(new Vector3(-1.2f, 0, 4.5f), 1);
@@ -343,21 +345,24 @@ namespace PickleVerse.LocalMatch
                 idealContact = partner.transform.TransformPoint(partner.ContactOffset(expected));
             if (Lesson.skill == TrainingSkill.Serve)
                 idealContact = player.transform.position + new Vector3(.3f, .7f, .3f);
-            TargetPosition = ShotTrajectory.Target(PartnerTurn ? partner : player, expected, idealContact, (PartnerTurn ? partner : player).transform.position.x);
+            TargetPosition = DrillTarget(PartnerTurn ? partner : player, expected, idealContact);
             TargetPosition = new Vector3(TargetPosition.x, .035f, TargetPosition.z);
             trialPlayerOrigin = player.transform.position;
             DrawRing(receiveRing, ReceivePosition + Vector3.up * .035f, .6f);
-            DrawRing(targetRing, TargetPosition, Lesson.tier < 2 ? .9f : .7f);
-            DrawRing(recoveryRing, RecoveryPosition + Vector3.up * .035f, .6f);
+            DrawRing(targetRing, TargetPosition, Lesson.targetRadius);
+            DrawRing(recoveryRing, RecoveryPosition + Vector3.up * .035f, Lesson.reference?.recoveryRadius ?? .6f);
             recoveryRing.gameObject.SetActive(false);
             rules = Lesson.skill == TrainingSkill.Serve ? new SinglesRules(0) : Lesson.skill == TrainingSkill.Drop || Lesson.skill == TrainingSkill.Approach || Lesson.skill == TrainingSkill.DoublesTransition && expected.kind == ShotKind.Drop ? ThirdShot() : TutorialCurriculum.RallyReady();
             if (Lesson.skill == TrainingSkill.Serve)
+            {
+                rules.Points[0] = Lesson.alternateTargets ? Session.trials % 2 : 0;
                 rules.PrepareServe(-1);
+            }
             ballPosition = Lesson.skill == TrainingSkill.Serve ? player.HeldBallPosition : feeder.HeldBallPosition;
             ball.position = ballPosition;
             ball.gameObject.SetActive(true);
             Feedback = PartnerTurn ? "Bóng của đồng đội AI • giữ cùng hàng, không tranh bóng." : "Bóng " + (Session.trials + 1) + " / " + Lesson.trials + " • " + (Application.isMobilePlatform || touchRoot && touchRoot.activeSelf ? TouchShotGesture.Hint(ExpectedMask) : GameControls.ShotKeys(ExpectedMask));
-            if (!PartnerTurn) telemetry?.Trial(expected.kind.ToString(), Lesson.skill.ToString());
+            if (!PartnerTurn) telemetry?.Trial(expected.kind.ToString(), Lesson.skill.ToString(), Lesson.referenceId);
         }
         static SinglesRules ThirdShot()
         {
@@ -368,16 +373,22 @@ namespace PickleVerse.LocalMatch
             r.Hit(1, new CourtPoint(-1.3f, .9f, 4), false);
             return r;
         }
-        void Input(int mask)
+        void Input(int mask, bool observedTime = true)
         {
             if (Phase != TrainingPhase.Practice || PartnerTurn || hit || outgoing)
                 return;
-            if (!input.Tick(mask, GameControls.Pressed(GameAction.CancelShot), Lesson.skill == TrainingSkill.Serve, out var shot))
+            if (!input.Tick(mask, GameControls.Pressed(GameAction.CancelShot), Lesson.skill == TrainingSkill.Serve, out var shot, observedTime ? Time.unscaledTimeAsDouble : (double?)null))
             {
                 if ((mask & 7) != 0 && input.SelectionMask == 0 && !string.IsNullOrEmpty(input.Feedback))
+                {
+                    telemetry?.RawInput(input, null, null);
                     Fail(TrainingError.WrongInput);
+                }
                 return;
             }
+            float? rawTiming = incoming && Lesson.skill != TrainingSkill.Serve && input.CommittedMask == ExpectedMask
+                ? flightTime + shot.ContactDelay - feed.duration : (float?)null;
+            telemetry?.RawInput(input, shot, rawTiming);
             if (input.CommittedMask != ExpectedMask)
             {
                 Fail(TrainingError.WrongInput);
@@ -399,7 +410,7 @@ namespace PickleVerse.LocalMatch
                 return;
             }
             float remaining = feed.duration - flightTime;
-            if (remaining > shot.ContactDelay + .23f)
+            if (remaining > shot.ContactDelay + (Lesson.reference?.earlyBufferSeconds ?? .23f))
             {
                 Fail(TrainingError.Early);
                 return;
@@ -470,7 +481,7 @@ namespace PickleVerse.LocalMatch
                 if (PartnerTurn && !partner.Swinging && feed.duration - flightTime <= expected.ContactDelay + .01f)
                     partner.Swing(expected, feed.At(feed.duration));
                 receiver = PartnerTurn ? partner : player;
-                if (!hit && receiver.CanContact(previousBall, ballPosition, PaddleContact.MaxAssist, out _) && Mathf.Abs(flightTime - feed.duration) < .17f)
+                if (!hit && receiver.CanContact(previousBall, ballPosition, PaddleContact.MaxAssist, out _) && Mathf.Abs(flightTime - feed.duration) < (Lesson.reference?.contactWindowSeconds ?? .17f))
                 {
                     // Consume every physical contact once, using the shared BotMatch sound selector.
                     ballPosition = receiver.ContactPoint;
@@ -500,7 +511,7 @@ namespace PickleVerse.LocalMatch
                     }
                     LaunchReturn(receiver, PartnerTurn ? expected : chosen);
                 }
-                else if (flightTime > feed.duration + .23f)
+                else if (flightTime > feed.duration + (Lesson.reference?.earlyBufferSeconds ?? .23f))
                 {
                     Fail(TrainingError.Late);
                     return;
@@ -519,6 +530,8 @@ namespace PickleVerse.LocalMatch
                 {
                     float t = -old.z / (ballPosition.z - old.z);
                     Vector3 cross = Vector3.Lerp(old, ballPosition, t);
+                    if (!PartnerTurn && Mathf.Abs(cross.x) < Court.NetHalfSpan)
+                        telemetry?.NetClearance(cross.y - Court.BallRadius - Court.NetHeight(cross.x));
                     if (Mathf.Abs(cross.x) < Court.NetHalfSpan && cross.y - Court.BallRadius < Court.NetHeight(cross.x))
                     {
                         Fail(TrainingError.Net);
@@ -528,6 +541,7 @@ namespace PickleVerse.LocalMatch
                 if (ballPosition.y <= Court.BallRadius)
                 {
                     ballPosition.y = Court.BallRadius;
+                    if (!PartnerTurn) telemetry?.Landing(ballPosition);
                     var fault = rules.Bounce(Point(ballPosition));
                     outgoing = false;
                     Trail(false);
@@ -536,7 +550,7 @@ namespace PickleVerse.LocalMatch
                         Fail(fault == Fault.Out ? TrainingError.Out : TrainingError.Target, true);
                         return;
                     }
-                    bool aim = Vector2.Distance(new Vector2(ballPosition.x, ballPosition.z), new Vector2(TargetPosition.x, TargetPosition.z)) < (Lesson.tier < 2 ? .95f : .75f);
+                    bool aim = Vector2.Distance(new Vector2(ballPosition.x, ballPosition.z), new Vector2(TargetPosition.x, TargetPosition.z)) < Lesson.targetRadius + .05f;
                     if (!aim)
                     {
                         Fail(TrainingError.Target);
@@ -547,12 +561,18 @@ namespace PickleVerse.LocalMatch
             }
             ball.position = ballPosition;
         }
+        Vector3 DrillTarget(MatchActor actor, ShotIntent shot, Vector3 contact)
+        {
+            var target = ShotTrajectory.Target(actor, shot, contact, actor.transform.position.x);
+            if (Lesson.targetDepth > 0) target.z = -actor.end * Lesson.targetDepth;
+            return target;
+        }
         void LaunchReturn(MatchActor actor, ShotIntent shot)
         {
             hit = true;
             incoming = false;
             outgoing = true;
-            Vector3 target = ShotTrajectory.Target(actor, shot, ballPosition, actor.transform.position.x);
+            Vector3 target = DrillTarget(actor, shot, ballPosition);
             ballVelocity = ShotTrajectory.Launch(shot, ballPosition, target);
             Trail(true);
         }
@@ -561,7 +581,7 @@ namespace PickleVerse.LocalMatch
             candidate = true;
             Phase = TrainingPhase.Recovery;
             recoveryTime = 0;
-            needsRecovery = Lesson.skill == TrainingSkill.Footwork || Lesson.skill == TrainingSkill.Approach || Lesson.Doubles;
+            needsRecovery = Lesson.skill == TrainingSkill.Footwork || Lesson.skill == TrainingSkill.Approach || Lesson.Doubles || Lesson.requireRecovery;
             recoveryRing.gameObject.SetActive(needsRecovery);
             Feedback = needsRecovery ? "Cú đánh đạt • di chuyển vào vòng hồi vị và giữ đội hình." : "Đúng kỹ thuật và vùng đích.";
             if (!needsRecovery)
@@ -602,13 +622,13 @@ namespace PickleVerse.LocalMatch
         void Recovery(float dt)
         {
             recoveryTime += dt;
-            bool recovered = Vector3.Distance(player.transform.position, RecoveryPosition) < .6f;
+            bool recovered = Vector3.Distance(player.transform.position, RecoveryPosition) < (Lesson.reference?.recoveryRadius ?? .6f);
             if (Lesson.Doubles)
             {
                 float gap = Vector3.Distance(player.transform.position, partner.transform.position);
                 recovered &= Mathf.Abs(player.transform.position.z - partner.transform.position.z) < .75f && gap > .9f && gap < 3.5f;
             }
-            if (!outcomeAnnounced && candidate && needsRecovery && !recovered && recoveryTime < 4)
+            if (!outcomeAnnounced && candidate && needsRecovery && !recovered && recoveryTime < (Lesson.reference?.recoveryTimeoutSeconds ?? 4))
                 return;
             if (recoveryTime < 1.3f)
                 return;
@@ -617,6 +637,7 @@ namespace PickleVerse.LocalMatch
                 candidate = false;
                 lastError = Lesson.Doubles ? TrainingError.Spacing : TrainingError.Movement;
                 Session.Error(lastError);
+                telemetry?.Outcome(lastError.ToString());
                 Feedback = TrainingCurriculum.Tip(lastError);
             }
             AnnounceOutcome();

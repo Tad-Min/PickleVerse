@@ -4,9 +4,9 @@ namespace PickleVerse.Multiplayer.Services
 {
     public sealed class MatchmakingService : IMatchmakingService
     {
-        readonly IMultiplayerBackend backend;
+        readonly IMatchmakingBackend backend;
         public IMultiplayerState State => backend;
-        public MatchmakingService(IMultiplayerBackend backend)
+        public MatchmakingService(IMatchmakingBackend backend)
         {
             this.backend = backend;
         }

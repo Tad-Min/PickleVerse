@@ -1,0 +1,19 @@
+# Local acceptance only. Linux deployment uses its own release-pinned compose files.
+services:
+  postgres:
+    environment:
+      PGOPTIONS: "-c pickleverse.seed_coaching_demo=on"
+  backend-api:
+    environment:
+      DedicatedServer__Enabled: "true"
+      DedicatedServer__ServiceKey: "${PKV_GAME_SERVER_KEY:?Set PKV_GAME_SERVER_KEY in the ignored .env file}"
+      DedicatedServer__Protocol: "18"
+      DedicatedServer__LeaseSeconds: "45"
+      HybridAi__IngestEnabled: "true"
+      HybridAi__DispatcherEnabled: "true"
+      HybridAi__CoachingEnabled: "true"
+      HybridAi__ModelEnabled: "false"
+  ai-service:
+    environment:
+      AI_ENABLE_MODEL: "false"
+      AI_COACHING_CALIBRATION_SHA256: ""

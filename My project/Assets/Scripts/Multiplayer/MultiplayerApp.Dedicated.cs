@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using PickleVerse.Services;
+using PickleVerse.Services.Api;
 using UnityEngine;
 
 namespace PickleVerse.Multiplayer
@@ -9,7 +10,8 @@ namespace PickleVerse.Multiplayer
     {
         [Serializable] sealed class DedicatedTicket
         {
-            public string state, session, region, connectionToken;
+            public DedicatedTicketState state;
+            public string session, region, connectionToken;
             public MatchRoster roster;
         }
         async Task ConnectDedicatedAsync(MatchRoster roster)
@@ -21,10 +23,10 @@ namespace PickleVerse.Multiplayer
             {
                 if (operation != expectedOperation) throw new OperationCanceledException();
                 ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<DedicatedTicket>("POST", "api/Game/dedicated/ticket", new { MatchId = roster.matchId });
-                if (ticket.state == "ready") break;
-                if (ticket.state == "busy" && !roster.custom && !reconnecting)
+                if (ticket.state == DedicatedTicketState.Ready) break;
+                if (ticket.state == DedicatedTicketState.Busy && !roster.custom && !reconnecting)
                     deadline = Time.realtimeSinceStartupAsDouble + 120;
-                SetNotice(ticket.state == "busy" ? "Máy chủ đang bận • Đang chờ lượt thi đấu…" : "Đang chuẩn bị máy chủ thi đấu…");
+                SetNotice(ticket.state == DedicatedTicketState.Busy ? "Máy chủ đang bận • Đang chờ lượt thi đấu…" : "Đang chuẩn bị máy chủ thi đấu…");
                 if (Time.realtimeSinceStartupAsDouble >= deadline) throw new TimeoutException("Máy chủ thi đấu chưa sẵn sàng. Vui lòng tìm lại trận.");
                 await Task.Delay(500);
             } while (true);
@@ -43,19 +45,19 @@ namespace PickleVerse.Multiplayer
 #if UNITY_SERVER
         public void AttachDedicatedServer(PhotonSession session, MatchRoster roster)
         {
-            ClientIdentities.Clear();
+            clientIdentities.Clear();
             Roster = canonicalRoster = roster;
             Match = session;
             session.PeerLeft += (runner, peer) =>
             {
                 NetworkMatch.Instance?.ReserveDisconnected((ulong)peer.RawEncoded);
-                ClientIdentities.Remove((ulong)peer.RawEncoded);
+                RemoveClientIdentity((ulong)peer.RawEncoded);
             };
             CourtSceneSynchronized = true;
         }
         public void RegisterDedicatedPeer(Fusion.PlayerRef peer, string player)
         {
-            ClientIdentities[(ulong)peer.RawEncoded] = player;
+            clientIdentities[(ulong)peer.RawEncoded] = player;
             PeerConnected?.Invoke((ulong)peer.RawEncoded);
         }
 #endif

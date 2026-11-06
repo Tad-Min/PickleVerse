@@ -7,6 +7,7 @@ import {
   Activity,
   ShieldAlert,
   BarChart3,
+  ClipboardCheck,
   LogOut,
   Trophy,
 } from 'lucide-react';
@@ -26,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: 'Giám sát trận đấu', path: '/matches', icon: Activity },
   { name: 'Xử lý vi phạm', path: '/moderation', icon: ShieldAlert },
   { name: 'Thống kê & AI Telemetry', path: '/analytics', icon: BarChart3 },
+  { name: 'Gán nhãn coaching', path: '/coaching', icon: ClipboardCheck },
 ];
 
 export const Sidebar: React.FC = () => {

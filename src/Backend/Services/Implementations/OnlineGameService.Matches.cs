@@ -15,7 +15,7 @@ public sealed partial class OnlineGameService
             if (!pending.Bot)
                 throw Conflict("Bạn cần hoàn tất hoặc rời trận online hiện tại trước.");
             var pendingId=Guid.Parse(pending.id);
-            var old=await _unitOfWork.Game.Match(m=>m.Matchid==pendingId && m.Kind=="BotPractice" && m.Status=="PLAYING" && m.Gamematchplayers.Any(p=>p.Playerid==id && p.Isreplaywriter));
+            var old=await _unitOfWork.Game.Match(m=>m.Matchid==pendingId && m.Kind=="BotPractice" && m.Status==MatchStatus.Playing && m.Gamematchplayers.Any(p=>p.Playerid==id && p.Isreplaywriter));
             if (old != null)
             {
                 var abandoned = RelationalMatch.Result(old,old.Gamematchplayers.Single(p=>p.Playerid==id));
@@ -43,7 +43,7 @@ public sealed partial class OnlineGameService
         };
         match.opponents.Add(bot);
         var matchId=Guid.Parse(match.id);
-        _unitOfWork.Game.AddMatch(new Gamematch {Matchid=matchId,Kind=match.kind.ToString(),Status="PLAYING",Ratingpolicyversion=match.ratingPolicyVersion,
+        _unitOfWork.Game.AddMatch(new Gamematch {Matchid=matchId,Kind=match.kind.ToString(),Status=MatchStatus.Playing,Ratingpolicyversion=match.ratingPolicyVersion,
             Mode=1,Createdat=Now,Updatedat=Now,Startedat=Now});
         var ownSeat=RelationalMatch.Seat(matchId,new RoomMember {id=s.Player.id,name=s.Player.playerName,elo=s.Player.elo,
             gender=s.profile.Ismale?"Male":"Female",paddleId=s.inventory.equippedPaddle,team=0},true,Now);
@@ -65,7 +65,7 @@ public sealed partial class OnlineGameService
         var result=RelationalMatch.Result(row,participant);
         if (RankedBotAccounts.Contains(id.ToString("N")))
             throw Bad("Kết quả trận bot không thuộc tài khoản này.");
-        if (row.Status == "FINISHED")
+        if (row.Status == MatchStatus.Finished)
         {
             if (BotResultFingerprint(result) != BotResultFingerprint(input))
                 throw Conflict("Trận đã có kết quả khác.");

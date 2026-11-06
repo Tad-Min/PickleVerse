@@ -45,8 +45,8 @@ Dùng PostgreSQL/Redis riêng và database tạm của IntegrationChecks. Không
 $env:PKV_TEST_POSTGRES = '<connection string tới PostgreSQL kiểm thử>'
 $env:PKV_TEST_REDIS = '<Redis kiểm thử>'
 $env:PKV_TEST_AI_URL = 'http://127.0.0.1:18080'
-dotnet run --project src/Backend/IntegrationChecks -- --check-hybrid
-dotnet run --project src/Backend/IntegrationChecks -- --check-hybrid-http
+dotnet run --project src/Testing/Backend -- --check-hybrid
+dotnet run --project src/Testing/Backend -- --check-hybrid-http
 ```
 
 Fixture HTTP/worker dùng service key gồm 32 ký tự `k`, chỉ dành cho test cục bộ. FastAPI kiểm thử phải dùng cùng key; không dùng key này khi triển khai.

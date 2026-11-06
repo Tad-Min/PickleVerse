@@ -76,7 +76,11 @@ namespace PickleVerse.LocalMatch
                     control.Input = this;
             MobileTouchPad.Install(hud.touchRoot, this);
             hud.Bind(this);
-            Begin(0, true);
+            var saved=PickleVerse.Progression.ProgressionRuntime.Instance?.Snapshot?.tutorial;
+            int checkpoint=saved!=null && !saved.completed && !saved.skipped?Mathf.Clamp(saved.checkpoint,0,TutorialCurriculum.Lessons.Length-1):0;
+            ShotsCompleted=Mathf.Clamp(checkpoint-TutorialCurriculum.FirstShot,0,TutorialCurriculum.ShotCount);
+            Begin(checkpoint, true);
+            Debug.Log("[Tutorial] Resumed checkpoint "+checkpoint);
         }
         void Update()
         {
@@ -375,6 +379,7 @@ namespace PickleVerse.LocalMatch
         void Begin(int index, bool snap = false)
         {
             LessonIndex = index;
+            PersistCheckpoint(index);
             Elapsed = 0;
             wait = .65f;
             successTimer = runTime = 0;
@@ -426,6 +431,13 @@ namespace PickleVerse.LocalMatch
                 player.Reaction(true, true);
             }
             hud.ShowLesson();
+        }
+        async void PersistCheckpoint(int index)
+        {
+            var runtime=PickleVerse.Progression.ProgressionRuntime.Instance;
+            if(!runtime || !runtime.Ready || runtime.Snapshot.tutorial.completed || runtime.Snapshot.tutorial.skipped || index<=runtime.Snapshot.tutorial.checkpoint)return;
+            try{await runtime.SetTutorialCheckpointAsync(index);}
+            catch(Exception error){Debug.LogWarning("[Tutorial] Checkpoint remains pending ("+error.GetType().Name+").");}
         }
         void SetCameraTarget()
         {

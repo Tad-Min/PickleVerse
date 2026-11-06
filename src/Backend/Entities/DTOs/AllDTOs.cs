@@ -1,3 +1,4 @@
+using Entities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Entities.DTOs
@@ -65,6 +66,7 @@ namespace Entities.DTOs
 
     public class AuthResponse
     {
+        public SessionScope AccessScope { get; set; } = SessionScope.Game;
         public int OtpLifetimeMinutes { get; set; }
         public int OtpResendCooldownSeconds { get; set; }
         public string Code { get; set; } = string.Empty;
@@ -239,6 +241,7 @@ namespace Entities.DTOs
         public Guid UserId { get; set; }
         public string Reason { get; set; } = string.Empty;
         public DateTime? BannedUntil { get; set; }
+        public UserStatus Restriction { get; set; } = UserStatus.Banned;
     }
 
     // Economy & Cosmetics
@@ -330,12 +333,13 @@ namespace Entities.DTOs
     // Admin & CMS & Telemetry
     public class AdminUserDto
     {
+        public bool EmailVerified { get; set; }
         public Guid UserId { get; set; }
         public string Email { get; set; } = string.Empty;
         public string PlayerName { get; set; } = string.Empty;
         public int RoleId { get; set; }
         public string RoleName { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public UserStatus Status { get; set; }
         public int Elo { get; set; }
         public long TimePlayedSeconds { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -349,13 +353,15 @@ namespace Entities.DTOs
 
     public class AdminReportDto
     {
+        public Guid? ReviewerId { get; set; }
+        public string? DecisionReason { get; set; }
         public Guid ReporterId { get; set; }
         public string ReporterName { get; set; } = string.Empty;
         public Guid ReportedPlayerId { get; set; }
         public string ReportedPlayerName { get; set; } = string.Empty;
         public Guid MatchId { get; set; }
         public string Reason { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public ReportStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? ReplayUrl { get; set; }
     }
@@ -365,9 +371,12 @@ namespace Entities.DTOs
         public Guid ReporterId { get; set; }
         public Guid ReportedPlayerId { get; set; }
         public Guid MatchId { get; set; }
-        public string Status { get; set; } = "RESOLVED"; // RESOLVED, DISMISSED
+        public ReportStatus Status { get; set; }
         public bool BanReportedPlayer { get; set; } = false;
         public string? BanReason { get; set; }
+        public string DecisionReason { get; set; } = "";
+        public UserStatus Restriction { get; set; } = UserStatus.Banned;
+        public DateTime? BannedUntil { get; set; }
     }
 
     public class AdminAnalyticsResponse
@@ -395,6 +404,8 @@ namespace Entities.DTOs
 
     public class CreateLessonRequest
     {
+        [Required] public string Code { get; set; } = "";
+        public PickleVerse.Progression.TrainingDrill? Config { get; set; }
         [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string LessonName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
@@ -427,11 +438,12 @@ namespace Entities.DTOs
 
     public class CreateMissionRequest
     {
+        public PickleVerse.Progression.ProgressMetric Metric { get; set; } = PickleVerse.Progression.ProgressMetric.Matches;
         [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
         public string MissionName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Type { get; set; } = "DAILY"; // DAILY, WEEKLY
         public int Target { get; set; } = 5;
-        public string Reward { get; set; } = "50 Gold";
+        public PickleVerse.Progression.RewardBundle Reward { get; set; } = new(100, 0, 0);
     }
 }

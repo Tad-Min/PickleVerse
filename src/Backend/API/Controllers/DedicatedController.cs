@@ -26,8 +26,10 @@ public sealed class DedicatedWorkerController(IDedicatedServerService server) : 
             throw new Entities.Exceptions.AppException("Không có quyền truy cập máy chủ.", System.Net.HttpStatusCode.Unauthorized);
     }
     [HttpPost("poll")] public async Task<DedicatedAllocation?> Poll([FromHeader(Name = "X-Game-Worker")] string workerId) { Authenticate(); return await server.Poll(workerId); }
-    [HttpPost("ready")] public Task Ready(DedicatedCommand request) { Authenticate(); return server.Renew(request, true); }
-    [HttpPost("heartbeat")] public Task Heartbeat(DedicatedCommand request) { Authenticate(); return server.Renew(request, false); }
+    [HttpPost("ready")] public Task<DedicatedHeartbeat> Ready(DedicatedCommand request) { Authenticate(); return server.Renew(request, true); }
+    [HttpPost("heartbeat")] public Task<DedicatedHeartbeat> Heartbeat(DedicatedCommand request) { Authenticate(); return server.Renew(request, false); }
+    [HttpPost("operations/ack")] public Task Acknowledge(DedicatedCommand request) { Authenticate(); return server.Acknowledge(request); }
+    [HttpPost("admission")] public Task AuthorizeAdmission(DedicatedAdmissionCommand request) { Authenticate(); return server.AuthorizeAdmission(request); }
     [HttpPost("complete")] public Task Complete(DedicatedCompletion request) { Authenticate(); return server.Complete(request); }
     [HttpPost("release")] public Task Release(DedicatedCommand request) { Authenticate(); return server.Release(request); }
     [HttpPost("{lease}/telemetry")] public Task<TelemetryReceipt> Telemetry(string lease, TelemetryBatch batch) { Authenticate(); return server.Telemetry(lease, batch); }

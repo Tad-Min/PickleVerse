@@ -16,6 +16,7 @@ namespace Repositories.UnitOfWork
         IFriendRepository Friends { get; }
         IMissionRepository Missions { get; }
         IAchievementRepository Achievements { get; }
+        IAppActivityRepository Activity { get; }
         GameRepository Game { get; }
 
         Task<int> SaveChangesAsync();

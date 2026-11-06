@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PickleVerse.Progression
 {
@@ -35,6 +36,19 @@ namespace PickleVerse.Progression
         public double time;
         // Signed seconds: negative = early, positive = late. Null means unobserved.
         public float? timingError;
+        // Recorded before the game assists contact timing or chooses a target.
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double? rawPressedAt, rawReleasedAt;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public float? rawTimingError;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? rawInputMask;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? rawCrossCourt, rawPower;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string rawTechnique, referenceId;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public float[] rawPosition;
         public float[] contact, leftFoot, rightFoot, intendedTarget, landing;
         public bool? kitchen, volley, momentum, recovered, targetHit;
         public int? bounces;

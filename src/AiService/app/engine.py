@@ -1,5 +1,5 @@
 from collections import defaultdict
-from .models import AnalyzeRequest, Shot
+from .models import AnalyzeRequest, Shot, observed_timing
 
 TIPS = {
     "Early": (1, "Thả nút muộn hơn để vợt đến bóng đúng thời điểm."),
@@ -11,7 +11,7 @@ TIPS = {
     "Out": (2, "Ưu tiên kiểm soát hướng và lực để giữ bóng trong sân."),
     "Target": (1, "Điều chỉnh hướng về vùng đích trước khi tăng lực."),
     "Movement": (2, "Hồi vị sau cú đánh và chuẩn bị cho bóng tiếp theo."),
-    "DinkTooHigh": (2, "Giảm lực và giữ quỹ đạo bóng ngắn thấp qua lưới."),
+    "DinkTooHigh": (2, "Bóng ngắn qua lưới cao hơn mức tham chiếu. So sánh điểm chạm và đường bóng với cú mẫu của bài tập."),
     "ServeFeet": (3, "Giữ chân sau đường biên cuối sân và trong ô giao trước khi tiếp bóng."),
     "WrongInput": (1, "Giữ đúng tổ hợp kỹ thuật theo hướng dẫn."),
     "Spacing": (2, "Giữ cùng hàng với đồng đội và che khoảng trống giữa sân."),
@@ -28,18 +28,20 @@ NAMES = {"Early": "Đánh sớm", "Late": "Đánh muộn", "LateServe": "Giao b�
 def observations(s: Shot, threshold: float | None):
     """Yield observable opportunities; missing/engine-controlled values are not failures."""
     outcome = "Miss" if s.outcome == "ServeMiss" else s.outcome
-    if s.timingError is not None and not s.assisted:
+    timing = observed_timing(s)
+    if timing is not None:
+        source = "rawRelease" if s.rawTimingError is not None and s.rawReleasedAt is not None and s.rawPosition is not None else "unassistedContact"
         if s.kind == "Serve":
-            yield "LateServe", s.timingError > .065, f"timingError={s.timingError:.4f}s"
+            yield "LateServe", timing > .065, f"{source}={timing:.4f}s"
         else:
-            yield "Early", s.timingError < -.065, f"timingError={s.timingError:.4f}s"
-            yield "Late", s.timingError > .065, f"timingError={s.timingError:.4f}s"
+            yield "Early", timing < -.065, f"{source}={timing:.4f}s"
+            yield "Late", timing > .065, f"{source}={timing:.4f}s"
     if s.outcome == "LateServe":
-        if s.timingError is None or s.assisted:
+        if timing is None:
             yield "LateServe", True, "serve window expired"
-    if s.assisted or s.timingError is None:
+    if timing is None:
         for code in ("Early", "Late"):
-            if s.outcome in ("Early", "Late", "Contact"):
+            if s.outcome in ("Early", "Late"):
                 yield code, s.outcome == code, f"input outcome={s.outcome}"
     if s.volley is True and s.kitchen is not None:
         yield "Kitchen", s.kitchen, f"kitchen={s.kitchen}"
@@ -52,8 +54,9 @@ def observations(s: Shot, threshold: float | None):
         yield "Target", not s.targetHit, f"targetHit={s.targetHit}"
     if s.recovered is not None:
         yield "Movement", not s.recovered, f"recovered={s.recovered}"
-    if s.kind == "Dink" and not s.engineAimed and s.netClearance is not None and threshold is not None:
-        yield "DinkTooHigh", s.netClearance > threshold, f"netClearance={s.netClearance:.3f}m"
+    if s.kind == "Dink" and s.netClearance is not None and s.netClearance >= 0 and threshold is not None:
+        trajectory = "engineAimedTrajectory" if s.engineAimed else "trajectory"
+        yield "DinkTooHigh", s.netClearance > threshold, f"{trajectory}.netClearance={s.netClearance:.3f}m"
 
 
 def analyze(request: AnalyzeRequest, tier_predictor=None):
@@ -63,7 +66,12 @@ def analyze(request: AnalyzeRequest, tier_predictor=None):
         if s.shotId in seen:
             raise ValueError("duplicate shotId")
         seen.add(s.shotId)
-        for code, failed, evidence in observations(s, request.dinkClearanceThreshold):
+        threshold = request.dinkClearanceThreshold
+        if (request.dinkAssisted is not None and s.assisted != request.dinkAssisted
+                or request.dinkEngineAimed is not None and s.engineAimed != request.dinkEngineAimed
+                or request.dinkReferenceId is not None and s.referenceId != request.dinkReferenceId):
+            threshold = None
+        for code, failed, evidence in observations(s, threshold):
             severity, tip = TIPS[code]
             key = s.technique, code
             row = rows.setdefault(key, dict(technique=s.technique, code=code, opportunities=0, errors=0, severity=severity))

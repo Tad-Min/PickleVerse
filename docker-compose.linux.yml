@@ -1,0 +1,158 @@
+# Deployment uses digest references from release.env and runtime values from the host .env.
+name: pickleverse
+
+services:
+  postgres:
+    image: ${PKV_POSTGRES_IMAGE:?Missing PostgreSQL image digest}
+    container_name: pickleverse_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sa
+      POSTGRES_DB: pickleverse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set the PostgreSQL password in the host .env}
+    volumes:
+      - type: bind
+        source: ${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}/PostgresData
+        target: /var/lib/postgresql/data
+        bind: { create_host_path: false }
+      - type: bind
+        source: ./src/Database.sql
+        target: /docker-entrypoint-initdb.d/01_init.sql
+        read_only: true
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
+    healthcheck:
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, sa, -d, pickleverse]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [pickleverse_network]
+
+  redis:
+    image: ${PKV_REDIS_IMAGE:?Missing Redis image digest}
+    container_name: pickleverse_redis
+    restart: unless-stopped
+    command: [redis-server, --appendonly, "yes", --appendfsync, everysec, --maxmemory, "256mb", --maxmemory-policy, noeviction]
+    volumes:
+      - type: bind
+        source: ${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}/RedisData
+        target: /data
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-16379}:6379"
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks: [pickleverse_network]
+
+  s3-storage:
+    image: ${PKV_S3_IMAGE:?Missing S3 image digest}
+    container_name: pickleverse_s3
+    restart: unless-stopped
+    environment:
+      S3_ACCOUNT_ADMIN: "${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in the host .env}:${S3_SECRET_KEY:?Set S3_SECRET_KEY in the host .env}"
+    volumes:
+      - type: bind
+        source: ${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}/S3Data
+        target: /data
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:${S3_PORT:-19000}:9000"
+    networks: [pickleverse_network]
+
+  ai-service:
+    image: ${PKV_AI_IMAGE:?Missing AI image digest}
+    restart: unless-stopped
+    environment:
+      AI_SERVICE_KEY: ${AI_SERVICE_KEY:?Set AI_SERVICE_KEY in the host .env}
+      AI_ENABLE_MODEL: "true"
+      AI_MODEL_PATH: /models/tier.joblib
+      AI_COACHING_CALIBRATION_PATH: /models/coaching.json
+      AI_COACHING_CALIBRATION_SHA256: ${AI_COACHING_CALIBRATION_SHA256:-}
+    volumes:
+      - type: bind
+        source: ${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}/AiService/models
+        target: /models
+        read_only: true
+        bind: { create_host_path: false }
+    networks: [pickleverse_network]
+
+  backend-api:
+    image: ${PKV_API_IMAGE:?Missing API image digest}
+    container_name: pickleverse_api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: 'Host=postgres;Port=5432;Database=pickleverse;Username=sa;Password="${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the host .env}";GSS Encryption Mode=Disable;Maximum Pool Size=${POSTGRES_MAX_POOL_SIZE:-40};'
+      Redis__ConnectionString: redis:6379,abortConnect=false,connectTimeout=3000,syncTimeout=3000
+      Storage__ServiceUrl: http://s3-storage:9000
+      Storage__AccessKey: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in the host .env}
+      Storage__SecretKey: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in the host .env}
+      Storage__BucketName: pickleverse
+      Storage__ForcePathStyle: "true"
+      Jwt__Key: ${JWT_KEY:?Set JWT_KEY in the host .env}
+      Jwt__Issuer: PickleVerseAPI
+      Jwt__Audience: PickleVerseClient
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_APP_PASSWORD:-}
+      Smtp__FromEmail: ${SMTP_FROM_EMAIL:-}
+      HybridAi__IngestEnabled: "true"
+      HybridAi__DispatcherEnabled: "true"
+      HybridAi__CoachingEnabled: "true"
+      HybridAi__ModelEnabled: "true"
+      HybridAi__ServiceUrl: http://ai-service:8000
+      HybridAi__ServiceKey: ${AI_SERVICE_KEY:?Set AI_SERVICE_KEY in the host .env}
+      DedicatedServer__Enabled: "true"
+      DedicatedServer__ServiceKey: ${PKV_GAME_SERVER_KEY:?Set PKV_GAME_SERVER_KEY in the host .env}
+      DedicatedServer__Protocol: ${PKV_PROTOCOL:?Missing dedicated protocol}
+      DedicatedServer__LeaseSeconds: "45"
+    ports:
+      - "${PKV_API_BIND:-0.0.0.0}:${API_PORT:-8080}:8080"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      s3-storage: { condition: service_started }
+      ai-service: { condition: service_healthy }
+    networks: [pickleverse_network]
+
+  game-server:
+    image: ${PKV_SERVER_IMAGE:?Missing Dedicated image digest}
+    container_name: pickleverse_game_server
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 20s
+    cpus: ${PKV_GAME_CPUS:-2}
+    mem_limit: ${PKV_GAME_MEMORY:-2g}
+    environment:
+      PKV_BACKEND_URL: http://backend-api:8080
+      PKV_GAME_SERVER_KEY: ${PKV_GAME_SERVER_KEY:?Set PKV_GAME_SERVER_KEY in the host .env}
+      PKV_GAME_PORT: "3669"
+    ports:
+      - "3669:3669/udp"
+    volumes:
+      - type: bind
+        source: ${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}/GameServerData
+        target: /home/unity/.config/unity3d
+        bind: { create_host_path: false }
+    depends_on:
+      backend-api: { condition: service_started }
+    networks: [pickleverse_network]
+
+  web:
+    image: ${PKV_WEB_IMAGE:?Missing web image digest}
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://backend-api:8080
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:80"
+    depends_on:
+      backend-api: { condition: service_started }
+    networks: [pickleverse_network]
+
+networks:
+  pickleverse_network:
+    driver: bridge

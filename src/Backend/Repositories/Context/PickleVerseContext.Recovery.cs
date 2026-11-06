@@ -9,7 +9,7 @@ public partial class PickleVerseContext
     static void ConfigureRecovery(ModelBuilder model)
     {
         model.Entity<User>().Property(u => u.Authversion).HasColumnName("authversion").HasDefaultValue(0);
-        model.Entity<Gamematch>().Property(m => m.Authoritymode).HasColumnName("authoritymode").HasMaxLength(16).HasDefaultValue("shared");
+        model.Entity<Gamematch>().Property(m => m.Authoritymode).HasColumnName("authoritymode").HasMaxLength(16).HasDefaultValue(MatchAuthorityMode.Shared);
         model.Entity<Gamematch>().Property(m => m.Serverheartbeatat).HasColumnName("serverheartbeatat").HasColumnType("timestamp with time zone");
         model.Entity<Passwordresetchallenge>(e =>
         {

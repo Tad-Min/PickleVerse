@@ -83,6 +83,8 @@ services:
       AI_SERVICE_KEY: "${AI_SERVICE_KEY:-}"
       AI_ENABLE_MODEL: "${AI_ENABLE_MODEL:-false}"
       AI_MODEL_PATH: "/models/tier.joblib"
+      AI_COACHING_CALIBRATION_PATH: "/models/coaching.json"
+      AI_COACHING_CALIBRATION_SHA256: "${AI_COACHING_CALIBRATION_SHA256:-}"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
       interval: 15s

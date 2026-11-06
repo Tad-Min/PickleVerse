@@ -12,6 +12,7 @@ import { CMS } from './features/content';
 import { Matches } from './features/matches';
 import { Moderation } from './features/moderation';
 import { Analytics } from './features/analytics';
+import { ExpertReview } from './features/analytics/pages/ExpertReview';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ export const App: React.FC = () => (
               <Route path="/matches" element={<Matches />} />
               <Route path="/moderation" element={<Moderation />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/coaching" element={<ExpertReview />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

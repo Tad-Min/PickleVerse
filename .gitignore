@@ -9,6 +9,8 @@ DesignPrototypes/
 .env.*
 !.env.example
 artifacts/
+/My project/Assets/PickleVerse.Testing.Generated/
+/My project/Assets/PickleVerse.Testing.Generated.meta
 node_modules/
 dist/
 .vite/

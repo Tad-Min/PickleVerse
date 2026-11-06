@@ -18,6 +18,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
         services.AddDbContext<PickleVerseContext>(options => options.UseNpgsql(connection));
         services.AddSingleton<RedisGameState>();
+        services.AddSingleton<RedisAppActivity>();
         services.AddSingleton<LeaderboardCache>();
         services.AddSingleton<LobbyRepository>();
         services.AddSingleton<DedicatedLeaseRepository>();

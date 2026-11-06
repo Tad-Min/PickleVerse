@@ -16,14 +16,16 @@ namespace Services.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AdminService> _logger;
+        private readonly IContentService _content;
 
-        public AdminService(IUnitOfWork unitOfWork, ILogger<AdminService> logger)
+        public AdminService(IUnitOfWork unitOfWork, ILogger<AdminService> logger, IContentService content)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _content = content;
         }
 
-        public async Task<List<AdminUserDto>> GetUsersAsync(string? search, string? status, int page = 1, int pageSize = 20)
+        public async Task<List<AdminUserDto>> GetUsersAsync(string? search, UserStatus? status, int page = 1, int pageSize = 20)
         {
             try
             {
@@ -32,6 +34,7 @@ namespace Services.Implementations
                 return users.Select(u => new AdminUserDto
                 {
                     UserId = u.Userid,
+                    EmailVerified = u.Verificationemails.OrderByDescending(v => v.Createdat).ThenByDescending(v => v.Verificationemailid).FirstOrDefault()?.Isverified == true,
                     Email = u.Email,
                     PlayerName = u.Playerprofile?.Playername ?? string.Empty,
                     RoleId = u.Roleid,
@@ -49,10 +52,13 @@ namespace Services.Implementations
             }
         }
 
-        public async Task<bool> AssignRoleAsync(Guid userId, int roleId)
+        public async Task<bool> AssignRoleAsync(Guid actor, Guid userId, int roleId)
         {
             try
             {
+                await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
+                if (!await _unitOfWork.Game.IsAdmin(actor)) throw new ForbiddenException("Bạn không có quyền gán vai trò.");
+                await _unitOfWork.Users.LockUserAsync(userId);
                 var user = await _unitOfWork.Users.GetByIdAsync(userId);
                 if (user == null)
                     throw new NotFoundException("Người dùng không tồn tại.");
@@ -62,8 +68,13 @@ namespace Services.Implementations
                     throw new NotFoundException("Vai trò không tồn tại.");
 
                 user.Roleid = roleId;
+                user.Authversion++;
+                await _unitOfWork.Users.RevokeAllRefreshTokensAsync(userId);
+                _unitOfWork.Game.AddAudit(new AdminAuditRecord { AuditId = Guid.NewGuid(), ActorId = actor, TargetId = userId,
+                    Action = "ROLE_ASSIGN", Details = GameJson.Write(new { roleId }), CreatedAt = DateTime.UtcNow });
                 await _unitOfWork.Users.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
+                await tx.CommitAsync();
                 return true;
             }
             catch (AppException)
@@ -77,77 +88,8 @@ namespace Services.Implementations
             }
         }
 
-        public async Task<(bool Success, string Message)> BanUserAsync(Guid userId, string reason, DateTime? bannedUntil)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null)
-                    throw new NotFoundException("Người dùng không tồn tại.");
-
-                user.Status = UserStatus.Banned.ToString();
-                await _unitOfWork.Users.UpdateAsync(user);
-                await _unitOfWork.SaveChangesAsync();
-                return (true, $"Tài khoản {user.Email} đã bị khóa. Lý do: {reason}");
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi khóa tài khoản UserId {UserId}", userId);
-                throw new AppException("Khóa tài khoản thất bại.", ex);
-            }
-        }
-
-        public async Task<(bool Success, string Message)> UnbanUserAsync(Guid userId)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null)
-                    throw new NotFoundException("Người dùng không tồn tại.");
-
-                user.Status = UserStatus.Active.ToString();
-                await _unitOfWork.Users.UpdateAsync(user);
-                await _unitOfWork.SaveChangesAsync();
-                return (true, $"Mở khóa tài khoản {user.Email} thành công.");
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi mở khóa tài khoản UserId {UserId}", userId);
-                throw new AppException("Mở khóa tài khoản thất bại.", ex);
-            }
-        }
-
-        public async Task<bool> ResetPlayerEloAsync(Guid playerId, int defaultElo = 2000)
-        {
-            try
-            {
-                var profile = await _unitOfWork.Profiles.GetByUserIdAsync(playerId);
-                if (profile == null)
-                    throw new NotFoundException("Không tìm thấy hồ sơ người chơi.");
-
-                profile.Elo = defaultElo;
-                await _unitOfWork.Profiles.UpdateProfileAsync(profile);
-                await _unitOfWork.SaveChangesAsync();
-                return true;
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi reset Elo cho PlayerId {PlayerId}", playerId);
-                throw new AppException("Reset Elo thất bại.", ex);
-            }
-        }
+        public Task<bool> ResetPlayerEloAsync(Guid playerId, int defaultElo = 2000) =>
+            throw new AppException("Hãy dùng chức năng đặt lại tiến trình có bước xem trước tác động.", System.Net.HttpStatusCode.Gone);
 
         public async Task<bool> ManualVerifyUserEmailAsync(Guid userId)
         {
@@ -157,8 +99,9 @@ namespace Services.Implementations
                 if (user == null)
                     throw new NotFoundException("Người dùng không tồn tại.");
 
-                user.Status = UserStatus.Active.ToString();
-                await _unitOfWork.Users.UpdateAsync(user);
+                var verification = await _unitOfWork.Users.GetLatestVerificationEmailAsync(userId)
+                    ?? throw new NotFoundException("Không tìm thấy yêu cầu xác thực email.");
+                verification.Isverified = true;
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
@@ -173,55 +116,8 @@ namespace Services.Implementations
             }
         }
 
-        public async Task<int> CreateLessonAsync(CreateLessonRequest request)
-        {
-            try
-            {
-                var lesson = new Lesson
-                {
-                    Lessonname = request.LessonName,
-                    Description = request.Description,
-                    Type = "Basic",
-                    Target = 10,
-                    Reward = "50 EXP"
-                };
-                return await _unitOfWork.Training.CreateLessonAsync(lesson);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi tạo bài học mới");
-                throw new AppException("Tạo bài học mới thất bại.", ex);
-            }
-        }
-
-        public async Task<int> CreateDrillAsync(CreateDrillRequest request)
-        {
-            try
-            {
-                var drill = new Drill
-                {
-                    Techniqueid = request.TechniqueId,
-                    Drillname = request.DrillName,
-                    Description = request.Description
-                };
-                var drillId = await _unitOfWork.Training.CreateDrillAsync(drill);
-
-                var lessonDrill = new Lessondrill
-                {
-                    Lessonid = request.LessonId,
-                    Drillid = drillId,
-                    Target = 10
-                };
-                await _unitOfWork.Training.LinkDrillToLessonAsync(lessonDrill);
-
-                return drillId;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi tạo bài tập Drill mới");
-                throw new AppException("Tạo bài drill mới thất bại.", ex);
-            }
-        }
+        public Task<int> CreateLessonAsync(CreateLessonRequest request) => _content.Create(request);
+        public Task<int> CreateDrillAsync(CreateDrillRequest request) => _content.UpdateDrill(request);
 
         public async Task<int> CreateCosmeticAsync(CreateCosmeticRequest request)
         {
@@ -247,15 +143,22 @@ namespace Services.Implementations
 
         public async Task<int> CreateMissionAsync(CreateMissionRequest request)
         {
+            if (request.Type is not ("DAILY" or "WEEKLY") || request.Target < 1 || request.Target > 100000
+                || !Enum.IsDefined(request.Metric) || request.Reward.coins < 0 || request.Reward.gems < 0 || request.Reward.xp < 0)
+                throw new AppException("Cấu hình nhiệm vụ không hợp lệ.", System.Net.HttpStatusCode.BadRequest);
             try
             {
+                var scope = request.Type == "DAILY" ? PickleVerse.Progression.ProgressScope.Daily : PickleVerse.Progression.ProgressScope.Weekly;
+                string code = "CMS." + Guid.NewGuid().ToString("N");
                 var mission = new Mission
                 {
+                    Code = code,
+                    Config = GameJson.Write(new PickleVerse.Progression.ProgressDefinition(code, request.MissionName, scope, request.Metric, request.Target, request.Reward)),
                     Missionname = request.MissionName,
                     Description = request.Description,
-                    Type = request.Type,
+                    Type = request.Metric.ToString(),
                     Target = request.Target,
-                    Reward = request.Reward
+                    Reward = GameJson.Write(request.Reward)
                 };
                 return await _unitOfWork.Missions.CreateMissionAsync(mission);
             }
@@ -296,7 +199,7 @@ namespace Services.Implementations
             }
         }
 
-        public async Task<List<AdminReportDto>> GetReportsAsync(string? status)
+        public async Task<List<AdminReportDto>> GetReportsAsync(ReportStatus? status)
         {
             try
             {
@@ -315,6 +218,8 @@ namespace Services.Implementations
                         MatchId = r.Matchid,
                         Reason = r.Reason,
                         Status = r.Status,
+                        ReviewerId = r.ReviewerId,
+                        DecisionReason = r.DecisionReason,
                         CreatedAt = r.Createdat,
                         ReplayUrl = replay == null ? null : $"/api/Replays/{r.Matchid}"
                     });
@@ -328,103 +233,5 @@ namespace Services.Implementations
             }
         }
 
-        public async Task<(bool Success, string Message)> ReviewReportAsync(ReviewReportRequest request)
-        {
-            try
-            {
-                var report = await _unitOfWork.Matches.GetReportAsync(request.ReporterId, request.ReportedPlayerId, request.MatchId);
-                if (report == null)
-                    throw new NotFoundException("Đơn tố cáo không tồn tại.");
-
-                report.Status = request.Status;
-                report.Updatedat = DateTime.UtcNow;
-
-                if (request.BanReportedPlayer)
-                {
-                    var reportedUser = await _unitOfWork.Users.GetByIdAsync(request.ReportedPlayerId);
-                    if (reportedUser != null)
-                    {
-                        reportedUser.Status = UserStatus.Banned.ToString();
-                        await _unitOfWork.Users.UpdateAsync(reportedUser);
-                    }
-                }
-
-                await _unitOfWork.Matches.UpdateReportAsync(report);
-                await _unitOfWork.SaveChangesAsync();
-                return (true, $"Đã cập nhật trạng thái đơn tố cáo thành: {request.Status}");
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi duyệt đơn tố cáo của MatchId {MatchId}", request.MatchId);
-                throw new AppException("Duyệt đơn tố cáo thất bại.", ex);
-            }
-        }
-
-        public async Task<AdminAnalyticsResponse> GetAnalyticsSummaryAsync()
-        {
-            try
-            {
-                var totalUsers = await _unitOfWork.Users.GetTotalUsersCountAsync(null, null);
-                var recentMatches = await _unitOfWork.Matches.GetRecentMatchesAsync(1000);
-                var leaderboard = await _unitOfWork.Profiles.GetLeaderboardAsync(1000);
-                var reports = await _unitOfWork.Matches.GetReportsAsync(ReportStatus.Pending.ToString());
-
-                return new AdminAnalyticsResponse
-                {
-                    TotalUsers = totalUsers,
-                    ActiveUsersToday = totalUsers,
-                    TotalMatchesPlayed = recentMatches.Count,
-                    TotalPlayTimeSeconds = leaderboard.Sum(p => p.Timeplayedseconds),
-                    TotalReportsPending = reports.Count
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi tổng hợp báo cáo Analytics");
-                throw new AppException("Không thể tải dữ liệu thống kê tổng hợp.", ex);
-            }
-        }
-
-        public async Task<List<AiTechniqueErrorHeatmapDto>> GetAiTechniqueErrorHeatmapAsync()
-        {
-            try
-            {
-                var techniques = await _unitOfWork.AiCoaching.GetAllTechniquesAsync();
-                var allErrors = await _unitOfWork.AiCoaching.GetAllErrorsAsync();
-
-                var result = new List<AiTechniqueErrorHeatmapDto>();
-                foreach (var t in techniques)
-                {
-                    var techErrors = allErrors.Where(e => e.Techniqueid == t.Techniqueid).ToList();
-                    var breakdown = techErrors
-                        .GroupBy(e => e.Errortype)
-                        .Select(g => new ErrorTypeBreakdownDto
-                        {
-                            ErrorType = g.Key,
-                            Count = g.Count()
-                        })
-                        .ToList();
-
-                    result.Add(new AiTechniqueErrorHeatmapDto
-                    {
-                        TechniqueId = t.Techniqueid,
-                        TechniqueName = t.Techniquename,
-                        TotalErrorsCount = techErrors.Count,
-                        ErrorBreakdown = breakdown
-                    });
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi tổng hợp Bản đồ nhiệt kỹ thuật AI");
-                throw new AppException("Không thể tải bản đồ nhiệt kỹ thuật AI.", ex);
-            }
-        }
     }
 }

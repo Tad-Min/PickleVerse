@@ -1,3 +1,4 @@
+using Entities.Enums;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -13,15 +14,18 @@ namespace API.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
+        private readonly IModerationService _moderation;
+        Guid Actor => Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IAdminService adminService, IModerationService moderation)
         {
             _adminService = adminService;
+            _moderation = moderation;
         }
 
         // W01 - User Management & RBAC
         [HttpGet("users")]
-        public async Task<IActionResult> GetUsers([FromQuery] string? search, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetUsers([FromQuery] string? search, [FromQuery] UserStatus? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var list = await _adminService.GetUsersAsync(search, status, page, pageSize);
             return Ok(list);
@@ -30,7 +34,7 @@ namespace API.Controllers
         [HttpPost("users/assign-role")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
         {
-            var success = await _adminService.AssignRoleAsync(request.UserId, request.RoleId);
+            var success = await _adminService.AssignRoleAsync(Actor, request.UserId, request.RoleId);
             if (!success)
                 return BadRequest(new { message = "Gán vai trò thất bại." });
             return Ok(new { message = "Gán vai trò thành công." });
@@ -39,19 +43,15 @@ namespace API.Controllers
         [HttpPost("users/ban")]
         public async Task<IActionResult> BanUser([FromBody] BanUserRequest request)
         {
-            var result = await _adminService.BanUserAsync(request.UserId, request.Reason, request.BannedUntil);
-            if (!result.Success)
-                return BadRequest(new { message = result.Message });
-            return Ok(new { message = result.Message });
+            return Ok(await _moderation.Apply(Actor, new SanctionRequest { UserId = request.UserId, Reason = request.Reason,
+                Restriction = request.Restriction, ExpiresAt = request.BannedUntil }));
         }
 
         [HttpPost("users/{userId}/unban")]
-        public async Task<IActionResult> UnbanUser(Guid userId)
+        public async Task<IActionResult> UnbanUser(Guid userId, [FromBody] RevokeSanctionRequest request)
         {
-            var result = await _adminService.UnbanUserAsync(userId);
-            if (!result.Success)
-                return BadRequest(new { message = result.Message });
-            return Ok(new { message = result.Message });
+            await _moderation.Revoke(Actor, userId, request.Reason);
+            return Ok(new { message = "Đã thu hồi các quyết định hạn chế đang hiệu lực." });
         }
 
         [HttpPost("users/{playerId}/reset-elo")]
@@ -111,7 +111,7 @@ namespace API.Controllers
 
         // W04 - Moderation & Tribunal
         [HttpGet("reports")]
-        public async Task<IActionResult> GetReports([FromQuery] string? status)
+        public async Task<IActionResult> GetReports([FromQuery] ReportStatus? status)
         {
             var reports = await _adminService.GetReportsAsync(status);
             return Ok(reports);
@@ -120,25 +120,9 @@ namespace API.Controllers
         [HttpPost("reports/review")]
         public async Task<IActionResult> ReviewReport([FromBody] ReviewReportRequest request)
         {
-            var result = await _adminService.ReviewReportAsync(request);
-            if (!result.Success)
-                return BadRequest(new { message = result.Message });
-            return Ok(new { message = result.Message });
+            await _moderation.ReviewReport(Actor, request);
+            return Ok(new { message = "Đã ghi kết luận xử lý tố cáo." });
         }
 
-        // W05 - Analytics & Telemetry
-        [HttpGet("analytics/summary")]
-        public async Task<IActionResult> GetAnalyticsSummary()
-        {
-            var summary = await _adminService.GetAnalyticsSummaryAsync();
-            return Ok(summary);
-        }
-
-        [HttpGet("analytics/error-heatmap")]
-        public async Task<IActionResult> GetAiErrorHeatmap()
-        {
-            var heatmap = await _adminService.GetAiTechniqueErrorHeatmapAsync();
-            return Ok(heatmap);
-        }
     }
 }

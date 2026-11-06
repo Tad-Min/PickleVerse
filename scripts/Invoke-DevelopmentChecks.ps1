@@ -12,7 +12,7 @@ if ($binding.HostIp -notin @('127.0.0.1', '0.0.0.0')) { throw 'PostgreSQL is not
 $env:PKV_TEST_POSTGRES = "Host=127.0.0.1;Port=$($binding.HostPort);Database=pickleverse;Username=$($values.POSTGRES_USER);Password=$($values.POSTGRES_PASSWORD);Maximum Pool Size=40"
 $env:PKV_TEST_REDIS = '127.0.0.1:16379,abortConnect=false'
 if ($Build) {
-    & dotnet build src/Backend/IntegrationChecks/IntegrationChecks.csproj -v quiet
+    & dotnet build src/Testing/Backend/IntegrationChecks.csproj -v quiet
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 $checks = @{
@@ -21,7 +21,7 @@ $checks = @{
     catalog = '--check-catalog-text'; participant = '--check-normalized-participants'; match_columns = '--check-match-columns'; dedicated = '--check-dedicated'
 }
 if (!$checks.ContainsKey($Check)) { throw 'Unknown check.' }
-$arguments = @('run', '--project', 'src/Backend/IntegrationChecks', '--no-build', '--')
+$arguments = @('run', '--project', 'src/Testing/Backend', '--no-build', '--')
 if ($checks[$Check]) { $arguments += $checks[$Check] }
 & dotnet @arguments 2>&1 | Tee-Object -FilePath "artifacts/account-multiplayer-ai-20261103/check-$Check.log"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

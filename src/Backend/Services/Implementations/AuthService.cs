@@ -22,7 +22,7 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
     string SigningKey => configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
     DateTime UtcNow => clock.GetUtcNow().UtcDateTime;
     static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
-    static bool Active(User user) => !PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) && string.Equals(user.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase);
+    static bool Active(User user) => !PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")) && user.Status == UserStatus.Active;
     static string HashRefreshToken(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     static AuthResponse Failure(string message, string code) => new() { Message = message, Code = code };
     static string DefaultPlayerName() => "player" + RandomNumberGenerator.GetHexString(12, lowercase: true);
@@ -44,7 +44,7 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
             Email = email,
             Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Roleid = role.Roleid,
-            Status = "ACTIVE",
+            Status = UserStatus.Active,
             Createdat = UtcNow
         };
         var profile = new Playerprofile
@@ -186,6 +186,7 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
             { await unitOfWork.RollbackTransactionAsync(); return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials"); }
             var rejected = await RejectIneligibleUserAsync(user);
             if (rejected != null) { await unitOfWork.RollbackTransactionAsync(); return rejected; }
+            if (user.Role?.Rolename == "Player") await unitOfWork.Game.RecordLogin(user.Userid, UtcNow);
             var refresh = NewRefreshToken(user.Userid);
             await unitOfWork.Users.AddRefreshTokenAsync(refresh.Entity);
             await unitOfWork.CommitTransactionAsync();
@@ -196,8 +197,9 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
 
     async Task<AuthResponse?> RejectIneligibleUserAsync(User user)
     {
-        if (!Active(user))
-            return Failure("Tài khoản đang bị khóa hoặc tạm ngưng.", "account_inactive");
+        if (PickleVerse.Multiplayer.RankedBotAccounts.Contains(user.Userid.ToString("N")))
+            return Failure("Tài khoản hệ thống không được đăng nhập.", "account_inactive");
+        await ReconcileRestriction(user);
         var verification = await unitOfWork.Users.GetLatestVerificationEmailAsync(user.Userid);
         return verification?.Isverified != true
             ? Failure("Email chưa được xác thực. Hãy nhập OTP hoặc yêu cầu gửi lại mã.", "email_not_verified") : null;
@@ -260,7 +262,8 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
     async Task<AuthResponse> SignedInAsync(User user, string refreshToken) => new()
     {
         Success = true,
-        Message = "Đăng nhập thành công.",
+        Message = user.Status == UserStatus.Active ? "Đăng nhập thành công." : "Tài khoản đang bị hạn chế. Bạn có thể xem quyết định và gửi khiếu nại.",
+        AccessScope = user.Status == UserStatus.Active ? SessionScope.Game : SessionScope.Appeals,
         AccessToken = GenerateJwtToken(user),
         RefreshToken = refreshToken,
         Profile = await profiles.GetMyProfileAsync(user.Userid)
@@ -271,7 +274,8 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()), new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role?.Rolename ?? "Player"),
+            new Claim(ClaimTypes.Role, user.Status == UserStatus.Active ? user.Role?.Rolename ?? "Player" : "Restricted"),
+            new Claim("access_scope", StatusWire.Format(user.Status == UserStatus.Active ? SessionScope.Game : SessionScope.Appeals)),
             new Claim("auth_version", user.Authversion.ToString(System.Globalization.CultureInfo.InvariantCulture))
         };
         var token = new JwtSecurityToken(configuration["Jwt:Issuer"] ?? "PickleVerseAPI",

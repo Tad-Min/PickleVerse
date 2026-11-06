@@ -13,6 +13,7 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class OnlineGameCatalog
     {
+        public int contentSchemaVersion;
         public bool dedicatedServerEnabled;
         public BotPolicy botPolicy = new BotPolicy();
         public bool hybridTelemetryEnabled, hybridCoachingEnabled;
@@ -33,11 +34,13 @@ namespace PickleVerse.Progression
         public string equippedPaddle;
     }
     [Serializable]
-    public sealed class OnlineTutorialState { public bool completed, skipped; }
+    public sealed class OnlineTutorialState { public bool completed, skipped; public int checkpoint; }
     [Serializable]
     public sealed class OnlineGameSnapshot
     {
         public long revision;
+        public long learningEpoch;
+        public string experienceChoice;
         public bool isMale;
         public PlayerProfile player;
         public OnlineInventory inventory;

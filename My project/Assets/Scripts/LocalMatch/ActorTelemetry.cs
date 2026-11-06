@@ -25,10 +25,24 @@ namespace PickleVerse.LocalMatch
             if (pending != null) { pending.rally = currentRally; pending.bounces = currentBounces; }
             inputStroke = currentStroke;
         }
-        public void Trial(string kind, string technique)
+        public void Trial(string kind, string technique, string referenceId = null)
         {
             pending = session?.Attempt(kind, technique, "training-trial", Time.unscaledTimeAsDouble);
+            lastContact = lastVolley = null;
+            if (pending != null) pending.referenceId = referenceId;
             prepared = true;
+        }
+        public void RawInput(ShotInput input, ShotIntent? intent, float? timingError)
+        {
+            if (pending == null) return;
+            pending.rawPressedAt = input.PressedAt;
+            pending.rawReleasedAt = input.ReleasedAt;
+            pending.rawInputMask = input.ObservedMask;
+            pending.rawPosition = Vector(actor.transform.position);
+            pending.rawTimingError = timingError;
+            pending.rawTechnique = intent?.kind.ToString();
+            pending.rawCrossCourt = intent?.cross;
+            pending.rawPower = intent?.power;
         }
         public void Contact(Vector3 point, bool volley, bool success)
         {

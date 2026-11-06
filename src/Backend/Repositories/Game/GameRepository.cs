@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using PickleVerse.Progression;
 using Repositories.Context;
+using Repositories.Interfaces;
 
 namespace Repositories.Game;
 
@@ -13,7 +14,7 @@ public interface IRepositoryTransaction : IAsyncDisposable
 }
 
 // All repositories in a request share the scoped context and its transaction.
-public sealed partial class GameRepository(PickleVerseContext db)
+public sealed partial class GameRepository(PickleVerseContext db) : IAppActivityRepository
 {
     sealed class Transaction(IDbContextTransaction transaction) : IRepositoryTransaction
     {
@@ -35,8 +36,9 @@ public sealed partial class GameRepository(PickleVerseContext db)
     }
 
     public Task<DateTime> AccountCreated(Guid player) => db.Users.Where(u => u.Userid == player).Select(u => u.Createdat).SingleAsync();
-    public Task<string?> AccountStatus(Guid player) => db.Users.Where(u => u.Userid == player).Select(u => u.Status).SingleOrDefaultAsync();
+    public Task<UserStatus?> AccountStatus(Guid player) => db.Users.Where(u => u.Userid == player).Select(u => (UserStatus?)u.Status).SingleOrDefaultAsync();
     public Task<string?> PlayerName(Guid player) => db.Playerprofiles.Where(p => p.Userid == player).Select(p => p.Playername).SingleOrDefaultAsync();
+    public async Task<long?> LockActivityTotal(Guid player) => (await LockProfile(player, tracking: false))?.Timeplayedseconds;
     public Task SetActivityTotal(Guid player, long total) => db.Playerprofiles.Where(p => p.Userid == player)
         .ExecuteUpdateAsync(s => s.SetProperty(p => p.Timeplayedseconds, total));
     public Task<List<Playerprofile>> Profiles(Guid[] ids) => db.Playerprofiles.AsNoTracking().Include(p => p.User)
@@ -126,7 +128,7 @@ public sealed partial class GameRepository(PickleVerseContext db)
             await db.Database.OpenConnectionAsync();
         var achievements = await db.Achievements.AsNoTracking().OrderBy(a => a.Achievementid).ToListAsync();
         var missions = await db.Missions.AsNoTracking().Where(m => m.Code != null).OrderBy(m => m.Missionid).Select(m => m.Config).ToListAsync();
-        var lessons = await db.Lessons.AsNoTracking().Where(l => l.Code != null).OrderBy(l => l.SortOrder).ThenBy(l => l.Lessonid).Select(l => l.Config).ToListAsync();
+        var lessons = await db.Lessons.AsNoTracking().Where(l => l.Code != null && l.PublishStatus == ContentPublishStatus.Published).OrderBy(l => l.SortOrder).ThenBy(l => l.Lessonid).Select(l => l.Config).ToListAsync();
         var cosmetics = await db.Cosmetics.AsNoTracking().Where(c => c.Itemcode.StartsWith("paddle.")).OrderBy(c => c.Cosmeticid).Select(c => c.Config).ToListAsync();
         return new GameCatalog {
             definitions = achievements.Select(a => new ProgressDefinition(a.Achievementcode, a.Achievementname, ProgressScope.Achievement,

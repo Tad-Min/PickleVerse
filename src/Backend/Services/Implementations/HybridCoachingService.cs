@@ -39,16 +39,20 @@ public sealed class HybridCoachingService : IHybridCoachingService
         foreach (var shot in batch.shots)
         {
             bool Vector(float[]? v) => v == null || v.Length == 3 && v.All(float.IsFinite);
+            bool Timestamp(double? v) => v == null || double.IsFinite(v.Value) && v.Value >= 0;
             if (shot == null || string.IsNullOrWhiteSpace(shot.shotId) || shot.shotId.Length > 100 || shot.sequence < 0 || shot.rally < 0
                 || !double.IsFinite(shot.time) || shot.time < 0 || shot.kind?.Length is not (> 0 and <= 40) || shot.technique?.Length is not (> 0 and <= 40)
                 || shot.source?.Length is not (> 0 and <= 40) || shot.outcome?.Length is not (> 0 and <= 40)
                 || shot.timingError.HasValue && !float.IsFinite(shot.timingError.Value) || shot.netClearance.HasValue && !float.IsFinite(shot.netClearance.Value)
+                || !Timestamp(shot.rawPressedAt) || !Timestamp(shot.rawReleasedAt) || shot.rawReleasedAt < shot.rawPressedAt
+                || shot.rawTimingError.HasValue && !float.IsFinite(shot.rawTimingError.Value) || shot.rawInputMask is < 0 or > 31
+                || shot.rawTechnique?.Length > 40 || (shot.referenceId != null && !Guid.TryParse(shot.referenceId, out _)) || !Vector(shot.rawPosition)
                 || !Vector(shot.contact) || !Vector(shot.leftFoot) || !Vector(shot.rightFoot) || !Vector(shot.intendedTarget) || !Vector(shot.landing) || shot.bounces < 0)
                 throw Invalid("Số liệu cú đánh không hợp lệ.");
         }
         if (batch.shots.Select(s => s.shotId).Distinct().Count() != batch.shots.Count || batch.shots.Select(s => s.sequence).Distinct().Count() != batch.shots.Count)
             throw Invalid("Mã hoặc thứ tự cú đánh bị trùng.");
-        if (Encoding.UTF8.GetByteCount(GameJson.Write(batch)) > 1024 * 1024)
+        if (Encoding.UTF8.GetByteCount(HybridJson.Write(batch)) > 1024 * 1024)
             throw new AppException("Gói telemetry vượt 1 MiB.", HttpStatusCode.RequestEntityTooLarge);
     }
     public async Task<TelemetryReceipt> Ingest(Guid player, TelemetryBatch batch, bool trustedServer = false)
@@ -124,7 +128,7 @@ public sealed class HybridCoachingService : IHybridCoachingService
         var catalog = await catalogs.Load();
         var training = await _unitOfWork.Game.Training(player);
         var available = catalog.lessons.Where(d => TrainingEngine.Unlocked(training, d)).ToDictionary(d => d.id);
-        string fallback = TrainingEngine.Recommended(training);
+        string fallback = TrainingEngine.Recommended(training, catalog.lessons);
         var profile = settings.CoachingEnabled ? await _unitOfWork.Game.CoachingProfile(player, clock.GetUtcNow().UtcDateTime.AddDays(-30)) : null;
         CoachingSummary? summary = profile == null ? null : new() { status = "ready", analysis = GameJson.Read<CoachingAnalysis>(profile.Result), updatedAt = profile.UpdatedAt.ToString("O") };
         summary ??= new() { status = settings.CoachingEnabled ? "empty" : "disabled", analysis = new() };
@@ -161,17 +165,24 @@ public sealed class HybridCoachingService : IHybridCoachingService
         var session = await _unitOfWork.Game.TelemetryBatch(batch) ?? throw Invalid("Missing telemetry session.");
         using var metadata = System.Text.Json.JsonDocument.Parse(session.Metadata);
         string mode = metadata.RootElement.GetProperty("mode").GetString()!;
+        string gameVersion = "";
+        if (metadata.RootElement.TryGetProperty("header", out var header) && header.ValueKind == System.Text.Json.JsonValueKind.String)
+        {
+            using var details = System.Text.Json.JsonDocument.Parse(header.GetString()!);
+            if (details.RootElement.TryGetProperty("gameVersion", out var version)) gameVersion = version.GetString() ?? "";
+        }
         var rows = await _unitOfWork.Game.TelemetryShots(batch);
         var cutoff = clock.GetUtcNow().UtcDateTime.AddDays(-30);
         var onboarding = settings.ModelEnabled ? await _unitOfWork.Game.OnboardingShots(session.PlayerId, mode, cutoff) : new List<string>();
         var history = await _unitOfWork.Game.CoachingHistory(session.PlayerId, cutoff);
         var training = await _unitOfWork.Game.Training(session.PlayerId);
         var catalog = await catalogs.Load();
-        return HybridJson.Write(new { sessionId = session.SessionId.ToString("N"), ruleVersion = "rules-v1", mode,
+        return HybridJson.Write(new { sessionId = session.SessionId.ToString("N"), ruleVersion = "rules-v1", mode, gameVersion,
             shots = rows.SelectMany(row => GameJson.Read<List<ShotTelemetry>>(row)).OrderBy(s => s.sequence), history,
+            useInitialTrainingEvidence = settings.ModelEnabled && mode == "training",
             onboardingShots = onboarding.SelectMany(row => GameJson.Read<List<ShotTelemetry>>(row)).Take(3000),
             drills = catalog.lessons.Select(d => new { d.id, d.title, d.tier, skill = d.skill.ToString(), prerequisites = d.prerequisites ?? [] }),
-            completedLessons = training.lessons.Where(l => l.bestStars > 0).Select(l => l.id), fallbackLesson = TrainingEngine.Recommended(training),
+            completedLessons = training.lessons.Where(l => l.bestStars > 0).Select(l => l.id), fallbackLesson = TrainingEngine.Recommended(training, catalog.lessons),
             resumeActive = training.active is {completed:false} });
     }
 }

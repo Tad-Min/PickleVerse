@@ -8,11 +8,21 @@ namespace PickleVerse.Progression
     public enum TrainingSkill { Serve, Drive, Dink, Volley, Modifiers, Drop, Reset, Smash, Footwork, Approach, DoublesCover, DoublesTransition }
     public enum TrainingError { WrongInput, Early, Late, Kitchen, Momentum, Net, Out, Target, ServeFeet, Movement, Spacing }
     [Serializable]
+    public sealed class TrainingReferenceData
+    {
+        public float contactWindowSeconds=.17f, earlyBufferSeconds=.23f, recoveryRadius=.6f, recoveryTimeoutSeconds=4;
+    }
+    [Serializable]
     public sealed class TrainingDrill
     {
+        public string referenceId;
+        public TrainingReferenceData reference;
         public string id, title, explanation, coaching;
         public TrainingSkill skill;
         public int tier, trials, required, reward, xp;
+        public int requiredLevel = 1;
+        public float targetRadius = .9f, targetDepth;
+        public bool alternateTargets, requireRecovery;
         public int[] masks;
         public string[] prerequisites;
         public bool Doubles => skill == TrainingSkill.DoublesCover || skill == TrainingSkill.DoublesTransition;
@@ -25,6 +35,9 @@ namespace PickleVerse.Progression
     public sealed class TrainingAttempt
     {
         public string id, lessonId, playerId;
+        public string catalogVersion;
+        public TrainingDrill definition;
+        public long progressEpoch;
         public int trials, successes, contacts;
         public double seconds, timingTotal;
         public bool completed, passed, review;

@@ -28,7 +28,7 @@ builder.Services.AddControllers(options => options.Filters.Add<ApiResponseFilter
     // The shared Unity game models use serializable fields and named enums.
     options.JsonSerializerOptions.IncludeFields = true;
     options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
-    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    options.JsonSerializerOptions.Converters.Add(new Entities.Enums.GameplayEnumConverter());
 });
 builder.Services.AddRequestDecompression();
 
@@ -37,6 +37,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AdminWebPolicy", policy =>
     {
         policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173")
+              .WithExposedHeaders("Content-Disposition", "X-Dataset-Sha256")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -70,7 +71,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var principal = context.Principal;
                 if (!Guid.TryParse(principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ||
                     !int.TryParse(principal?.FindFirst("auth_version")?.Value, out int version) ||
-                    !await context.HttpContext.RequestServices.GetRequiredService<IAuthService>().ValidateSessionAsync(id, version))
+                    !await context.HttpContext.RequestServices.GetRequiredService<IAuthService>().ValidateSessionAsync(id, version,
+                        principal?.FindFirst("access_scope")?.Value ?? "game"))
                     context.Fail("Phiên đăng nhập đã hết hiệu lực.");
             }
         };
@@ -132,6 +134,7 @@ if (!app.Environment.IsDevelopment())
 app.UseCors("AdminWebPolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<RestrictedSessionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

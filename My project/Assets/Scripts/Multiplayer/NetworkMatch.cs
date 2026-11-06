@@ -341,9 +341,20 @@ namespace PickleVerse.Multiplayer
             if (serve)
                 intent.kind = ShotKind.Serve;
             var local = BotMatchGameplayService.ToLocal(intent);
+            Vector3 beforeAssist = player.Actor.transform.position;
             float delay = PaddleContact.Anticipation(player.Actor, local, ballPosition, ballVelocity, out var predicted);
             player.BeginSwing(intent, predicted, delay);
-            if (player.Actor.Swinging) CoachingAttempt(player, local.kind.ToString());
+            if (player.Actor.Swinging)
+            {
+                var evidence = CoachingAttempt(player, local.kind.ToString());
+                if (evidence != null)
+                {
+                    evidence.rawPosition = CoachingVector(beforeAssist);
+                    evidence.rawTechnique = local.kind.ToString();
+                    evidence.rawCrossCourt = local.cross;
+                    evidence.rawPower = local.power;
+                }
+            }
             if (serve)
                 releasedServe = false;
         }
@@ -768,7 +779,7 @@ namespace PickleVerse.Multiplayer
             Paused = true;
             Body.isKinematic = true;
             Status = "Tạm dừng — chờ người chơi kết nối lại, tối đa 30 giây";
-            app.ClientIdentities.Remove(client);
+            app.RemoveClientIdentity(client);
         }
         void PlayerConnected(ulong client)
         {

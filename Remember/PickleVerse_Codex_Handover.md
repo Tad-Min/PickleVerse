@@ -242,8 +242,8 @@ Các đường dẫn trong bảng này tính từ **D:/Repository/PickleVerse**;
 | Auth/SMTP/admin backend | `src/Backend/Services/Implementations/AuthService.cs`, `SmtpEmailSender.cs`, `AdminService.cs`; `src/Backend/Services/DTOs/AllDTOs.cs` |
 | Admin browser | `src/Frontend/src/`, đặc biệt auth, API client/admin API và mock mode; `src/Frontend/package.json` |
 | Schema/seed/config | `src/Database.sql`, `src/Seed/UnityCatalog.json`, `src/Backend/API/appsettings.json`, `docker-compose.yml` |
-| Kiểm thử backend | `src/Backend/IntegrationChecks/`; là chương trình kiểm thử riêng, không phải dependency runtime của game |
-| Kiểm thử Unity | `My project/Assets/Tests/`; các helper Editor và kết quả riêng ở `My project/Tools/`, `artifacts/`, `UnityWork/` |
+| Kiểm thử backend | `src/Testing/Backend/`; là chương trình kiểm thử riêng, không phải dependency runtime của game |
+| Kiểm thử Unity | `src/Testing/Unity/EditMode/`; các helper Editor và kết quả riêng ở `My project/Tools/`, `artifacts/`, `UnityWork/` |
 
 Tên `OfflineSocialMenu` còn sót từ prototype nhưng UI hiện gọi dữ liệu online. Không kết luận tính năng đang offline chỉ từ tên class. Backend có một số endpoint legacy đã trả **410**; đối chiếu controller và lời gọi runtime trước khi sửa service cũ.
 
@@ -392,7 +392,7 @@ Pop-Location
 Backend IntegrationChecks cần `PKV_TEST_POSTGRES`, `PKV_TEST_REDIS`; bài HTTP cần `PKV_TEST_AI_URL` và FastAPI test có key khớp fixture. Chỉ dùng PostgreSQL/Redis thử riêng và database tạm, không dùng production. Các flag sẵn có: `--check-online-game`, `--check-online-multiplayer`, `--check-online-social`, `--check-app-ranked`, `--check-redis`, `--check-room-invitations`, `--check-hybrid`, `--check-hybrid-http`, `--check-configuration`; không truyền flag chạy bộ auth mặc định. Ví dụ sau khi đã cấu hình môi trường test:
 
 ~~~powershell
-dotnet run --project src/Backend/IntegrationChecks -- --check-hybrid
+dotnet run --project src/Testing/Backend -- --check-hybrid
 ~~~
 
 Đối với Unity, đọc skill unity-cli hiện có trước khi gọi công cụ. Helper `HybridAiEditorVerification.RunDirect("HybridAiTests,BotContactChanceTests,AdaptiveBotGraphTests,NetworkCoachingTests")` đã được dùng để kiểm tra assertion trực tiếp và giữ scene; nó chỉ bao phủ nhóm được chọn, không thay toàn bộ 463 tests. Muốn chạy Test Runner chuẩn cần xử lý scene chưa lưu theo quyết định của người dùng.

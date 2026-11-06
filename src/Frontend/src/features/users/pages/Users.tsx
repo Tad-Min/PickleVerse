@@ -1,3 +1,5 @@
+import { UserStatus } from '../../../types/status';
+import { ProgressResetDialog } from './ProgressResetDialog';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../../api/adminApi';
@@ -25,13 +27,13 @@ export const Users: React.FC = () => {
 
   // Selected user for modal actions
   const [selectedUser, setSelectedUser] = useState<AdminUserDto | null>(null);
-  const [activeModal, setActiveModal] = useState<'ROLE' | 'BAN' | 'RESET_ELO' | null>(null);
+  const [activeModal, setActiveModal] = useState<'ROLE' | 'BAN' | 'UNBAN' | 'RESET_PROGRESS' | null>(null);
 
   // Form states for modals
   const [newRoleId, setNewRoleId] = useState<number>(1);
+  const [restriction, setRestriction] = useState<UserStatus.Banned | UserStatus.Suspended>(UserStatus.Banned);
   const [banReason, setBanReason] = useState<string>('');
   const [bannedUntil, setBannedUntil] = useState<string>('');
-  const [defaultElo, setDefaultElo] = useState<number>(2000);
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Query users
@@ -54,7 +56,7 @@ export const Users: React.FC = () => {
   });
 
   const banMutation = useMutation({
-    mutationFn: (data: { userId: string; reason: string; bannedUntil?: string | null }) => adminApi.banUser(data),
+    mutationFn: (data: { userId: string; reason: string; bannedUntil?: string | null; restriction: UserStatus.Banned | UserStatus.Suspended }) => adminApi.banUser(data),
     onSuccess: (res) => {
       setActionMessage({ type: 'success', text: res.message || 'Khóa tài khoản thành công!' });
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -66,26 +68,14 @@ export const Users: React.FC = () => {
   });
 
   const unbanMutation = useMutation({
-    mutationFn: (userId: string) => adminApi.unbanUser(userId),
+    mutationFn: (data: { userId: string; reason: string }) => adminApi.unbanUser(data.userId, data.reason),
     onSuccess: (res) => {
       setActionMessage({ type: 'success', text: res.message || 'Mở khóa tài khoản thành công!' });
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-    },
-    onError: () => {
-      setActionMessage({ type: 'error', text: 'Mở khóa tài khoản thất bại.' });
-    },
-  });
-
-  const resetEloMutation = useMutation({
-    mutationFn: (data: { playerId: string; defaultElo: number }) =>
-      adminApi.resetPlayerElo(data.playerId, data.defaultElo),
-    onSuccess: (res) => {
-      setActionMessage({ type: 'success', text: res.message || 'Reset Elo thành công!' });
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       closeModal();
     },
     onError: () => {
-      setActionMessage({ type: 'error', text: 'Reset Elo thất bại.' });
+      setActionMessage({ type: 'error', text: 'Mở khóa tài khoản thất bại.' });
     },
   });
 
@@ -120,10 +110,9 @@ export const Users: React.FC = () => {
     setActiveModal('BAN');
   };
 
-  const handleOpenResetEloModal = (user: AdminUserDto) => {
+  const handleOpenResetModal = (user: AdminUserDto) => {
     setSelectedUser(user);
-    setDefaultElo(2000);
-    setActiveModal('RESET_ELO');
+    setActiveModal('RESET_PROGRESS');
   };
 
   return (
@@ -187,7 +176,7 @@ export const Users: React.FC = () => {
             <option value="">Tất cả trạng thái</option>
             <option value="ACTIVE">ACTIVE (Đang hoạt động)</option>
             <option value="BANNED">BANNED (Bị khóa)</option>
-            <option value="UNVERIFIED">UNVERIFIED (Chưa kích hoạt)</option>
+            <option value="SUSPENDED">SUSPENDED (Tạm ngưng)</option>
           </select>
         </div>
       </div>
@@ -223,8 +212,8 @@ export const Users: React.FC = () => {
                 </tr>
               ) : (
                 users.map((u) => {
-                  const isBanned = u.status === 'BANNED';
-                  const isUnverified = u.status === 'UNVERIFIED';
+                  const isBanned = u.status === UserStatus.Banned || u.status === UserStatus.Suspended;
+                  const isUnverified = u.emailVerified === false;
                   const isAdminRole = u.roleName === 'Admin' || u.roleId === 2;
 
                   return (
@@ -294,8 +283,8 @@ export const Users: React.FC = () => {
 
                           {/* Reset Elo */}
                           <button
-                            onClick={() => handleOpenResetEloModal(u)}
-                            title="Reset điểm Elo"
+                            onClick={() => handleOpenResetModal(u)}
+                            title="Đặt lại tiến trình"
                             className="p-1.5 rounded hover:bg-amber-500/20 text-amber-400 transition-colors"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
@@ -304,7 +293,7 @@ export const Users: React.FC = () => {
                           {/* Ban / Unban */}
                           {isBanned ? (
                             <button
-                              onClick={() => unbanMutation.mutate(u.userId)}
+                              onClick={() => { setSelectedUser(u); setBanReason(''); setActiveModal('UNBAN'); }}
                               title="Mở khóa tài khoản (Unban)"
                               className="p-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
                             >
@@ -412,10 +401,10 @@ export const Users: React.FC = () => {
       )}
 
       {/* MODAL 2: Ban User */}
-      {activeModal === 'BAN' && selectedUser && (
+      {(activeModal === 'BAN' || activeModal === 'UNBAN') && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-card border border-border rounded-xl p-6 shadow-2xl relative">
-            <h3 className="text-base font-bold text-foreground font-display mb-1 text-rose-400">Khóa tài khoản người chơi</h3>
+            <h3 className="text-base font-bold text-foreground font-display mb-1 text-rose-400">{activeModal === 'UNBAN' ? 'Thu hồi hạn chế tài khoản' : 'Khóa / tạm ngưng tài khoản'}</h3>
             <p className="text-xs text-muted-foreground mb-4">
               Khóa tài khoản: <span className="font-semibold text-foreground">{selectedUser.playerName}</span> ({selectedUser.email})
             </p>
@@ -435,9 +424,15 @@ export const Users: React.FC = () => {
                 />
               </div>
 
-              <div>
+              {activeModal === 'BAN' && <div>
+                <label className="block text-xs font-semibold mb-1.5">Hình thức</label>
+                <select value={restriction} onChange={e => setRestriction(e.target.value as UserStatus.Banned | UserStatus.Suspended)} className="w-full p-2 bg-slate-900 border rounded">
+                  <option value={UserStatus.Banned}>Khóa tài khoản</option><option value={UserStatus.Suspended}>Tạm ngưng có thời hạn</option>
+                </select>
+              </div>}
+              {activeModal === 'BAN' && <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  Thời hạn khóa (Bỏ trống nếu muốn khóa vĩnh viễn)
+                  Thời hạn (bắt buộc khi tạm ngưng)
                 </label>
                 <input
                   type="datetime-local"
@@ -445,7 +440,7 @@ export const Users: React.FC = () => {
                   onChange={(e) => setBannedUntil(e.target.value)}
                   className="w-full p-2 bg-slate-900 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-              </div>
+              </div>}
             </div>
 
             <div className="flex items-center justify-end gap-2">
@@ -454,58 +449,26 @@ export const Users: React.FC = () => {
               </button>
               <button
                 onClick={() =>
-                  banMutation.mutate({
+                  activeModal === 'UNBAN' ? unbanMutation.mutate({ userId: selectedUser.userId, reason: banReason }) : banMutation.mutate({
+                    restriction,
                     userId: selectedUser.userId,
                     reason: banReason || 'Vi phạm điều khoản cộng đồng PickleVerse.',
                     bannedUntil: bannedUntil ? new Date(bannedUntil).toISOString() : null,
                   })
                 }
-                disabled={banMutation.isPending || !banReason.trim()}
+                disabled={banMutation.isPending || unbanMutation.isPending || banReason.trim().length < 3 || activeModal === 'BAN' && restriction === UserStatus.Suspended && !bannedUntil}
                 className="px-4 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg shadow-sm disabled:opacity-50"
               >
-                {banMutation.isPending ? 'Đang thực thi...' : 'Xác nhận khóa'}
+                {banMutation.isPending || unbanMutation.isPending ? 'Đang thực thi...' : 'Xác nhận'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 3: Reset Elo */}
-      {activeModal === 'RESET_ELO' && selectedUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-card border border-border rounded-xl p-6 shadow-2xl relative">
-            <h3 className="text-base font-bold text-foreground font-display mb-1 text-amber-400">Đặt lại điểm Elo</h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Người chơi: <span className="font-semibold text-foreground">{selectedUser.playerName}</span> (Elo hiện tại: {selectedUser.elo})
-            </p>
+      {activeModal === 'RESET_PROGRESS' && selectedUser && <ProgressResetDialog user={selectedUser} onClose={closeModal}
+        onDone={message => { setActionMessage({ type: 'success', text: message }); queryClient.invalidateQueries({ queryKey: ['admin-users'] }); closeModal(); }} />}
 
-            <div className="space-y-3 mb-6">
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1.5">Điểm Elo mới</label>
-                <input
-                  type="number"
-                  value={defaultElo}
-                  onChange={(e) => setDefaultElo(Number(e.target.value))}
-                  className="w-full p-2 bg-slate-900 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2">
-              <button onClick={closeModal} className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-                Hủy bỏ
-              </button>
-              <button
-                onClick={() => resetEloMutation.mutate({ playerId: selectedUser.userId, defaultElo })}
-                disabled={resetEloMutation.isPending}
-                className="px-4 py-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white rounded-lg shadow-sm"
-              >
-                {resetEloMutation.isPending ? 'Đang lưu...' : 'Đặt lại Elo'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

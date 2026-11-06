@@ -48,39 +48,40 @@ namespace Services.Implementations
             return result;
         }
 
+        public async Task<List<ReportTargetDto>> ReportTargets(Guid player, Guid id)
+        {
+            var match = await _unitOfWork.Matches.GetMatchByIdAsync(id);
+            if (match == null || !match.Gamematchplayers.Any(p => p.Playerid == player && p.Finalizedat != null))
+                throw new Entities.Exceptions.NotFoundException("Không tìm thấy trận đã hoàn tất của bạn.");
+            return match.Gamematchplayers.Where(p => p.Playerid != player && p.Finalizedat != null
+                && !PickleVerse.Multiplayer.RankedBotAccounts.Contains(p.Playerid.ToString("N")))
+                .Select(p => new ReportTargetDto { PlayerId = p.Playerid, PlayerName = p.Player.Playername, Team = p.Team }).ToList();
+        }
+
         public async Task<bool> ReportPlayerAsync(Guid reporterId, ReportPlayerRequest request)
         {
+            if (request.Reason == null || request.Reason.Trim().Length < 3 || request.Reason.Trim().Length > 254)
+                throw new Entities.Exceptions.BadRequestException("Lý do tố cáo cần từ 3 đến 254 ký tự.");
+            if (PickleVerse.Multiplayer.RankedBotAccounts.Contains(request.ReportedPlayerId.ToString("N"))) return false;
+            await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
+            await _unitOfWork.Game.Lock($"report:{reporterId}:{request.ReportedPlayerId}:{request.MatchId}");
             var match = await _unitOfWork.Matches.GetMatchByIdAsync(request.MatchId);
             if (match == null || reporterId == request.ReportedPlayerId
                 || !match.Gamematchplayers.Any(p => p.Playerid == reporterId && p.Finalizedat != null)
-                || !match.Gamematchplayers.Any(p => p.Playerid == request.ReportedPlayerId && p.Finalizedat != null))
-                return false;
-
-            var existingReport = await _unitOfWork.Matches.GetReportAsync(reporterId, request.ReportedPlayerId, request.MatchId);
-
-            if (existingReport != null)
+                || !match.Gamematchplayers.Any(p => p.Playerid == request.ReportedPlayerId && p.Finalizedat != null)) return false;
+            var existing = await _unitOfWork.Matches.GetReportAsync(reporterId, request.ReportedPlayerId, request.MatchId);
+            string reason = request.Reason.Trim();
+            if (existing != null)
             {
-                existingReport.Reason = request.Reason;
-                existingReport.Updatedat = DateTime.UtcNow;
-                await _unitOfWork.Matches.UpdateReportAsync(existingReport);
+                if (existing.Reason != reason) throw new Entities.Exceptions.AppException("Bạn đã gửi tố cáo cho người chơi này trong trận.", System.Net.HttpStatusCode.Conflict);
+                return true;
             }
-            else
+            await _unitOfWork.Matches.AddReportAsync(new Reportplayerinmatch
             {
-                var report = new Reportplayerinmatch
-                {
-                    Reporterid = reporterId,
-                    Reportedplayerid = request.ReportedPlayerId,
-                    Matchid = request.MatchId,
-                    Reason = request.Reason,
-                    Status = "PENDING",
-                    Createdat = DateTime.UtcNow,
-                    Updatedat = DateTime.UtcNow
-                };
-                await _unitOfWork.Matches.AddReportAsync(report);
-            }
-
-            await _unitOfWork.SaveChangesAsync();
-            return true;
+                Reporterid = reporterId, Reportedplayerid = request.ReportedPlayerId, Matchid = request.MatchId, Reason = reason,
+                Status = ReportStatus.Pending, Createdat = DateTime.UtcNow, Updatedat = DateTime.UtcNow
+            });
+            await _unitOfWork.SaveChangesAsync(); await tx.CommitAsync(); return true;
         }
     }
 }

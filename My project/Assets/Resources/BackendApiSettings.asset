@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef1badb1fe772b5459768700ce60067a, type: 3}
   m_Name: BackendApiSettings
   m_EditorClassIdentifier: PickleVerse.Services::PickleVerse.Services.Api.BackendApiSettings
-  baseUrl: http://tad-min.io.vn:8080
-  allowRemoteHttpInDevelopment: 1
+  baseUrl: http://127.0.0.1:8080
+  allowRemoteHttpInDevelopment: 0
   timeoutSeconds: 30

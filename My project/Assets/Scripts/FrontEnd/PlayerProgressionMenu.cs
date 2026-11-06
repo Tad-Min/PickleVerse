@@ -416,6 +416,13 @@ namespace PickleVerse.FrontEnd
                 });
                 PickleVerse.Shop.LobbyNavigation.OpenReplay();
             });
+#if !UNITY_SERVER
+            if (result.kind != MatchKind.BotPractice && PickleVerse.Services.AccountRuntime.Ensure().Account.IsSignedIn)
+            {
+                var report = RuntimeForms.Button("ReportPlayer", row, "Tố cáo", () => ModerationOverlay.ShowReport(result.id), new Vector2(.28f,0),new Vector2(.51f,.27f));
+                report.GetComponentInChildren<TMP_Text>().fontSize = 13;
+            }
+#endif
             button.onClick.AddListener(() =>
             {
                 expanded = !expanded;

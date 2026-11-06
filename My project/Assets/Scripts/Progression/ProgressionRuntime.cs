@@ -6,7 +6,7 @@ using UnityEngine;
 namespace PickleVerse.Progression
 {
     /// <summary>In-memory view of server-owned game state. No local player saves.</summary>
-    public sealed class ProgressionRuntime : MonoBehaviour
+    public sealed partial class ProgressionRuntime : MonoBehaviour
     {
         static ProgressionRuntime instance;
         static bool shuttingDown;
@@ -16,7 +16,7 @@ namespace PickleVerse.Progression
         Task loading = Task.CompletedTask;
         int loadedSession = -1;
         public OnlineGameSnapshot Snapshot { get; private set; }
-        public bool Ready => account != null && account.IsSignedIn && loadedSession == account.SessionVersion && Snapshot != null;
+        public bool Ready => Snapshot != null && (IsOffline || account != null && account.IsSignedIn && !account.IsRestricted && loadedSession == account.SessionVersion);
         public string Error { get; private set; }
         public static ProgressionRuntime Instance
         {
@@ -35,8 +35,8 @@ namespace PickleVerse.Progression
         }
         public static bool Exists => !shuttingDown && instance && instance.player != null;
         public PlayerProfile Player => player;
-        public bool Online => true;
-        public bool IsAuthenticated => Ready;
+        public bool Online => !IsOffline;
+        public bool IsAuthenticated => Ready && !IsOffline && account != null && account.IsSignedIn;
         public ProgressionEngine Engine { get; private set; }
         public IUtcClock UtcClock { get; set; } = new SystemUtcClock();
         public static bool DeveloperControls => false;
@@ -76,15 +76,18 @@ namespace PickleVerse.Progression
         }
         void OnAccountChanged()
         {
-            if (!account.IsSignedIn || loadedSession != account.SessionVersion)
+            RememberOfflineRestriction();
+            if (!account.IsSignedIn || account.IsRestricted || loadedSession != account.SessionVersion)
             {
+                CloseOfflineStore();
+                IsOffline = false;
                 player = Empty();
                 Snapshot = null;
                 loadedSession = -1;
                 Error = null;
             }
             Changed?.Invoke();
-            if (account.IsSignedIn)
+            if (account.IsSignedIn && !account.IsRestricted)
                 loading = LoadSafelyAsync();
         }
         async Task LoadSafelyAsync()
@@ -99,6 +102,7 @@ namespace PickleVerse.Progression
             {
                 if (version != account.SessionVersion || !this)
                     return;
+                if (CanUseOffline(error) && TryEnterOffline()) return;
                 Error = error.Message;
                 Changed?.Invoke();
             }
@@ -111,6 +115,7 @@ namespace PickleVerse.Progression
         }
         public async Task ReloadAsync()
         {
+            if (account.IsRestricted) throw new PickleVerse.Services.Api.ApiException(403, "Tài khoản đang bị hạn chế. Hãy xem quyết định hoặc gửi khiếu nại.", "account_restricted");
             var state = await account.SendAuthorizedAsync<OnlineGameSnapshot>("GET", "api/Game/state");
             ApplySnapshot(state);
         }
@@ -128,6 +133,10 @@ namespace PickleVerse.Progression
                 throw new InvalidOperationException("Dữ liệu trò chơi từ máy chủ chưa đầy đủ.");
             if (Ready && state.revision < Snapshot.revision)
                 return;
+            IsOffline = false;
+            CacheConfirmed(state);
+            if (offlineStore != null && offlineStore.PendingCount > 0) state = offlineStore.Project();
+            state = PrepareActiveLesson(state);
             TrainingCurriculum.Configure(state.catalog.lessons);
             rules.winXp = state.catalog.winXp;
             rules.lossXp = state.catalog.lossXp;
@@ -144,21 +153,22 @@ namespace PickleVerse.Progression
         public async Task<OnlineGameSnapshot> CommandAsync(string action, object request)
         {
             await EnsureReadyAsync();
+            if (IsOffline) throw new InvalidOperationException("Chức năng này cần kết nối mạng. Hãy đăng nhập để đồng bộ.");
             var state = await account.SendAuthorizedAsync<OnlineGameSnapshot>("POST", "api/Game/" + action, request);
             ApplySnapshot(state);
             return state;
         }
         public Task ClaimAsync(string id) => CommandAsync("claim", new { RequestId = Guid.NewGuid().ToString("N"), Code = id });
-        public Task<OnlineGameSnapshot> StartTrainingAsync(string id, bool retry) => CommandAsync("training/start",
-            new { RequestId = Guid.NewGuid().ToString("N"), LessonCode = id, Retry = retry });
+        public Task<OnlineGameSnapshot> StartTrainingAsync(string id, bool retry) => StartTrainingResilient(id, retry);
         public Task<OnlineGameSnapshot> SaveTrainingAsync(TrainingAttempt attempt, bool completed, string requestId) =>
-            CommandAsync(completed ? "training/complete" : "training/checkpoint", new { RequestId = requestId, Attempt = attempt });
+            SaveTrainingResilient(attempt, completed, requestId);
         public Task<OnlineGameSnapshot> StartBotAsync(MatchKind kind, string requestId) =>
             CommandAsync("match/bot/start", new { RequestId = requestId, Kind = kind });
         public Task<OnlineGameSnapshot> FinishBotAsync(MatchResult result, string requestId) =>
             CommandAsync("match/bot/complete", new { RequestId = requestId, Result = result });
-        public Task<OnlineGameSnapshot> SetTutorialAsync(string key, string requestId) =>
-            CommandAsync("tutorial", new { RequestId = requestId, Key = key });
+        public Task<OnlineGameSnapshot> SetTutorialAsync(string key, string requestId) => key == "completed"
+            ? SaveBasicResilient(OfflineCommandKind.TutorialCompleted, requestId) : key == "skipped"
+            ? SaveBasicResilient(OfflineCommandKind.TutorialSkipped, requestId) : throw new ArgumentException("Trạng thái hướng dẫn không hợp lệ.", nameof(key));
         public async void RefreshPeriods()
         {
             try
@@ -183,6 +193,7 @@ namespace PickleVerse.Progression
         public void Save() { }
         void Update()
         {
+            TickOfflineSync();
             if (Ready && AppActivityRuntime.Instance)
                 player.activeSeconds = Math.Max(player.activeSeconds, AppActivityRuntime.Instance.Seconds);
         }
@@ -197,6 +208,7 @@ namespace PickleVerse.Progression
                 return;
             if (account != null)
                 account.Changed -= OnAccountChanged;
+            CloseOfflineStore();
             if (rules)
                 Destroy(rules);
             instance = null;

@@ -12,21 +12,48 @@ namespace PickleVerse.EditorTools
 {
     public static class DedicatedServerCiBuild
     {
-        // Local licensed Editor builds the native payload; GitHub only packages Docker.
         [CliCommand("global", "pickleverse_build_server", "Build a commit-bound Linux Dedicated Server")]
         public static string BuildLinux([CliArg("commit", "Full source commit", Required = true)] string commit)
         {
-            if (EditorApplication.isPlaying || EditorApplication.isCompiling || BuildPipeline.isBuildingPlayer)
-                throw new BuildFailedException("Stop Play Mode and wait for compilation before building.");
+            ValidateCommit(commit);
+            var outputDirectory = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/native-server", commit, Guid.NewGuid().ToString("N")));
+            return BuildLinux(commit, outputDirectory);
+        }
+
+        // Invoked by the CI Editor with -executeMethod.
+        public static void BuildFromCi()
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            string Required(string name)
+            {
+                var index = Array.IndexOf(arguments, name);
+                if (index < 0 || index + 1 >= arguments.Length || string.IsNullOrWhiteSpace(arguments[index + 1]) || arguments[index + 1].StartsWith("-", StringComparison.Ordinal))
+                    throw new BuildFailedException("Missing build argument " + name);
+                return arguments[index + 1];
+            }
+
+            var commit = Required("-pkvCommit");
+            ValidateCommit(commit);
+            var destination = Path.GetFullPath(Required("-customBuildPath"));
+            BuildLinux(commit, Path.GetDirectoryName(destination));
+        }
+
+        static void ValidateCommit(string commit)
+        {
             if (!Regex.IsMatch(commit ?? "", "^[0-9a-f]{40}$"))
                 throw new BuildFailedException("A full source commit is required.");
+        }
+
+        static string BuildLinux(string commit, string outputDirectory)
+        {
+            if (EditorApplication.isPlaying || EditorApplication.isCompiling || BuildPipeline.isBuildingPlayer)
+                throw new BuildFailedException("Stop Play Mode and wait for compilation before building.");
 
             var scenes = new[] { "Assets/Scenes/ServerBootstrap.unity", "Assets/Scenes/MultiplayerCourt.unity" };
             foreach (var scene in scenes)
                 if (!AssetDatabase.LoadAssetAtPath<SceneAsset>(scene))
                     throw new BuildFailedException("Required server scene is missing: " + scene);
 
-            var outputDirectory = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/native-server", commit, Guid.NewGuid().ToString("N")));
             Directory.CreateDirectory(outputDirectory);
             var previousHttp = PlayerSettings.insecureHttpOption;
             var previousFlag = Environment.GetEnvironmentVariable("PKV_BUILD_DEDICATED");
@@ -84,7 +111,7 @@ namespace PickleVerse.EditorTools
                 PlayerSettings.bundleVersion = previousVersion;
                 foreach (var plugin in uiPlugins)
                     plugin.SetIncludeInBuildDelegate(null);
-                if (EditorUserBuildSettings.activeBuildTarget != previousTarget)
+                if (!Application.isBatchMode && EditorUserBuildSettings.activeBuildTarget != previousTarget)
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(previousTarget), previousTarget);
             }
         }

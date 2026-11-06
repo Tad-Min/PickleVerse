@@ -38,6 +38,7 @@ namespace Repositories.UnitOfWork
         public IFriendRepository Friends => _friends ??= new FriendRepository(_context);
         public IMissionRepository Missions => _missions ??= new MissionRepository(_context);
         public IAchievementRepository Achievements => _achievements ??= new AchievementRepository(_context);
+        public IAppActivityRepository Activity => Game;
         public GameRepository Game => _game ??= new GameRepository(_context);
 
         public async Task<int> SaveChangesAsync()

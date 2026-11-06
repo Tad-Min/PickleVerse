@@ -16,6 +16,15 @@ class Shot(WireModel):
     rally: int = Field(default=0, ge=0)
     time: float = Field(default=0, ge=0)
     timingError: float | None = None
+    rawPressedAt: float | None = Field(default=None, ge=0)
+    rawReleasedAt: float | None = Field(default=None, ge=0)
+    rawTimingError: float | None = None
+    rawInputMask: int | None = Field(default=None, ge=0, le=31)
+    rawTechnique: str | None = Field(default=None, max_length=40)
+    rawCrossCourt: bool | None = None
+    rawPower: bool | None = None
+    rawPosition: list[float] | None = Field(default=None, min_length=3, max_length=3)
+    referenceId: str | None = Field(default=None, max_length=36)
     contact: list[float] | None = Field(default=None, min_length=3, max_length=3)
     leftFoot: list[float] | None = Field(default=None, min_length=3, max_length=3)
     rightFoot: list[float] | None = Field(default=None, min_length=3, max_length=3)
@@ -30,6 +39,14 @@ class Shot(WireModel):
     netClearance: float | None = None
     engineAimed: bool = True
     assisted: bool = True
+
+
+def observed_timing(shot: Shot) -> float | None:
+    if shot.rawTimingError is not None and shot.rawReleasedAt is not None and shot.rawPosition is not None:
+        return shot.rawTimingError
+    if not shot.assisted:
+        return shot.timingError
+    return None
 
 
 class Metric(WireModel):
@@ -52,8 +69,10 @@ class AnalyzeRequest(WireModel):
     sessionId: str
     ruleVersion: Literal["rules-v1"] = "rules-v1"
     mode: str
+    gameVersion: str = Field(default="", max_length=80)
     shots: list[Shot] = Field(max_length=100000)
     onboardingShots: list[Shot] = Field(default_factory=list, max_length=3000)
+    useInitialTrainingEvidence: bool = False
     history: list[list[Metric]] = Field(default_factory=list, max_length=9)
     drills: list[Drill] = Field(default_factory=list)
     completedLessons: list[str] = Field(default_factory=list)
@@ -61,3 +80,6 @@ class AnalyzeRequest(WireModel):
     resumeActive: bool = False
     # Disabled until calibrated game fixtures are shipped with a new rules version.
     dinkClearanceThreshold: float | None = None
+    dinkAssisted: bool | None = None
+    dinkEngineAimed: bool | None = None
+    dinkReferenceId: str | None = None

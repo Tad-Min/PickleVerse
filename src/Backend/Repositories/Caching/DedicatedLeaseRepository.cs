@@ -58,4 +58,10 @@ public sealed class DedicatedLeaseRepository(IConnectionMultiplexer connection, 
             local old=redis.call('GET',KEYS[1]);if old and cjson.decode(old).leaseId==ARGV[1] then return redis.call('DEL',KEYS[1]) end;return 0
             """, [Key("slot")], [lease]);
     }
+    public Task SaveLive(string match, DedicatedLiveState live) => Redis.StringSetAsync(Key("live:" + match), GameJson.Write(live), TimeSpan.FromMinutes(5));
+    public async Task<DedicatedLiveState?> Live(string match)
+    {
+        var value = await Redis.StringGetAsync(Key("live:" + match));
+        return value.IsNullOrEmpty ? null : GameJson.Read<DedicatedLiveState>(value.ToString());
+    }
 }

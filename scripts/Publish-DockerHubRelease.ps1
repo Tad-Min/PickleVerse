@@ -103,6 +103,6 @@ try {
     Invoke-Checked gh @('release', 'upload', $releaseTag, $archivePath, $checksumPath, '--repo', $githubRepository, '--clobber')
     # Publish only after both uploads succeeded, so Actions cannot download a partial release.
     Invoke-Checked gh @('release', 'edit', $releaseTag, '--repo', $githubRepository, '--draft=false', '--latest=false')
-    Write-Host "Published $releaseTag. Follow the Docker Hub workflow in GitHub Actions."
+    Write-Host "Published diagnostic native archive $releaseTag. The push to main starts the current CI/CD workflow."
 }
 finally { Pop-Location }

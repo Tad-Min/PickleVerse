@@ -8,11 +8,17 @@ public sealed partial class OnlineGameService
     public async Task CompleteDedicated(Guid match, List<DedicatedPlayerResult> input)
     {
         if (input == null || input.Count == 0 || input.Any(x => x == null)) throw Bad("Kết quả máy chủ không hợp lệ.");
-        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == "dedicated") ?? throw Bad("Không tìm thấy trận dedicated.");
+        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == MatchAuthorityMode.Dedicated) ?? throw Bad("Không tìm thấy trận dedicated.");
         var caller = record.Gamematchplayers.First(p => !RankedBotAccounts.Contains(p.Playerid.ToString("N"))).Playerid;
         await OnlineTransaction(caller, match, null, async (m, players, participants) =>
         {
-            if (m.phase == "FINISHED") return true;
+            if (m.phase is "FINISHED" or "CANCELLED") return true;
+            var operation = await _unitOfWork.Game.DedicatedOperation(match);
+            if (operation != null && m.phase == "PLAYING")
+            {
+                await EndOnline(match, m, players, null, operation.Reason[..Math.Min(500, operation.Reason.Length)], []);
+                return true;
+            }
             if (m.phase != "PLAYING" || input.Count != m.roster.Count || input.Select(x => x.onlineId).Distinct().Count() != input.Count ||
                 input.Any(x => x.result == null || x.onlineId != x.result.playerId || x.result.id != match.ToString("N")) ||
                 !input.Select(x => x.onlineId).ToHashSet().SetEquals(m.roster.members.Select(x => x.id))) throw Bad("Kết quả máy chủ không khớp đội hình.");
@@ -45,12 +51,15 @@ public sealed partial class OnlineGameService
     }
     public async Task InterruptDedicated(Guid match)
     {
-        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == "dedicated" && m.Status == "PLAYING");
+        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == MatchAuthorityMode.Dedicated
+            && (m.Status == MatchStatus.Playing || m.Status == MatchStatus.Preparing));
         if (record == null) return;
         var player = record.Gamematchplayers.First(p => !RankedBotAccounts.Contains(p.Playerid.ToString("N"))).Playerid;
         await OnlineTransaction(player, match, null, async (m, players, participants) =>
         {
-            if (m.phase == "PLAYING") await EndOnline(match, m, players, null, "Máy chủ thi đấu mất kết nối; trận bị gián đoạn.", []);
+            var operation = await _unitOfWork.Game.DedicatedOperation(match);
+            if (m.phase == "PLAYING") await EndOnline(match, m, players, null, operation == null ? "Máy chủ thi đấu mất kết nối; trận bị gián đoạn." : operation.Reason[..Math.Min(500, operation.Reason.Length)], []);
+            else if (m.phase == "PREPARING") { m.phase = "CANCELLED"; await SaveOnline(match, m); }
             return true;
         });
     }

@@ -21,15 +21,15 @@ namespace Repositories.Implementations
             return await _context.Gamematches
                 .Include(m => m.Gamematchplayers)
                     .ThenInclude(p => p.Player)
-                .FirstOrDefaultAsync(m => m.Matchid == matchId && m.Status == "FINISHED" && m.Endedat != null);
+                .FirstOrDefaultAsync(m => m.Matchid == matchId && m.Status == MatchStatus.Finished && m.Endedat != null);
         }
 
         public async Task<List<Gamematch>> GetPlayerMatchesAsync(Guid playerId, int limit = 20)
         {
             return await _context.Gamematches
                 .Include(m => m.Gamematchplayers).Include(m => m.Ratingledgers).Include(m => m.Matchscores).AsSplitQuery()
-                .Where(m => m.Status == "FINISHED" && m.Endedat != null && m.Gamematchplayers.Any(p => p.Playerid == playerId && p.Finalizedat != null))
-                .Where(m => m.Status == "FINISHED" && m.Endedat != null)
+                .Where(m => m.Status == MatchStatus.Finished && m.Endedat != null && m.Gamematchplayers.Any(p => p.Playerid == playerId && p.Finalizedat != null))
+                .Where(m => m.Status == MatchStatus.Finished && m.Endedat != null)
                 .OrderByDescending(m => m.Endedat).ThenByDescending(m => m.Sequence)
                 .Take(limit)
                 .ToListAsync();
@@ -41,7 +41,7 @@ namespace Repositories.Implementations
                 .Include(m => m.Gamematchplayers)
                     .ThenInclude(p => p.Player)
                 .Include(m => m.Matchscores).AsSplitQuery()
-                .Where(m => m.Status == "FINISHED" && m.Endedat != null)
+                .Where(m => m.Status == MatchStatus.Finished && m.Endedat != null)
                 .OrderByDescending(m => m.Endedat).ThenByDescending(m => m.Sequence)
                 .Take(limit)
                 .ToListAsync();
@@ -79,17 +79,17 @@ namespace Repositories.Implementations
             await _context.Reportplayerinmatches.AddAsync(report);
         }
 
-        public async Task<List<Reportplayerinmatch>> GetReportsAsync(string? status)
+        public async Task<List<Reportplayerinmatch>> GetReportsAsync(ReportStatus? status)
         {
             var query = _context.Reportplayerinmatches
                 .Include(r => r.Reporter)
                 .Include(r => r.Reportedplayer)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(status))
+            if (status.HasValue)
             {
-                var norm = status.ToLower();
-                query = query.Where(r => r.Status.ToLower() == norm);
+                var norm = status.Value;
+                query = query.Where(r => r.Status == norm);
             }
 
             return await query.OrderByDescending(r => r.Createdat).ToListAsync();
