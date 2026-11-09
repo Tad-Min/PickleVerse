@@ -27,13 +27,31 @@ namespace PickleVerse.FrontEnd
         {
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += Loaded;
+            SceneManager.activeSceneChanged += ActiveSceneChanged;
         }
         void Loaded(Scene scene, LoadSceneMode mode)
         {
-            if (mode==LoadSceneMode.Additive && scene!=SceneManager.GetActiveScene()) return;
-            FrontEndModalInput.Release(this);if(viewRoot)Destroy(viewRoot);viewRoot=null;
-            if(scene.name!="Login" && scene.name!="Menu" && scene.name!="Training" && scene.name!="Tutorial")return;
-            font=RuntimeForms.Font();viewRoot=RuntimeForms.Canvas("Training Access View",1400);SceneManager.MoveGameObjectToScene(viewRoot,scene);Build();
+            if (mode == LoadSceneMode.Additive && scene != SceneManager.GetActiveScene()) return;
+            BindScene(scene);
+        }
+        void ActiveSceneChanged(Scene previous, Scene current)
+        {
+            // Sign-in activates the already-loaded Menu after preparing the account.
+            if (current.isLoaded) BindScene(current);
+        }
+        void BindScene(Scene scene)
+        {
+            if (viewRoot && viewRoot.scene == scene) return;
+
+            FrontEndModalInput.Release(this);
+            if (viewRoot) Destroy(viewRoot);
+            viewRoot = null;
+            if (scene.name != "Login" && scene.name != "Menu" && scene.name != "Training" && scene.name != "Tutorial") return;
+
+            font = RuntimeForms.Font();
+            viewRoot = RuntimeForms.Canvas("Training Access View", 1400);
+            SceneManager.MoveGameObjectToScene(viewRoot, scene);
+            Build();
         }
         void Build()
         {
@@ -140,7 +158,13 @@ namespace PickleVerse.FrontEnd
             var button=rect.gameObject.AddComponent<UnityEngine.UI.Button>();button.targetGraphic=rect.GetComponent<UnityEngine.UI.Image>();button.onClick.AddListener(action);
             var label=Text("Label",rect,value,22,new Vector2(.04f,.04f),new Vector2(.96f,.96f));label.alignment=TextAlignmentOptions.Center;return button;
         }
-        void OnDestroy() { SceneManager.sceneLoaded-=Loaded;FrontEndModalInput.Release(this);if(viewRoot)Destroy(viewRoot); }
+        void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= Loaded;
+            SceneManager.activeSceneChanged -= ActiveSceneChanged;
+            FrontEndModalInput.Release(this);
+            if (viewRoot) Destroy(viewRoot);
+        }
     }
 }
 #endif

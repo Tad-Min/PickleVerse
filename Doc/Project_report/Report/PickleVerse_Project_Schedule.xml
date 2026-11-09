@@ -1,0 +1,855 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Project xmlns="http://schemas.microsoft.com/project">
+  <SaveVersion>12</SaveVersion>
+  <Name>PickleVerse review plan</Name>
+  <Title>GFA26SE111 PickleVerse</Title>
+  <Company>FPT University</Company>
+  <DefaultStartTime>08:00:00</DefaultStartTime>
+  <DefaultFinishTime>17:00:00</DefaultFinishTime>
+  <MinutesPerDay>480</MinutesPerDay>
+  <MinutesPerWeek>2400</MinutesPerWeek>
+  <DaysPerMonth>20</DaysPerMonth>
+  <Tasks>
+    <Task>
+      <UID>1</UID>
+      <ID>1</ID>
+      <Name>Calendar start - Chưa xác nhận</Name>
+      <Type>1</Type>
+      <WBS>1</WBS>
+      <OutlineNumber>1</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Weeks are relative. Enter the confirmed semester start date before using calendar dates.</Notes>
+    </Task>
+    <Task>
+      <UID>2</UID>
+      <ID>2</ID>
+      <Name>Proposal work packages</Name>
+      <Type>1</Type>
+      <WBS>2</WBS>
+      <OutlineNumber>2</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <Notes>Source: Doc/Proposal/PickleVerse_Capstone_Proposal.md</Notes>
+    </Task>
+    <Task>
+      <UID>3</UID>
+      <ID>3</ID>
+      <Name>P01 Project foundation (Weeks 1-2)</Name>
+      <Type>1</Type>
+      <WBS>2.1</WBS>
+      <OutlineNumber>2.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Unity, ball and court rules, backend, login and build setup.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>4</UID>
+      <ID>4</ID>
+      <Name>P02 Tutorial and training (Weeks 3-4)</Name>
+      <Type>1</Type>
+      <WBS>2.2</WBS>
+      <OutlineNumber>2.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Lessons, drills, stars, XP and progress.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>3</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>5</UID>
+      <ID>5</ID>
+      <Name>P03 Online singles (Weeks 5-7)</Name>
+      <Type>1</Type>
+      <WBS>2.3</WBS>
+      <OutlineNumber>2.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT120H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Dedicated play, room codes, matching and history.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>4</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>6</UID>
+      <ID>6</ID>
+      <Name>P04 Bot, rating and shot data (Weeks 8-9)</Name>
+      <Type>1</Type>
+      <WBS>2.4</WBS>
+      <OutlineNumber>2.4</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Bot levels, Elo and game data capture.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>5</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>7</UID>
+      <ID>7</ID>
+      <Name>P05 Coaching and doubles (Weeks 10-11)</Name>
+      <Type>1</Type>
+      <WBS>2.5</WBS>
+      <OutlineNumber>2.5</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Tips, drill suggestions, doubles, ranks and challenges.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>6</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>8</UID>
+      <ID>8</ID>
+      <Name>P06 Admin and integration (Weeks 12-13)</Name>
+      <Type>1</Type>
+      <WBS>2.6</WBS>
+      <OutlineNumber>2.6</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Accounts, lessons, live matches, analytics and system tests.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>7</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>9</UID>
+      <ID>9</ID>
+      <Name>P07 Release and guides (Weeks 14-14)</Name>
+      <Type>1</Type>
+      <WBS>2.7</WBS>
+      <OutlineNumber>2.7</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Deployment work, player tests, fixes and guides.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>8</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>10</UID>
+      <ID>10</ID>
+      <Name>Course target weeks</Name>
+      <Type>1</Type>
+      <WBS>3</WBS>
+      <OutlineNumber>3</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <Notes>Fixed targets relative to project start. Source: Doc/Project_report/swp490_capstone_project_student_guide.md</Notes>
+    </Task>
+    <Task>
+      <UID>11</UID>
+      <ID>11</ID>
+      <Name>M01 Project introduction (end of Week 1)</Name>
+      <Type>1</Type>
+      <WBS>3.1</WBS>
+      <OutlineNumber>3.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Report 1. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>24000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>12</UID>
+      <ID>12</ID>
+      <Name>M02 Project plan (end of Week 2)</Name>
+      <Type>1</Type>
+      <WBS>3.2</WBS>
+      <OutlineNumber>3.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Report 2, effort, risks and schedule. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>48000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>13</UID>
+      <ID>13</ID>
+      <Name>M03 Overall requirements (end of Week 3)</Name>
+      <Type>1</Type>
+      <WBS>3.3</WBS>
+      <OutlineNumber>3.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Initial Report 3. Update Reports 1–2 and tracking. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>72000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>14</UID>
+      <ID>14</ID>
+      <Name>M04 Overall software design (end of Week 5)</Name>
+      <Type>1</Type>
+      <WBS>3.4</WBS>
+      <OutlineNumber>3.4</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Initial Report 4, test plan and demo. Update earlier reports. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>120000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>15</UID>
+      <ID>15</ID>
+      <Name>M05 Software Package 1 (end of Week 7)</Name>
+      <Type>1</Type>
+      <WBS>3.5</WBS>
+      <OutlineNumber>3.5</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>First package, source and schema. Update requirements, design, tests and tracking. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>168000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>16</UID>
+      <ID>16</ID>
+      <Name>M06 Software Package 2 (end of Week 9)</Name>
+      <Type>1</Type>
+      <WBS>3.6</WBS>
+      <OutlineNumber>3.6</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Second package and updated evidence. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>216000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>17</UID>
+      <ID>17</ID>
+      <Name>M07 Software Package 3 (end of Week 11)</Name>
+      <Type>1</Type>
+      <WBS>3.7</WBS>
+      <OutlineNumber>3.7</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Third package and updated evidence. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>264000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>18</UID>
+      <ID>18</ID>
+      <Name>M08 Full software package (end of Week 13)</Name>
+      <Type>1</Type>
+      <WBS>3.8</WBS>
+      <OutlineNumber>3.8</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>System tests, source, schema, results and open defects. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>312000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>19</UID>
+      <ID>19</ID>
+      <Name>M09 Software user guides (end of Week 14)</Name>
+      <Type>1</Type>
+      <WBS>3.9</WBS>
+      <OutlineNumber>3.9</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Report 6. Update tracking. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>336000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>20</UID>
+      <ID>20</ID>
+      <Name>M10 Final package and defense (end of Week 15)</Name>
+      <Type>1</Type>
+      <WBS>3.10</WBS>
+      <OutlineNumber>3.10</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Report 7, software, source, test results and slides. Calendar date: Chưa xác nhận.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>360000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>21</UID>
+      <ID>21</ID>
+      <Name>Parallel checks and package readiness</Name>
+      <Type>1</Type>
+      <WBS>4</WBS>
+      <OutlineNumber>4</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <Notes>Compare each R gate with the matching M target. An R gate moves with its required work.</Notes>
+    </Task>
+    <Task>
+      <UID>22</UID>
+      <ID>22</ID>
+      <Name>A01 Write project introduction</Name>
+      <Type>1</Type>
+      <WBS>4.1</WBS>
+      <OutlineNumber>4.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT32H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>23</UID>
+      <ID>23</ID>
+      <Name>R01 Ready for Project introduction</Name>
+      <Type>1</Type>
+      <WBS>4.2</WBS>
+      <OutlineNumber>4.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M01 in Week 1.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>22</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>24</UID>
+      <ID>24</ID>
+      <Name>A02 Write plan and first risks</Name>
+      <Type>1</Type>
+      <WBS>4.3</WBS>
+      <OutlineNumber>4.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>19200</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>25</UID>
+      <ID>25</ID>
+      <Name>R02 Ready for Project plan</Name>
+      <Type>1</Type>
+      <WBS>4.4</WBS>
+      <OutlineNumber>4.4</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M02 in Week 2.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>24</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>23</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>26</UID>
+      <ID>26</ID>
+      <Name>A03 Review SRS and set tracking</Name>
+      <Type>1</Type>
+      <WBS>4.5</WBS>
+      <OutlineNumber>4.5</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>43200</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>27</UID>
+      <ID>27</ID>
+      <Name>R03 Ready for Overall requirements</Name>
+      <Type>1</Type>
+      <WBS>4.6</WBS>
+      <OutlineNumber>4.6</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M03 in Week 3.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>26</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>25</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>28</UID>
+      <ID>28</ID>
+      <Name>A04 Check design, test plan and first demo</Name>
+      <Type>1</Type>
+      <WBS>4.7</WBS>
+      <OutlineNumber>4.7</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT64H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>72000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>29</UID>
+      <ID>29</ID>
+      <Name>R04 Ready for Overall software design</Name>
+      <Type>1</Type>
+      <WBS>4.8</WBS>
+      <OutlineNumber>4.8</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M04 in Week 5.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>28</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>27</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>30</UID>
+      <ID>30</ID>
+      <Name>A05 Check first build and update reports</Name>
+      <Type>1</Type>
+      <WBS>4.9</WBS>
+      <OutlineNumber>4.9</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>144000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>5</PredecessorUID>
+        <Type>0</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>31</UID>
+      <ID>31</ID>
+      <Name>R05 Ready for Software Package 1</Name>
+      <Type>1</Type>
+      <WBS>4.10</WBS>
+      <OutlineNumber>4.10</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M05 in Week 7.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>30</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>5</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>29</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>32</UID>
+      <ID>32</ID>
+      <Name>A06 Check second build and update reports</Name>
+      <Type>1</Type>
+      <WBS>4.11</WBS>
+      <OutlineNumber>4.11</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>192000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>6</PredecessorUID>
+        <Type>0</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>33</UID>
+      <ID>33</ID>
+      <Name>R06 Ready for Software Package 2</Name>
+      <Type>1</Type>
+      <WBS>4.12</WBS>
+      <OutlineNumber>4.12</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M06 in Week 9.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>32</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>6</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>31</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>34</UID>
+      <ID>34</ID>
+      <Name>A07 Check third build and update reports</Name>
+      <Type>1</Type>
+      <WBS>4.13</WBS>
+      <OutlineNumber>4.13</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>240000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>7</PredecessorUID>
+        <Type>0</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>35</UID>
+      <ID>35</ID>
+      <Name>R07 Ready for Software Package 3</Name>
+      <Type>1</Type>
+      <WBS>4.14</WBS>
+      <OutlineNumber>4.14</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M07 in Week 11.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>34</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>7</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>33</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>36</UID>
+      <ID>36</ID>
+      <Name>A08 Run final integration and system checks</Name>
+      <Type>1</Type>
+      <WBS>4.15</WBS>
+      <OutlineNumber>4.15</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>288000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>8</PredecessorUID>
+        <Type>0</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>37</UID>
+      <ID>37</ID>
+      <Name>R08 Ready for Full software package</Name>
+      <Type>1</Type>
+      <WBS>4.16</WBS>
+      <OutlineNumber>4.16</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M08 in Week 13.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>36</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>8</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>35</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>38</UID>
+      <ID>38</ID>
+      <Name>A09 Prepare user and admin guides</Name>
+      <Type>1</Type>
+      <WBS>4.17</WBS>
+      <OutlineNumber>4.17</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>312000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>9</PredecessorUID>
+        <Type>0</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>39</UID>
+      <ID>39</ID>
+      <Name>R09 Ready for Software user guides</Name>
+      <Type>1</Type>
+      <WBS>4.18</WBS>
+      <OutlineNumber>4.18</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M09 in Week 14.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>38</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>9</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>37</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>40</UID>
+      <ID>40</ID>
+      <Name>A10 Prepare final reports and defense</Name>
+      <Type>1</Type>
+      <WBS>4.19</WBS>
+      <OutlineNumber>4.19</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT40H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>1</PredecessorUID>
+        <Type>1</Type>
+        <LinkLag>336000</LinkLag>
+        <LagFormat>7</LagFormat>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>9</PredecessorUID>
+        <Type>0</Type>
+      </PredecessorLink>
+    </Task>
+    <Task>
+      <UID>41</UID>
+      <ID>41</ID>
+      <Name>R10 Ready for Final package and defense</Name>
+      <Type>1</Type>
+      <WBS>4.20</WBS>
+      <OutlineNumber>4.20</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <Notes>Readiness gate. Compare with M10 in Week 15.</Notes>
+      <PredecessorLink>
+        <PredecessorUID>40</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>9</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+      <PredecessorLink>
+        <PredecessorUID>39</PredecessorUID>
+        <Type>1</Type>
+      </PredecessorLink>
+    </Task>
+  </Tasks>
+</Project>

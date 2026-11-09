@@ -1,4 +1,0 @@
-flowchart LR
-  PG["GameProgress JSONB"] --> GM["GameMatches JSONB"]
-  Redis["Queue and cache TTL state"] --> GM
-  GM --> S3["Replay payload in S3"]
