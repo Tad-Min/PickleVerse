@@ -21,16 +21,22 @@ namespace PickleVerse.Multiplayer
         PhotonRoomData dedicatedData;
         int reliableSequence;
         public bool IsDedicated => dedicatedData != null;
+
+        static NetworkSceneInfo DedicatedCourtScene()
+        {
+            var scenes = new NetworkSceneInfo();
+            scenes.AddSceneRef(SceneRef.FromPath(Services.MultiplayerSceneConfiguration.CourtPath), LoadSceneMode.Single);
+            return scenes;
+        }
+
         public async Task StartDedicatedAsync(string session, string region, MatchRoster roster, ushort port, Func<byte[], bool> admission)
         {
             PrepareDedicated(roster);
             Callbacks.Admission = admission;
-            var scenes = new NetworkSceneInfo();
-            scenes.AddSceneRef(SceneRef.FromPath(Services.MultiplayerSceneConfiguration.CourtPath), LoadSceneMode.Single);
             var result = await Runner.StartGame(new StartGameArgs { GameMode = GameMode.Server,
                 SessionName = session, PlayerCount = roster.HumanCount, IsVisible = false, Address = NetAddress.Any(port),
                 Config = ConfigForSession(true),
-                CustomPhotonAppSettings = Settings(region), SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = scenes });
+                CustomPhotonAppSettings = Settings(region), SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });
             if (!result.Ok) throw new InvalidOperationException("Không khởi động được máy chủ Fusion: " + result.ShutdownReason);
             sessionName = session; sessionRegion = region;
         }
@@ -42,7 +48,7 @@ namespace PickleVerse.Multiplayer
                 EnableClientSessionCreation = false, AuthValues = new Photon.Realtime.AuthenticationValues(player),
                 ConnectionToken = Convert.FromBase64String(token), CustomPhotonAppSettings = Settings(region),
                 Config = ConfigForSession(true),
-                SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>() });
+                SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });
             if (!result.Ok) throw new InvalidOperationException("Không kết nối được máy chủ thi đấu. Vui lòng thử lại.");
             sessionName = session; sessionRegion = region;
         }
