@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Fusion;
 using Fusion.Sockets;
@@ -40,15 +41,16 @@ namespace PickleVerse.Multiplayer
             if (!result.Ok) throw new InvalidOperationException("Không khởi động được máy chủ Fusion: " + result.ShutdownReason);
             sessionName = session; sessionRegion = region;
         }
-        public async Task JoinDedicatedAsync(string session, string region, string player, string token, MatchRoster roster)
+        public async Task JoinDedicatedAsync(string session, string region, string player, string token, MatchRoster roster, CancellationToken cancellation = default)
         {
             PrepareDedicated(roster); Runner.ProvideInput = true;
             Callbacks.Input = (runner, input) => input.Set(NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == runner && p.IsLocalHuman)?.CaptureDedicatedInput() ?? default);
             var result = await Runner.StartGame(new StartGameArgs { GameMode = GameMode.Client, SessionName = session,
                 EnableClientSessionCreation = false, AuthValues = new Photon.Realtime.AuthenticationValues(player),
                 ConnectionToken = Convert.FromBase64String(token), CustomPhotonAppSettings = Settings(region),
-                Config = ConfigForSession(true),
+                Config = ConfigForSession(true), StartGameCancellationToken = cancellation,
                 SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });
+            cancellation.ThrowIfCancellationRequested();
             if (!result.Ok) throw new InvalidOperationException("Không kết nối được máy chủ thi đấu. Vui lòng thử lại.");
             sessionName = session; sessionRegion = region;
         }

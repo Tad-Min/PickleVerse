@@ -174,7 +174,8 @@ namespace PickleVerse.Multiplayer
         }
         void OnProgressionQuit()
         {
-            if (IsSpawned)
+            // Dedicated reserves the seat on disconnect. Only the explicit leave action forfeits it.
+            if (IsSpawned && PhotonSession.Find(Runner)?.IsDedicated != true)
                 RequestLeave();
         }
     }

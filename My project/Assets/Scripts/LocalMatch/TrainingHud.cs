@@ -37,7 +37,11 @@ namespace PickleVerse.LocalMatch
                     case "Retry": b.onClick.AddListener(training.Retry); break;
                     case "Next": b.onClick.AddListener(training.NextLesson); break;
                     case "Catalogue": case "Course": case "Lessons": b.onClick.AddListener(training.Catalogue); break;
-                    case "Modes": b.onClick.AddListener(training.BackToModes); break;
+                    case "Modes":
+                        b.onClick.AddListener(training.BackToModes);
+                        if (ProgressionRuntime.Instance?.IsOffline == true && b.GetComponentInChildren<TMP_Text>() is TMP_Text label)
+                            label.text = "‹ VỀ SẢNH";
+                        break;
                     case "Settings": b.onClick.AddListener(() => SettingsOverlay.Open(training)); break;
                     case "Touch": b.onClick.AddListener(training.ToggleTouch); break;
                     case "Resume": b.onClick.AddListener(() => training.SetPaused(false)); break;

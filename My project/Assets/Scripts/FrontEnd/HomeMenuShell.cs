@@ -1,3 +1,4 @@
+using PickleVerse.Progression;
 using PickleVerse.Settings;
 using PickleVerse.Shop;
 using TMPro;
@@ -114,7 +115,10 @@ namespace PickleVerse.FrontEnd
             if (animationTime >= theme.strikeDuration)
             {
                 ResetPlay();
-                LobbyNavigation.OpenModes();
+                if (ProgressionRuntime.Instance?.IsOffline == true)
+                    LobbyNavigation.OpenTraining();
+                else
+                    LobbyNavigation.OpenModes();
             }
         }
         void ResetPlay()

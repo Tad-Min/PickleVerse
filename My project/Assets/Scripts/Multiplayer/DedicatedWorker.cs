@@ -132,7 +132,7 @@ namespace PickleVerse.Multiplayer
         {
             try
             {
-                await Post<JToken>("admission", new { LeaseId = lease, PlayerId = player });
+                await Post<JToken>("admission", new { LeaseId = lease, PlayerId = Guid.ParseExact(player, "N") });
                 if (fenced || job?.leaseId != lease || !runner || !runner.ActivePlayers.Contains(peer)) return;
                 var app = MultiplayerApp.Instance;
                 app.RegisterDedicatedPeer(peer, player);
