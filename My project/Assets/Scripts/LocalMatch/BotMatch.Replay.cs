@@ -20,6 +20,6 @@ namespace PickleVerse.LocalMatch
                 () => new ReplayFrame { scoreA = Rules.Points[0], scoreB = Rules.Points[1], gamesA = Rules.Games[0], gamesB = Rules.Games[1], status = Message }, visualBall: ball);
         }
         internal static ReplayActorSource ReplayActor(MatchActor a, string id, string name)
-            => new ReplayActorSource { root = a.transform, paddle = a.paddle ? a.paddle.transform : null, id = id, name = name, team = a.playerId, visualId = a.playerId == 0 ? "Female" : "Male", paddleId = a.paddle ? a.paddle.GetComponent<PaddleAppearance>()?.CurrentId : EconomyIds.DefaultPaddleId };
+            => new ReplayActorSource { root = a.transform, paddle = a.paddle ? a.paddle.transform : null, id = id, name = name, team = a.playerId, visualId = a.IsFemale ? "Female" : "Male", paddleId = a.paddle ? a.paddle.GetComponent<PaddleAppearance>()?.CurrentId : EconomyIds.DefaultPaddleId };
     }
 }

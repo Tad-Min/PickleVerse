@@ -67,6 +67,7 @@ namespace PickleVerse.LocalMatch
             MatchRenderBudget.ConfigurePractice(gameObject);
             perimeter = new Vector3[5];
             courtLine.GetPositions(perimeter);
+            ActorCharacter.ApplyLocalChoice(player, coach);
             player.Initialize();
             coach.Initialize();
             player.LocalHitFeedback = true;

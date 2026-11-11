@@ -19,6 +19,17 @@ namespace PickleVerse.LocalMatch
         public Vector3 HeldBallPosition => leftHand ? leftHand.TransformPoint(heldBallOffset) : transform.TransformPoint(new Vector3(-.30f, 1.04f, .28f));
         public ClipEntry[] clips;
         public float walkSpeed = 3.3f, runSpeed = 5.8f;
+        bool? femaleBody;
+        /// <summary>
+        /// True when this actor currently wears the female character. Scenes were authored with the
+        /// female body on player 0 and the male body on player 1; ActorCharacter overrides this when
+        /// it exchanges the bodies to follow the player's character choice.
+        /// </summary>
+        public bool IsFemale
+        {
+            get => femaleBody ?? playerId == 0;
+            set => femaleBody = value;
+        }
         public Vector3 Velocity { get; private set; }
         public ShotIntent Intent { get; private set; }
         public bool Swinging { get; private set; }
@@ -93,7 +104,7 @@ namespace PickleVerse.LocalMatch
         }
         public void Initialize()
         {
-            PickleVerse.CharacterMotion.CharacterSecondaryMotion.Attach(visual.gameObject, playerId == 0);
+            PickleVerse.CharacterMotion.CharacterSecondaryMotion.Attach(visual.gameObject, IsFemale);
             var bones = visual.GetComponentsInChildren<Transform>(true);
             if (!leftHand)
                 leftHand = Array.Find(bones, t => t.name == "mixamorig:LeftHand");

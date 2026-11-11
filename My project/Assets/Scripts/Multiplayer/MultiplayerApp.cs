@@ -21,7 +21,8 @@ namespace PickleVerse.Multiplayer
         public PlayMode Mode { get; private set; } = PlayMode.Singles;
         public string Notice { get; private set; } = "Đăng nhập để chơi trực tuyến.";
         public string DisplayName { get => identity.DisplayName; set => identity.DisplayName = value; }
-        public string Gender { get; set; } = "Male";
+        // Read the menu choice at the time a room is joined, so a change in the lobby is not lost.
+        public string Gender => PickleVerse.LocalMatch.ActorCharacter.LocalPlayerIsMale ? "Male" : "Female";
         public string PlayerId => identity.PlayerId;
         public string ActiveProfile => identity.Profile;
         public string RoomCode => Room?.Code ?? "";
@@ -97,7 +98,6 @@ namespace PickleVerse.Multiplayer
             if (!Settings || !StatePrefab)
                 throw new InvalidOperationException("Thiếu cấu hình Photon.");
             await identity.InitializeAsync(profile, Settings.environment);
-            Gender = ProgressionRuntime.Instance.Snapshot.isMale ? "Male" : "Female";
             MultiplayerSceneConfiguration.Validate();
         }
         public async Task PlayAsync(string profile)
