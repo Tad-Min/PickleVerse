@@ -1,0 +1,29 @@
+@startuml r4_act_content
+!include _style.iuml
+|Administrator|
+start
+:Open lesson in CMS;
+:Edit draft (config, reward, prerequisites);
+|Web API|
+if (Expected version matches?) then (yes)
+  :Save draft and audit;
+else (no)
+  :Return 409 conflict;
+  |Administrator|
+  :Reload draft;
+  stop
+endif
+|Administrator|
+:Publish lesson;
+|Web API|
+if (Prerequisites published?) then (yes)
+  :Create new catalog snapshot;
+else (no)
+  :Reject publish;
+  stop
+endif
+|Game client|
+:Load new catalog version;
+:Show lesson to eligible players;
+stop
+@enduml

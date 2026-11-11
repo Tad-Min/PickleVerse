@@ -1,0 +1,28 @@
+@startuml r4_seq_publish
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Administrator as Admin
+participant "CMS page" as W
+participant "ContentController" as C
+participant "ContentService" as S
+database "PostgreSQL" as DB
+participant "GameCatalogService" as G
+Admin -> W : edit lesson draft
+W -> C : PUT /api/Admin/cms/lessons/{id} (draft, expectedVersion)
+C -> S : Save(actor, id, draft, version)
+alt version changed
+  S --> C : 409 reload before saving
+else valid
+  S -> DB : update DraftConfig, ContentVersion + 1, AdminAudits
+  S --> C : saved draft
+end
+Admin -> W : Publish
+W -> C : POST /api/Admin/cms/lessons/{id}/publish
+C -> S : Publish(actor, id, true)
+S -> DB : check prerequisites published
+S -> DB : PublishStatus = PUBLISHED, insert ContentCatalogs snapshot
+S --> C : published lesson
+note over G : Next GET /api/Game/catalog returns\nthe new catalog version to game clients
+@enduml

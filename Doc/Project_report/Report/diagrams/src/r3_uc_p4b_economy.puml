@@ -1,0 +1,23 @@
+@startuml r3_uc_p4b_economy
+!include _style.iuml
+left to right direction
+actor Player
+rectangle "P4 Progress, Economy and Social (part 2: missions, achievements and shop)" {
+  usecase "UC-37 View Missions and Streak" as UC37
+  usecase "UC-38 Claim Mission Reward" as UC38
+  usecase "UC-39 View Achievements" as UC39
+  usecase "UC-40 Claim Achievement Reward" as UC40
+  usecase "UC-41 Browse Shop" as UC41
+  usecase "UC-42 Purchase Cosmetic" as UC42
+  usecase "UC-43 View Collection" as UC43
+  usecase "UC-44 Equip Cosmetic" as UC44
+}
+Player -- UC37
+Player -- UC39
+Player -- UC41
+Player -- UC43
+UC38 .> UC37 : <<extend>>
+UC40 .> UC39 : <<extend>>
+UC42 .> UC41 : <<extend>>
+UC44 .> UC43 : <<extend>>
+@enduml

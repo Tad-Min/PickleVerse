@@ -1,0 +1,86 @@
+@startuml r4_erd_coaching
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "aitelemetrysessions" as aitelemetrysessions {
+  * batchid : UUID <<PK>>
+  --
+  * playerid : UUID <<FK>>
+  * sessionid : UUID
+  * sessiontype : TEXT
+  * partcount : INT
+  * metadata : JSONB
+  * createdat : TIMESTAMPTZ
+}
+entity "aitelemetryparts" as aitelemetryparts {
+  * batchid : UUID <<PK, FK>>
+  * partindex : INT <<PK>>
+  --
+  * fingerprint : TEXT
+  * shots : JSONB
+}
+entity "aianalysisjobs" as aianalysisjobs {
+  * batchid : UUID <<PK, FK>>
+  --
+  * state : TEXT
+  * attempts : INT
+  * availableat : TIMESTAMPTZ
+  leasetoken : UUID
+  leaseuntil : TIMESTAMPTZ
+  request : JSONB
+  * ruleversion : TEXT
+  lasterror : TEXT
+  * updatedat : TIMESTAMPTZ
+}
+entity "aicoachingsessions" as aicoachingsessions {
+  * batchid : UUID <<PK>>
+  --
+  * playerid : UUID <<FK>>
+  * sessionid : UUID
+  * sessiontype : TEXT
+  * result : JSONB
+  * createdat : TIMESTAMPTZ
+}
+entity "aicoachingprofiles" as aicoachingprofiles {
+  * playerid : UUID <<PK, FK>>
+  --
+  * batchid : UUID
+  * result : JSONB
+  * updatedat : TIMESTAMPTZ
+}
+entity "ExpertReviews" as ExpertReviews {
+  * ReviewId : UUID <<PK>>
+  --
+  * BatchId : UUID <<FK>>
+  * ReviewerId : UUID <<FK>>
+  * Version : BIGINT
+  * Data : JSONB
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "CoachingDemoSessions" as CoachingDemoSessions {
+  * SessionId : VARCHAR(64) <<PK>>
+  --
+  * PlayerCode : VARCHAR(48)
+  * Tier : VARCHAR(16)
+  * Split : VARCHAR(16)
+  * GameVersion : VARCHAR(80)
+  * Shots : JSONB
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+}
+entity "Users" as Users {
+  * UserId : UUID <<PK>>
+  --
+}
+PlayerProfiles ||--o{ aitelemetrysessions : "playerid"
+aitelemetrysessions ||--o{ aitelemetryparts : "batchid"
+aitelemetrysessions ||--o| aianalysisjobs : "batchid"
+PlayerProfiles ||--o{ aicoachingsessions : "playerid"
+PlayerProfiles ||--o| aicoachingprofiles : "playerid"
+aitelemetrysessions ||--o{ ExpertReviews : "BatchId"
+Users ||--o{ ExpertReviews : "ReviewerId"
+@enduml

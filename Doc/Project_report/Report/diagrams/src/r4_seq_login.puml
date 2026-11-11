@@ -1,0 +1,36 @@
+@startuml r4_seq_login
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Visitor
+participant "AccountScreen" as UI
+participant "SceneLoading" as SL
+participant "AuthController" as C
+participant "AuthService" as S
+database "PostgreSQL" as DB
+participant "GameController" as G
+Visitor -> UI : email and password
+UI -> SL : LoadPrepared(Menu)
+SL -> C : POST /api/Auth/login
+C -> S : LoginAsync(request)
+S -> DB : read user, role, verification
+alt wrong email or password
+  S --> C : 401 invalid_credentials
+  C --> UI : error, stay on Login
+else email not verified
+  S --> C : 401 email_not_verified
+  C --> UI : open Email Code screen
+else account restricted
+  S -> DB : store refresh token (SHA-256)
+  S --> C : tokens, scope = appeals
+  C --> UI : open Decisions and Appeals
+else active account
+  S -> DB : store refresh token (SHA-256)
+  S --> C : access token (2 h), refresh token (14 d), scope = game
+  C --> SL : AuthResponse
+  SL -> G : GET /api/Game/state
+  G --> SL : GameSnapshot (profile, catalog, inventory)
+  SL --> Visitor : reveal Menu after warm-up
+end
+@enduml

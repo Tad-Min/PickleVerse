@@ -1,0 +1,57 @@
+@startuml r4_cls_bot
+!include _style.iuml
+skinparam classAttributeIconSize 0
+interface IAdaptiveBotContext {
+  + Actor : MatchActor
+  + BallPosition : Vector3
+  + BallVelocity : Vector3
+  + Incoming : bool
+  + Serving : bool
+  + Stroke : int
+  + PredictContact(bounce, out point, out delay, height, beforeBounce) : bool
+  + RequestShot(intent) : bool
+}
+class LocalAdaptiveBotContext
+class NetworkBotContext
+class BhTreeBot <<MonoBehaviour>> {
+  + graph : BehaviorGraph
+  + Elo : int
+  + Tier : int
+  + ReactionSeconds : float
+  + AimError : float
+  + Initialize(context, elo, policy, seed) : void
+  + Step(dt, out move, out run) : void
+  + Wait() : bool
+  + Serve() : bool
+  + Shot(kind) : bool
+  + Recover() : bool
+}
+class BotPolicy {
+  + tiers : BotTierProfile[]
+  + Profile(elo) : BotTierProfile
+}
+class BotTierProfile {
+  + minimumElo : int
+  + reactionSeconds : float
+  + aimError : float
+  + aggressiveness : float
+}
+class LocalBot {
+  + difficulty : int
+  + Step(...) : void
+  + Reset() : void
+}
+class "Bot Behavior\n(Unity Behavior graph)" as Graph <<asset>>
+class BotContactChance {
+  + Resolve(random, elo, stroke) : bool
+}
+LocalAdaptiveBotContext ..|> IAdaptiveBotContext
+NetworkBotContext ..|> IAdaptiveBotContext
+BhTreeBot --> IAdaptiveBotContext
+BhTreeBot --> BotPolicy
+BotPolicy "1" *-- "3" BotTierProfile
+BhTreeBot --> Graph : ticks
+BhTreeBot ..> BotContactChance
+note right of LocalBot : Fixed difficulty bot used by\nEasy, Medium and Hard levels.
+note bottom of BhTreeBot : Adaptive bot used by the fourth level\nand by ranked bot fallback. Tier from Elo:\n< 500, 500 to 1999, >= 2000.
+@enduml

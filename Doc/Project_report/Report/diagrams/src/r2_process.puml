@@ -1,0 +1,28 @@
+@startuml r2_process
+!include _style.iuml
+skinparam ActivityBackgroundColor #F5F9FC
+title Two-week iteration
+start
+:Product backlog\n(features FE-01 to FE-10,\ndefects, technical items);
+repeat
+  :Iteration planning\n(select items, estimate, assign owner);
+  fork
+    :Design and update\nSRS / SDD;
+  fork again
+    :Implement in a branch\n(Unity, API, AI service, admin web);
+  fork again
+    :Write unit and\nintegration tests;
+  end fork
+  :Pull request review\nand CI validate job;
+  if (Definition of Done met?) then (yes)
+    :Merge into main;\nCI deploys to staging;
+  else (no)
+    :Rework the item;
+  endif
+  :Iteration review with demo\n(supervisor at review weeks);
+  :Retrospective;\nupdate tracking workbook;
+repeat while (Remaining backlog\nfor the release?) is (yes)
+->no;
+:Release 1.0 and final defense;
+stop
+@enduml

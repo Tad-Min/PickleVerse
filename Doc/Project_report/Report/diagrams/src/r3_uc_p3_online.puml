@@ -1,0 +1,28 @@
+@startuml r3_uc_p3_online
+!include _style.iuml
+left to right direction
+actor Player
+actor "Photon Cloud" as PC
+rectangle "P3 Online Match" {
+  usecase "UC-19 Find Ranked Match" as UC19
+  usecase "UC-20 Confirm Match Readiness" as UC20
+  usecase "UC-21 Create Private Room" as UC21
+  usecase "UC-22 Join Room by Code" as UC22
+  usecase "UC-23 Invite Friend to Room" as UC23
+  usecase "UC-24 Respond to Room Invitation" as UC24
+  usecase "UC-25 Play Online Match" as UC25
+  usecase "UC-26 Reconnect to Match" as UC26
+  usecase "UC-27 Leave Match" as UC27
+}
+Player -- UC19
+Player -- UC21
+Player -- UC22
+Player -- UC24
+Player -- UC25
+UC19 ..> UC20 : <<include>>
+UC23 .> UC21 : <<extend>>
+UC26 .> UC25 : <<extend>>
+UC27 .> UC25 : <<extend>>
+UC21 -- PC
+UC25 -- PC
+@enduml

@@ -1,0 +1,38 @@
+@startuml r4_seq_ranked
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Player
+participant "MultiplayerApp" as App
+participant "GameMatchesController" as C
+participant "OnlineGameService\n(RankedSearch)" as S
+database "Redis" as R
+participant "Photon Cloud" as P
+Player -> App : Find match (1v1)
+App -> C : POST /api/Game/ranked/search
+C -> S : BeginRankedSearch
+S -> R : enqueue ticket (Elo window)
+loop poll every few seconds
+  App -> C : POST /api/Game/ranked/poll
+  C -> S : PollRankedSearch
+  S -> R : try pair compatible tickets
+end
+alt human opponent found
+  S --> App : MATCHED (session, region, roster)
+else no opponent within 180 s
+  App -> C : POST /api/Game/ranked/bot
+  C -> S : AssignRankedBot
+  S --> App : BOT (virtual ranked account)
+end
+App -> P : start or join Photon match session
+App -> C : POST /api/Game/match/online/offer
+C --> App : ticket with ready deadline (10 s)
+Player -> App : Accept
+alt all required humans accept
+  App -> C : POST /api/Game/match/online/start
+  C --> App : authorityMode = dedicated
+else someone declines or deadline passes
+  App --> Player : offer closed, search again
+end
+@enduml

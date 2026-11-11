@@ -1,0 +1,25 @@
+@startuml r3_uc_p4a_social
+!include _style.iuml
+left to right direction
+actor Player
+rectangle "P4 Progress, Economy and Social (part 1: history, ranking and friends)" {
+  usecase "UC-28 View Match History" as UC28
+  usecase "UC-29 Watch Match Replay" as UC29
+  usecase "UC-30 Report Player" as UC30
+  usecase "UC-31 View Leaderboard" as UC31
+  usecase "UC-32 Send Friend Request" as UC32
+  usecase "UC-33 Respond to Friend Request" as UC33
+  usecase "UC-34 Remove Friend" as UC34
+  usecase "UC-35 Block Player" as UC35
+  usecase "UC-36 Unblock Player" as UC36
+}
+Player -- UC28
+Player -- UC31
+Player -- UC32
+Player -- UC33
+Player -- UC34
+Player -- UC35
+Player -- UC36
+UC29 .> UC28 : <<extend>>
+UC30 .> UC28 : <<extend>>
+@enduml

@@ -1,0 +1,24 @@
+@startuml r4_seq_stop
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Administrator as Admin
+participant "Matches page" as W
+participant "AdminModerationController" as C
+participant "ModerationService" as S
+database "PostgreSQL" as DB
+participant "DedicatedWorker" as DW
+Admin -> W : Stop match with reason
+W -> C : POST /api/Admin/matches/{id}/stop
+C -> S : StopMatch(actor, match, reason)
+S -> DB : insert DedicatedOperations (durable command)
+S --> C : operation (not acknowledged)
+DW -> C : heartbeat
+C --> DW : stop command
+DW -> DW : end match, outcome INTERRUPTED
+DW -> C : POST /dedicated/operations/ack (lease)
+C -> DB : AcknowledgedAt = now, no Elo entry
+W -> C : GET /api/Admin/matches/{id}/stop
+C --> W : acknowledged
+@enduml

@@ -1,0 +1,51 @@
+@startchen r3_cerd_economy
+!include _style.iuml
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+}
+entity CURRENCY {
+  CurrencyId <<key>>
+  Name
+}
+entity COSMETIC {
+  CosmeticId <<key>>
+  ItemCode
+}
+entity MISSION {
+  MissionId <<key>>
+  Scope
+  Target
+}
+entity ACHIEVEMENT {
+  AchievementId <<key>>
+  Target
+}
+relationship HOLDS {
+  Balance
+}
+relationship PRICED_IN {
+  Price
+}
+relationship OWNS {
+  Equipped
+}
+relationship PROGRESSES {
+  PeriodKey
+  Progress
+  Claimed
+}
+relationship EARNS {
+  Progress
+  Claimed
+}
+PLAYER_PROFILE -M- HOLDS
+HOLDS -N- CURRENCY
+COSMETIC -M- PRICED_IN
+PRICED_IN -N- CURRENCY
+PLAYER_PROFILE -M- OWNS
+OWNS -N- COSMETIC
+PLAYER_PROFILE -M- PROGRESSES
+PROGRESSES -N- MISSION
+PLAYER_PROFILE -M- EARNS
+EARNS -N- ACHIEVEMENT
+@endchen

@@ -1,0 +1,11 @@
+@startuml r4_sm_appeal
+!include _style.iuml
+[*] --> PENDING : restricted player submits appeal
+PENDING --> CHECKING : Admin starts review
+PENDING --> ACCEPTED : accept
+PENDING --> DECLINED : decline
+CHECKING --> ACCEPTED : accept
+CHECKING --> DECLINED : decline
+ACCEPTED --> [*] : sanction revoked
+DECLINED --> [*] : sanction kept
+@enduml

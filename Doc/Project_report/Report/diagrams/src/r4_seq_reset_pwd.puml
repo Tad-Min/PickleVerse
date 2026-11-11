@@ -1,0 +1,31 @@
+@startuml r4_seq_reset_pwd
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Visitor
+participant "AccountScreen" as UI
+participant "AuthController" as C
+participant "AuthService" as S
+database "PostgreSQL" as DB
+participant "PasswordRecoveryMailQueue" as Q
+participant "Gmail SMTP" as M
+Visitor -> UI : request password reset (email)
+UI -> C : POST /api/Auth/forgot-password
+C -> S : ForgotPasswordAsync(request)
+S -> DB : upsert PasswordResetChallenges (HMAC code, 10 min)
+S -> Q : enqueue reset email
+S --> C : same reply for known and unknown email
+Q -> M : send code
+Visitor -> UI : code and new password
+UI -> C : POST /api/Auth/reset-password
+C -> S : ResetPasswordAsync(request)
+alt valid code, < 5 failed attempts
+  S -> DB : update password hash (BCrypt)
+  S -> DB : revoke refresh tokens, AuthVersion + 1
+  S --> C : success
+else invalid or expired code
+  S --> C : 400 invalid reset code
+end
+C --> UI : result
+@enduml

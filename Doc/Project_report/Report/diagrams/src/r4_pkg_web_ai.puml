@@ -1,0 +1,36 @@
+@startuml r4_pkg_web_ai
+!include _style.iuml
+skinparam packageStyle folder
+left to right direction
+package "Admin Web (React 18 + TypeScript + Vite)" as WEB {
+  package "features" as F {
+    package "auth" as Fa
+    package "dashboard" as Fd
+    package "users" as Fu
+    package "content" as Fc
+    package "matches" as Fm
+    package "moderation" as Fmo
+    package "analytics\n(incl. expert review)" as Fan
+  }
+  package "api\n(client.ts, adminApi.ts,\ncoachingApi.ts)" as WApi
+  package "context\n(AuthContext)" as WCtx
+  package "components/layout\n(AdminLayout, ProtectedRoute,\nSidebar)" as WLay
+  package "types" as WT
+}
+package "AI Coaching Service (Python 3.12 FastAPI)" as AIS {
+  package "main.py\n(endpoints, X-AI-Key)" as Am
+  package "engine.py\n(rule findings, summary,\nrecommendations)" as Ae
+  package "models.py\n(request schema)" as Amo
+  package "tier.py\n(gated tier model)" as At
+  package "calibration.py" as Ac
+}
+F ..> WApi
+F ..> WT
+WLay ..> WCtx
+WCtx ..> WApi
+Am ..> Ae
+Am ..> At
+Ae ..> Amo
+At ..> Amo
+Ae ..> Ac
+@enduml

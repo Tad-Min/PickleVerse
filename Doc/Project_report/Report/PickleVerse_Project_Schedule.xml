@@ -1,855 +1,2251 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/project">
-  <SaveVersion>12</SaveVersion>
-  <Name>PickleVerse review plan</Name>
-  <Title>GFA26SE111 PickleVerse</Title>
+  <SaveVersion>14</SaveVersion>
+  <Name>PickleVerse_Project_Schedule</Name>
+  <Title>PickleVerse (PKV) – GFA26SE111 master schedule</Title>
   <Company>FPT University</Company>
+  <Author>GFA26SE111</Author>
+  <ScheduleFromStart>1</ScheduleFromStart>
+  <StartDate>2026-09-07T08:00:00</StartDate>
+  <FinishDate>2026-12-20T17:00:00</FinishDate>
+  <CurrentDate>2026-11-11T08:00:00</CurrentDate>
+  <StatusDate>2026-11-11T17:00:00</StatusDate>
+  <CalendarUID>1</CalendarUID>
   <DefaultStartTime>08:00:00</DefaultStartTime>
   <DefaultFinishTime>17:00:00</DefaultFinishTime>
   <MinutesPerDay>480</MinutesPerDay>
   <MinutesPerWeek>2400</MinutesPerWeek>
   <DaysPerMonth>20</DaysPerMonth>
+  <Calendars>
+    <Calendar>
+      <UID>1</UID>
+      <Name>Standard</Name>
+      <IsBaseCalendar>1</IsBaseCalendar>
+      <WeekDays>
+        <WeekDay>
+          <DayType>1</DayType>
+          <DayWorking>0</DayWorking>
+        </WeekDay>
+        <WeekDay>
+          <DayType>2</DayType>
+          <DayWorking>1</DayWorking>
+          <WorkingTimes>
+            <WorkingTime><FromTime>08:00:00</FromTime><ToTime>12:00:00</ToTime></WorkingTime>
+            <WorkingTime><FromTime>13:00:00</FromTime><ToTime>17:00:00</ToTime></WorkingTime>
+          </WorkingTimes>
+        </WeekDay>
+        <WeekDay>
+          <DayType>3</DayType>
+          <DayWorking>1</DayWorking>
+          <WorkingTimes>
+            <WorkingTime><FromTime>08:00:00</FromTime><ToTime>12:00:00</ToTime></WorkingTime>
+            <WorkingTime><FromTime>13:00:00</FromTime><ToTime>17:00:00</ToTime></WorkingTime>
+          </WorkingTimes>
+        </WeekDay>
+        <WeekDay>
+          <DayType>4</DayType>
+          <DayWorking>1</DayWorking>
+          <WorkingTimes>
+            <WorkingTime><FromTime>08:00:00</FromTime><ToTime>12:00:00</ToTime></WorkingTime>
+            <WorkingTime><FromTime>13:00:00</FromTime><ToTime>17:00:00</ToTime></WorkingTime>
+          </WorkingTimes>
+        </WeekDay>
+        <WeekDay>
+          <DayType>5</DayType>
+          <DayWorking>1</DayWorking>
+          <WorkingTimes>
+            <WorkingTime><FromTime>08:00:00</FromTime><ToTime>12:00:00</ToTime></WorkingTime>
+            <WorkingTime><FromTime>13:00:00</FromTime><ToTime>17:00:00</ToTime></WorkingTime>
+          </WorkingTimes>
+        </WeekDay>
+        <WeekDay>
+          <DayType>6</DayType>
+          <DayWorking>1</DayWorking>
+          <WorkingTimes>
+            <WorkingTime><FromTime>08:00:00</FromTime><ToTime>12:00:00</ToTime></WorkingTime>
+            <WorkingTime><FromTime>13:00:00</FromTime><ToTime>17:00:00</ToTime></WorkingTime>
+          </WorkingTimes>
+        </WeekDay>
+        <WeekDay>
+          <DayType>7</DayType>
+          <DayWorking>0</DayWorking>
+        </WeekDay>
+      </WeekDays>
+    </Calendar>
+  </Calendars>
   <Tasks>
     <Task>
       <UID>1</UID>
       <ID>1</ID>
-      <Name>Calendar start - Chưa xác nhận</Name>
+      <Name>1 Project management and documentation</Name>
       <Type>1</Type>
       <WBS>1</WBS>
       <OutlineNumber>1</OutlineNumber>
       <OutlineLevel>1</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-09-07T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT560H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Weeks are relative. Enter the confirmed semester start date before using calendar dates.</Notes>
+      <Work>PT224H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>81</PercentComplete>
+      <PercentWorkComplete>81</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
       <UID>2</UID>
       <ID>2</ID>
-      <Name>Proposal work packages</Name>
+      <Name>1.1 Planning, scheduling and weekly tracking</Name>
       <Type>1</Type>
-      <WBS>2</WBS>
-      <OutlineNumber>2</OutlineNumber>
-      <OutlineLevel>1</OutlineLevel>
+      <WBS>1.1</WBS>
+      <OutlineNumber>1.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-09-07T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT560H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
       <Milestone>0</Milestone>
-      <Summary>1</Summary>
-      <Notes>Source: Doc/Proposal/PickleVerse_Capstone_Proposal.md</Notes>
+      <Summary>0</Summary>
+      <PercentComplete>60</PercentComplete>
+      <PercentWorkComplete>60</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-09-07T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Doing; Weekly tracking continues to the defense</Notes>
     </Task>
     <Task>
       <UID>3</UID>
       <ID>3</ID>
-      <Name>P01 Project foundation (Weeks 1-2)</Name>
+      <Name>1.2 Report 1 and Report 2</Name>
       <Type>1</Type>
-      <WBS>2.1</WBS>
-      <OutlineNumber>2.1</OutlineNumber>
+      <WBS>1.2</WBS>
+      <OutlineNumber>1.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
       <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT24H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Unity, ball and court rules, backend, login and build setup.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; v1.0 on 11/11/2026; first versions late (06/11)</Notes>
     </Task>
     <Task>
       <UID>4</UID>
       <ID>4</ID>
-      <Name>P02 Tutorial and training (Weeks 3-4)</Name>
+      <Name>1.3 Report 3 – Software Requirement Specification</Name>
       <Type>1</Type>
-      <WBS>2.2</WBS>
-      <OutlineNumber>2.2</OutlineNumber>
+      <WBS>1.3</WBS>
+      <OutlineNumber>1.3</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
       <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT64H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Lessons, drills, stars, XP and progress.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>3</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; v1.0 on 11/11/2026</Notes>
     </Task>
     <Task>
       <UID>5</UID>
       <ID>5</ID>
-      <Name>P03 Online singles (Weeks 5-7)</Name>
+      <Name>1.4 Report 4 – Software Design Document</Name>
       <Type>1</Type>
-      <WBS>2.3</WBS>
-      <OutlineNumber>2.3</OutlineNumber>
+      <WBS>1.4</WBS>
+      <OutlineNumber>1.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT120H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT56H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Dedicated play, room codes, matching and history.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>4</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; v1.0 on 11/11/2026</Notes>
     </Task>
     <Task>
       <UID>6</UID>
       <ID>6</ID>
-      <Name>P04 Bot, rating and shot data (Weeks 8-9)</Name>
+      <Name>1.5 Reports 5–7, user guides and defense slides</Name>
       <Type>1</Type>
-      <WBS>2.4</WBS>
-      <OutlineNumber>2.4</OutlineNumber>
+      <WBS>1.5</WBS>
+      <OutlineNumber>1.5</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT80H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT240H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Bot levels, Elo and game data capture.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>5</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>35</PercentComplete>
+      <PercentWorkComplete>35</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Doing; Report 5 v1.0 done; Reports 6 and 7 pending</Notes>
     </Task>
     <Task>
       <UID>7</UID>
       <ID>7</ID>
-      <Name>P05 Coaching and doubles (Weeks 10-11)</Name>
+      <Name>2 Foundation and architecture</Name>
       <Type>1</Type>
-      <WBS>2.5</WBS>
-      <OutlineNumber>2.5</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT80H0M0S</Duration>
+      <WBS>2</WBS>
+      <OutlineNumber>2</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-09-07T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT400H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT160H0M0S</Work>
       <Milestone>0</Milestone>
-      <Summary>0</Summary>
-      <Notes>Tips, drill suggestions, doubles, ranks and challenges.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>6</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
       <UID>8</UID>
       <ID>8</ID>
-      <Name>P06 Admin and integration (Weeks 12-13)</Name>
+      <Name>2.1 Unity project, scenes and assembly structure</Name>
       <Type>1</Type>
-      <WBS>2.6</WBS>
-      <OutlineNumber>2.6</OutlineNumber>
+      <WBS>2.1</WBS>
+      <OutlineNumber>2.1</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT80H0M0S</Duration>
+      <Start>2026-09-07T08:00:00</Start>
+      <Finish>2026-10-02T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT24H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Accounts, lessons, live matches, analytics and system tests.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>7</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-09-07T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; Unity project initialised 17/09/2026</Notes>
     </Task>
     <Task>
       <UID>9</UID>
       <ID>9</ID>
-      <Name>P07 Release and guides (Weeks 14-14)</Name>
+      <Name>2.2 Layered Web API, EF Core model and database schema (51 tables)</Name>
       <Type>1</Type>
-      <WBS>2.7</WBS>
-      <OutlineNumber>2.7</OutlineNumber>
+      <WBS>2.2</WBS>
+      <OutlineNumber>2.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT72H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Deployment work, player tests, fixes and guides.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>8</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; Normalised schema 31/10/2026 (51 tables)</Notes>
     </Task>
     <Task>
       <UID>10</UID>
       <ID>10</ID>
-      <Name>Course target weeks</Name>
+      <Name>2.3 Docker Compose environment with PostgreSQL, Redis and S3 storage</Name>
       <Type>1</Type>
-      <WBS>3</WBS>
-      <OutlineNumber>3</OutlineNumber>
-      <OutlineLevel>1</OutlineLevel>
+      <WBS>2.3</WBS>
+      <OutlineNumber>2.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
       <Milestone>0</Milestone>
-      <Summary>1</Summary>
-      <Notes>Fixed targets relative to project start. Source: Doc/Project_report/swp490_capstone_project_student_guide.md</Notes>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; Docker deployment 04/11/2026</Notes>
     </Task>
     <Task>
       <UID>11</UID>
       <ID>11</ID>
-      <Name>M01 Project introduction (end of Week 1)</Name>
+      <Name>2.4 CI/CD pipeline (GitHub Actions, Docker Hub, SSH deployment)</Name>
       <Type>1</Type>
-      <WBS>3.1</WBS>
-      <OutlineNumber>3.1</OutlineNumber>
+      <WBS>2.4</WBS>
+      <OutlineNumber>2.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Report 1. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>24000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; Validate, publish and deploy jobs; Unity tests not in CI</Notes>
     </Task>
     <Task>
       <UID>12</UID>
       <ID>12</ID>
-      <Name>M02 Project plan (end of Week 2)</Name>
+      <Name>3 Gameplay core</Name>
       <Type>1</Type>
-      <WBS>3.2</WBS>
-      <OutlineNumber>3.2</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <WBS>3</WBS>
+      <OutlineNumber>3</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Report 2, effort, risks and schedule. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>48000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <Work>PT240H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
       <UID>13</UID>
       <ID>13</ID>
-      <Name>M03 Overall requirements (end of Week 3)</Name>
+      <Name>3.1 Ball flight and bounce simulation at 120 Hz</Name>
       <Type>1</Type>
-      <WBS>3.3</WBS>
-      <OutlineNumber>3.3</OutlineNumber>
+      <WBS>3.1</WBS>
+      <OutlineNumber>3.1</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT64H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Initial Report 3. Update Reports 1–2 and tracking. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>72000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; Covered by EditMode tests</Notes>
     </Task>
     <Task>
       <UID>14</UID>
       <ID>14</ID>
-      <Name>M04 Overall software design (end of Week 5)</Name>
+      <Name>3.2 Paddle contact, shot input and seven shot kinds</Name>
       <Type>1</Type>
-      <WBS>3.4</WBS>
-      <OutlineNumber>3.4</OutlineNumber>
+      <WBS>3.2</WBS>
+      <OutlineNumber>3.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT56H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Initial Report 4, test plan and demo. Update earlier reports. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>120000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; PaddleContactTests, SinglesMatchTests</Notes>
     </Task>
     <Task>
       <UID>15</UID>
       <ID>15</ID>
-      <Name>M05 Software Package 1 (end of Week 7)</Name>
+      <Name>3.3 Singles rules engine (scoring, serve, faults, non-volley zone)</Name>
       <Type>1</Type>
-      <WBS>3.5</WBS>
-      <OutlineNumber>3.5</OutlineNumber>
+      <WBS>3.3</WBS>
+      <OutlineNumber>3.3</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT56H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>First package, source and schema. Update requirements, design, tests and tracking. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>168000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; SinglesMatchTests, MultiplayerRulesTests</Notes>
     </Task>
     <Task>
       <UID>16</UID>
       <ID>16</ID>
-      <Name>M06 Software Package 2 (end of Week 9)</Name>
+      <Name>3.4 Character movement and animation controller</Name>
       <Type>1</Type>
-      <WBS>3.6</WBS>
-      <OutlineNumber>3.6</OutlineNumber>
+      <WBS>3.4</WBS>
+      <OutlineNumber>3.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Second package and updated evidence. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>216000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; D-07 open</Notes>
     </Task>
     <Task>
       <UID>17</UID>
       <ID>17</ID>
-      <Name>M07 Software Package 3 (end of Week 11)</Name>
+      <Name>3.5 Match flow, HUD, intro cinematic and result screen</Name>
       <Type>1</Type>
-      <WBS>3.7</WBS>
-      <OutlineNumber>3.7</OutlineNumber>
+      <WBS>3.5</WBS>
+      <OutlineNumber>3.5</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT24H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Third package and updated evidence. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>264000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; D-10 open</Notes>
     </Task>
     <Task>
       <UID>18</UID>
       <ID>18</ID>
-      <Name>M08 Full software package (end of Week 13)</Name>
-      <Type>1</Type>
-      <WBS>3.8</WBS>
-      <OutlineNumber>3.8</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
-      <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>System tests, source, schema, results and open defects. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>312000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-    </Task>
-    <Task>
-      <UID>19</UID>
-      <ID>19</ID>
-      <Name>M09 Software user guides (end of Week 14)</Name>
-      <Type>1</Type>
-      <WBS>3.9</WBS>
-      <OutlineNumber>3.9</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
-      <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Report 6. Update tracking. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>336000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-    </Task>
-    <Task>
-      <UID>20</UID>
-      <ID>20</ID>
-      <Name>M10 Final package and defense (end of Week 15)</Name>
-      <Type>1</Type>
-      <WBS>3.10</WBS>
-      <OutlineNumber>3.10</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
-      <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Report 7, software, source, test results and slides. Calendar date: Chưa xác nhận.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>360000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-    </Task>
-    <Task>
-      <UID>21</UID>
-      <ID>21</ID>
-      <Name>Parallel checks and package readiness</Name>
+      <Name>4 FE-01 Account and onboarding</Name>
       <Type>1</Type>
       <WBS>4</WBS>
       <OutlineNumber>4</OutlineNumber>
       <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT128H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>1</Summary>
-      <Notes>Compare each R gate with the matching M target. An R gate moves with its required work.</Notes>
+      <PercentComplete>98</PercentComplete>
+      <PercentWorkComplete>98</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
-      <UID>22</UID>
-      <ID>22</ID>
-      <Name>A01 Write project introduction</Name>
+      <UID>19</UID>
+      <ID>19</ID>
+      <Name>4.1 Registration and OTP email verification</Name>
       <Type>1</Type>
       <WBS>4.1</WBS>
       <OutlineNumber>4.1</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT32H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; TC-F01-01 pending (test mailbox)</Notes>
     </Task>
     <Task>
-      <UID>23</UID>
-      <ID>23</ID>
-      <Name>R01 Ready for Project introduction</Name>
+      <UID>20</UID>
+      <ID>20</ID>
+      <Name>4.2 Sign in, sign out, JWT access and refresh tokens</Name>
       <Type>1</Type>
       <WBS>4.2</WBS>
       <OutlineNumber>4.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M01 in Week 1.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>22</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; TC-F01-02 passed</Notes>
     </Task>
     <Task>
-      <UID>24</UID>
-      <ID>24</ID>
-      <Name>A02 Write plan and first risks</Name>
+      <UID>21</UID>
+      <ID>21</ID>
+      <Name>4.3 Password recovery</Name>
       <Type>1</Type>
       <WBS>4.3</WBS>
       <OutlineNumber>4.3</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT16H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>19200</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; Not yet system-tested</Notes>
     </Task>
     <Task>
-      <UID>25</UID>
-      <ID>25</ID>
-      <Name>R02 Ready for Project plan</Name>
+      <UID>22</UID>
+      <ID>22</ID>
+      <Name>4.4 Profile, character and onboarding level</Name>
       <Type>1</Type>
       <WBS>4.4</WBS>
       <OutlineNumber>4.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT16H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M02 in Week 2.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>24</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>23</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>80</PercentComplete>
+      <PercentWorkComplete>80</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Doing; D-07 character choice not applied everywhere</Notes>
     </Task>
     <Task>
-      <UID>26</UID>
-      <ID>26</ID>
-      <Name>A03 Review SRS and set tracking</Name>
+      <UID>23</UID>
+      <ID>23</ID>
+      <Name>4.5 Settings: audio, graphics, key binding, touch layout</Name>
       <Type>1</Type>
       <WBS>4.5</WBS>
       <OutlineNumber>4.5</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>43200</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>24</UID>
+      <ID>24</ID>
+      <Name>5 FE-02 Tutorial and technique training</Name>
+      <Type>1</Type>
+      <WBS>5</WBS>
+      <OutlineNumber>5</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT320H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT184H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>92</PercentComplete>
+      <PercentWorkComplete>92</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>25</UID>
+      <ID>25</ID>
+      <Name>5.1 Interactive tutorial (17 steps)</Name>
+      <Type>1</Type>
+      <WBS>5.1</WBS>
+      <OutlineNumber>5.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; TC-F02-01 passed</Notes>
+    </Task>
+    <Task>
+      <UID>26</UID>
+      <ID>26</ID>
+      <Name>5.2 Lesson and drill framework with star scoring</Name>
+      <Type>1</Type>
+      <WBS>5.2</WBS>
+      <OutlineNumber>5.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT240H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT56H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; TC-F03-01..03 passed</Notes>
     </Task>
     <Task>
       <UID>27</UID>
       <ID>27</ID>
-      <Name>R03 Ready for Overall requirements</Name>
+      <Name>5.3 Content of 15 lessons and 12 techniques</Name>
       <Type>1</Type>
-      <WBS>4.6</WBS>
-      <OutlineNumber>4.6</OutlineNumber>
+      <WBS>5.3</WBS>
+      <OutlineNumber>5.3</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M03 in Week 3.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>26</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>25</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; 15 lessons seeded</Notes>
     </Task>
     <Task>
       <UID>28</UID>
       <ID>28</ID>
-      <Name>A04 Check design, test plan and first demo</Name>
+      <Name>5.4 Offline training and one-time synchronisation</Name>
       <Type>1</Type>
-      <WBS>4.7</WBS>
-      <OutlineNumber>4.7</OutlineNumber>
+      <WBS>5.4</WBS>
+      <OutlineNumber>5.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT64H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>72000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
+      <PercentComplete>70</PercentComplete>
+      <PercentWorkComplete>70</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Doing; TC-F14-02 pending; D-02 open</Notes>
     </Task>
     <Task>
       <UID>29</UID>
       <ID>29</ID>
-      <Name>R04 Ready for Overall software design</Name>
+      <Name>6 FE-03 Bot practice</Name>
       <Type>1</Type>
-      <WBS>4.8</WBS>
-      <OutlineNumber>4.8</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <WBS>6</WBS>
+      <OutlineNumber>6</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M04 in Week 5.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>28</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>27</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <Work>PT120H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
       <UID>30</UID>
       <ID>30</ID>
-      <Name>A05 Check first build and update reports</Name>
+      <Name>6.1 Fixed-level bot (Easy, Medium, Hard)</Name>
       <Type>1</Type>
-      <WBS>4.9</WBS>
-      <OutlineNumber>4.9</OutlineNumber>
+      <WBS>6.1</WBS>
+      <OutlineNumber>6.1</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>144000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>5</PredecessorUID>
-        <Type>0</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; D-13 balance session pending</Notes>
     </Task>
     <Task>
       <UID>31</UID>
       <ID>31</ID>
-      <Name>R05 Ready for Software Package 1</Name>
+      <Name>6.2 Adaptive behaviour-tree bot with Elo tiers</Name>
       <Type>1</Type>
-      <WBS>4.10</WBS>
-      <OutlineNumber>4.10</OutlineNumber>
+      <WBS>6.2</WBS>
+      <OutlineNumber>6.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT56H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M05 in Week 7.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>30</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>5</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>29</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; BhTreeTests passed</Notes>
     </Task>
     <Task>
       <UID>32</UID>
       <ID>32</ID>
-      <Name>A06 Check second build and update reports</Name>
+      <Name>6.3 Bot match setup, court and lighting options, rewards</Name>
       <Type>1</Type>
-      <WBS>4.11</WBS>
-      <OutlineNumber>4.11</OutlineNumber>
+      <WBS>6.3</WBS>
+      <OutlineNumber>6.3</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT24H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>192000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>6</PredecessorUID>
-        <Type>0</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; D-05 label</Notes>
     </Task>
     <Task>
       <UID>33</UID>
       <ID>33</ID>
-      <Name>R06 Ready for Software Package 2</Name>
+      <Name>7 FE-04 Online matches</Name>
       <Type>1</Type>
-      <WBS>4.12</WBS>
-      <OutlineNumber>4.12</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <WBS>7</WBS>
+      <OutlineNumber>7</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT240H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M06 in Week 9.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>32</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>6</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>31</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <Work>PT288H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>85</PercentComplete>
+      <PercentWorkComplete>85</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
       <UID>34</UID>
       <ID>34</ID>
-      <Name>A07 Check third build and update reports</Name>
+      <Name>7.1 Photon Fusion session, lobby and room codes</Name>
       <Type>1</Type>
-      <WBS>4.13</WBS>
-      <OutlineNumber>4.13</OutlineNumber>
+      <WBS>7.1</WBS>
+      <OutlineNumber>7.1</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT56H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>240000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>7</PredecessorUID>
-        <Type>0</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; Moved to Photon Fusion 20/10/2026</Notes>
     </Task>
     <Task>
       <UID>35</UID>
       <ID>35</ID>
-      <Name>R07 Ready for Software Package 3</Name>
+      <Name>7.2 Ranked matchmaking, ready check and bot fallback</Name>
       <Type>1</Type>
-      <WBS>4.14</WBS>
-      <OutlineNumber>4.14</OutlineNumber>
+      <WBS>7.2</WBS>
+      <OutlineNumber>7.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT56H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M07 in Week 11.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>34</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>7</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>33</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>85</PercentComplete>
+      <PercentWorkComplete>85</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Doing; D-15 fallback timing</Notes>
     </Task>
     <Task>
       <UID>36</UID>
       <ID>36</ID>
-      <Name>A08 Run final integration and system checks</Name>
+      <Name>7.3 Dedicated server build, signed tickets, lease and result</Name>
       <Type>1</Type>
-      <WBS>4.15</WBS>
-      <OutlineNumber>4.15</OutlineNumber>
+      <WBS>7.3</WBS>
+      <OutlineNumber>7.3</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT72H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>288000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>8</PredecessorUID>
-        <Type>0</Type>
-      </PredecessorLink>
+      <PercentComplete>80</PercentComplete>
+      <PercentWorkComplete>80</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Doing; D-09 human ranked matches interrupted</Notes>
     </Task>
     <Task>
       <UID>37</UID>
       <ID>37</ID>
-      <Name>R08 Ready for Full software package</Name>
+      <Name>7.4 State synchronisation, input prediction and reconnection</Name>
       <Type>1</Type>
-      <WBS>4.16</WBS>
-      <OutlineNumber>4.16</OutlineNumber>
+      <WBS>7.4</WBS>
+      <OutlineNumber>7.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
+      <Work>PT72H0M0S</Work>
+      <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M08 in Week 13.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>36</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>8</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>35</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>70</PercentComplete>
+      <PercentWorkComplete>70</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Doing; Reconnect fix 10/11/2026; TC-F09-03 pending</Notes>
     </Task>
     <Task>
       <UID>38</UID>
       <ID>38</ID>
-      <Name>A09 Prepare user and admin guides</Name>
+      <Name>7.5 Elo rating and match result persistence</Name>
       <Type>1</Type>
-      <WBS>4.17</WBS>
-      <OutlineNumber>4.17</OutlineNumber>
+      <WBS>7.5</WBS>
+      <OutlineNumber>7.5</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>312000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>9</PredecessorUID>
-        <Type>0</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; D-08 start Elo decision</Notes>
     </Task>
     <Task>
       <UID>39</UID>
       <ID>39</ID>
-      <Name>R09 Ready for Software user guides</Name>
+      <Name>8 FE-05 AI coaching</Name>
       <Type>1</Type>
-      <WBS>4.18</WBS>
-      <OutlineNumber>4.18</OutlineNumber>
-      <OutlineLevel>2</OutlineLevel>
-      <Duration>PT0H0M0S</Duration>
+      <WBS>8</WBS>
+      <OutlineNumber>8</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
-      <Milestone>1</Milestone>
-      <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M09 in Week 14.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>38</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>9</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>37</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <Work>PT144H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
       <UID>40</UID>
       <ID>40</ID>
-      <Name>A10 Prepare final reports and defense</Name>
+      <Name>8.1 Telemetry capture, local spool and upload</Name>
       <Type>1</Type>
-      <WBS>4.19</WBS>
-      <OutlineNumber>4.19</OutlineNumber>
+      <WBS>8.1</WBS>
+      <OutlineNumber>8.1</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
-      <Duration>PT40H0M0S</Duration>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <Notes>Proposed work. Keep test evidence and open findings.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>1</PredecessorUID>
-        <Type>1</Type>
-        <LinkLag>336000</LinkLag>
-        <LagFormat>7</LagFormat>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>9</PredecessorUID>
-        <Type>0</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
     </Task>
     <Task>
       <UID>41</UID>
       <ID>41</ID>
-      <Name>R10 Ready for Final package and defense</Name>
+      <Name>8.2 FastAPI rule engine and gated tier model</Name>
       <Type>1</Type>
-      <WBS>4.20</WBS>
-      <OutlineNumber>4.20</OutlineNumber>
+      <WBS>8.2</WBS>
+      <OutlineNumber>8.2</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT56H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; Tier model gated (NFR-06)</Notes>
+    </Task>
+    <Task>
+      <UID>42</UID>
+      <ID>42</ID>
+      <Name>8.3 Hybrid analysis worker, analysis jobs and coaching panel</Name>
+      <Type>1</Type>
+      <WBS>8.3</WBS>
+      <OutlineNumber>8.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; D-02, D-11 open</Notes>
+    </Task>
+    <Task>
+      <UID>43</UID>
+      <ID>43</ID>
+      <Name>9 FE-06 Progress, rewards and shop</Name>
+      <Type>1</Type>
+      <WBS>9</WBS>
+      <OutlineNumber>9</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT120H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>44</UID>
+      <ID>44</ID>
+      <Name>9.1 XP, levels, technique mastery and progress dashboard</Name>
+      <Type>1</Type>
+      <WBS>9.1</WBS>
+      <OutlineNumber>9.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>45</UID>
+      <ID>45</ID>
+      <Name>9.2 Daily and weekly missions, achievements, streak rewards</Name>
+      <Type>1</Type>
+      <WBS>9.2</WBS>
+      <OutlineNumber>9.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>46</UID>
+      <ID>46</ID>
+      <Name>9.3 Currencies, shop and collection</Name>
+      <Type>1</Type>
+      <WBS>9.3</WBS>
+      <OutlineNumber>9.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; D-12 Elite Token source</Notes>
+    </Task>
+    <Task>
+      <UID>47</UID>
+      <ID>47</ID>
+      <Name>10 FE-07 Social, history and ranking</Name>
+      <Type>1</Type>
+      <WBS>10</WBS>
+      <OutlineNumber>10</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT96H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>48</UID>
+      <ID>48</ID>
+      <Name>10.1 Friends, blocking and room invitations</Name>
+      <Type>1</Type>
+      <WBS>10.1</WBS>
+      <OutlineNumber>10.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; TC-F12-01 pending</Notes>
+    </Task>
+    <Task>
+      <UID>49</UID>
+      <ID>49</ID>
+      <Name>10.2 Match history, replay recording and replay viewer</Name>
+      <Type>1</Type>
+      <WBS>10.2</WBS>
+      <OutlineNumber>10.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>50</UID>
+      <ID>50</ID>
+      <Name>10.3 Elo leaderboard with cache</Name>
+      <Type>1</Type>
+      <WBS>10.3</WBS>
+      <OutlineNumber>10.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT16H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>51</UID>
+      <ID>51</ID>
+      <Name>11 FE-08 Reports, restrictions and appeals</Name>
+      <Type>1</Type>
+      <WBS>11</WBS>
+      <OutlineNumber>11</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>52</UID>
+      <ID>52</ID>
+      <Name>11.1 Player report after a match</Name>
+      <Type>1</Type>
+      <WBS>11.1</WBS>
+      <OutlineNumber>11.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT16H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; TC-F17-01 pending</Notes>
+    </Task>
+    <Task>
+      <UID>53</UID>
+      <ID>53</ID>
+      <Name>11.2 Restricted access, decision view and appeal</Name>
+      <Type>1</Type>
+      <WBS>11.2</WBS>
+      <OutlineNumber>11.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; TC-F17-03 pending</Notes>
+    </Task>
+    <Task>
+      <UID>54</UID>
+      <ID>54</ID>
+      <Name>12 FE-09 Administration web application</Name>
+      <Type>1</Type>
+      <WBS>12</WBS>
+      <OutlineNumber>12</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT192H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>55</UID>
+      <ID>55</ID>
+      <Name>12.1 Admin authentication, layout and protected routing</Name>
+      <Type>1</Type>
+      <WBS>12.1</WBS>
+      <OutlineNumber>12.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-10-30T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT16H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>56</UID>
+      <ID>56</ID>
+      <Name>12.2 User management, sanctions and progress reset</Name>
+      <Type>1</Type>
+      <WBS>12.2</WBS>
+      <OutlineNumber>12.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; Admin cases pending in Round 2</Notes>
+    </Task>
+    <Task>
+      <UID>57</UID>
+      <ID>57</ID>
+      <Name>12.3 Content management: lessons, references, cosmetics, missions</Name>
+      <Type>1</Type>
+      <WBS>12.3</WBS>
+      <OutlineNumber>12.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>58</UID>
+      <ID>58</ID>
+      <Name>12.4 Live match monitoring and stopping</Name>
+      <Type>1</Type>
+      <WBS>12.4</WBS>
+      <OutlineNumber>12.4</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>59</UID>
+      <ID>59</ID>
+      <Name>12.5 Moderation of player reports and appeals</Name>
+      <Type>1</Type>
+      <WBS>12.5</WBS>
+      <OutlineNumber>12.5</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT24H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>60</UID>
+      <ID>60</ID>
+      <Name>12.6 Analytics dashboard</Name>
+      <Type>1</Type>
+      <WBS>12.6</WBS>
+      <OutlineNumber>12.6</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT24H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>61</UID>
+      <ID>61</ID>
+      <Name>13 FE-10 Expert review</Name>
+      <Type>1</Type>
+      <WBS>13</WBS>
+      <OutlineNumber>13</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>62</UID>
+      <ID>62</ID>
+      <Name>13.1 Shot labelling and dataset export</Name>
+      <Type>1</Type>
+      <WBS>13.1</WBS>
+      <OutlineNumber>13.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT32H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; No labelled real data yet</Notes>
+    </Task>
+    <Task>
+      <UID>63</UID>
+      <ID>63</ID>
+      <Name>14 Art, audio and interface assets</Name>
+      <Type>1</Type>
+      <WBS>14</WBS>
+      <OutlineNumber>14</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-09-21T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT320H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT120H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>64</UID>
+      <ID>64</ID>
+      <Name>14.1 Characters, 20 animation clips, courts and stadium</Name>
+      <Type>1</Type>
+      <WBS>14.1</WBS>
+      <OutlineNumber>14.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-09-21T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT64H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-09-21T08:00:00</ConstraintDate>
+      <Notes>Complexity Complex; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>65</UID>
+      <ID>65</ID>
+      <Name>14.2 Music and sound effects</Name>
+      <Type>1</Type>
+      <WBS>14.2</WBS>
+      <OutlineNumber>14.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-05T08:00:00</Start>
+      <Finish>2026-10-16T17:00:00</Finish>
+      <Duration>PT80H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT16H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Done; </Notes>
+    </Task>
+    <Task>
+      <UID>66</UID>
+      <ID>66</ID>
+      <Name>14.3 Front-end screens, loading artwork and Vietnamese fonts</Name>
+      <Type>1</Type>
+      <WBS>14.3</WBS>
+      <OutlineNumber>14.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-19T08:00:00</Start>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Done; D-01, D-04 open</Notes>
+    </Task>
+    <Task>
+      <UID>67</UID>
+      <ID>67</ID>
+      <Name>15 Testing and release</Name>
+      <Type>1</Type>
+      <WBS>15</WBS>
+      <OutlineNumber>15</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT240H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT144H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>28</PercentComplete>
+      <PercentWorkComplete>28</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>68</UID>
+      <ID>68</ID>
+      <Name>15.1 Unit tests (Unity EditMode, Python) and coverage</Name>
+      <Type>1</Type>
+      <WBS>15.1</WBS>
+      <OutlineNumber>15.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>50</PercentComplete>
+      <PercentWorkComplete>50</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Doing; 515 EditMode tests passed; coverage not measured</Notes>
+    </Task>
+    <Task>
+      <UID>69</UID>
+      <ID>69</ID>
+      <Name>15.2 Integration and system testing on staging</Name>
+      <Type>1</Type>
+      <WBS>15.2</WBS>
+      <OutlineNumber>15.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-16T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT40H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>30</PercentComplete>
+      <PercentWorkComplete>30</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-16T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Doing; Round 1 done; Rounds 2–3 planned</Notes>
+    </Task>
+    <Task>
+      <UID>70</UID>
+      <ID>70</ID>
+      <Name>15.3 Acceptance tests, playtests and defect fixing</Name>
+      <Type>1</Type>
+      <WBS>15.3</WBS>
+      <OutlineNumber>15.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-16T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT48H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>0</PercentComplete>
+      <PercentWorkComplete>0</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-16T08:00:00</ConstraintDate>
+      <Notes>Complexity Medium; Pending; Acceptance 07–11/12/2026</Notes>
+    </Task>
+    <Task>
+      <UID>71</UID>
+      <ID>71</ID>
+      <Name>15.4 Staging deployment and release package</Name>
+      <Type>1</Type>
+      <WBS>15.4</WBS>
+      <OutlineNumber>15.4</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-02T08:00:00</Start>
+      <Finish>2026-12-11T17:00:00</Finish>
+      <Duration>PT240H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT16H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>50</PercentComplete>
+      <PercentWorkComplete>50</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
+      <Notes>Complexity Simple; Doing; Staging running; release package pending</Notes>
+    </Task>
+    <Task>
+      <UID>72</UID>
+      <ID>72</ID>
+      <Name>Milestones</Name>
+      <Type>1</Type>
+      <WBS>16</WBS>
+      <OutlineNumber>16</OutlineNumber>
+      <OutlineLevel>1</OutlineLevel>
+      <Start>2026-09-13T08:00:00</Start>
+      <Finish>2026-12-20T17:00:00</Finish>
+      <Duration>PT560H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>0</Milestone>
+      <Summary>1</Summary>
+      <PercentComplete>0</PercentComplete>
+      <PercentWorkComplete>0</PercentWorkComplete>
+      <ConstraintType>0</ConstraintType>
+    </Task>
+    <Task>
+      <UID>73</UID>
+      <ID>73</ID>
+      <Name>M01 Report 1 – Project Introduction</Name>
+      <Type>1</Type>
+      <WBS>16.1</WBS>
+      <OutlineNumber>16.1</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-09-13T08:00:00</Start>
+      <Finish>2026-09-13T17:00:00</Finish>
       <Duration>PT0H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
       <Milestone>1</Milestone>
       <Summary>0</Summary>
-      <Notes>Readiness gate. Compare with M10 in Week 15.</Notes>
-      <PredecessorLink>
-        <PredecessorUID>40</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>9</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
-      <PredecessorLink>
-        <PredecessorUID>39</PredecessorUID>
-        <Type>1</Type>
-      </PredecessorLink>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-09-13T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>3</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: 06/11/2026</Notes>
+    </Task>
+    <Task>
+      <UID>74</UID>
+      <ID>74</ID>
+      <Name>M02 Report 2 – Project Management Plan</Name>
+      <Type>1</Type>
+      <WBS>16.2</WBS>
+      <OutlineNumber>16.2</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-09-20T08:00:00</Start>
+      <Finish>2026-09-20T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-09-20T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>3</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: 06/11/2026</Notes>
+    </Task>
+    <Task>
+      <UID>75</UID>
+      <ID>75</ID>
+      <Name>M03 Report 3 – SRS</Name>
+      <Type>1</Type>
+      <WBS>16.3</WBS>
+      <OutlineNumber>16.3</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-09-27T08:00:00</Start>
+      <Finish>2026-09-27T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-09-27T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>4</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: 06/11/2026</Notes>
+    </Task>
+    <Task>
+      <UID>76</UID>
+      <ID>76</ID>
+      <Name>M04 Report 4 – SDD and test plan</Name>
+      <Type>1</Type>
+      <WBS>16.4</WBS>
+      <OutlineNumber>16.4</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-11T08:00:00</Start>
+      <Finish>2026-10-11T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-11T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>5</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: 06/11/2026</Notes>
+    </Task>
+    <Task>
+      <UID>77</UID>
+      <ID>77</ID>
+      <Name>M05 Software Package 1 (Review 2)</Name>
+      <Type>1</Type>
+      <WBS>16.5</WBS>
+      <OutlineNumber>16.5</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-10-25T08:00:00</Start>
+      <Finish>2026-10-25T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-10-25T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>15</PredecessorUID><Type>1</Type></PredecessorLink>
+      <PredecessorLink><PredecessorUID>26</PredecessorUID><Type>1</Type></PredecessorLink>
+      <PredecessorLink><PredecessorUID>64</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: 27/10/2026</Notes>
+    </Task>
+    <Task>
+      <UID>78</UID>
+      <ID>78</ID>
+      <Name>M06 Software Package 2</Name>
+      <Type>1</Type>
+      <WBS>16.6</WBS>
+      <OutlineNumber>16.6</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-08T08:00:00</Start>
+      <Finish>2026-11-08T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-08T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>11</PredecessorUID><Type>1</Type></PredecessorLink>
+      <PredecessorLink><PredecessorUID>60</PredecessorUID><Type>1</Type></PredecessorLink>
+      <PredecessorLink><PredecessorUID>42</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: 06/11/2026</Notes>
+    </Task>
+    <Task>
+      <UID>79</UID>
+      <ID>79</ID>
+      <Name>M07 Software Package 3 (Review 3)</Name>
+      <Type>1</Type>
+      <WBS>16.7</WBS>
+      <OutlineNumber>16.7</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-11-22T08:00:00</Start>
+      <Finish>2026-11-22T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>0</PercentComplete>
+      <PercentWorkComplete>0</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-11-22T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>36</PredecessorUID><Type>1</Type></PredecessorLink>
+      <PredecessorLink><PredecessorUID>69</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: planned</Notes>
+    </Task>
+    <Task>
+      <UID>80</UID>
+      <ID>80</ID>
+      <Name>M08 Full software package</Name>
+      <Type>1</Type>
+      <WBS>16.8</WBS>
+      <OutlineNumber>16.8</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-12-06T08:00:00</Start>
+      <Finish>2026-12-06T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>0</PercentComplete>
+      <PercentWorkComplete>0</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-12-06T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>69</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: planned</Notes>
+    </Task>
+    <Task>
+      <UID>81</UID>
+      <ID>81</ID>
+      <Name>M09 Report 6 – User Guides</Name>
+      <Type>1</Type>
+      <WBS>16.9</WBS>
+      <OutlineNumber>16.9</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-12-13T08:00:00</Start>
+      <Finish>2026-12-13T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>0</PercentComplete>
+      <PercentWorkComplete>0</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-12-13T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>6</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: planned</Notes>
+    </Task>
+    <Task>
+      <UID>82</UID>
+      <ID>82</ID>
+      <Name>M10 Report 7 and final defense</Name>
+      <Type>1</Type>
+      <WBS>16.10</WBS>
+      <OutlineNumber>16.10</OutlineNumber>
+      <OutlineLevel>2</OutlineLevel>
+      <Start>2026-12-20T08:00:00</Start>
+      <Finish>2026-12-20T17:00:00</Finish>
+      <Duration>PT0H0M0S</Duration>
+      <DurationFormat>7</DurationFormat>
+      <Work>PT0H0M0S</Work>
+      <Milestone>1</Milestone>
+      <Summary>0</Summary>
+      <PercentComplete>0</PercentComplete>
+      <PercentWorkComplete>0</PercentWorkComplete>
+      <ConstraintType>4</ConstraintType>
+      <ConstraintDate>2026-12-20T08:00:00</ConstraintDate>
+      <PredecessorLink><PredecessorUID>70</PredecessorUID><Type>1</Type></PredecessorLink>
+      <PredecessorLink><PredecessorUID>71</PredecessorUID><Type>1</Type></PredecessorLink>
+      <Notes>Actual: planned</Notes>
     </Task>
   </Tasks>
+  <Resources>
+    <Resource>
+      <UID>1</UID>
+      <ID>1</ID>
+      <Name>Huỳnh Trung Kiên</Name>
+      <Type>1</Type>
+      <Initials>KienHT</Initials>
+      <MaxUnits>1.00</MaxUnits>
+      <CalendarUID>1</CalendarUID>
+    </Resource>
+    <Resource>
+      <UID>2</UID>
+      <ID>2</ID>
+      <Name>Nguyễn Văn Thành Đạt</Name>
+      <Type>1</Type>
+      <Initials>DatNVT</Initials>
+      <MaxUnits>1.00</MaxUnits>
+      <CalendarUID>1</CalendarUID>
+    </Resource>
+    <Resource>
+      <UID>3</UID>
+      <ID>3</ID>
+      <Name>Nguyễn Gia Huy</Name>
+      <Type>1</Type>
+      <Initials>HuyNG</Initials>
+      <MaxUnits>1.00</MaxUnits>
+      <CalendarUID>1</CalendarUID>
+    </Resource>
+    <Resource>
+      <UID>4</UID>
+      <ID>4</ID>
+      <Name>Trần Nguyễn Hiếu Thuận</Name>
+      <Type>1</Type>
+      <Initials>ThuanTNH</Initials>
+      <MaxUnits>1.00</MaxUnits>
+      <CalendarUID>1</CalendarUID>
+    </Resource>
+  </Resources>
+  <Assignments>
+    <Assignment>
+      <UID>1</UID>
+      <TaskUID>2</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>2</UID>
+      <TaskUID>3</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT12H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>3</UID>
+      <TaskUID>3</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT12H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>4</UID>
+      <TaskUID>4</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT64H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>5</UID>
+      <TaskUID>5</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>6</UID>
+      <TaskUID>6</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT20H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>7</UID>
+      <TaskUID>6</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT20H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>8</UID>
+      <TaskUID>8</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT24H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>9</UID>
+      <TaskUID>9</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT72H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>10</UID>
+      <TaskUID>10</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>11</UID>
+      <TaskUID>11</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>12</UID>
+      <TaskUID>13</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT64H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>13</UID>
+      <TaskUID>14</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>14</UID>
+      <TaskUID>15</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>15</UID>
+      <TaskUID>16</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>16</UID>
+      <TaskUID>17</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT24H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>17</UID>
+      <TaskUID>19</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>18</UID>
+      <TaskUID>20</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>19</UID>
+      <TaskUID>21</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>20</UID>
+      <TaskUID>22</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>21</UID>
+      <TaskUID>23</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>22</UID>
+      <TaskUID>25</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>23</UID>
+      <TaskUID>26</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>24</UID>
+      <TaskUID>27</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>25</UID>
+      <TaskUID>28</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT48H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>26</UID>
+      <TaskUID>30</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>27</UID>
+      <TaskUID>31</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>28</UID>
+      <TaskUID>32</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT24H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>29</UID>
+      <TaskUID>34</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>30</UID>
+      <TaskUID>35</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>31</UID>
+      <TaskUID>36</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT72H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>32</UID>
+      <TaskUID>37</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT72H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>33</UID>
+      <TaskUID>38</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>34</UID>
+      <TaskUID>40</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>35</UID>
+      <TaskUID>41</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT56H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>36</UID>
+      <TaskUID>42</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT48H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>37</UID>
+      <TaskUID>44</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>38</UID>
+      <TaskUID>45</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>39</UID>
+      <TaskUID>46</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>40</UID>
+      <TaskUID>48</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>41</UID>
+      <TaskUID>49</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT48H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>42</UID>
+      <TaskUID>50</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>43</UID>
+      <TaskUID>52</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>44</UID>
+      <TaskUID>53</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>45</UID>
+      <TaskUID>55</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>46</UID>
+      <TaskUID>56</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT48H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>47</UID>
+      <TaskUID>57</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT48H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>48</UID>
+      <TaskUID>58</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>49</UID>
+      <TaskUID>59</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT24H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>50</UID>
+      <TaskUID>60</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT24H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>51</UID>
+      <TaskUID>62</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT32H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>52</UID>
+      <TaskUID>64</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT64H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>53</UID>
+      <TaskUID>65</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>54</UID>
+      <TaskUID>66</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>55</UID>
+      <TaskUID>68</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>56</UID>
+      <TaskUID>69</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT40H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>57</UID>
+      <TaskUID>70</TaskUID>
+      <ResourceUID>1</ResourceUID>
+      <Units>1</Units>
+      <Work>PT12H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>58</UID>
+      <TaskUID>70</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT12H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>59</UID>
+      <TaskUID>70</TaskUID>
+      <ResourceUID>3</ResourceUID>
+      <Units>1</Units>
+      <Work>PT12H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>60</UID>
+      <TaskUID>70</TaskUID>
+      <ResourceUID>4</ResourceUID>
+      <Units>1</Units>
+      <Work>PT12H0M0S</Work>
+    </Assignment>
+    <Assignment>
+      <UID>61</UID>
+      <TaskUID>71</TaskUID>
+      <ResourceUID>2</ResourceUID>
+      <Units>1</Units>
+      <Work>PT16H0M0S</Work>
+    </Assignment>
+  </Assignments>
 </Project>

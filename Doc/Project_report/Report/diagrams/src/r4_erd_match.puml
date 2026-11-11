@@ -1,0 +1,106 @@
+@startuml r4_erd_match
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "GameMatches" as GameMatches {
+  * MatchId : UUID <<PK>>
+  --
+  * AuthorityMode : VARCHAR(16)
+  ServerHeartbeatAt : TIMESTAMPTZ
+  * Kind : VARCHAR(32)
+  * Status : VARCHAR(20)
+  * RatingPolicyVersion : VARCHAR(64)
+  * Mode : SMALLINT
+  PhotonSession : VARCHAR(100)
+  SearchId : UUID
+  Region : VARCHAR(30)
+  * Night : BOOLEAN
+  * Venue : SMALLINT
+  * CreatedAt : TIMESTAMPTZ
+  * UpdatedAt : TIMESTAMPTZ
+  StartedAt : TIMESTAMPTZ
+  EndedAt : TIMESTAMPTZ
+  Sequence : BIGINT
+}
+entity "GameMatchPlayers" as GameMatchPlayers {
+  * MatchId : UUID <<PK, FK>>
+  * PlayerId : UUID <<PK, FK>>
+  --
+  * Team : SMALLINT
+  * EloBefore : INT
+  GroupId : TEXT
+  * RosterIndex : SMALLINT
+  * IsReplayWriter : BOOLEAN
+  * ValidReturns : INT
+  * ValidServes : INT
+  * EndReason : VARCHAR(500)
+  ReportedAt : TIMESTAMPTZ
+  * LastSeenAt : TIMESTAMPTZ
+  Outcome : VARCHAR(16)
+  * LocalForfeit : BOOLEAN
+  FinalizedAt : TIMESTAMPTZ
+}
+entity "MatchScore" as MatchScore {
+  * MatchId : UUID <<PK, FK>>
+  * GameNumber : SMALLINT <<PK>>
+  --
+  * TeamAScore : INT
+  * TeamBScore : INT
+  * Completed : BOOLEAN
+}
+entity "ratingledger" as ratingledger {
+  * playerid : UUID <<PK, FK>>
+  * matchid : UUID <<PK, FK>>
+  --
+  * beforeelo : INT
+  * afterelo : INT
+  * opponentelo : INT
+  * delta : INT
+  * policyversion : TEXT
+  * createdat : TIMESTAMPTZ
+}
+entity "MatchHistoryReplay" as MatchHistoryReplay {
+  * MatchId : UUID <<PK, FK>>
+  --
+  * ObjectKey : VARCHAR(500)
+}
+entity "MatchmakingSearches" as MatchmakingSearches {
+  * SearchId : UUID <<PK>>
+  --
+  * PlayerId : UUID <<FK>>
+  * Mode : INT
+  * Region : VARCHAR(30)
+  * Protocol : INT
+  * State : VARCHAR(20)
+  * StartedAt : TIMESTAMPTZ
+  * LastSeenAt : TIMESTAMPTZ
+  EndedAt : TIMESTAMPTZ
+  WaitMilliseconds : BIGINT
+  MatchId : UUID
+  * CancelledAfterAssignment : BOOLEAN
+}
+entity "DedicatedOperations" as DedicatedOperations {
+  * OperationId : UUID <<PK>>
+  --
+  * MatchId : UUID <<FK>>
+  * LeaseId : VARCHAR(64)
+  * ActorId : UUID
+  * Reason : VARCHAR(1000)
+  * CreatedAt : TIMESTAMPTZ
+  AcknowledgedAt : TIMESTAMPTZ
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+}
+GameMatches ||--o{ GameMatchPlayers : "MatchId"
+PlayerProfiles ||--o{ GameMatchPlayers : "PlayerId"
+GameMatches ||--o{ MatchScore : "MatchId"
+PlayerProfiles ||--o{ ratingledger : "playerid"
+GameMatches ||--o{ ratingledger : "matchid"
+GameMatches ||--o| MatchHistoryReplay : "MatchId"
+PlayerProfiles ||--o{ MatchmakingSearches : "PlayerId"
+GameMatches ||--o{ DedicatedOperations : "MatchId"
+@enduml

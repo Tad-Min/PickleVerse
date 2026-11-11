@@ -1,0 +1,61 @@
+@startuml r4_cls_coaching
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class QuickCoachingRules <<static>> {
+    + RallyTip(playerFault, fault) : string
+    + Tip(shots, start) : string
+  }
+  class CoachingRuntime {
+    + Summary : CoachingSummary
+    + Begin(sessionId, type) : CoachingSession
+    + Checkpoint() : void
+    + Close() : void
+    + LoadSummary(sessionId) : Task<CoachingSummary>
+  }
+  class ShotTelemetry {
+    + shotId : string
+    + kind : string
+    + technique : string
+    + outcome : string
+    + timingError : float?
+    + assisted : bool
+    + kitchen : bool?
+  }
+}
+package "Web API" {
+  class AiCoachingController <<ApiController>> {
+    + Telemetry(TelemetryBatch)
+    + Summary(sessionId)
+  }
+  interface IHybridCoachingService {
+    + Ingest(player, batch) : Task<TelemetryAck>
+    + Summary(player, session) : Task<CoachingSummary>
+    + BuildRequest(job) : Task<AnalyzeRequest>
+  }
+  class HybridCoachingService
+  class HybridAiWorker <<BackgroundService>> {
+    - ClaimJob() : Task<AnalysisJob>
+    - Analyze(job) : Task
+  }
+}
+package "AI Coaching Service (FastAPI)" {
+  class "main.py" as Main {
+    + POST /v1/analyze-session
+    + GET /ready
+  }
+  class "engine.analyze()" as Engine
+  class TierPredictor {
+    + status : str
+    + predict(request) : dict
+  }
+}
+CoachingRuntime "1" o-- "0..*" ShotTelemetry
+CoachingRuntime ..> AiCoachingController : HTTP JSON
+AiCoachingController --> IHybridCoachingService
+HybridCoachingService ..|> IHybridCoachingService
+HybridAiWorker --> IHybridCoachingService
+HybridAiWorker ..> Main : HTTP + X-AI-Key
+Main --> Engine
+Main --> TierPredictor
+@enduml

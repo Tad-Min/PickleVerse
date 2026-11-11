@@ -1,0 +1,11 @@
+@startuml r4_sm_match
+!include _style.iuml
+[*] --> PREPARING : offer created
+PREPARING --> PLAYING : all required players accepted
+PREPARING --> CANCELLED : declined or start failed
+PLAYING --> FINISHED : trusted result saved\n(outcome WIN / LOSE)
+PLAYING --> FINISHED : stop command or lease lost\n(outcome INTERRUPTED, no Elo)
+FINISHED --> FINISHED : repeated result ignored
+FINISHED --> [*]
+CANCELLED --> [*]
+@enduml

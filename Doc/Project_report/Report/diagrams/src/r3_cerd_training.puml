@@ -1,0 +1,47 @@
+@startchen r3_cerd_training
+!include _style.iuml
+entity TECHNIQUE {
+  TechniqueId <<key>>
+  Name
+}
+entity LESSON {
+  LessonId <<key>>
+  Code
+  PublishStatus
+  ContentVersion
+}
+entity DRILL {
+  DrillId <<key>>
+  Code
+}
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+}
+entity TRAINING_ATTEMPT {
+  AttemptId <<key>>
+  Stars
+  Accuracy
+  Completed
+}
+relationship CONTAINS {
+}
+relationship PRACTISES_SKILL {
+}
+relationship MAKES {
+}
+relationship USES {
+}
+relationship MASTERS {
+  MasteryLevel
+}
+LESSON -M- CONTAINS
+CONTAINS -N- DRILL
+DRILL -N- PRACTISES_SKILL
+PRACTISES_SKILL -1- TECHNIQUE
+PLAYER_PROFILE -1- MAKES
+MAKES -N- TRAINING_ATTEMPT
+TRAINING_ATTEMPT -N- USES
+USES -1- DRILL
+PLAYER_PROFILE -M- MASTERS
+MASTERS -N- TECHNIQUE
+@endchen

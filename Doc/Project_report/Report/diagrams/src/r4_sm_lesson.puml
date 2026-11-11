@@ -1,0 +1,9 @@
+@startuml r4_sm_lesson
+!include _style.iuml
+[*] --> DRAFT : lesson created
+DRAFT --> DRAFT : save draft [version matches]
+DRAFT --> PUBLISHED : publish [prerequisites published]
+PUBLISHED --> UNPUBLISHED : unpublish [no published dependants]
+UNPUBLISHED --> PUBLISHED : publish again
+PUBLISHED --> PUBLISHED : save draft (live copy unchanged)
+@enduml

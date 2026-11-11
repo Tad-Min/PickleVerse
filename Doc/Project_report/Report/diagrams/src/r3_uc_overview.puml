@@ -1,0 +1,32 @@
+@startuml r3_uc_overview
+!include _style.iuml
+left to right direction
+actor Visitor
+actor Player
+actor "Restricted Player" as RP
+actor Administrator as Admin
+actor "Email Service" as ES
+actor "Photon Cloud" as PC
+Player -up-|> Visitor
+RP -up-|> Visitor
+rectangle "PickleVerse System" {
+  usecase "P1 Account and Onboarding\n(UC-01 to UC-09)" as P1
+  usecase "P2 Learning and Coaching\n(UC-10 to UC-18)" as P2
+  usecase "P3 Online Match\n(UC-19 to UC-27)" as P3
+  usecase "P4 Progress, Economy and Social\n(UC-28 to UC-44)" as P4
+  usecase "P5 Account Restriction\n(UC-45 to UC-46)" as P5
+  usecase "P6 Admin: Users and Moderation\n(UC-47 to UC-55)" as P6
+  usecase "P7 Admin: Content\n(UC-56 to UC-61)" as P7
+  usecase "P8 Admin: Monitoring and Analytics\n(UC-62 to UC-68)" as P8
+}
+Visitor -- P1
+Player -- P2
+Player -- P3
+Player -- P4
+RP -- P5
+Admin -- P6
+Admin -- P7
+Admin -- P8
+P1 -- ES
+P3 -- PC
+@enduml

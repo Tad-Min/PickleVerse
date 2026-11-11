@@ -1,0 +1,84 @@
+@startuml r4_cls_online
+!include _style.iuml
+skinparam classAttributeIconSize 0
+class MultiplayerApp <<MonoBehaviour>> {
+  + State : FlowState
+  + Mode : PlayMode
+  + Room : PhotonSession
+  + Match : PhotonSession
+  + Roster : MatchRoster
+  + FindAsync() : Task
+  + CancelSearchAsync() : Task
+  + CreateCustomAsync() : Task
+  + JoinRoomAsync(code) : Task
+  + AcceptMatchAsync() : Task
+  + DeclineMatchAsync() : Task
+  - ConnectDedicatedAsync(roster) : Task
+}
+enum FlowState {
+  Menu
+  WaitingRoom
+  Searching
+  Connecting
+  InMatch
+  Reconnecting
+  Results
+}
+class PhotonSession {
+  + Runner : NetworkRunner
+  + Lobby : PhotonRoomState
+  + Data : PhotonRoomData
+  + IsDedicated : bool
+  + StartAsync(session, player, region, data) : Task
+  + JoinAsync(session, player) : Task
+  + StartDedicatedAsync(session, region, roster, port, admission) : Task
+  + JoinDedicatedAsync(session, region, player, token, roster) : Task
+  + LeaveAsync() : Task
+}
+class PhotonRoomState <<NetworkBehaviour>> {
+  + Data : PhotonRoomData
+  + TryBeginRankedFallback() : bool
+  + CompleteRankedFallback(bot) : void
+}
+class NetworkMatch <<NetworkBehaviour>> {
+  + ScoreA : int
+  + ScoreB : int
+  + GamesA : int
+  + GamesB : int
+  + Finished : bool
+  + Rules : PickleballRules
+  + Roster : MatchRoster
+}
+class NetworkPlayer <<NetworkBehaviour>> {
+  + Identity : string
+  + Team : int
+  + Actor : MatchActor
+  + Simulate() : void
+  + CaptureDedicatedInput() : DedicatedInput
+  + CommitTouchShot(mask) : void
+}
+class PickleballRules {
+  + mode : PlayMode
+  + score : int[2]
+  + games : int[2]
+  + Serve(...) : bool
+  + Hit(...) : bool
+  + Bounce(...) : void
+  + Fault(...) : void
+  + SettleRally() : void
+  + Forfeit(team) : void
+}
+class MatchRoster {
+  + matchId : string
+  + mode : PlayMode
+  + members : List<RoomMember>
+}
+MultiplayerApp --> FlowState
+MultiplayerApp "1" o-- "0..2" PhotonSession : Room / Match
+PhotonSession "1" *-- "1" PhotonRoomState
+PhotonSession ..> NetworkMatch : spawns
+NetworkMatch "1" *-- "1" PickleballRules
+NetworkMatch "1" o-- "2..4" NetworkPlayer
+NetworkMatch --> MatchRoster
+MultiplayerApp --> MatchRoster
+@enduml

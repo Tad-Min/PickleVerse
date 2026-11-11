@@ -1,0 +1,25 @@
+@startuml r4_seq_reset
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Administrator as Admin
+participant "Progress Reset dialog" as W
+participant "ProgressResetController" as C
+participant "ProgressResetService" as S
+database "PostgreSQL" as DB
+Admin -> W : choose groups (LEARNING, RANKING, MISSIONS, ECONOMY)
+W -> C : POST .../progress-reset/preview
+C -> S : Preview(player, groups)
+S -> DB : read current values and profile Revision
+S --> W : impact preview + revision
+Admin -> W : confirm with reason
+W -> C : POST .../progress-reset (requestId, revision)
+C -> S : Execute(actor, player, request)
+alt revision changed
+  S --> C : 409 preview again
+else valid
+  S -> DB : reset selected groups, bump epochs, AdminAudits
+  S --> C : receipt (same receipt on retry)
+end
+@enduml

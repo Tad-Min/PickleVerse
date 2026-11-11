@@ -1,0 +1,18 @@
+@startuml r4_sm_botmatch
+!include _style.iuml
+[*] --> Intro
+Intro --> Cinematic : scene loaded
+Cinematic --> PreServe : intro ends or skipped
+PreServe --> Rally : legal serve
+PreServe --> Settling : serve fault or 10 s timeout
+PreServe --> Timeout : time-out requested [remaining > 0]
+Timeout --> PreServe : resume or 60 s elapsed
+Rally --> Settling : fault, out or double bounce
+Settling --> BetweenPoints : point committed
+Settling --> BetweenGames : game won
+Settling --> MatchOver : second game won
+BetweenPoints --> PreServe
+BetweenGames --> PreServe : ends changed
+MatchOver --> Cinematic : play again
+MatchOver --> [*] : leave to Mode Selection
+@enduml

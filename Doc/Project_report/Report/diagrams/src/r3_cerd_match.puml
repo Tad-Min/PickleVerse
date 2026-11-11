@@ -1,0 +1,47 @@
+@startchen r3_cerd_match
+!include _style.iuml
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+}
+entity MATCH {
+  MatchId <<key>>
+  Mode
+  Status
+  AuthorityMode
+}
+entity MATCH_GAME {
+  GameNumber <<key>>
+  TeamAScore
+  TeamBScore
+}
+entity RATING_CHANGE {
+  BeforeElo
+  AfterElo
+  Delta
+}
+entity REPLAY {
+  ObjectKey
+}
+relationship PARTICIPATES {
+  Team
+  Outcome
+}
+relationship CONSISTS_OF {
+}
+relationship CHANGES_RATING {
+}
+relationship RECORDED_AS {
+}
+relationship RECEIVES {
+}
+PLAYER_PROFILE -M- PARTICIPATES
+PARTICIPATES -N- MATCH
+MATCH -1- CONSISTS_OF
+CONSISTS_OF -N- MATCH_GAME
+MATCH -1- CHANGES_RATING
+CHANGES_RATING -N- RATING_CHANGE
+PLAYER_PROFILE -1- RECEIVES
+RECEIVES -N- RATING_CHANGE
+MATCH -1- RECORDED_AS
+RECORDED_AS -1- REPLAY
+@endchen

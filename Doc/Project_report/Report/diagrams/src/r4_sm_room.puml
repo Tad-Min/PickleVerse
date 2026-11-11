@@ -1,0 +1,18 @@
+@startuml r4_sm_room
+!include _style.iuml
+state "assigning-bot" as assigning_bot
+[*] --> searching : match session created
+searching --> assigning_bot : bot fallback started
+assigning_bot --> searching : bot assignment failed
+assigning_bot --> ready : bot seat filled
+searching --> ready : all seats connected
+ready --> loading : all humans accepted
+ready --> rejected : decline or deadline passed
+loading --> playing : court loaded
+loading --> rejected : player left
+playing --> interrupted : authority lost
+playing --> closed : match finished
+rejected --> [*]
+interrupted --> [*]
+closed --> [*]
+@enduml

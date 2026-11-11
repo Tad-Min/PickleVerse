@@ -1,0 +1,44 @@
+@startchen r3_cerd_account
+!include _style.iuml
+entity ACCOUNT {
+  AccountId <<key>>
+  Email
+  PasswordHash
+  Status
+}
+entity ROLE {
+  RoleId <<key>>
+  RoleName
+}
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+  PlayerName
+  Elo
+  Level
+  ExperienceChoice
+}
+entity VERIFICATION_CODE {
+  CodeId <<key>>
+  ExpiresAt
+}
+relationship HAS_ROLE {
+}
+relationship OWNS_PROFILE {
+}
+relationship VERIFIES {
+}
+relationship FRIEND_OF {
+}
+relationship BLOCKS {
+}
+ROLE -1- HAS_ROLE
+HAS_ROLE -N- ACCOUNT
+ACCOUNT -1- OWNS_PROFILE
+OWNS_PROFILE -1- PLAYER_PROFILE
+ACCOUNT -1- VERIFIES
+VERIFIES -N- VERIFICATION_CODE
+ACCOUNT -M- FRIEND_OF
+FRIEND_OF -N- ACCOUNT
+ACCOUNT -M- BLOCKS
+BLOCKS -N- ACCOUNT
+@endchen

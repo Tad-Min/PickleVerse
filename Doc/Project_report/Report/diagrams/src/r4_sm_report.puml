@@ -1,0 +1,12 @@
+@startuml r4_sm_report
+!include _style.iuml
+[*] --> PENDING : participant reports player
+PENDING --> CHECKING : Admin starts review
+PENDING --> ACCEPTED : Admin accepts directly
+PENDING --> DECLINED : Admin declines directly
+CHECKING --> ACCEPTED : accept
+CHECKING --> DECLINED : decline
+ACCEPTED --> [*]
+DECLINED --> [*]
+note right of ACCEPTED : A sanction may be applied\nin the same transaction.
+@enduml

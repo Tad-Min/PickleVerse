@@ -1,0 +1,32 @@
+@startuml r4_seq_purchase
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Player
+participant "ShopScreen" as UI
+participant "ProgressionRuntime" as PR
+participant "GameController" as C
+participant "OnlineGameService" as S
+database "PostgreSQL" as DB
+Player -> UI : select item and currency
+UI -> PR : CommandAsync("purchase")
+PR -> C : POST /api/Game/purchase (requestId)
+C -> S : Purchase(player, request)
+S -> DB : check GameCommands for requestId
+alt request already processed
+  S --> C : saved snapshot
+else new request
+  S -> DB : lock PlayerCurrencies
+  alt already owned
+    S --> C : 400 already owned
+  else balance too low
+    S --> C : 400 insufficient TOKENPAD / ELITE TOKEN
+  else valid
+    S -> DB : debit balance, insert CurrencyTransactions
+    S -> DB : insert PlayerCosmetics, save GameCommands
+    S --> C : updated snapshot
+  end
+end
+C --> UI : new balance and inventory
+@enduml

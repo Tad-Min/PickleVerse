@@ -1,0 +1,48 @@
+@startuml r4_act_w01
+!include _style.iuml
+|Player|
+start
+:Register and verify email;
+:Sign in;
+|Game client|
+if (First sign-in?) then (yes)
+  :Show experience choice;
+  |Player|
+  if (Beginner?) then (yes)
+    |Game client|
+    :Open Tutorial;
+    |Player|
+    :Complete tutorial steps;
+  else (no)
+  endif
+else (no)
+endif
+|Player|
+:Select unlocked drill;
+|Game client|
+if (Network available?) then (yes)
+  |Web API|
+  :Check lesson is published and unlocked;
+  :Create training attempt;
+else (no)
+  |Game client|
+  :Start attempt from cached catalog;
+endif
+|Player|
+:Play all trials;
+|Game client|
+:Evaluate contact, rules and target;
+if (Online?) then (yes)
+  |Web API|
+  :Recompute stars and grant reward once;
+else (no)
+  |Game client|
+  :Save completed run on device;
+  :Upload run after reconnect;
+  |Web API|
+  :Validate epoch and apply once;
+endif
+|Game client|
+:Show stars, reward and tips;
+stop
+@enduml

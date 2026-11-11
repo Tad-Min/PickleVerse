@@ -1,0 +1,36 @@
+@startuml r4_seq_dedicated
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+participant "Unity client" as Cl
+participant "Web API\n(DedicatedServerService)" as API
+database "Redis\n(lease slot)" as R
+participant "DedicatedWorker\n(game server)" as W
+database "PostgreSQL" as DB
+W -> API : POST /dedicated/ready (poll for job)
+Cl -> API : POST /api/Game/dedicated/ticket
+API -> R : reserve slot for match
+alt slot busy
+  API --> Cl : busy (ranked waits, custom fails)
+else slot reserved
+  API --> Cl : starting
+end
+API --> W : allocation (match, roster, lease)
+W -> W : StartDedicatedAsync (Fusion Server)
+W -> API : heartbeat (state = ready)
+loop every 500 ms until ready
+  Cl -> API : ticket
+end
+API --> Cl : ready + HMAC connection token
+Cl -> W : join session with token (UDP 3669)
+W -> W : DedicatedAdmission.Verify(token)
+W -> API : POST /dedicated/admission
+loop during play
+  W -> API : heartbeat (score, connections)
+  API --> W : pending stop command, if any
+end
+W -> API : POST /dedicated/complete (result, telemetry, replay)
+API -> DB : save GameMatches, MatchScore, ratingledger, rewards (one transaction)
+API -> R : release lease
+@enduml

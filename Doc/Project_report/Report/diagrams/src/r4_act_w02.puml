@@ -1,0 +1,30 @@
+@startuml r4_act_w02
+!include _style.iuml
+|Player|
+start
+:Choose difficulty, time of day and venue;
+|Game client|
+:Load Bot Match and play intro;
+repeat
+  |Player|
+  :Move and select shot;
+  |Game client|
+  :Bot decides movement and shot;
+  :Apply singles rules to the rally;
+  if (Fault?) then (yes)
+    :Show quick rule tip;
+  endif
+  :Commit point;
+repeat while (Match won by a player?) is (no)
+->yes;
+|Web API|
+:Save bot result and rewards;
+|Game client|
+:Upload session telemetry;
+|AI coaching service|
+:Analyse session with rules;
+:Return summary and drill recommendation;
+|Player|
+:Read coaching summary;
+stop
+@enduml

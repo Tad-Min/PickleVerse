@@ -1,0 +1,35 @@
+@startuml r4_seq_offline_sync
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Player
+participant "TrainingDirector" as TD
+participant "ProgressionRuntime" as PR
+participant "OfflineTrainingStore" as OS
+participant "GameTrainingController" as C
+participant "OnlineGameService" as S
+database "PostgreSQL" as DB
+Player -> PR : Train offline (cached profile)
+PR -> OS : Project() confirmed snapshot
+Player -> TD : play cached drill
+TD -> OS : Save(attempt, completed = true)
+OS -> OS : persist JSON on device (atomic replace)
+... later, network available ...
+PR -> OS : UploadBatch() (max 50)
+PR -> C : POST /api/Game/training/sync
+C -> S : SyncTraining(player, request)
+loop each attempt
+  S -> DB : check owner, attempt id, catalog version, progress epoch
+  alt new and valid
+    S -> DB : apply result and reward once
+    S --> C : receipt APPLIED
+  else already applied
+    S --> C : receipt DUPLICATE
+  else stale epoch or invalid
+    S --> C : receipt REJECTED (reason)
+  end
+end
+C --> PR : TrainingSyncResult
+PR -> OS : Accept(result) clears APPLIED and DUPLICATE items
+@enduml

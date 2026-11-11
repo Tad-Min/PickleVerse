@@ -1,0 +1,103 @@
+@startuml r4_cls_gameplay
+!include _style.iuml
+skinparam classAttributeIconSize 0
+class BotMatch <<MonoBehaviour>> {
+  + human : MatchActor
+  + bot : MatchActor
+  + Rules : SinglesRules
+  + Phase : MatchPhase
+  + BallPosition : Vector3
+  + BallVelocity : Vector3
+  + TickInput(mask, cancel) : void
+  + RequestShot(id, intent) : bool
+  + StepSimulation(dt, move, run) : void
+  + PredictContact(end, bounce, out point, out delay) : bool
+  + Timeout() : void
+  + Restart() : void
+}
+class MatchActor <<MonoBehaviour>> {
+  + playerId : int
+  + end : int
+  + Intent : ShotIntent
+  + Swinging : bool
+  + InKitchen : bool
+  + Swing(intent) : bool
+  + CanContact(...) : bool
+  + ConsumeContact() : void
+  + Feet() : CourtPoint
+}
+class SinglesRules {
+  + Server : int
+  + Points : int[2]
+  + Games : int[2]
+  + Live : bool
+  + LastFault : Fault
+  + PrepareServe(end) : void
+  + Serve(player, left, right, contact, elapsed) : Fault
+  + Hit(player, contact, feetInKitchen) : Fault
+  + Bounce(point) : Fault
+  + CommitRally() : void
+  + NextGame() : void
+  + TakeTimeout(player) : bool
+}
+class ShotInput {
+  + Selection : string
+  + CommittedMask : int
+  + Tick(mask, cancel, serve, out intent) : bool
+  + Cancel() : void
+}
+class ShotIntent <<struct>> {
+  + kind : ShotKind
+  + power : bool
+  + cross : bool
+  + ContactDelay : float
+}
+enum ShotKind {
+  Drive
+  Dink
+  Volley
+  Drop
+  Smash
+  Reset
+  Serve
+}
+class PaddleContact <<static>> {
+  + TimingWindow = 0.065
+  + PerfectWindow = 0.030
+  + PaddleRadius = 0.145
+  + TryEvaluate(...) : bool
+  + Grade(distance, timing) : HitGrade
+}
+class BallFlight <<static>> {
+  + Gravity = 9.81
+  + Restitution = 0.73
+  + Launch(from, target, apex) : Vector3
+  + Integrate(ref p, ref v, dt) : void
+  + Rebound(ref p, ref v) : void
+}
+class ShotTrajectory <<static>> {
+  + Target(actor, shot, ball, serverX) : Vector3
+  + Launch(shot, ball, target) : Vector3
+}
+enum MatchPhase {
+  Intro
+  Cinematic
+  PreServe
+  Rally
+  Settling
+  BetweenPoints
+  BetweenGames
+  Timeout
+  MatchOver
+}
+BotMatch "1" *-- "2" MatchActor
+BotMatch "1" *-- "1" SinglesRules
+BotMatch "1" *-- "1" ShotInput
+BotMatch --> MatchPhase
+BotMatch ..> PaddleContact
+BotMatch ..> BallFlight
+BotMatch ..> ShotTrajectory
+ShotInput ..> ShotIntent
+ShotIntent --> ShotKind
+MatchActor --> ShotIntent
+@enduml

@@ -1,0 +1,70 @@
+@startuml r4_cls_admin
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Admin Web (React)" {
+  class AuthContext
+  class "CMS page" as CmsPage
+  class "Users page" as UsersPage
+  class "Moderation page" as ModPage
+  class "Matches page" as MatchesPage
+  class "Analytics page" as AnalyticsPage
+  class "Axios client\n(ApiResponse unwrap)" as Axios
+}
+package "Web API" {
+  class ContentController <<ApiController>>
+  class ProgressResetController <<ApiController>>
+  class AdminController <<ApiController>>
+  class AdminModerationController <<ApiController>>
+  class LiveMatchesController <<ApiController>>
+  class AnalyticsController <<ApiController>>
+  class ExpertReviewController <<ApiController>>
+  interface IContentService {
+    + Lessons() : Task<List<LessonSummary>>
+    + Get(id) : Task<LessonDraft>
+    + Save(actor, id, draft, expectedVersion) : Task<LessonDraft>
+    + Publish(actor, id, publish) : Task<LessonDraft>
+  }
+  interface IProgressResetService {
+    + Preview(player, groups) : Task<ResetPreview>
+    + Execute(actor, player, request) : Task<ResetReceipt>
+  }
+  interface IModerationService {
+    + Apply(actor, request) : Task<SanctionDecision>
+    + Revoke(actor, sanction, reason) : Task
+    + ReviewReport(actor, request) : Task
+    + SubmitAppeal(player, request) : Task<SanctionAppeal>
+    + ReviewAppeal(actor, id, request) : Task<SanctionAppeal>
+    + StopMatch(actor, match, reason) : Task<DedicatedOperationRecord>
+  }
+  interface IAnalyticsService {
+    + Summary() : Task<AdminAnalyticsResponse>
+    + Errors() : Task<List<HeatmapDto>>
+    + Report(from, to) : Task<AnalyticsReport>
+  }
+  interface IExpertReviewService {
+    + Sessions() : Task
+    + Evidence(batch) : Task
+    + Review(actor, batch, request) : Task
+    + Export() : Task
+  }
+}
+CmsPage --> Axios
+UsersPage --> Axios
+ModPage --> Axios
+MatchesPage --> Axios
+AnalyticsPage --> Axios
+AuthContext --> Axios
+Axios ..> ContentController : HTTPS JSON + JWT
+Axios ..> AdminController
+Axios ..> AdminModerationController
+Axios ..> LiveMatchesController
+Axios ..> AnalyticsController
+Axios ..> ExpertReviewController
+Axios ..> ProgressResetController
+ContentController --> IContentService
+ProgressResetController --> IProgressResetService
+AdminModerationController --> IModerationService
+LiveMatchesController ..> IModerationService
+AnalyticsController --> IAnalyticsService
+ExpertReviewController --> IExpertReviewService
+@enduml

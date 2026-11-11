@@ -1,0 +1,23 @@
+@startuml r3_context
+!include _style.iuml
+left to right direction
+skinparam rectangle {
+  RoundCorner 12
+}
+actor "Player\n(PC / Android)" as Player
+actor "Administrator" as Admin
+rectangle "<b>PickleVerse System</b>\n\nUnity game client, Web API,\nadmin web, AI coaching service,\ndedicated game server,\nPostgreSQL and Redis" as SYS #F5F9FC
+rectangle "Photon Cloud\n(Fusion session and relay)" as PH
+rectangle "Gmail SMTP\n(email delivery)" as SMTP
+rectangle "S3-compatible\nobject storage" as S3
+
+Player --> SYS : account data, game input,\ntraining runs, reports, appeals
+SYS --> Player : game state, rewards, rankings,\ncoaching tips, replays
+Admin --> SYS : user, content and\nmoderation commands
+SYS --> Admin : dashboards, live matches,\nreports and appeals
+SYS --> PH : session registration,\ninput and state packets
+PH --> SYS : relayed packets,\nconnection events
+SYS --> SMTP : verification and\npassword-reset codes
+SYS --> S3 : replay manifests and chunks
+S3 --> SYS : stored replay data
+@enduml

@@ -1,0 +1,36 @@
+@startuml r4_pkg_backend
+!include _style.iuml
+skinparam packageStyle folder
+left to right direction
+package "PickleVerse.API" as API {
+  package "Controllers (24)" as Ctl
+  package "Filters and middleware\n(ApiResponse envelope,\nexception handler, scope)" as Flt
+  package "Program (DI, JWT, CORS,\nrate limiter, Redis)" as Prog
+}
+package "PickleVerse.Services" as SVC {
+  package "Interfaces" as SI
+  package "Implementations" as SImpl
+  package "Workers\n(HybridAiWorker,\nDedicatedLeaseMonitor)" as SW
+  package "Configuration\n(ServerSettings)" as SCfg
+  package "Rules\n(TrainingEngine, Elo)" as SRules
+}
+package "PickleVerse.Repositories" as REPO {
+  package "Context\n(PickleVerseContext)" as RCtx
+  package "UnitOfWork" as RUow
+  package "Implementations" as RImpl
+  package "Game\n(GameRepository partials)" as RGame
+  package "Caching\n(Redis repositories)" as RCache
+}
+package "PickleVerse.Entities" as ENT {
+  package "Models (EF entities)" as EM
+  package "DTOs and Contracts" as ED
+  package "Enums" as EE
+  package "Configuration\n(RedisSettings, DedicatedServerSettings)" as EC
+  package "Exceptions\n(AppException, ApiResponse)" as EX
+}
+API ..> SVC : <<use>>
+API ..> ENT : <<use>>
+SVC ..> REPO : <<use>>
+SVC ..> ENT : <<use>>
+REPO ..> ENT : <<use>>
+@enduml

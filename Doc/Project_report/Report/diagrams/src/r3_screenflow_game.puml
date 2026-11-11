@@ -1,0 +1,71 @@
+@startuml r3_screenflow_game
+!include _style.iuml
+hide empty description
+skinparam state {
+  BackgroundColor<<popup>> #FFFFFF
+  BorderColor<<popup>> #777777
+}
+state "Login" as Login
+state "Register" as Register
+state "Email Code (OTP)" as OTP
+state "Forgot / Reset Password" as Forgot
+state "Loading" as Loading
+state "Menu (Lobby)" as Menu
+state "Experience Choice\n[popup]" as Choice <<popup>>
+state "Tutorial" as Tutorial
+state "Mode Selection" as Modes
+state "Bot Match Setup" as BotSetup
+state "Bot Match" as BotMatch
+state "Training Academy" as Training
+state "Drill Result\n[popup]" as DrillResult <<popup>>
+state "Online Lobby" as Online
+state "Ready Check\n[popup]" as Ready <<popup>>
+state "Multiplayer Court" as Court
+state "Match Result\n[popup]" as Result <<popup>>
+state "Coaching Summary\n[popup]" as Coach <<popup>>
+state "Training Progress\n[popup]" as Progress <<popup>>
+state "Match History\n[popup]" as History <<popup>>
+state "Replay Viewer" as Replay
+state "Missions\n[popup]" as Missions <<popup>>
+state "Friends and Leaderboard\n[drawer]" as Social <<popup>>
+state "Shop" as Shop
+state "Collection" as Collection
+state "Settings\n[overlay]" as Settings <<popup>>
+state "Decisions and Appeals\n[popup]" as Appeals <<popup>>
+
+[*] --> Login
+Login --> Register
+Register --> OTP
+Login --> OTP : unverified email
+Login --> Forgot
+Forgot --> Login
+OTP --> Login
+Login --> Loading : signed in
+Login --> Menu : offline training
+Login --> Appeals : restricted account
+Loading --> Menu
+Menu --> Choice : first sign-in
+Choice --> Tutorial : Beginner
+Choice --> Menu : Experienced
+Menu --> Modes : Play
+Modes --> Tutorial
+Modes --> BotSetup
+BotSetup --> BotMatch
+BotMatch --> Result
+Modes --> Training
+Training --> DrillResult
+DrillResult --> Coach
+Modes --> Online
+Online --> Ready : match found
+Ready --> Court : all accepted
+Court --> Result
+Result --> Coach
+Menu --> Progress
+Menu --> History
+History --> Replay
+Menu --> Missions
+Menu --> Social
+Menu --> Shop
+Menu --> Collection
+Menu --> Settings
+@enduml

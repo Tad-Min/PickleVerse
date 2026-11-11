@@ -1,0 +1,31 @@
+@startuml r3_uc_p1_account
+!include _style.iuml
+left to right direction
+actor Visitor
+actor Player
+actor "Email Service" as ES
+Player -up-|> Visitor
+rectangle "P1 Account and Onboarding" {
+  usecase "UC-01 Register Account" as UC01
+  usecase "UC-02 Verify Email" as UC02
+  usecase "UC-03 Sign In" as UC03
+  usecase "UC-04 Reset Password" as UC04
+  usecase "UC-05 Sign Out" as UC05
+  usecase "UC-06 Choose Experience Level" as UC06
+  usecase "UC-07 Update Player Name" as UC07
+  usecase "UC-08 Select Character" as UC08
+  usecase "UC-09 Configure Game Settings" as UC09
+}
+Visitor -- UC01
+Visitor -- UC02
+Visitor -- UC03
+Visitor -- UC04
+Player -- UC05
+Player -- UC06
+Player -- UC07
+Player -- UC08
+Player -- UC09
+UC01 ..> UC02 : <<include>>
+UC02 -- ES
+UC04 -- ES
+@enduml

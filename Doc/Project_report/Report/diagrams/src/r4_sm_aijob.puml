@@ -1,0 +1,11 @@
+@startuml r4_sm_aijob
+!include _style.iuml
+[*] --> pending : all telemetry parts received
+pending --> processing : worker claims job (lease 60 s)
+processing --> completed : analysis saved
+processing --> pending : error [attempts < 10] / backoff
+processing --> pending : lease expired
+processing --> failed : error [attempts = 10]
+completed --> [*]
+failed --> [*]
+@enduml

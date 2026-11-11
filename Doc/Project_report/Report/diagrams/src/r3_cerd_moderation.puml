@@ -1,0 +1,54 @@
+@startchen r3_cerd_moderation
+!include _style.iuml
+skinparam ranksep 18
+skinparam nodesep 22
+entity ACCOUNT {
+  AccountId <<key>>
+}
+entity MATCH {
+  MatchId <<key>>
+}
+entity PLAYER_REPORT {
+  Reason
+  Status
+}
+entity SANCTION {
+  SanctionId <<key>>
+  Restriction
+  ExpiresAt
+}
+entity APPEAL {
+  AppealId <<key>>
+  Statement
+  Status
+}
+relationship FILES {
+}
+relationship CONCERNS {
+}
+relationship OCCURS_IN {
+}
+relationship RESTRICTS {
+}
+relationship CONTESTS {
+}
+relationship REVIEWS {
+  DecisionReason
+}
+relationship ISSUES {
+}
+ACCOUNT -1- FILES
+FILES -N- PLAYER_REPORT
+PLAYER_REPORT -N- CONCERNS
+CONCERNS -1- ACCOUNT
+PLAYER_REPORT -N- OCCURS_IN
+OCCURS_IN -1- MATCH
+SANCTION -N- RESTRICTS
+RESTRICTS -1- ACCOUNT
+APPEAL -1- CONTESTS
+CONTESTS -1- SANCTION
+ACCOUNT -1- REVIEWS
+REVIEWS -N- PLAYER_REPORT
+ACCOUNT -1- ISSUES
+ISSUES -N- SANCTION
+@endchen

@@ -1,0 +1,38 @@
+@startuml r4_seq_training_online
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Player
+participant "TrainingDirector" as TD
+participant "ProgressionRuntime" as PR
+participant "GameTrainingController" as C
+participant "OnlineGameService" as S
+database "PostgreSQL" as DB
+Player -> TD : choose lesson and press Start
+TD -> PR : StartTrainingAsync(lesson)
+PR -> C : POST /api/Game/training/start
+C -> S : StartTraining(player, request)
+S -> DB : check published lesson, prerequisites, level
+alt locked or unpublished
+  S --> C : 400 lesson not available
+  C --> TD : show error
+else allowed
+  S -> DB : insert TrainingSessions (IsCurrent = true)
+  S --> C : GameSnapshot with active attempt
+  C --> TD : attempt
+  loop each trial
+    Player -> TD : shot input
+    TD -> TD : contact, rule and target check
+    TD -> PR : SaveTrainingAsync(attempt, false)
+    PR -> C : POST /api/Game/training/checkpoint
+  end
+  TD -> PR : SaveTrainingAsync(attempt, true)
+  PR -> C : POST /api/Game/training/complete
+  C -> S : UpdateTraining(completed)
+  S -> S : recompute stars (BR-11), ignore client rewards
+  S -> DB : update PlayerLessonDrills, grant first-pass reward once
+  S --> C : GameSnapshot
+  C --> TD : result (stars, reward)
+end
+@enduml

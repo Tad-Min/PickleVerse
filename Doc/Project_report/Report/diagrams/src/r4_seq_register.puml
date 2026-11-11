@@ -1,0 +1,39 @@
+@startuml r4_seq_register
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Visitor
+participant "AccountScreen" as UI
+participant "AuthController" as C
+participant "AuthService" as S
+database "PostgreSQL" as DB
+participant "SmtpEmailSender" as M
+Visitor -> UI : enter email, password, confirmation
+UI -> C : POST /api/Auth/register
+C -> S : RegisterAsync(request)
+S -> S : validate password (6-128) and confirmation
+alt confirmation mismatch
+  S --> C : 400 password_confirmation_mismatch
+else email already registered
+  S -> DB : find user by email
+  S --> C : 400 email_exists
+else valid
+  S -> DB : insert Users (Status=ACTIVE) and PlayerProfiles
+  S -> DB : insert VerificationEmail (HMAC code, expires in 10 min)
+  S -> M : send 6-digit code
+  S --> C : AuthResponse (verification required)
+end
+C --> UI : ApiResponse
+UI --> Visitor : show Email Code screen
+Visitor -> UI : enter code
+UI -> C : POST /api/Auth/verify-email
+C -> S : VerifyEmailAsync(request)
+alt code valid and attempts < 5
+  S -> DB : mark verified
+  S --> C : true
+else invalid or expired
+  S --> C : 400 invalid code
+end
+C --> UI : result
+@enduml

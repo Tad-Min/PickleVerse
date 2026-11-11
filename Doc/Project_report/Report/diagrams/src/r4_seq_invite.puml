@@ -1,0 +1,34 @@
+@startuml r4_seq_invite
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Host
+actor Friend
+participant "MultiplayerApp" as App
+participant "RoomInvitationsController" as C
+participant "RoomInvitationService" as S
+database "Redis" as R
+Host -> App : create private room
+App -> C : POST /api/Game/lobby/presence (room)
+Host -> App : open invite list
+App -> C : GET /api/Game/lobby/friends
+C -> S : List(friends, presence)
+S -> R : read presence leases (20 s)
+Host -> App : invite friend
+App -> C : POST /api/Game/lobby/invitations
+C -> S : Send(host, friend, room)
+alt friend not in lobby, blocked or room full
+  S --> C : 400 / 409 with reason
+else valid
+  S -> R : store invitation (TTL 60 s)
+end
+loop every ~3 s
+  Friend -> C : POST /api/Game/lobby/presence
+  C --> Friend : pending invitation
+end
+Friend -> C : POST /lobby/invitations/{id}/respond (accept)
+C -> S : Respond(accept)
+S --> Friend : room session and region
+Friend -> App : join Photon room
+@enduml

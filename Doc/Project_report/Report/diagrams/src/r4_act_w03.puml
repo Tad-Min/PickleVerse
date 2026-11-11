@@ -1,0 +1,39 @@
+@startuml r4_act_w03
+!include _style.iuml
+|Player|
+start
+if (Private room?) then (yes)
+  :Create room and invite friend;
+else (no)
+  :Find ranked match;
+  |Web API|
+  if (Opponent found within 180 s?) then (yes)
+    :Pair players by Elo;
+  else (no)
+    :Assign ranked bot;
+  endif
+endif
+|Player|
+:Accept ready check (10 s);
+|Web API|
+if (All required humans accepted?) then (yes)
+  :Create match record (PLAYING);
+  :Reserve dedicated slot and issue ticket;
+else (no)
+  :Close offer;
+  stop
+endif
+|Dedicated server|
+:Verify ticket and admit players;
+:Simulate rallies authoritatively;
+if (Stopped or lease lost?) then (yes)
+  :End match as INTERRUPTED;
+else (no)
+  :Send final result;
+endif
+|Web API|
+:Save scores, Elo and rewards once;
+|Player|
+:View result and history;
+stop
+@enduml

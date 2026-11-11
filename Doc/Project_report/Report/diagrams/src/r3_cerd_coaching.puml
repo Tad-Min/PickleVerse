@@ -1,0 +1,40 @@
+@startchen r3_cerd_coaching
+!include _style.iuml
+skinparam ranksep 18
+skinparam nodesep 22
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+}
+entity TELEMETRY_SESSION {
+  BatchId <<key>>
+  SessionType
+}
+entity COACHING_RESULT {
+  Summary
+  Recommendations
+}
+entity EXPERT_REVIEW {
+  ReviewId <<key>>
+  Label
+  Version
+}
+entity ADMIN {
+  AccountId <<key>>
+}
+relationship UPLOADS {
+}
+relationship ANALYSED_INTO {
+}
+relationship REVIEWS {
+}
+relationship REVIEWED_BY {
+}
+PLAYER_PROFILE -1- UPLOADS
+UPLOADS -N- TELEMETRY_SESSION
+TELEMETRY_SESSION -1- ANALYSED_INTO
+ANALYSED_INTO -1- COACHING_RESULT
+TELEMETRY_SESSION -1- REVIEWS
+REVIEWS -N- EXPERT_REVIEW
+EXPERT_REVIEW -N- REVIEWED_BY
+REVIEWED_BY -1- ADMIN
+@endchen

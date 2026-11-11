@@ -1,0 +1,30 @@
+@startuml r4_seq_moderation
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Player
+actor "Restricted Player" as RP
+actor Administrator as Admin
+participant "Web API" as API
+participant "ModerationService" as S
+database "PostgreSQL" as DB
+Player -> API : POST /api/Matches/report (match, target, reason)
+API -> DB : insert ReportPlayerInMatch (PENDING)
+Admin -> API : POST /api/Admin/reports/review (ACCEPTED, sanction)
+API -> S : ReviewReport(actor, request)
+S -> DB : update report, insert UserSanctions, AdminAudits (one transaction)
+S -> DB : Users.Status = SUSPENDED or BANNED, revoke sessions
+RP -> API : POST /api/Auth/login
+API --> RP : session with scope = appeals
+RP -> API : GET /api/Moderation/decisions
+RP -> API : POST /api/Moderation/appeals (statement)
+API -> DB : insert SanctionAppeals (PENDING)
+Admin -> API : POST /api/Admin/appeals/{id}/review (ACCEPTED or DECLINED)
+API -> S : ReviewAppeal(actor, id, request)
+alt accepted
+  S -> DB : revoke sanction, Users.Status = ACTIVE
+else declined
+  S -> DB : keep sanction, store decision reason
+end
+@enduml

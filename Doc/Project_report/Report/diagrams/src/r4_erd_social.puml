@@ -1,0 +1,38 @@
+@startuml r4_erd_social
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "FriendRequests" as FriendRequests {
+  * RequestId : SERIAL <<PK>>
+  --
+  * SenderId : UUID <<FK>>
+  * ReceiverId : UUID <<FK>>
+  * Status : VARCHAR(20)
+  * CreatedAt : TIMESTAMPTZ
+  RespondedAt : TIMESTAMPTZ
+}
+entity "Friendships" as Friendships {
+  * UserId1 : UUID <<PK, FK>>
+  * UserId2 : UUID <<PK, FK>>
+  --
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "BlockedUsers" as BlockedUsers {
+  * UserId : UUID <<PK, FK>>
+  * BlockedUserId : UUID <<PK, FK>>
+  --
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "Users" as Users {
+  * UserId : UUID <<PK>>
+  --
+}
+Users ||--o{ FriendRequests : "SenderId"
+Users ||--o{ FriendRequests : "ReceiverId"
+Users ||--o{ Friendships : "UserId1"
+Users ||--o{ Friendships : "UserId2"
+Users ||--o{ BlockedUsers : "UserId"
+Users ||--o{ BlockedUsers : "BlockedUserId"
+@enduml

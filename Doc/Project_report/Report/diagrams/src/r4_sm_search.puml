@@ -1,0 +1,12 @@
+@startuml r4_sm_search
+!include _style.iuml
+[*] --> SEARCHING : search started
+SEARCHING --> MATCHED : compatible player found
+SEARCHING --> BOT : no player within 180 s
+SEARCHING --> CANCELLED : player cancels
+SEARCHING --> TIMEOUT : ticket expired
+MATCHED --> [*]
+BOT --> [*]
+CANCELLED --> [*]
+TIMEOUT --> [*]
+@enduml

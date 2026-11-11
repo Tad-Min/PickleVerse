@@ -1,0 +1,60 @@
+@startuml r4_cls_dedicated
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Dedicated game server (Unity, UNITY_SERVER)" {
+  class DedicatedWorker <<MonoBehaviour>> {
+    - serviceKey : string
+    - job : Allocation
+    + Record(player, shot) : void
+    + SubmitResults(json) : void
+    + Abort() : void
+    - Loop() : Task
+    - Heartbeat(lease) : Task
+  }
+  class DedicatedAdmission <<static>> {
+    + Verify(token, secret, match, lease, now) : Claims
+  }
+}
+package "Web API" {
+  class DedicatedController <<ApiController>> {
+    + Ready()
+    + Heartbeat()
+    + Acknowledge()
+    + AuthorizeAdmission()
+    + Complete()
+    + Release()
+    + Telemetry(lease)
+    + Replay(lease)
+  }
+  class GameController <<ApiController>> {
+    + Ticket(MatchId) : DedicatedTicket
+  }
+  interface IDedicatedServerService {
+    + Authenticate(key) : bool
+    + Ticket(player, match) : Task<DedicatedTicket>
+    + Poll(worker) : Task<Allocation>
+    + Renew(lease) : Task<HeartbeatReply>
+    + AuthorizeAdmission(lease, token) : Task<bool>
+    + Complete(lease, result) : Task
+    + Release(lease) : Task
+    + InterruptExpired() : Task
+    + LiveMatches() : Task<List<LiveMatchDto>>
+  }
+  class DedicatedServerService
+  class DedicatedLeaseRepository {
+    + Current() : Task<DedicatedLease>
+    + Claim(worker, seconds) : Task<bool>
+    + Renew(lease, seconds) : Task<bool>
+    + Release(lease) : Task
+  }
+  class DedicatedLeaseMonitor <<BackgroundService>>
+}
+DedicatedWorker ..> DedicatedController : HTTP (service key)
+DedicatedWorker ..> DedicatedAdmission
+GameController --> IDedicatedServerService
+DedicatedController --> IDedicatedServerService
+DedicatedServerService ..|> IDedicatedServerService
+DedicatedServerService --> DedicatedLeaseRepository
+DedicatedLeaseMonitor --> IDedicatedServerService
+note bottom of DedicatedLeaseRepository : One Redis key "slot" holds the only\nactive allocation (single-slot design).
+@enduml

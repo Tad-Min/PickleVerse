@@ -1,0 +1,9 @@
+@startuml r4_sm_email
+!include _style.iuml
+[*] --> Unverified : register
+Unverified --> Unverified : invalid code [attempts < 5]
+Unverified --> Unverified : resend code [cooldown 60 s passed]
+Unverified --> Verified : valid code [not expired]
+Unverified --> Verified : Admin verifies manually
+Verified --> [*]
+@enduml

@@ -1,0 +1,13 @@
+@startuml r4_sm_lease
+!include _style.iuml
+[*] --> queued : ticket requested [slot free]
+[*] --> busy : ticket requested [slot taken]
+busy --> queued : slot released
+queued --> starting : worker claims job
+starting --> ready : worker heartbeat ready
+starting --> Released : lease expired
+ready --> finishing : final result received
+ready --> Released : lease expired or stop acknowledged
+finishing --> Released : result saved
+Released --> [*]
+@enduml

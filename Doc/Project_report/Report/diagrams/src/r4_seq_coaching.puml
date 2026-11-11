@@ -1,0 +1,29 @@
+@startuml r4_seq_coaching
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+participant "Unity client or\nDedicatedWorker" as Src
+participant "AiCoachingController" as C
+participant "HybridCoachingService" as S
+database "PostgreSQL" as DB
+participant "HybridAiWorker" as W
+participant "AI Coaching Service\n(FastAPI)" as AI
+Src -> C : POST /api/AiCoaching/telemetry (batch, parts)
+C -> S : Ingest(player, batch)
+S -> DB : store parts (idempotent by batch and part)
+S -> DB : create aianalysisjobs (pending) when all parts arrive
+C --> Src : ACK
+W -> DB : claim job (lease 60 s)
+W -> S : BuildRequest(job)
+W -> AI : POST /v1/analyze-session (X-AI-Key)
+AI -> AI : rule findings, summary, recommendations, gated tier
+AI --> W : analysis result
+alt success
+  W -> DB : save aicoachingsessions, job completed
+else failure
+  W -> DB : retry with backoff (max 10 attempts)
+end
+Src -> C : GET /api/AiCoaching/summary?sessionId=...
+C --> Src : summary and drill recommendation
+@enduml

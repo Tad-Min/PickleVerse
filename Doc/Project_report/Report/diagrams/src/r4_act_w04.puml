@@ -1,0 +1,35 @@
+@startuml r4_act_w04
+!include _style.iuml
+|Player|
+start
+:Report a player from match history;
+|Web API|
+:Validate reporter and target;
+:Store report as PENDING;
+|Administrator|
+:Review evidence and replay;
+if (Report accepted?) then (yes)
+  :Apply ban or suspension with reason;
+  |Web API|
+  :Restrict account and revoke sessions;
+  |Restricted Player|
+  :Sign in and read decision;
+  if (Submit appeal?) then (yes)
+    :Write appeal statement;
+    |Administrator|
+    :Review appeal;
+    if (Appeal accepted?) then (yes)
+      |Web API|
+      :Revoke sanction;
+    else (no)
+      |Web API|
+      :Keep sanction and record reason;
+    endif
+  else (no)
+  endif
+else (no)
+  |Web API|
+  :Close report as DECLINED;
+endif
+stop
+@enduml

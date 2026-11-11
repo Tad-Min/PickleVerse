@@ -1,0 +1,31 @@
+@startuml r4_seq_bot_match
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+
+actor Player
+participant "ModeSelectionMenu" as MS
+participant "BotMatch" as BM
+participant "BhTreeBot / LocalBot" as Bot
+participant "SinglesRules" as R
+participant "ProgressionRuntime" as PR
+participant "GameMatchesController" as C
+Player -> MS : choose difficulty, time of day, venue
+MS -> BM : load BotMatch scene
+BM -> PR : StartBotAsync()
+PR -> C : POST /api/Game/match/bot/start
+C --> PR : match id
+BM -> BM : intro cinematic (skippable)
+loop each rally until a player wins 2 games
+  Player -> BM : movement and shot keys
+  BM -> Bot : Step(dt)
+  Bot --> BM : movement and shot request
+  BM -> R : Serve / Hit / Bounce
+  R --> BM : Fault or continue
+  BM -> R : CommitRally()
+end
+BM -> PR : FinishBotAsync(result)
+PR -> C : POST /api/Game/match/bot/complete
+C --> PR : snapshot with rewards
+BM --> Player : result screen and coaching button
+@enduml

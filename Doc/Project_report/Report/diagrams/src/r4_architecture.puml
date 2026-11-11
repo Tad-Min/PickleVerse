@@ -1,0 +1,40 @@
+@startuml r4_architecture
+!include _style.iuml
+skinparam componentStyle uml2
+actor Player
+actor Administrator as Admin
+node "Player device" {
+  [Unity Game Client] as Client
+}
+node "Browser" {
+  [Admin Web (React SPA)] as Web
+}
+cloud "Photon Cloud" as Photon
+node "Linux host (Docker Compose)" {
+  [nginx reverse proxy] as Nginx
+  [Web API\nASP.NET Core 10] as API
+  [Background workers\nHybridAiWorker, DedicatedLeaseMonitor] as Workers
+  [AI Coaching Service\nPython FastAPI] as AI
+  [Dedicated Game Server\nUnity Linux headless] as DS
+  database "PostgreSQL 16" as PG
+  database "Redis 7.4" as RD
+  database "S3-compatible storage" as S3
+}
+cloud "Gmail SMTP" as SMTP
+Player --> Client
+Admin --> Web
+Web --> Nginx : HTTPS / HTTP
+Nginx --> API : /api (JSON, JWT)
+Client --> API : REST JSON, JWT
+Client --> Photon : Fusion Shared lobby (UDP)
+Client --> DS : Fusion client, signed ticket (UDP 3669)
+DS --> Photon : session registration
+DS --> API : lease, heartbeat, result\n(service key)
+API --> PG : Npgsql EF Core
+API --> RD : queue, leases, presence, cache
+API --> S3 : replay manifest and chunks
+API --> SMTP : OTP email (STARTTLS)
+Workers --> AI : POST /v1/analyze-session\n(X-AI-Key)
+Workers ..> PG
+API ..> Workers : hosted in API process
+@enduml
