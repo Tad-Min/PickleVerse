@@ -90,6 +90,10 @@ namespace PickleVerse.Settings
                 int index = i;
                 bindingButtons[i].onClick.AddListener(() => BeginBinding(index));
             }
+            // Matches no longer offer time-outs, so their key has nothing to rebind.
+            int timeout = (int)GameAction.Timeout;
+            if (timeout < bindingButtons.Length && bindingButtons[timeout] && bindingButtons[timeout].transform.parent)
+                bindingButtons[timeout].transform.parent.gameObject.SetActive(false);
             shadowToggle.onValueChanged.AddListener(v =>
             {
                 if (!refreshing)

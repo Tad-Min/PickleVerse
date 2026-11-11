@@ -19,7 +19,7 @@ namespace PickleVerse.Multiplayer
         public MultiplayerCinematic cinematic;
         public bool EndAnnouncementReceived { get; private set; }
         public bool EndAnnouncementFinished { get; private set; }
-        public UnityEngine.UI.Button continueButton, restartButton, modeButton, timeoutButton;
+        public UnityEngine.UI.Button continueButton, restartButton, modeButton;
         public UnityEngine.UI.Button leave, returnToRoom;
         public MultiplayerResultScreen resultScreen;
         public MatchScoreboard broadcast;
@@ -280,8 +280,6 @@ namespace PickleVerse.Multiplayer
                 timing.gameObject.SetActive(false);
             if (modeLabel && !broadcast)
                 modeLabel.text = hasMatch ? matchType : "Multiplayer";
-            if (timeoutButton)
-                timeoutButton.interactable = hasMatch && owner && match.WaitingServe && !match.TimedOut && !match.Paused && !match.BetweenPoints && !match.Finished;
             bool showModal = hasMatch && !SettingsOverlay.IsOpen && (match.TimedOut || match.Paused);
             if (modal)
                 modal.SetActive(showModal);
@@ -371,17 +369,6 @@ namespace PickleVerse.Multiplayer
             if (help.activeSelf)
                 help.transform.SetAsLastSibling();
         }
-        public void ToggleTouch()
-        {
-            if (touchControls)
-                touchControls.SetActive(!touchControls.activeSelf);
-            ClearTouch();
-            RefreshBindings();
-        }
-        public void Timeout()
-        {
-            NetworkPlayer.All.FirstOrDefault(p => p.IsLocalHuman)?.RequestTimeout();
-        }
         public void Continue()
         {
             NetworkPlayer.All.FirstOrDefault(p => p.IsLocalHuman)?.ResumeTimeout();
@@ -439,8 +426,8 @@ namespace PickleVerse.Multiplayer
                                 K(GameAction.Drive) + " Đánh bạt/giao bóng | " + K(GameAction.Dink) + " Dink | " + K(GameAction.Volley) + " Volley\n" +
                                 K(GameAction.Drive) + "+" + K(GameAction.Dink) + " Drop | " + K(GameAction.Drive) + "+" + K(GameAction.Volley) + " Smash | " + K(GameAction.Dink) + "+" + K(GameAction.Volley) + " Reset\n" +
                                 K(GameAction.Power) + " tăng lực • " + K(GameAction.Cross) + " đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Vô lê và đà vô lê vào vùng cấm vô lê là lỗi.\n11 điểm, cách biệt 2 • Chỉ đội giao ghi điểm • Thắng 2/3 ván\n" +
-                                K(GameAction.Timeout) + " hội ý • Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận trực tuyến tiếp tục.";
-            if (text && (Application.isMobilePlatform || touchControls && touchControls.activeSelf))
+"Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận trực tuyến tiếp tục.";
+            if (text && Application.isMobilePlatform)
                 text.text = TouchShotGesture.HelpText + "\nMở cài đặt/hướng dẫn chỉ khóa thao tác của bạn; trận trực tuyến tiếp tục.";
             if (layout)
                 layout.RefreshKeys();
@@ -449,9 +436,6 @@ namespace PickleVerse.Multiplayer
                 var helpButton = transform.Find("Help")?.GetComponentInChildren<TMP_Text>();
                 if (helpButton)
                     helpButton.text = K(GameAction.Help) + " / Hướng dẫn";
-                var timeoutLabel = timeoutButton ? timeoutButton.GetComponentInChildren<TMP_Text>() : null;
-                if (timeoutLabel)
-                    timeoutLabel.text = K(GameAction.Timeout) + " / Time-out";
             }
         }
     }

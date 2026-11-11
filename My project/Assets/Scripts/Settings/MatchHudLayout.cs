@@ -6,8 +6,8 @@ namespace PickleVerse.Settings
     // Only corner offsets change when the device safe area changes.
     public sealed class MatchHudLayout : MonoBehaviour
     {
-        public RectTransform scoreboard, notice, settings, help, touch, timeout, leave, returnToRoom, technique;
-        public TMPro.TMP_Text settingsKey, helpKey, timeoutKey;
+        public RectTransform scoreboard, notice, settings, help, leave, returnToRoom, technique;
+        public TMPro.TMP_Text settingsKey, helpKey;
         public void RefreshKeys()
         {
             string Name(GameAction action)
@@ -15,9 +15,10 @@ namespace PickleVerse.Settings
                 string name = GameSettings.KeyName(GameSettings.Current.KeyFor(action));
                 return name == "Escape" ? "Esc" : name;
             }
-            settingsKey.text = Name(GameAction.Settings);
-            helpKey.text = Name(GameAction.Help);
-            timeoutKey.text = Name(GameAction.Timeout);
+            if (settingsKey)
+                settingsKey.text = Name(GameAction.Settings);
+            if (helpKey)
+                helpKey.text = Name(GameAction.Help);
         }
         Canvas canvas; Rect last; Vector2 size; float lastScale; bool refreshText;
         TMPro.TMP_Text[] labels;
@@ -67,11 +68,9 @@ namespace PickleVerse.Settings
         public void ApplyInsets(float left, float right, float top, float bottom)
         {
             Place(scoreboard, left + 18, -top - 18);
-            Place(timeout, left + 18, -top - 194);
             Place(notice, left + 18, -top - 238);
             Place(settings, -right - 18, -top - 18);
-            Place(help, -right - 96, -top - 70);
-            Place(touch, -right - 18, -top - 70);
+            Place(help, -right - 18, -top - 70);
             Place(leave, -right - 18, -top - 116);
             Place(returnToRoom, -right - 18, -top - 116);
             Place(technique, 0, bottom + 18);

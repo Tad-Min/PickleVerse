@@ -218,8 +218,6 @@ namespace PickleVerse.Multiplayer
             var keyboard = Keyboard.current;
             if (keyboard != null && CanReadKeyboard() && !InputBlocked())
             {
-                if (GameControls.Pressed(GameAction.Timeout))
-                    TimeoutServerRpc();
                 if (match && match.TimedOut && GameControls.Pressed(GameAction.Continue))
                     ResumeTimeoutServerRpc();
             }
@@ -415,11 +413,6 @@ namespace PickleVerse.Multiplayer
         void ResumeTimeoutFrom()
         {
             NetworkMatch.Instance?.ResumeTimeout(this);
-        }
-        public void RequestTimeout()
-        {
-            if (IsOwner && IsSpawned)
-                TimeoutServerRpc();
         }
         public void ResumeTimeout()
         {

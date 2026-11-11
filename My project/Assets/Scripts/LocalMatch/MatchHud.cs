@@ -133,7 +133,7 @@ namespace PickleVerse.LocalMatch
             modalBody.rectTransform.sizeDelta = new Vector2(710, 235);
             modalBody.fontSize = 19;
             modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI MÁY" : match.Phase == MatchPhase.MatchOver ? match.Message : match.Phase == MatchPhase.Timeout ? "TIME-OUT" : "KẾT THÚC GAME";
-            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài vùng cấm vô lê • 11 điểm, cách 2 • Thắng 2/3 ván\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn • T gọi hội ý trước giao bóng\nĐã dùng " + (2 - rules.Timeouts[0]) + "/2 hội ý trong ván này." : match.Phase == MatchPhase.MatchOver ? "Ván thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố pha bóng: " + match.TotalRallies + " • Pha bóng dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; máy đồng ý.\nĐổi sân giữa các ván và tại 6 điểm trong ván quyết định.";
+            modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài vùng cấm vô lê • 11 điểm, cách 2 • Thắng 2/3 ván\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn" : match.Phase == MatchPhase.MatchOver ? "Ván thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố pha bóng: " + match.TotalRallies + " • Pha bóng dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; máy đồng ý.\nĐổi sân giữa các ván và tại 6 điểm trong ván quyết định.";
             continueButton.GetComponentInChildren<TMP_Text>().text = intro ? "Vào sân / Enter" : "Enter / Tiếp tục";
             ((RectTransform)continueButton.transform).anchoredPosition = new Vector2(-245, 20);
             ((RectTransform)restartButton.transform).anchoredPosition = new Vector2(0, 20);
@@ -155,11 +155,6 @@ namespace PickleVerse.LocalMatch
             if (match)
                 match.TogglePause();
         }
-        public void Timeout()
-        {
-            if (match)
-                match.Timeout();
-        }
         public void ToggleHelp()
         {
             bool show = !help.activeSelf;
@@ -177,11 +172,6 @@ namespace PickleVerse.LocalMatch
                 helpPaused = false;
             }
         }
-        public void ToggleTouch()
-        {
-            touchControls.SetActive(!touchControls.activeSelf);
-            RefreshBindings();
-        }
         public void ChooseMode()
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene("ModeSelection");
@@ -194,7 +184,7 @@ namespace PickleVerse.LocalMatch
         void RefreshBindings()
         {
             string K(GameAction action) => GameSettings.KeyName(GameSettings.Current.KeyFor(action));
-            bool mobile = Application.isMobilePlatform || touchControls && touchControls.activeSelf;
+            bool mobile = Application.isMobilePlatform;
             driveKey = mobile ? "DRIVE" : K(GameAction.Drive);
             var text = help ? help.transform.Find("HelpText")?.GetComponent<TMP_Text>() : null;
             if (text)
@@ -203,7 +193,7 @@ namespace PickleVerse.LocalMatch
                                 K(GameAction.Drive) + " Đánh bạt/giao bóng | " + K(GameAction.Dink) + " Dink | " + K(GameAction.Volley) + " Volley\n" +
                                 K(GameAction.Drive) + "+" + K(GameAction.Dink) + " Drop | " + K(GameAction.Drive) + "+" + K(GameAction.Volley) + " Smash | " + K(GameAction.Dink) + "+" + K(GameAction.Volley) + " Reset\n" +
                                 K(GameAction.Power) + " tăng lực • " + K(GameAction.Cross) + " đánh chéo • Giữ chọn, thả để đánh\n\nHai cú đầu phải nảy. Vô lê và đà vô lê vào vùng cấm vô lê là lỗi.\n" +
-                                K(GameAction.Timeout) + " hội ý • Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn\nCảm ứng: cần điều khiển và các nút kỹ thuật; chỉnh bố trí trong Cài đặt.";
+                                "Esc cài đặt • " + K(GameAction.Help) + " hướng dẫn";
             if (text && mobile)
                 text.text = TouchShotGesture.HelpText;
             if (layout)
@@ -213,9 +203,6 @@ namespace PickleVerse.LocalMatch
                 var helpButton = transform.Find("Help")?.GetComponentInChildren<TMP_Text>();
                 if (helpButton)
                     helpButton.text = K(GameAction.Help) + " / Hướng dẫn";
-                var timeoutButton = transform.Find("Timeout")?.GetComponentInChildren<TMP_Text>();
-                if (timeoutButton)
-                    timeoutButton.text = K(GameAction.Timeout) + " / Time-out";
             }
         }
         void OnDestroy()

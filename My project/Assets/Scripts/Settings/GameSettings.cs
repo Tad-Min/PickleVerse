@@ -121,6 +121,9 @@ namespace PickleVerse.Settings
                 return false;
             }
             int conflict = Array.IndexOf(data.keys, (int)key);
+            // Time-outs were removed from play; their legacy key slot never blocks a binding.
+            if (conflict == (int)GameAction.Timeout)
+                conflict = Array.IndexOf(data.keys, (int)key, conflict + 1);
             if (conflict >= 0 && conflict != (int)action)
             {
                 error = "Phím này đang dùng cho: " + ActionName((GameAction)conflict);

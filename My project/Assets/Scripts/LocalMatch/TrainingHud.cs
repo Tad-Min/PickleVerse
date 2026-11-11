@@ -43,7 +43,6 @@ namespace PickleVerse.LocalMatch
                             label.text = "‹ VỀ SẢNH";
                         break;
                     case "Settings": b.onClick.AddListener(() => SettingsOverlay.Open(training)); break;
-                    case "Touch": b.onClick.AddListener(training.ToggleTouch); break;
                     case "Resume": b.onClick.AddListener(() => training.SetPaused(false)); break;
                     case "Continue Practice": b.onClick.AddListener(Continue); break;
                     default:
@@ -125,7 +124,6 @@ namespace PickleVerse.LocalMatch
             status = Text("Feedback", practice, "", .07f, .745f, .65f, .84f, 18, Gold);
             Button("Course", practice, "BÀI TẬP", () => training.Catalogue(), .035f, .885f, .15f, .96f, false).gameObject.SetActive(false);
             EnsurePracticeNavigation();
-            Button("Touch", practice, "CẢM ỨNG", () => training.ToggleTouch(), .035f, .025f, .18f, .09f, false);
             results = Block("Exercise Results", safeArea, .23f, .13f, .77f, .89f, glass);
             resultTitle = Text("Title", results, "KẾT QUẢ", .07f, .79f, .93f, .95f, 34, Gold);
             resultBody = Text("Assessment", results, "", .07f, .30f, .93f, .77f, 19, White);

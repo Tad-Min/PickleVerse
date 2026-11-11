@@ -81,10 +81,10 @@ namespace PickleVerse.EditorTools
             ui.modal=canvas.transform.Find("MatchDialog").gameObject;ui.modalTitle=Find<TMP_Text>(canvas.transform,"MatchDialog/Title");ui.modalBody=Find<TMP_Text>(canvas.transform,"MatchDialog/Body");
             ui.resultActions=canvas.transform.Find("MatchResultActions").gameObject;ui.resultSummary=Find<TMP_Text>(canvas.transform,"MatchResultActions/Summary");
             ui.intro=canvas.transform.Find("CinematicIntro").gameObject;ui.introCaption=Find<TMP_Text>(canvas.transform,"CinematicIntro/EntranceCaption");ui.announcements=announcements;
-            ui.continueButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/Continue");ui.restartButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/Restart");ui.modeButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/ChooseMode");ui.timeoutButton=Find<UnityEngine.UI.Button>(canvas.transform,"Timeout");
+            ui.continueButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/Continue");ui.restartButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/Restart");ui.modeButton=Find<UnityEngine.UI.Button>(canvas.transform,"MatchDialog/ChooseMode");
             foreach(var b in canvas.GetComponentsInChildren<UnityEngine.UI.Button>(true))ClearCalls(b);
             void Wire(string path,UnityEngine.Events.UnityAction action){UnityEditor.Events.UnityEventTools.AddPersistentListener(Find<UnityEngine.UI.Button>(canvas.transform,path).onClick,action);}
-            Wire("Settings",ui.OpenSettings);Wire("Help",ui.ToggleHelp);Wire("ControlsHelp/CloseHelp",ui.ToggleHelp);Wire("Touch",ui.ToggleTouch);Wire("Timeout",ui.Timeout);
+            Wire("Settings",ui.OpenSettings);Wire("Help",ui.ToggleHelp);Wire("ControlsHelp/CloseHelp",ui.ToggleHelp);
             Wire("MatchDialog/Continue",ui.Continue);Wire("MatchDialog/Restart",ui.ReturnToRoom);Wire("MatchDialog/ChooseMode",ui.ChooseMode);
             Wire("MatchResultActions/Replay",ui.ReturnToRoom);Wire("MatchResultActions/ChooseMode",ui.ChooseMode);Wire("CinematicIntro/SkipIntro",ui.SkipIntro);
             var waitButton=Find<UnityEngine.UI.Button>(canvas.transform,"CinematicIntro/SkipIntro");waitButton.interactable=false;

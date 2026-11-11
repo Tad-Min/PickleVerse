@@ -92,6 +92,7 @@ namespace PickleVerse.LocalMatch
         void Awake()
         {
             MatchRenderBudget.ConfigurePractice(gameObject);
+            ActorCharacter.ApplyLocalChoice(player, opponent, coach, partner);
             player.Initialize();
             coach.Initialize();
             partner.Initialize();
@@ -827,11 +828,6 @@ namespace PickleVerse.LocalMatch
             TouchShotMask = 0;
             TouchMovement = Vector2.zero;
             TouchRun = false;
-        }
-        public void ToggleTouch()
-        {
-            if (Phase == TrainingPhase.Practice || Phase == TrainingPhase.Recovery)
-                SetTouch(!touchRoot.activeSelf);
         }
         public void SetPaused(bool value)
         {

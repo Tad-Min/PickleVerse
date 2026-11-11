@@ -20,7 +20,7 @@ namespace PickleVerse.LocalMatch
         [Range(0, 3)]
         public int botDifficulty = 1;
         BhTreeBot behaviorBot;
-        public string BotLabel => botDifficulty == 3 ? "BhTree · " + (behaviorBot ? $"{behaviorBot.Elo} Elo\nPhản xạ {behaviorBot.ReactionSeconds:0.00}s · Sai số {behaviorBot.AimError:0.00}m\n{behaviorBot.Branch}" : "đang chuẩn bị") : new[] { "Dễ", "Vừa", "Khó" }[botDifficulty];
+        public string BotLabel => botDifficulty == 3 ? "Tự động · " + (behaviorBot ? $"{behaviorBot.Elo} Elo" : "đang chuẩn bị") : new[] { "Dễ", "Vừa", "Khó" }[botDifficulty];
         [Range(.12f, .6f)]
         public float contactAssistRadius = .45f;
         public bool autoPlayer;
@@ -100,6 +100,8 @@ namespace PickleVerse.LocalMatch
             Paused = false;
             human.end = -1;
             bot.end = 1;
+            // The scene is authored with the female body on the player; follow the menu choice.
+            ActorCharacter.ApplyLocalChoice(human, bot);
             human.Initialize();
             bot.Initialize();
             human.LocalHitFeedback = true;
@@ -137,8 +139,6 @@ namespace PickleVerse.LocalMatch
             {
                 if (GameControls.Pressed(GameAction.Continue))
                     Continue();
-                if (GameControls.Pressed(GameAction.Timeout))
-                    Timeout();
                 if (GameControls.Pressed(GameAction.Help) && hud)
                     hud.ToggleHelp();
             }
@@ -710,17 +710,6 @@ namespace PickleVerse.LocalMatch
             TouchMovement = Vector2.zero;
             if (Paused)
                 SfxPlayer.StopAll();
-        }
-        public void Timeout()
-        {
-            if (Phase == MatchPhase.PreServe && !human.Swinging && !bot.Swinging && Rules.TakeTimeout(0))
-            {
-                Phase = MatchPhase.Timeout;
-                phaseTime = 0;
-                countdown.Reset();
-                Message = "Hội ý • tối đa 60 giây • Enter để tiếp tục";
-                input.Cancel();
-            }
         }
         public void SetDifficulty(int level)
         {
