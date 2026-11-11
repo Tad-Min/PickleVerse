@@ -7,9 +7,23 @@ namespace PickleVerse.LocalMatch
         public float height => CourtFollowView.Height;
         public float followDistance => CourtFollowView.Distance;
         public float pitch => DesiredRotation.eulerAngles.x;
-        public float fieldOfView => CourtFollowView.FieldOfView;
+        public float fieldOfView
+        {
+            get
+            {
+                CourtFollowView.Frame(DesiredPosition, player.transform.position, player.end, false, CourtFollowView.FeetLine, out _, out var fov);
+                return fov;
+            }
+        }
         public Vector3 DesiredPosition => CourtFollowView.Position(player.transform.position, player.end);
-        public Quaternion DesiredRotation => Quaternion.LookRotation(CourtFollowView.LookAt(player.transform.position, player.end) - DesiredPosition);
+        public Quaternion DesiredRotation
+        {
+            get
+            {
+                CourtFollowView.Frame(DesiredPosition, player.transform.position, player.end, false, CourtFollowView.FeetLine, out var rotation, out _);
+                return rotation;
+            }
+        }
         void OnEnable()
         {
             if (player)

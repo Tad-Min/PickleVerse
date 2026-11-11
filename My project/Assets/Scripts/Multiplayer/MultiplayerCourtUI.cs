@@ -96,6 +96,11 @@ namespace PickleVerse.Multiplayer
                 MobileTouchPad.Install(touchControls, this);
                 touchControls.SetActive(Application.isMobilePlatform);
             }
+            HudActorClearance.Attach(shotPanel, () =>
+            {
+                var local = NetworkPlayer.All.FirstOrDefault(p => p && p.IsLocalHuman);
+                return local && local.Actor ? local.Actor.transform : null;
+            });
             if (help)
                 help.SetActive(false);
             if (modal)

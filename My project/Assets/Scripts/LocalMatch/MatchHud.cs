@@ -39,6 +39,7 @@ namespace PickleVerse.LocalMatch
             }
             if (!shotPanel && selection)
                 shotPanel = selection.transform.parent.gameObject;
+            HudActorClearance.Attach(shotPanel, () => match && match.human ? match.human.transform : null);
             if (touchControls)
             {
                 MobileTouchPad.Install(touchControls, owner);

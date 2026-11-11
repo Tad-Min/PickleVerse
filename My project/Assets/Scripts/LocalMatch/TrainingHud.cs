@@ -28,6 +28,8 @@ namespace PickleVerse.LocalMatch
             EnsureRating();
             EnsurePracticeNavigation();
             EnsureAnnouncements();
+            if (keys)
+                HudActorClearance.Attach(keys.transform.parent.gameObject, () => training && training.player ? training.player.transform : null);
             foreach (var b in GetComponentsInChildren<Button>(true))
             {
                 b.onClick.RemoveAllListeners();

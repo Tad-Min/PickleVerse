@@ -53,6 +53,21 @@ public sealed class GameplayRegressionTests
         Assert.That(CourtFollowView.Position(p,-1,true).y, Is.EqualTo(6.5f));
         Assert.That(CourtFollowView.Fov(false), Is.EqualTo(56)); Assert.That(CourtFollowView.Fov(true), Is.EqualTo(64));
     }
+    [Test] public void FollowViewKeepsFeetAboveHudBandAndFarBaselineInView()
+    {
+        foreach (bool doubles in new[] { false, true })
+        foreach (float line in new[] { CourtFollowView.DesktopFeetLine, CourtFollowView.TouchFeetLine })
+        foreach (int end in new[] { -1, 1 })
+        foreach (float depth in new[] { 2f, 4.5f, 6.7f, 8.5f })
+        {
+            var player = new Vector3(1.4f * -end, 0, end * depth);
+            var camera = CourtFollowView.Position(player, end, doubles);
+            CourtFollowView.Frame(camera, player, end, doubles, line, out var rotation, out var fov);
+            Assert.That(CourtFollowView.ViewportY(rotation, camera, player, fov), Is.GreaterThanOrEqualTo(line - .001f), $"feet doubles={doubles} end={end} depth={depth}");
+            Assert.That(CourtFollowView.ViewportY(rotation, camera, new Vector3(0, 0, -end * 6.71f), fov), Is.LessThan(1f), "far baseline");
+            Assert.That(fov, Is.InRange(CourtFollowView.Fov(doubles), CourtFollowView.Fov(doubles) + 8));
+        }
+    }
     [Test] public void AnalysisShowsCurrentMeasuredSummaryAndSupportsOlderResults()
     {
         Assert.That(CoachingAnalysisText.Describe(new CoachingAnalysis {summary="Đã ghi nhận 4 lượt đánh."}), Does.Contain("4 lượt đánh"));
