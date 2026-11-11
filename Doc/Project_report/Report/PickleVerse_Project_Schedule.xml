@@ -89,8 +89,8 @@
       <Work>PT224H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>1</Summary>
-      <PercentComplete>81</PercentComplete>
-      <PercentWorkComplete>81</PercentWorkComplete>
+      <PercentComplete>89</PercentComplete>
+      <PercentWorkComplete>89</PercentWorkComplete>
       <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
@@ -192,11 +192,11 @@
       <Work>PT40H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <PercentComplete>35</PercentComplete>
-      <PercentWorkComplete>35</PercentWorkComplete>
+      <PercentComplete>80</PercentComplete>
+      <PercentWorkComplete>80</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Doing; Report 5 v1.0 done; Reports 6 and 7 pending</Notes>
+      <Notes>Complexity Medium; Doing; Reports 5–7 v1.0 done on 11/11/2026; defense slides pending</Notes>
     </Task>
     <Task>
       <UID>7</UID>
@@ -1750,12 +1750,12 @@
       <Work>PT0H0M0S</Work>
       <Milestone>1</Milestone>
       <Summary>0</Summary>
-      <PercentComplete>0</PercentComplete>
-      <PercentWorkComplete>0</PercentWorkComplete>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-12-13T08:00:00</ConstraintDate>
       <PredecessorLink><PredecessorUID>6</PredecessorUID><Type>1</Type></PredecessorLink>
-      <Notes>Actual: planned</Notes>
+      <Notes>Actual: 11/11/2026 (v1.0)</Notes>
     </Task>
     <Task>
       <UID>82</UID>
@@ -1778,7 +1778,7 @@
       <ConstraintDate>2026-12-20T08:00:00</ConstraintDate>
       <PredecessorLink><PredecessorUID>70</PredecessorUID><Type>1</Type></PredecessorLink>
       <PredecessorLink><PredecessorUID>71</PredecessorUID><Type>1</Type></PredecessorLink>
-      <Notes>Actual: planned</Notes>
+      <Notes>Actual: Report 7 v1.0 on 11/11/2026; defense pending</Notes>
     </Task>
   </Tasks>
   <Resources>
@@ -1858,14 +1858,14 @@
     <Assignment>
       <UID>6</UID>
       <TaskUID>6</TaskUID>
-      <ResourceUID>4</ResourceUID>
+      <ResourceUID>3</ResourceUID>
       <Units>1</Units>
       <Work>PT20H0M0S</Work>
     </Assignment>
     <Assignment>
       <UID>7</UID>
       <TaskUID>6</TaskUID>
-      <ResourceUID>1</ResourceUID>
+      <ResourceUID>4</ResourceUID>
       <Units>1</Units>
       <Work>PT20H0M0S</Work>
     </Assignment>

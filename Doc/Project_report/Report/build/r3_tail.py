@@ -147,26 +147,26 @@ MSG = [
 ]
 
 TRACE = [
-    ("F01", "Account and first steps", "FR-01, FR-02, FR-03, FR-04", "UC-01 to UC-08"),
-    ("F02", "Rules and controls", "FR-05, FR-06, FR-11", "UC-09, UC-10"),
-    ("F03", "Guided drills", "FR-07, FR-08", "UC-11, UC-12"),
-    ("F04", "Levels and items", "FR-20, FR-23", "UC-43, UC-44"),
-    ("F05", "Adaptive bot", "FR-12, FR-13", "UC-16"),
-    ("F06", "Coaching and tier", "FR-19", "UC-17, UC-18"),
-    ("F07", "Quick match", "FR-14", "UC-19, UC-20"),
-    ("F08", "Private rooms", "FR-15", "UC-21 to UC-24"),
-    ("F09", "Dedicated play", "FR-16, FR-17", "UC-25 to UC-27"),
-    ("F10", "Result and Elo", "FR-18", "UC-25"),
-    ("F11", "Progress and replay", "FR-10, FR-24", "UC-15, UC-28, UC-29"),
-    ("F12", "Friends and ranks", "FR-25, FR-26", "UC-31 to UC-36"),
-    ("F13", "Daily and streak rewards", "FR-21", "UC-37 to UC-40"),
-    ("F14", "Offline practice", "FR-09", "UC-13, UC-14"),
-    ("F15", "Admin and accounts", "FR-29", "UC-47 to UC-53"),
-    ("F16", "Lesson publishing", "FR-31", "UC-56 to UC-61"),
-    ("F17", "Match care and reports", "FR-27, FR-28, FR-30, FR-32", "UC-30, UC-45, UC-46, UC-54, UC-55, UC-62 to UC-64"),
-    ("F18", "Admin charts", "FR-32", "UC-65, UC-66"),
-    ("–", "Shop (not in the Review 2 list)", "FR-22", "UC-41, UC-42"),
-    ("–", "Expert review (addition to the proposal)", "FR-33", "UC-67, UC-68"),
+    ("F01", "Account and first steps", "FR-01, FR-02, FR-03, FR-04", "UC-01 to UC-08", "W01", "Trần Nguyễn Hiếu Thuận"),
+    ("F02", "Rules and controls", "FR-05, FR-06, FR-11", "UC-09, UC-10", "W01", "Trần Nguyễn Hiếu Thuận"),
+    ("F03", "Guided drills", "FR-07, FR-08", "UC-11, UC-12", "W01", "Nguyễn Gia Huy"),
+    ("F04", "Levels and items", "FR-20, FR-23", "UC-43, UC-44", "W01", "Nguyễn Văn Thành Đạt"),
+    ("F05", "Adaptive bot", "FR-12, FR-13", "UC-16", "W02", "Nguyễn Gia Huy"),
+    ("F06", "Coaching and tier", "FR-19", "UC-17, UC-18", "W02", "Nguyễn Văn Thành Đạt"),
+    ("F07", "Quick match", "FR-14", "UC-19, UC-20", "W03", "Nguyễn Văn Thành Đạt"),
+    ("F08", "Private rooms", "FR-15", "UC-21 to UC-24", "W03", "Nguyễn Văn Thành Đạt"),
+    ("F09", "Dedicated play", "FR-16, FR-17", "UC-25 to UC-27", "W03", "Nguyễn Văn Thành Đạt"),
+    ("F10", "Result and Elo", "FR-18", "UC-25", "W03", "Nguyễn Văn Thành Đạt"),
+    ("F11", "Progress and replay", "FR-10, FR-24", "UC-15, UC-28, UC-29", "W02", "Nguyễn Gia Huy"),
+    ("F12", "Friends and ranks", "FR-25, FR-26", "UC-31 to UC-36", "W03", "Trần Nguyễn Hiếu Thuận"),
+    ("F13", "Daily and streak rewards", "FR-21", "UC-37 to UC-40", "W01", "Nguyễn Gia Huy"),
+    ("F14", "Offline practice", "FR-09", "UC-13, UC-14", "W01", "Trần Nguyễn Hiếu Thuận"),
+    ("F15", "Admin and accounts", "FR-29", "UC-47 to UC-53", "W04", "Huỳnh Trung Kiên"),
+    ("F16", "Lesson publishing", "FR-31", "UC-56 to UC-61", "W04", "Huỳnh Trung Kiên"),
+    ("F17", "Match care and reports", "FR-27, FR-28, FR-30, FR-32", "UC-30, UC-45, UC-46, UC-54, UC-55, UC-62 to UC-64", "W04", "Huỳnh Trung Kiên"),
+    ("F18", "Admin charts", "FR-32", "UC-65, UC-66", "W04", "Huỳnh Trung Kiên"),
+    ("–", "Shop (not in the Review 2 list)", "FR-22", "UC-41, UC-42", "–", "–"),
+    ("–", "Expert review (addition to the proposal)", "FR-33", "UC-67, UC-68", "–", "–"),
 ]
 
 
@@ -243,9 +243,9 @@ def write(r):
         ["BR, FR, NFR, UC, MSG", "Business rule; functional requirement; non-functional requirement; use case; message"],
     ], widths=[3.6, 12.4], size=9, first_col_bold=True, caption="Definitions and acronyms")
     r.h3("5.5 Appendix A – Traceability to the Review 2 Commitment")
-    r.p("Table below links the 18 features committed in the Review 2 form BM04 to the use cases and functional requirements of this specification. Report 5 links each requirement to its test cases.")
-    r.table(["Review 2 feature", "Name", "Functional requirements", "Use cases"], [list(t) for t in TRACE],
-            widths=[2.4, 4.6, 4.4, 4.6], size=9, caption="Traceability from Review 2 features to requirements")
+    r.p("The table below links the 18 features committed in the Review 2 form BM04 (07/11/2026) to the use cases and functional requirements of this specification, with the workflow and the member accountable for each feature at the reviews. Report 5 links each requirement to its test cases.")
+    r.table(["Review 2 feature", "Name", "Functional requirements", "Use cases", "Workflow", "Owner (BM04)"], [list(t) for t in TRACE],
+            widths=[1.6, 3.4, 3.2, 3.4, 1.6, 2.8], size=8.5, caption="Traceability from Review 2 features to requirements and owners")
     r.h3("5.6 References")
     r.references([
         "USA Pickleball, \"Official Rulebook 2024.\" https://usapickleball.org/what-is-pickleball/official-rules/ (accessed 11 Nov. 2026).",

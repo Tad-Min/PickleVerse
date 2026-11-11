@@ -27,7 +27,7 @@ PLAN = {
     "1.2": (4, 4, "Done", 100, "v1.0 on 11/11/2026; first versions late (06/11)"),
     "1.3": (4, 4, "Done", 100, "v1.0 on 11/11/2026"),
     "1.4": (4, 4, "Done", 100, "v1.0 on 11/11/2026"),
-    "1.5": (4, 6, "Doing", 35, "Report 5 v1.0 done; Reports 6 and 7 pending"),
+    "1.5": (4, 6, "Doing", 80, "Reports 5–7 v1.0 done on 11/11/2026; defense slides pending"),
     "2.1": (0, 1, "Done", 100, "Unity project initialised 17/09/2026"),
     "2.2": (3, 3, "Done", 100, "Normalised schema 31/10/2026 (51 tables)"),
     "2.3": (4, 4, "Done", 100, "Docker deployment 04/11/2026"),
@@ -161,8 +161,9 @@ def tracking():
         ("PB-09", "Run the EditMode suite automatically and link results to test case IDs", "Test automation", "Medium", "Iteration 5", "Thuận", 2, "Pending", "Issue I-07"),
         ("PB-10", "Measure NFR-02 to NFR-05 and run the usability test (NFR-01)", "Test", "Medium", "Iteration 5", "Thuận", 3, "Pending", "TC-N01–TC-N05"),
         ("PB-11", "Bot balance session with players of known level", "Balance", "Medium", "Iteration 5", "Huy", 1, "Pending", "D-13"),
-        ("PB-12", "Write Report 6 – user guides (installation, player, administrator)", "Document", "High", "Iteration 6", "Kiên", 3, "Pending", "M09"),
-        ("PB-13", "Write Report 7 – final report and defense slides", "Document", "High", "Iteration 6", "Kiên", 4, "Pending", "M10"),
+        ("PB-12", "Write Report 6 – user guides (installation, player, administrator)", "Document", "High", "Iteration 4", "Huy", 3, "Done", "M09; v1.0 on 11/11/2026"),
+        ("PB-13", "Write Report 7 – final report consolidating Reports 1–6", "Document", "High", "Iteration 4", "Huy", 3, "Done", "M10; v1.0 on 11/11/2026"),
+        ("PB-15", "Prepare the defense slides and rehearse the demo of W01–W04", "Document", "High", "Iteration 6", "Kiên", 2, "Pending", "M10"),
         ("PB-14", "Acceptance test W01–W04 with the supervisor", "Test", "High", "Iteration 6", "Kiên", 1, "Pending", "TC-W01–TC-W04"),
     ]
     write_rows(bl, 2, [list(x) for x in items])
@@ -178,7 +179,7 @@ def tracking():
         ("Staging API and admin web use HTTP", "Credentials and tokens travel unencrypted", "High", "DatNVT", dt.date(2026, 11, 10), None, "Open", "D-18"),
         ("Uneven contribution: two members hold most of the commits", "Key-person risk; members cannot explain modules they did not build", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pairing sessions and workflow ownership (Report 2 risk 1)"),
         ("No pull-request review before 10/11/2026", "Defects and secrets reach main without review", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pull requests with one reviewer from Iteration 5"),
-        ("Unity tests are not run in CI (no Unity licence on the runner)", "Automation target of Review 2 not demonstrated", "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-09"),
+        ("Unity tests are not run in CI (the pipeline builds the server with a Unity licence but has no test step)", "Automation target of Review 2 not demonstrated", "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-09"),
         ("No test mailbox, seed accounts or analytics seed", "62 test cases pending", "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-04"),
         ("Elite Token has no earning source", "GEMSTONE can only be granted at level 25", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "D-12; Q&A 3"),
         ("One dedicated-server slot on staging", "One online match at a time; capacity target not reachable", "Medium", "DatNVT", dt.date(2026, 11, 3), None, "Open", "Report 1 LI-07; Q&A 2"),
@@ -223,7 +224,7 @@ def tracking():
         "Is the expert review tool (FE-10) accepted as part of the committed scope or only as supporting tooling?",
         "What are the date and the required package of Review 3?",
         "Which Android device should be the reference device for NFR-03 and NFR-10?",
-        "Please confirm the workflow ownership W01–W04 and the RACI matrix in Report 2 §4.",
+        "Please confirm the RACI matrix in Report 2 §4 for the documents and modules (workflow owners are fixed by BM04).",
     ]
     by = ["Huỳnh Trung Kiên", "Nguyễn Văn Thành Đạt", "Huỳnh Trung Kiên", "Nguyễn Văn Thành Đạt", "Nguyễn Gia Huy", "Huỳnh Trung Kiên", "Trần Nguyễn Hiếu Thuận", "Huỳnh Trung Kiên"]
     pr = ["High", "High", "Medium", "Medium", "Medium", "High", "Medium", "High"]
@@ -263,7 +264,7 @@ def schedule():
                   ("M03 Report 3 – SRS", dt.date(2026, 9, 27), 100), ("M04 Report 4 – SDD and test plan", dt.date(2026, 10, 11), 100),
                   ("M05 Software Package 1 (Review 2)", dt.date(2026, 10, 25), 100), ("M06 Software Package 2", dt.date(2026, 11, 8), 100),
                   ("M07 Software Package 3 (Review 3)", dt.date(2026, 11, 22), 0), ("M08 Full software package", dt.date(2026, 12, 6), 0),
-                  ("M09 Report 6 – User Guides", dt.date(2026, 12, 13), 0), ("M10 Report 7 and final defense", dt.date(2026, 12, 20), 0)]
+                  ("M09 Report 6 – User Guides", dt.date(2026, 12, 13), 100), ("M10 Report 7 and final defense", dt.date(2026, 12, 20), 0)]
     top = 0
     group_uid = {}
     item_uid = {}
@@ -289,7 +290,7 @@ def schedule():
             "M07": ["7.3", "15.2"], "M08": ["15.2"], "M09": ["1.5"], "M10": ["15.3", "15.4"]}
     for k, (n, date, p) in enumerate(milestones, 1):
         add(n, 2, "%d.%d" % (top, k), date, date, milestone=True, pct=p, preds=[item_uid[x] for x in pred[n[:3]]],
-            notes="Actual: " + {"M01": "06/11/2026", "M02": "06/11/2026", "M03": "06/11/2026", "M04": "06/11/2026", "M05": "27/10/2026", "M06": "06/11/2026"}.get(n[:3], "planned"))
+            notes="Actual: " + {"M01": "06/11/2026", "M02": "06/11/2026", "M03": "06/11/2026", "M04": "06/11/2026", "M05": "27/10/2026", "M06": "06/11/2026", "M09": "11/11/2026 (v1.0)", "M10": "Report 7 v1.0 on 11/11/2026; defense pending"}.get(n[:3], "planned"))
     res_uid = {m[0]: i + 1 for i, m in enumerate(MEMBERS)}
     out = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', '<Project xmlns="http://schemas.microsoft.com/project">',
            "  <SaveVersion>14</SaveVersion>", "  <Name>PickleVerse_Project_Schedule</Name>", "  <Title>PickleVerse (PKV) – GFA26SE111 master schedule</Title>",

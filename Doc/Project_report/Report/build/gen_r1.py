@@ -6,6 +6,7 @@ CHANGES = [
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First complete Report 1 on the official template for Review 3."),
     ("07/11/2026", "M", "Nguyễn Văn Thành Đạt", "v0.3 – Clarified the project code, the product scope and the target users."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Revised after the internal review: completed the team table; rewrote the background, existing systems, business opportunity and vision; aligned FE-01 to FE-10 with the SRS; recorded the deviations from the proposal; added references."),
+    ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Team table: workflow owners aligned with the Review 2 commitment BM04 (W01 Thuận, W02 Huy, W03 Đạt, W04 Kiên)."),
 ]
 
 r = Report("Report1_Project Introduction.docx", "Report 1 – Project Introduction", CHANGES)
@@ -28,17 +29,17 @@ r.table(
     widths=[4.5, 11.5], first_col_bold=True, caption="Project information")
 
 r.h3("1.2 Project Team")
-r.p("The team consists of four software engineering students supervised by one lecturer. Every member owns one end-to-end workflow (see Report 2, §4) and one technical area; the leader additionally coordinates planning, meetings and submissions.")
+r.p("The team consists of four software engineering students supervised by one lecturer. Every member owns one end-to-end review workflow, as committed in the Review 2 form BM04 of 07/11/2026, and one or more technical areas; the leader additionally coordinates planning, meetings and submissions. Workflow ownership is separate from implementation effort: according to the repository history, Nguyễn Gia Huy and Nguyễn Văn Thành Đạt implemented the largest share of the code (Report 2, §4).")
 r.table(
     ["Full Name", "Student ID", "Role", "Main responsibility", "Email", "Mobile"],
     [
         ["Lại Đức Hùng", "–", "Supervisor", "Supervises scope, schedule and report quality", "Hungld5@fe.edu.vn", "–"],
-        ["Huỳnh Trung Kiên", "SE184454", "Leader", "Planning and tracking; admin web application; music and sound effects; workflow W04 (moderation)", "kienht7704@gmail.com", "–"],
-        ["Nguyễn Văn Thành Đạt", "SE184450", "Member", "Web API and database; online multiplayer and dedicated server; AI coaching service; CI/CD; workflow W03 (online match)", "nguyenvanthanhdat44@gmail.com", "–"],
-        ["Nguyễn Gia Huy", "SE184439", "Member", "Unity gameplay, ball physics and rules; training and tutorial; 3D characters, animation and courts; workflow W01 (learn and sync a drill)", "huyngse184439@fpt.edu.vn", "–"],
-        ["Trần Nguyễn Hiếu Thuận", "SE184471", "Member", "Unity user interface (login, loading, settings); audience and character assets; workflow W02 (bot match and coaching tip)", "hieuthuan833@gmail.com", "–"],
+        ["Huỳnh Trung Kiên", "SE184454", "Leader", "Planning and tracking; admin web application; music and sound effects; owner of workflow W04 (moderation and content)", "kienht7704@gmail.com", "–"],
+        ["Nguyễn Văn Thành Đạt", "SE184450", "Member", "Web API and database; online multiplayer and dedicated server; AI coaching service; CI/CD; owner of workflow W03 (find and play an online match); support for W02", "nguyenvanthanhdat44@gmail.com", "–"],
+        ["Nguyễn Gia Huy", "SE184439", "Member", "Unity gameplay, ball physics and rules; training and tutorial; bot behaviour; 3D characters, animation, courts and in-game UI; owner of workflow W02 (play a bot match and get a tip); support for W01 and W03", "huyngse184439@fpt.edu.vn", "–"],
+        ["Trần Nguyễn Hiếu Thuận", "SE184471", "Member", "Unity user interface (login, loading, settings); audience and character assets; test lead; owner of workflow W01 (learn and sync a drill); support for W04", "hieuthuan833@gmail.com", "–"],
     ],
-    widths=[3.3, 1.9, 1.6, 5.2, 3.6, 1.4], size=9, caption="Project team")
+    widths=[3.1, 1.8, 1.9, 5.2, 3.6, 1.2], size=9, caption="Project team")
 
 r.h2("2. Product Background")
 r.p("Pickleball has become one of the fastest-growing recreational sports in Vietnam. Local press reported that the number of regular players nearly doubled during 2024 to about 30,000 [1], that more than 200 new courts opened in Hanoi alone in the first seven months of 2024 [2], and that Vietnam was listed among the ten fastest-growing pickleball nations by registered-player growth on the DUPR rating platform [3]. The sport attracts office workers, university students and older adults because the court is small and the basic strokes are easy to start with.")

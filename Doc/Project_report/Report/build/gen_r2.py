@@ -6,6 +6,7 @@ CHANGES = [
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First complete Report 2 on the official template for Review 3."),
     ("07/11/2026", "M", "Nguyễn Văn Thành Đạt", "v0.3 – Added weekly effort, package readiness and review checks."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Revised after the internal review: two-level WBS with complexity and effort; quality targets in the template format; risks with owner and trigger; actual iterations; dated milestones with actual dates; RACI; training plan; configuration management that matches the repository."),
+    ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – RACI: workflow owners and supporting members aligned with BM04; note on implementation effort from the repository history."),
 ]
 
 # Two-level WBS: (id, name, complexity, man-days, owner)
@@ -15,7 +16,7 @@ WBS = [
         ("1.2", "Report 1 and Report 2", "Simple", 3, "Huy, Kiên"),
         ("1.3", "Report 3 – Software Requirement Specification", "Complex", 8, "Huy"),
         ("1.4", "Report 4 – Software Design Document", "Complex", 7, "Đạt"),
-        ("1.5", "Reports 5–7, user guides and defense slides", "Medium", 5, "Thuận, Kiên"),
+        ("1.5", "Reports 5–7, user guides and defense slides", "Medium", 5, "Huy, Thuận"),
     ]),
     ("2", "Foundation and architecture", [
         ("2.1", "Unity project, scenes and assembly structure", "Simple", 3, "Huy"),
@@ -152,7 +153,7 @@ r.table(["#", "Risk Description", "Impact", "Possibility", "Trigger", "Response 
     ["2", "Leaked credentials: the SMTP password and JWT signing key were committed in appsettings.json and could be misused.", "High", "High", "Secret found in a tracked file (occurred; see issue I-03)", "Move secrets to environment variables and the server .env file; rotate the leaked values; add a secret scan to CI", "Đạt"],
     ["3", "One dedicated game-server slot limits concurrent online matches and the scalability target.", "High", "High", "\"Server busy\" responses during tests with more than two players", "Bot fallback and a clear busy message; load-test the API separately; document a server pool as future work", "Đạt"],
     ["4", "The Photon free plan limits concurrent users, which can block group playtests or the demo.", "Medium", "Medium", "Connection refused when more than 20 clients connect", "Use the dedicated server path for matches; schedule playtests; upgrade the plan before the defense if needed", "Đạt"],
-    ["5", "Unity tests cannot run in GitHub Actions without a Unity licence, so automation evidence is weak.", "Medium", "High", "CI shows no Unity test step", "Run EditMode tests with the Unity CLI and attach logs with the commit; evaluate a GameCI runner with a personal licence", "Thuận"],
+    ["5", "Unity tests are not yet run in GitHub Actions, so automation evidence depends on manual Unity CLI runs. The pipeline already builds the dedicated server with GameCI and a Unity licence; only a test step is missing.", "Medium", "High", "CI shows no Unity test step", "Add a GameCI unity-test-runner EditMode step that reuses the licence secrets of the server build; until then attach Unity CLI result files with the commit hash", "Thuận"],
     ["6", "Resetting the development database deletes test accounts and data.", "Medium", "Medium", "Schema change that requires a reset", "Keep seed accounts and content in Database.sql; back up with pg_dump before a reset; re-run seed checks", "Đạt"],
     ["7", "Documents or code produced with AI assistants contain statements that do not match the implementation.", "High", "Medium", "A reviewer finds a claim without evidence in code or tests", "The owner of each section verifies it against code and test results; cross-document consistency check before submission", "Huy"],
     ["8", "Too little real player data to validate the AI tier model.", "Medium", "High", "Fewer than 200 labelled sessions by Week 12", "Keep the tier model gated; use rule-based findings; collect labels with the expert review tool during playtests", "Đạt"],
@@ -175,7 +176,7 @@ r.table(["Iteration", "Weeks and dates", "Main results", "Status"], [
     ["It-3 Online and backend", "W7–W8, 19/10–01/11", "Loading scene and touch controls; Web API and database (20/10); move to Photon Fusion (20/10); Unity–API integration (21–23/10); admin web (22–24/10); OTP email (24/10); doubles and custom rooms (25/10); Review 2 package (27/10); AI service and Unity Behavior bot (27/10); normalised schema and ApiResponse refactor (31/10); login scene (01/11)", "Done"],
     ["It-4 Dedicated server and coaching", "W9–W10, 02/11–15/11", "Dedicated server, accounts and coaching (03/11); Docker deployment (04/11); CI/CD to Docker Hub and staging (05–06/11); admin tools and response training (06/11); reports v0.2 (06/11); reconnect and offline fixes (10/11); playtest (10/11); 515 EditMode tests passed (11/11); reports v1.0 (11/11)", "In progress"],
     ["It-5 Stabilisation", "W11–W12, 16/11–29/11", "Fix the 18 open defects of test Round 1 (Report 5); secrets out of the repository; pull-request workflow; system and load tests; Report 5 results; Review 3", "Planned"],
-    ["It-6 Release", "W13–W14, 30/11–13/12", "Acceptance tests and demo scenarios; release package; Report 6 user guides; Report 7; defense rehearsal (W15)", "Planned"],
+    ["It-6 Release", "W13–W14, 30/11–13/12", "Acceptance tests and demo scenarios; release package; final updates of Reports 6 and 7 (v1.0 written on 11/11/2026); defense slides and rehearsal (W15)", "Planned"],
 ], widths=[3.0, 3.2, 8.4, 1.6], size=9, caption="Iterations and actual progress")
 
 r.h3("2.2 Quality Management")
@@ -210,14 +211,14 @@ r.table(["#", "Deliverable", "Due Date", "Actual Date", "Status", "Notes"], [
     ["M06", "Software Package 2 – Web API, admin web, AI service, dedicated server, CI/CD", "08/11/2026", "06/11/2026", "Done, on time", "Staging deployment on tad-min.io.vn"],
     ["M07", "Software Package 3 – defect fixes, system and load tests (Review 3)", "22/11/2026", "–", "In progress", "Report 5 results due with this package"],
     ["M08", "Full software package with test results and open defects", "06/12/2026", "–", "Planned", ""],
-    ["M09", "Report 6 – Software User Guides", "13/12/2026", "–", "Planned", "Installation, player and administrator guides"],
-    ["M10", "Report 7 – Final Project Report, release package and defense", "20/12/2026", "–", "Planned", "Week 15"],
+    ["M09", "Report 6 – Software User Guides", "13/12/2026", "11/11/2026", "Done (v1.0)", "Installation, player and administrator guides; updated with the release build"],
+    ["M10", "Report 7 – Final Project Report, release package and defense", "20/12/2026", "–", "In progress", "Report 7 v1.0 on 11/11/2026; slides and defense in Week 15"],
 ], widths=[1.0, 5.6, 2.0, 2.0, 2.2, 4.2], size=9, caption="Project deliverables and milestones")
 r.p("Figure 2 places the iterations and milestones on the calendar; the red line marks the date of this version (11/11/2026).")
 r.figure("r2_gantt.png", "Master schedule: iterations and milestones", width_cm=16.5)
 
 r.h2("4. Responsibility Assignments")
-r.p("D~Do; R~Review; S~Support; I~Informed; <blank>~Omitted. Every row has exactly one D. Each member owns one end-to-end workflow, which is demonstrated by that member at the reviews.")
+r.p("D~Do; R~Review; S~Support; I~Informed; <blank>~Omitted. Every row has exactly one D. Each member owns one end-to-end workflow, which that member demonstrates at the reviews; the workflow owners and supporting members follow the Review 2 commitment form BM04 (07/11/2026). Workflow ownership is an accountability for acceptance, not a measure of implementation effort: the technical rows show who built each part, and the repository history shows that Nguyễn Gia Huy and Nguyễn Văn Thành Đạt carried the largest share of the code.")
 M = ["KienHT SE184454", "DatNVT SE184450", "HuyNG SE184439", "ThuanTNH SE184471"]
 r.table(["Responsibility"] + M, [
     ["Project planning and tracking", "D", "R", "S", "S"],
@@ -228,8 +229,9 @@ r.table(["Responsibility"] + M, [
     ["Report 4 – SDD: architecture, database, API, security", "I", "D", "R", "S"],
     ["Report 4 – SDD: gameplay, bot and client design", "I", "R", "D", "S"],
     ["Report 5 – Test plan, test cases and test report", "R", "S", "S", "D"],
-    ["Report 6 – User guides", "D", "S", "R", "S"],
-    ["Report 7 – Final report and defense slides", "D", "R", "R", "S"],
+    ["Report 6 – User guides", "R", "S", "D", "S"],
+    ["Report 7 – Final report", "R", "R", "D", "S"],
+    ["Defense slides and presentation", "D", "S", "S", "S"],
     ["Gameplay core, training and tutorial", "I", "R", "D", "S"],
     ["Online matches, dedicated server and netcode", "I", "D", "R", "S"],
     ["Web API, database and AI coaching service", "S", "D", "R", "I"],
@@ -238,10 +240,10 @@ r.table(["Responsibility"] + M, [
     ["3D art, animation and courts", "I", "I", "D", "S"],
     ["Music and sound effects", "D", "I", "R", "I"],
     ["CI/CD and staging deployment", "I", "D", "S", "R"],
-    ["Workflow W01 – Learn and sync a drill", "R", "S", "D", "I"],
-    ["Workflow W02 – Play a bot and get a tip", "I", "S", "R", "D"],
-    ["Workflow W03 – Find and play an online match", "R", "D", "S", "I"],
-    ["Workflow W04 – Report, sanction and appeal", "D", "S", "I", "R"],
+    ["Workflow W01 – Learn and sync a drill (F01–F04, F13, F14)", "R", "I", "S", "D"],
+    ["Workflow W02 – Play a bot and get a tip (F05, F06, F11)", "R", "S", "D", "I"],
+    ["Workflow W03 – Find and play an online match (F07–F10, F12)", "R", "D", "S", "I"],
+    ["Workflow W04 – Moderation and content (F15–F18)", "D", "R", "I", "S"],
 ], widths=[6.4, 2.4, 2.4, 2.4, 2.4], size=9, caption="Responsibility assignment matrix (RACI)")
 
 r.h2("5. Project Communications")

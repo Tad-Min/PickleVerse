@@ -250,17 +250,17 @@ C("TC-X01-02", "FE10 Expert", "FR-33", "System", "Exception", "Incomplete expert
   "1. Save a review without any label.", "MSG64; nothing is saved.", "Admin account", note="Not run in this round.")
 
 # ------------------------------------------------------------------ Workflows
-C("TC-W01", "Workflows", "FR-01, FR-06, FR-08, FR-09", "Acceptance", "Workflow", "W01 Learn and sync a drill (owner: Huy)",
+C("TC-W01", "Workflows", "FR-01, FR-06, FR-08, FR-09", "Acceptance", "Workflow", "W01 Learn and sync a drill (owner: Thuận, support: Huy)",
   "1. New player registers and chooses Người mới.\n2. Finishes the tutorial.\n3. Goes offline and passes the serve drill.\n4. Reconnects.",
   "Tutorial completion, offline stars and the first-pass reward are on the server exactly once.", "Test mailbox, network switch",
   note="Not run end to end; steps 3 partly covered by TC-F14-01.")
-C("TC-W02", "Workflows", "FR-13, FR-18, FR-19", "Acceptance", "Workflow", "W02 Play a bot match and get a tip (owner: Thuận)",
+C("TC-W02", "Workflows", "FR-13, FR-18, FR-19", "Acceptance", "Workflow", "W02 Play a bot match and get a tip (owner: Huy, support: Đạt)",
   "1. Play a bot match to the end.\n2. Open the analysis.\n3. Open the recommended drill.", "Result with rewards; coaching summary with at most three drills; the drill briefing opens.",
   "Signed-in player; hybrid coaching enabled", status="Passed", date=D10, tester=HUY, note="EV-02 (TC-F05-01, TC-F06-01).")
-C("TC-W03", "Workflows", "FR-14, FR-16, FR-18", "Acceptance", "Workflow", "W03 Find and play an online match (owner: Đạt)",
+C("TC-W03", "Workflows", "FR-14, FR-16, FR-18", "Acceptance", "Workflow", "W03 Find and play an online match (owner: Đạt, support: Huy)",
   "1. Search ranked 1v1.\n2. Accept the offer.\n3. Play on the dedicated server to the result.", "The match runs on the dedicated server and both sides see the final result.",
   "Dedicated server idle", status="Passed", date=D10, tester=HUY, note="EV-02, bot-fallback variant: accept 11:03:23, match started 11:03:46, result 0:2 at 11:06:04. Human-versus-human variant is TC-F09-01 (failed). D-14 found.")
-C("TC-W04", "Workflows", "FR-27, FR-28, FR-30", "Acceptance", "Workflow", "W04 Report, sanction and appeal (owner: Kiên)",
+C("TC-W04", "Workflows", "FR-27, FR-28, FR-30", "Acceptance", "Workflow", "W04 Report, sanction and appeal (owner: Kiên, support: Thuận)",
   "1. Player reports an opponent.\n2. Admin accepts and suspends.\n3. Suspended player appeals.\n4. Admin accepts the appeal.", "Account becomes SUSPENDED, then ACTIVE after the accepted appeal; all decisions are audited.",
   "Two players and one admin", note="Not run: blocked by D-09.")
 

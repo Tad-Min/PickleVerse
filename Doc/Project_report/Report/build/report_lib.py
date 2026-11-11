@@ -83,13 +83,14 @@ def add_runs(paragraph, text, size=None, bold=None):
 
 
 class Report:
-    def __init__(self, template_name, report_title, changes):
+    def __init__(self, template_name, report_title, changes, prepare=True):
         self.doc = Document(os.path.join(TEMPLATE_DIR, template_name))
         self.fig_no = 0
         self.tbl_no = 0
         self.figures = []
         self.tables = []
-        self._prepare(report_title, changes)
+        if prepare:
+            self._prepare(report_title, changes)
 
     # ------------------------------------------------------------ template handling
     def _prepare(self, report_title, changes):

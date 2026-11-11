@@ -10,6 +10,7 @@ CHANGES = [
     ("27/10/2026", "A", "Nguyễn Gia Huy", "v0.1 – Test formula, workflows and demo scenarios prepared for the Review 2 commitment (BM04)."),
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First test documentation: 116 planned cases, 36 unit checks, no results."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten: scope with levels, entry and exit criteria; test types with objective, technique and completion criteria; tools with vendor and version; dated test milestones; 114 concrete test cases mapped to FR-01–FR-33; real results of 09–11/11/2026 (515 EditMode tests passed; 49 passed, 3 failed, 62 pending system cases); 18 defects; analysis against the release criteria."),
+    ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Human resources and workflow test cases: owners aligned with BM04."),
 ]
 EV_FILE = os.environ.get("PKV_EDITMODE_RESULTS")
 
@@ -30,7 +31,7 @@ r.table(["Level", "In charge", "Inputs and time", "Focus", "Acceptance (exit) cr
 r.p("**Constraints and assumptions.**")
 r.bullets([
     "The staging server runs one dedicated-server container, so online cases that need two simultaneous matches cannot be executed.",
-    "GitHub Actions has no Unity licence; Unity tests are run with the Unity CLI on a team PC and the result file is stored with the commit hash.",
+    "The CI pipeline builds the dedicated server with GameCI and a Unity licence but does not yet run the Unity tests; until a test step is added, they are run with the Unity CLI on a team PC and the result file is stored with the commit hash.",
     "Tests that need several players (rooms, friends, reports) require two or more accounts and devices at the same time.",
     "A dedicated test mailbox and seed accounts (for example a player at level 24 or with 9 passed lessons) must be added to Database.sql before Round 2.",
     "The Photon free plan limits concurrent users; group playtests are scheduled so that the limit is not reached.",
@@ -77,10 +78,10 @@ r.table(["Purpose", "Tool", "Vendor/In-house", "Version"], [
 r.h2("3. Test Plan")
 r.h3("3.1 Human Resources")
 r.table(["Worker/Doer", "Role", "Specific Responsibilities/Comments"], [
-    ["Trần Nguyễn Hiếu Thuận", "Test lead", "Owns the test plan and workbooks; runs system rounds; tracks defects; tests FE-01 and FE-06 screens; workflow W02"],
-    ["Nguyễn Gia Huy", "Tester, gameplay owner", "Unit tests of rules, physics, training and bot; playtests; runs the Unity EditMode suite; workflow W01"],
-    ["Nguyễn Văn Thành Đạt", "Tester, backend and network owner", "IntegrationChecks, API security and load tests, online and dedicated cases; workflow W03"],
-    ["Huỳnh Trung Kiên", "Tester, leader", "Admin web cases, acceptance session with the supervisor, release decision; workflow W04"],
+    ["Trần Nguyễn Hiếu Thuận", "Test lead", "Owns the test plan and workbooks; runs system rounds; tracks defects; tests the account, onboarding, offline and social screens (F01, F02, F12, F14); owner of workflow W01"],
+    ["Nguyễn Gia Huy", "Tester, gameplay owner", "Unit tests of rules, physics, training and bot; playtests and balance sessions; runs the Unity EditMode suite; F03, F05, F11, F13; owner of workflow W02, support for W01 and W03"],
+    ["Nguyễn Văn Thành Đạt", "Tester, backend and network owner", "IntegrationChecks, API security and load tests, online and dedicated cases (F04, F06–F10); owner of workflow W03, support for W02"],
+    ["Huỳnh Trung Kiên", "Tester, leader", "Admin web cases (F15–F18), acceptance session with the supervisor, release decision; owner of workflow W04"],
     ["Mr. Lại Đức Hùng", "Supervisor", "Witnesses the acceptance scenarios and approves the release criteria"],
 ], widths=[4.0, 3.6, 8.4], size=9, caption="Human resources")
 r.h3("3.2 Test Environment")
@@ -186,7 +187,7 @@ r.bullets([
     "**Online play between humans is the main risk.** The only human-versus-human ranked attempts (EV-04) were interrupted (D-09), which also blocks the reconnection, report and appeal cases. Reproducing D-09 with server logs is the first task of Round 2 (owner: Đạt, by 18/11/2026).",
     "**Security requirements are not yet met** because of committed credentials and HTTP on staging (D-17, D-18). Both must be fixed before the acceptance test.",
     "**Coverage is limited by test data, not by tooling.** 62 cases are pending mainly because seed accounts, a test mailbox and a second player were not available. These will be added to Database.sql before Round 2 (owner: Thuận, by 18/11/2026).",
-    "**Automation is below the 50% target and not in CI.** 33 of 114 cases are automated. The EditMode suite will be run in CI with a GameCI runner or, if no licence is available, by a scheduled Unity CLI run whose result file is committed; the pytest and IntegrationChecks results of the validate job will be linked to their test case IDs.",
+    "**Automation is below the 50%% target and not in CI.** %d of %d cases are automated. The EditMode suite will be added to the CI pipeline as a GameCI unity-test-runner step that reuses the licence secrets already used to build the dedicated server, and the pytest and IntegrationChecks results of the validate job will be linked to their test case IDs." % (auto, len(R.CASES)),
 ])
 
 out = r.save("Report5_Test Documentation.docx", "Report 5 – Software Test Documentation")

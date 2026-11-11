@@ -406,8 +406,8 @@ SECURITY = [
 ]
 
 ACTIVITIES = [
-    ("r4_act_w01.png", "W01 – Learn and sync a drill (owner: Nguyễn Gia Huy)", "The player signs in or opens offline training; a beginner is sent to the tutorial; the player practises a drill; the attempt is applied online or queued offline and synchronised when the network returns."),
-    ("r4_act_w02.png", "W02 – Play a bot match and get a tip (owner: Trần Nguyễn Hiếu Thuận)", "The player sets up a bot match and plays rallies until a side wins; the API settles the result, the AI service analyses the telemetry and the player reads the tip and opens the recommended drill."),
+    ("r4_act_w01.png", "W01 – Learn and sync a drill (owner: Trần Nguyễn Hiếu Thuận)", "The player signs in or opens offline training; a beginner is sent to the tutorial; the player practises a drill; the attempt is applied online or queued offline and synchronised when the network returns."),
+    ("r4_act_w02.png", "W02 – Play a bot match and get a tip (owner: Nguyễn Gia Huy)", "The player sets up a bot match and plays rallies until a side wins; the API settles the result, the AI service analyses the telemetry and the player reads the tip and opens the recommended drill."),
     ("r4_act_w03.png", "W03 – Find and play an online match (owner: Nguyễn Văn Thành Đạt)", "The player either creates a private room or searches a ranked match; the bot fallback applies after 180 seconds; all players must accept; the dedicated server runs the match unless it is stopped or the lease is lost."),
     ("r4_act_w04.png", "W04 – Report, sanction and appeal (owner: Huỳnh Trung Kiên)", "A player reports an opponent; the administrator reviews and may sanction; the restricted player may appeal; the administrator decides the appeal."),
     ("r4_act_content.png", "Supporting workflow – publish training content", "The administrator edits and publishes a lesson; the API checks the expected version and that prerequisites are published; clients receive the new catalogue version."),

@@ -362,7 +362,7 @@ def write(r):
 
     # ============================================================ FE-09
     r.h3("3.10 Administration Web Application (FE-09)")
-    sh, lay = admin_layout(r, "41_admin_users.jpg", "Users page of the admin web application", [
+    sh, lay = admin_layout(r, "42_admin_users.png", "Users page of the admin web application", [
         ["Header", "Title \"Quản lý Người dùng\", search box (name, e-mail or ID) and status filter (all, ACTIVE, SUSPENDED, BANNED)"],
         ["User table", "Player and e-mail, role, status, Elo, play time, creation date and actions; paging"],
         ["Role dialog", "Player (game client only) or Admin (full portal access)"],
@@ -380,7 +380,7 @@ def write(r):
        exceptions=["E1 – Non-admin account at login or on any admin API: HTTP 403.", "E2 – Sanction on the own account or a system account: MSG57.",
                    "E3 – Reset while the player is searching or in a match: MSG58.", "E4 – Invalid reason or expiry: MSG55, MSG56."])
 
-    sh, lay = admin_layout(r, "45_admin_moderation.jpg", "Moderation page", [
+    sh, lay = admin_layout(r, "45_admin_moderation.png", "Moderation page", [
         ["Reports tab", "Filter by status; reporter, reported player, match and evidence; Download match evidence and replay"],
         ["Decision form", "Outcome (accept or decline), optional sanction (suspend with expiry or ban) and decision reason; Save"],
         ["Appeals tab", "Statement, related sanction, decision (accept revokes only that sanction, decline keeps it) and reason"]])
@@ -393,7 +393,7 @@ def write(r):
        normal=["The administrator selects a report and reviews evidence.", "The administrator enters the decision and reason and saves.", "The report status changes; a sanction, if chosen, is applied and the player is restricted."],
        exceptions=["E1 – The report or appeal was changed by another administrator: the latest version is reloaded.", "E2 – A non-admin token: MSG63 (HTTP 403)."])
 
-    sh, lay = admin_layout(r, "43_admin_cms.jpg", "Content management page", [
+    sh, lay = admin_layout(r, "43_admin_cms.png", "Content management page", [
         ["Lesson manager", "Lesson list; editor with code, name, group, order, target, prerequisite, coach text and technique template; Save draft, Publish saved version, Unpublish"],
         ["Technique references", "Reference values per technique with version; save requires the latest version"],
         ["Shop item form", "Item code, name, type (paddle, outfit, hat), price and currency"],
@@ -408,9 +408,9 @@ def write(r):
        normal=["The administrator edits a lesson and selects **Lưu bản nháp**.", "The administrator selects **Xuất bản bản đã lưu**; the lesson becomes PUBLISHED.", "**Gỡ xuất bản** sets it to UNPUBLISHED."],
        exceptions=["E1 – Duplicate lesson code: MSG59.", "E2 – The content changed since it was loaded: MSG60.", "E3 – The prerequisite creates a cycle: the save is rejected."])
 
-    sh1, lay1 = admin_layout(r, "41_admin_dashboard.jpg", "Admin dashboard", None)
-    sh2, lay2 = admin_layout(r, "44_admin_matches.jpg", "Live matches page", None)
-    sh3, lay3 = admin_layout(r, "46_admin_analytics.jpg", "Analytics page", None)
+    sh1, lay1 = admin_layout(r, "41_admin_dashboard.png", "Admin dashboard", None)
+    sh2, lay2 = admin_layout(r, "44_admin_matches.png", "Live matches page", None)
+    sh3, lay3 = admin_layout(r, "46_admin_analytics.png", "Analytics page", None)
     lay = None
     if not (sh1 or sh2 or sh3):
         lay = [["Dashboard", "Total users, daily active users, matches, online time, pending reports, technique-error heat map, Refresh"],
@@ -428,7 +428,7 @@ def write(r):
 
     # ============================================================ FE-10
     r.h3("3.11 Expert Review (FE-10)")
-    sh, lay = admin_layout(r, "47_admin_expert.jpg", "Expert review page", [
+    sh, lay = admin_layout(r, "47_admin_expert.png", "Expert review page", [
         ["Session list", "Synchronised real-player sessions with filters; simulated demo sessions are shown separately and read-only"],
         ["Shot evidence", "Per-shot telemetry (timing, contact, landing, net clearance) for the selected session"],
         ["Labels", "Player level (beginner, intermediate, advanced), error labels per code, data group (training, calibration, holdout), basis of the label; Save expert review"]])

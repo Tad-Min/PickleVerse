@@ -8,6 +8,7 @@ CHANGES = [
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First SRS on the official template: 23 use cases, FR-01 to FR-23, 10 NFRs."),
     ("07/11/2026", "M", "Nguyễn Văn Thành Đạt", "v0.3 – Linked the Review 2 feature list to the requirements; added business rules and API messages."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten after the internal review: corrected context diagram; six actors; 68 use cases in eight UML use case diagrams; screen flows from the real scenes; screen authorization matrix; conceptual ERD; 33 functional requirements with real screenshots, data fields, validation and exception flows; gameplay, economy and authentication rules; measurable NFRs; message list in the product language."),
+    ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Appendix A: workflow and BM04 owner added for each Review 2 feature."),
 ]
 
 r = Report("Report3_Software Requirement Specification.docx", "Report 3 – Software Requirement Specification", CHANGES)

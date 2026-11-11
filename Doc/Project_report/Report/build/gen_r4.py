@@ -13,6 +13,7 @@ CHANGES = [
     ("27/10/2026", "A", "Nguyễn Gia Huy", "v0.1 – Architecture, workflows W01–W04 and state machines summarised for the Review 2 design brief (BM01)."),
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First SDD on the official template: architecture, packages, database groups, 7 class/sequence pairs, activities and state machines."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten after the internal review: deployment diagram and architecture decisions; full package diagrams; logical ERDs covering all 51 tables with keys and a data dictionary; UML class diagrams with class specifications; 15 sequence diagrams with alternative paths; new sections for gameplay physics, netcode, bot AI, API and security design; activity diagrams with swimlanes; 14 corrected state machines."),
+    ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Activity diagrams: workflow owners aligned with BM04."),
 ]
 
 DESIGN_SRC = os.path.join(REPORT_DIR, "diagrams", "gen_r4_design.py")
@@ -157,7 +158,7 @@ r.table(["Concern", "Design"], T.SECURITY, widths=[3.4, 12.6], size=8.5, first_c
 # ================================================================== 4. Workflows and states
 r.h2("4. Workflows and State Changes")
 r.h3("4.1 Activity Diagrams")
-r.p("Each review workflow is owned by one team member and is drawn as a UML activity diagram with one swimlane per participant, decisions and exception branches.")
+r.p("Each review workflow is owned by one team member, as committed in the Review 2 form BM04 (W01 Trần Nguyễn Hiếu Thuận, W02 Nguyễn Gia Huy, W03 Nguyễn Văn Thành Đạt, W04 Huỳnh Trung Kiên), and is drawn as a UML activity diagram with one swimlane per participant, decisions and exception branches.")
 for f, cap, text in T.ACTIVITIES:
     r.h4(cap)
     r.p(text)
