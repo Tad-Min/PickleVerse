@@ -38,7 +38,9 @@ namespace PickleVerse.Multiplayer.UI
         RoomLaunchAction launchAction;
         string launchCode;
         string launchRegion;
-        RoomFriendInvitePanel friendInvites;
+        LobbyFriendsSidebar friends;
+        /// <summary>True while the room can accept friends: a doubles or private room with a code and no pending operation.</summary>
+        public bool CanInviteFriends { get; private set; }
         bool initializing;
         public bool IsInitializing => initializing;
         float nextClockUpdate;
@@ -58,7 +60,7 @@ namespace PickleVerse.Multiplayer.UI
             state = rooms.State;
             identity = app.IdentityService;
             state.Changed += Refresh;
-            friendInvites = RoomFriendInvitePanel.Attach(this);
+            friends = LobbyFriendsSidebar.Attach(this);
             Bind(back, Back);
             Bind(singles, () => Run(rooms.SelectSinglesAsync));
             Bind(doubles, () => Run(rooms.SelectDoublesAsync));
@@ -134,9 +136,9 @@ namespace PickleVerse.Multiplayer.UI
         }
         public void ShowInvite()
         {
-            if (!inviteDialog || string.IsNullOrEmpty(state?.RoomCode))
+            if (!friends || string.IsNullOrEmpty(state?.RoomCode))
                 return;
-            friendInvites.Open();
+            friends.Open(true);
             Refresh();
         }
         public void CloseInvite()
@@ -261,10 +263,11 @@ namespace PickleVerse.Multiplayer.UI
                 roomHint.text = initializing ? "Đang kết nối dịch vụ phòng…" : state.Notice;
             if (memberCount)
                 memberCount.text = state.Custom ? members.Count + " / " + (2 * (int)state.Mode) + " NGƯỜI CHƠI" : "GHÉP TRẬN THEO ELO  •  " + (isDoubles ? "TỔ ĐỘI 2 NGƯỜI" : "ĐẤU ĐƠN");
+            CanInviteFriends = idle && showCode && !string.IsNullOrEmpty(state.RoomCode);
             if (invite)
             {
                 invite.gameObject.SetActive(showCode);
-                invite.interactable = idle && !string.IsNullOrEmpty(state.RoomCode);
+                invite.interactable = CanInviteFriends;
             }
             if (retry)
                 retry.gameObject.SetActive(!modal && !initializing && !state.Busy && (state.State == FlowState.Menu || launchAction != RoomLaunchAction.None));
