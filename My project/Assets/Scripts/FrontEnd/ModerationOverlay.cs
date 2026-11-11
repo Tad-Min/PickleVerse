@@ -53,9 +53,12 @@ namespace PickleVerse.FrontEnd
             string scene=SceneManager.GetActiveScene().name;var match=NetworkMatch.Instance;
             bool result=match && match.Finished && match.Roster!=null;
             bool available=Account.IsSignedIn && (scene=="Login" && Account.IsRestricted || scene=="Menu" || result);
+            // In the home menu the entry lives in the bottom navigation as a "!" tile, clear of PLAY.
+            bool menuTile=scene=="Menu" && !result;
+            ShowMenuTile(menuTile && available && !SceneLoading.IsBlocking);
             if (!available || SceneLoading.IsBlocking)
             { if(root)root.SetActive(false);FrontEndModalInput.Release(this);return; }
-            EnsureView();root.SetActive(true);entry.gameObject.SetActive(!opened);
+            EnsureView();root.SetActive(true);entry.gameObject.SetActive(!opened && !(menuTile && menuShortcut));
             entry.GetComponentInChildren<TMP_Text>().text=result?"Tố cáo người chơi":"Quyết định & Khiếu nại";
             entry.onClick.RemoveAllListeners();entry.onClick.AddListener(()=> { if(result)OpenReport(match.Roster.matchId);else OpenDecisions(); });
             if (scene=="Login" && Account.IsRestricted && autoSession!=Account.SessionVersion)
@@ -65,6 +68,69 @@ namespace PickleVerse.FrontEnd
             close.GetComponentInChildren<TMP_Text>().text=Account.IsRestricted?"Đăng xuất":"Đóng";
             submit.interactable=!busy && (reporting?targets.Count>0:decisions.Count>0 && !appeals.Any(a=>a.SanctionId==decisions[index].SanctionId));
             refresh.interactable=previous.interactable=next.interactable=!busy;
+        }
+        Button menuShortcut; Scene menuTileScene;
+        void ShowMenuTile(bool show)
+        {
+            var active=SceneManager.GetActiveScene();
+            if (!menuShortcut && show && menuTileScene!=active)
+            {
+                menuTileScene=active;
+                menuShortcut=CreateMenuTile();
+            }
+            if (!menuShortcut || menuShortcut.gameObject.activeSelf==show)
+                return;
+            menuShortcut.gameObject.SetActive(show);
+            FitMenuNavigation(menuShortcut.transform.parent);
+        }
+        Button CreateMenuTile()
+        {
+            var active=SceneManager.GetActiveScene();
+            var progress=FindObjectsByType<Button>(FindObjectsInactive.Include).FirstOrDefault(b=>b.name=="BtnProgression" && b.gameObject.scene==active);
+            if (!progress)
+                return null;
+            var tile=Instantiate(progress,progress.transform.parent,false);
+            tile.name="BtnAppeals";
+            tile.onClick=new Button.ButtonClickedEvent();
+            tile.onClick.AddListener(OpenDecisions);
+            tile.interactable=true;
+            tile.transform.SetSiblingIndex(progress.transform.GetSiblingIndex()+1);
+            var label=tile.transform.Find("Text (TMP)")?.GetComponent<TMP_Text>() ?? tile.GetComponentInChildren<TMP_Text>(true);
+            if (label)
+                label.text="KHIẾU NẠI";
+            var icon=tile.transform.Find("Refresh Icon")?.GetComponent<Image>();
+            if (icon)
+            {
+                icon.enabled=false;
+                var mark=new GameObject("Alert Mark",typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+                mark.transform.SetParent(icon.transform,false);
+                var rect=mark.rectTransform;
+                rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;rect.offsetMin=rect.offsetMax=Vector2.zero;
+                if (label)
+                    mark.font=label.font;
+                mark.text="!";
+                mark.fontStyle=FontStyles.Bold;
+                mark.enableAutoSizing=true;mark.fontSizeMin=12;mark.fontSizeMax=30;
+                mark.alignment=TextAlignmentOptions.Center;
+                mark.color=icon.color;
+                mark.raycastTarget=false;
+            }
+            return tile;
+        }
+        // The home navigation is a single-row grid; keep one column per visible tile.
+        static void FitMenuNavigation(Transform row)
+        {
+            var grid=row ? row.GetComponent<GridLayoutGroup>() : null;
+            if (!grid || grid.constraint!=GridLayoutGroup.Constraint.FixedColumnCount)
+                return;
+            int count=0;
+            foreach (Transform child in row)
+                if (child.gameObject.activeSelf)
+                    count++;
+            count=Mathf.Max(1,count);
+            grid.constraintCount=count;
+            var rect=(RectTransform)row;
+            rect.sizeDelta=new Vector2(grid.padding.horizontal+count*grid.cellSize.x+(count-1)*grid.spacing.x,rect.sizeDelta.y);
         }
         public static void ShowReport(string id) { if(instance)instance.OpenReport(id); }
         void OpenReport(string id) { EnsureView();opened=true;reporting=true;matchId=id;index=0;statement.text="";statement.characterLimit=254;Reload(); }
