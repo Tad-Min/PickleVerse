@@ -80,8 +80,8 @@ namespace PickleVerse.FrontEnd
             }
             if (!menuShortcut || menuShortcut.gameObject.activeSelf==show)
                 return;
+            // HomeMenuShell notices the changed tile count and re-lays out the navigation.
             menuShortcut.gameObject.SetActive(show);
-            FitMenuNavigation(menuShortcut.transform.parent);
         }
         Button CreateMenuTile()
         {
@@ -116,21 +116,6 @@ namespace PickleVerse.FrontEnd
                 mark.raycastTarget=false;
             }
             return tile;
-        }
-        // The home navigation is a single-row grid; keep one column per visible tile.
-        static void FitMenuNavigation(Transform row)
-        {
-            var grid=row ? row.GetComponent<GridLayoutGroup>() : null;
-            if (!grid || grid.constraint!=GridLayoutGroup.Constraint.FixedColumnCount)
-                return;
-            int count=0;
-            foreach (Transform child in row)
-                if (child.gameObject.activeSelf)
-                    count++;
-            count=Mathf.Max(1,count);
-            grid.constraintCount=count;
-            var rect=(RectTransform)row;
-            rect.sizeDelta=new Vector2(grid.padding.horizontal+count*grid.cellSize.x+(count-1)*grid.spacing.x,rect.sizeDelta.y);
         }
         public static void ShowReport(string id) { if(instance)instance.OpenReport(id); }
         void OpenReport(string id) { EnsureView();opened=true;reporting=true;matchId=id;index=0;statement.text="";statement.characterLimit=254;Reload(); }

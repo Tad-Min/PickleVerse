@@ -37,6 +37,7 @@ namespace PickleVerse.FrontEnd
         float animationTime;
         Vector2 lastSize, basePaddle, baseBall, ballContactOffset;
         bool lastTouch, lastPortrait;
+        int lastTiles;
         float lastDpi;
         UnityEngine.UI.CanvasScaler scaler;
         Canvas canvas;
@@ -154,8 +155,15 @@ namespace PickleVerse.FrontEnd
                 scaler.matchWidthOrHeight = portrait ? 0 : 1;
             Vector2 size = safe.rect.size;
             bool touch = Application.isMobilePlatform || Touchscreen.current != null;
-            if (!force && size == lastSize && touch == lastTouch && portrait == lastPortrait && lastDpi == Dpi)
+            // Tiles can be added at runtime (the signed-in "!" appeals tile), so lay out what is visible.
+            int tiles = 0;
+            foreach (Transform tile in navigation.transform)
+                if (tile.gameObject.activeSelf)
+                    tiles++;
+            tiles = Mathf.Max(1, tiles);
+            if (!force && size == lastSize && touch == lastTouch && portrait == lastPortrait && lastDpi == Dpi && tiles == lastTiles)
                 return;
+            lastTiles = tiles;
             lastSize = size;
             lastTouch = touch;
             lastPortrait = portrait;
@@ -168,8 +176,8 @@ namespace PickleVerse.FrontEnd
             float playHeight = Mathf.Max(88, target + 16);
             float availableNav = Mathf.Max(80, size.x - pad * 2 - gap - playWidth);
             float minimumCell = touch ? Mathf.Max(86, 60 * dp) : 90;
-            int columns = Mathf.Clamp(Mathf.FloorToInt((availableNav + 7) / (minimumCell + 7)), 1, portrait ? 3 : 6);
-            int rows = Mathf.CeilToInt(6f / columns);
+            int columns = Mathf.Clamp(Mathf.FloorToInt((availableNav + 7) / (minimumCell + 7)), 1, portrait ? 3 : tiles);
+            int rows = Mathf.CeilToInt((float)tiles / columns);
             float navWidth = Mathf.Min(availableNav, columns * (touch ? Mathf.Max(106, 76 * dp) : 106) + (columns - 1) * 7);
             float rowHeight = target + 2;
             float navHeight = rowHeight * rows + 7 * (rows - 1), dockHeight = Mathf.Max(playHeight, navHeight);
