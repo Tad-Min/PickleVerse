@@ -619,7 +619,7 @@ namespace PickleVerse.Multiplayer
             };
             session.Stopped += reason =>
             {
-                if (!closing && !quitting)
+                if (Match == session && !closing && !quitting && !reconnecting)
                     _ = Safe(State == FlowState.InMatch ? ReconnectAsync(session) : ReturnToRoomAsync("Mất kết nối Photon."));
             };
             connectingUntil = Time.realtimeSinceStartupAsDouble + 30;
@@ -702,7 +702,7 @@ namespace PickleVerse.Multiplayer
                 await StartOnlineMatchAsync();
                 if (onlineAuthorityMode == "dedicated")
                 {
-                    await ConnectDedicatedAsync(Roster);
+                    await ConnectDedicatedAsync(Roster.matchId, Roster.custom);
                     return;
                 }
                 courtLoading = true;
@@ -748,17 +748,7 @@ namespace PickleVerse.Multiplayer
                 await LeaveMatchAsync();
                 if (previous.IsDedicated)
                 {
-                    while (generation == operation && Time.realtimeSinceStartupAsDouble < deadline)
-                    {
-                        try { await ConnectDedicatedAsync(previousRoster); return; }
-                        catch (PickleVerse.Services.Api.ApiException error) when (error.StatusCode == 410 || error.StatusCode == 404) { break; }
-                        catch (OperationCanceledException) { return; }
-                        catch { await Task.Delay(1000); }
-                    }
-                    if (generation == operation)
-                    {
-                        await ReturnToRoomAsync("Không thể kết nối lại máy chủ thi đấu. Trạng thái trận sẽ được cập nhật.");
-                    }
+                    await RejoinDedicatedAsync(previousRoster.matchId, generation, fromMenu: false);
                     return;
                 }
                 while (generation == operation && Time.realtimeSinceStartupAsDouble < deadline)
@@ -779,8 +769,6 @@ namespace PickleVerse.Multiplayer
             finally
             {
                 reconnecting = false;
-                if (previous.IsDedicated && State == FlowState.WaitingRoom && previousRoster != null)
-                    _ = RefreshDisconnectedResultAsync(previousRoster.matchId);
             }
         }
         async Task RefreshDisconnectedResultAsync(string matchId)

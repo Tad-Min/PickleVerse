@@ -868,7 +868,7 @@ namespace PickleVerse.LocalMatch
                 await SaveActiveAsync();
                 if (!this)
                     return;
-                if (modes)
+                if (modes && ProgressionRuntime.Instance?.IsOffline != true)
                     PickleVerse.Shop.LobbyNavigation.OpenModes();
                 else PickleVerse.Shop.LobbyNavigation.ReturnToLobby();
             }

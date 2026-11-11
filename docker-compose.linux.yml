@@ -3,13 +3,13 @@ name: pickleverse
 
 services:
   postgres:
-    image: ${PKV_POSTGRES_IMAGE:?Missing PostgreSQL image digest}
+    image: postgres:16-alpine
     container_name: pickleverse_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: sa
-      POSTGRES_DB: pickleverse
+      POSTGRES_USER:  ${POSTGRES_USER:-sa}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set the PostgreSQL password in the host .env}
+      POSTGRES_DB: pickleverse
     volumes:
       - type: bind
         source: ${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}/PostgresData
@@ -28,9 +28,22 @@ services:
       timeout: 3s
       retries: 20
     networks: [pickleverse_network]
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pickleverse_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@pickleverse.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "${PGADMIN_BIND:-127.0.0.1}:${PGADMIN_PORT:-15050}:80"
+    depends_on:
+      - postgres
+    networks:
+      - pickleverse_network
 
   redis:
-    image: ${PKV_REDIS_IMAGE:?Missing Redis image digest}
+    image: redis:7.4-alpine
     container_name: pickleverse_redis
     restart: unless-stopped
     command: [redis-server, --appendonly, "yes", --appendfsync, everysec, --maxmemory, "256mb", --maxmemory-policy, noeviction]
@@ -49,7 +62,7 @@ services:
     networks: [pickleverse_network]
 
   s3-storage:
-    image: ${PKV_S3_IMAGE:?Missing S3 image digest}
+    image: ghcr.io/shyim/local-s3:latest
     container_name: pickleverse_s3
     restart: unless-stopped
     environment:
@@ -64,7 +77,7 @@ services:
     networks: [pickleverse_network]
 
   ai-service:
-    image: ${PKV_AI_IMAGE:?Missing AI image digest}
+    image: ${DOCKER_REPOSITORY:?Missing repository}:${DOCKER_AISERVICE_TAG:?Missing tag ai Service}-${DOCKER_TAG_RELEASE:?Missing release code}
     restart: unless-stopped
     environment:
       AI_SERVICE_KEY: ${AI_SERVICE_KEY:?Set AI_SERVICE_KEY in the host .env}
@@ -81,7 +94,7 @@ services:
     networks: [pickleverse_network]
 
   backend-api:
-    image: ${PKV_API_IMAGE:?Missing API image digest}
+    image: ${DOCKER_REPOSITORY:?Missing repository}:${DOCKER_API_TAG:?Missing tag API}-${DOCKER_TAG_RELEASE:?Missing release code}
     container_name: pickleverse_api
     restart: unless-stopped
     environment:
@@ -120,7 +133,7 @@ services:
     networks: [pickleverse_network]
 
   game-server:
-    image: ${PKV_SERVER_IMAGE:?Missing Dedicated image digest}
+    image: ${DOCKER_REPOSITORY:?Missing repository}:${DOCKER_UNITY_DEDICATED_TAG:?Missing tag Unity dedicated}-${DOCKER_TAG_RELEASE:?Missing release code}
     container_name: pickleverse_game_server
     restart: unless-stopped
     init: true
@@ -143,7 +156,7 @@ services:
     networks: [pickleverse_network]
 
   web:
-    image: ${PKV_WEB_IMAGE:?Missing web image digest}
+    image: ${DOCKER_REPOSITORY:?Missing repository}:${DOCKER_WEB_TAG:?Missing tag Web}-${DOCKER_TAG_RELEASE:?Missing release code}
     restart: unless-stopped
     environment:
       API_UPSTREAM: http://backend-api:8080

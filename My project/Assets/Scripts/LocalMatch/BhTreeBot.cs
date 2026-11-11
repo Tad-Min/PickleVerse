@@ -40,6 +40,10 @@ namespace PickleVerse.LocalMatch
             random = new System.Random(seed);
             reaction = cooldown = simulationTime = 0;
             stroke = -1;
+#if UNITY_SERVER
+            // The Linux Dedicated Player loses child nodes when Unity Behavior clones the asset.
+            agent = null;
+#else
             if (!graph)
                 graph = Array.Find(Resources.LoadAll<BehaviorGraph>("BhTree/Bot Behavior"), g => g != null);
             if (!graph)
@@ -48,6 +52,7 @@ namespace PickleVerse.LocalMatch
             agent.enabled = false;
             agent.Graph = graph;
             agent.Init();
+#endif
         }
         public void Step(float dt, out Vector2 move, out bool run)
         {
@@ -63,6 +68,23 @@ namespace PickleVerse.LocalMatch
                 attack = random.NextDouble() < profile.aggressiveness;
             }
             reaction -= dt;
+            if (agent)
+                StepGraph();
+            else
+                StepHeadless();
+            move = Move;
+            run = Run;
+        }
+        void StepHeadless()
+        {
+            // Match the priority in the Bot Behavior selector, using the same actions.
+            if (Wait() || Serve() || Shot(ShotKind.Smash) || Shot(ShotKind.Reset) ||
+                Shot(ShotKind.Drop) || Shot(ShotKind.Dink) || Shot(ShotKind.Volley) || Shot(ShotKind.Drive))
+                return;
+            Recover();
+        }
+        void StepGraph()
+        {
             agent.SetVariableValue("BallPosition", Context.BallPosition);
             agent.SetVariableValue("BallVelocity", Context.BallVelocity);
             agent.SetVariableValue("BotPosition", Actor.transform.position);
@@ -83,8 +105,6 @@ namespace PickleVerse.LocalMatch
             for (int i = 0; i < 24 && agent.Graph.IsRunning; i++)
                 agent.Graph.Tick();
             agent.SetVariableValue("Branch", Branch);
-            move = Move;
-            run = Run;
         }
         public bool Wait()
         {
@@ -139,8 +159,11 @@ namespace PickleVerse.LocalMatch
                 offset.x = -.22f;
             if (!PredictContact(!air, out point, out delay, offset.y, beforeBounce))
                 return false;
-            agent.SetVariableValue("ContactPoint", point);
-            agent.SetVariableValue("ContactDelay", delay);
+            if (agent)
+            {
+                agent.SetVariableValue("ContactPoint", point);
+                agent.SetVariableValue("ContactDelay", delay);
+            }
             var target = point - Actor.transform.TransformDirection(offset);
             target.y = 0;
             if (air)

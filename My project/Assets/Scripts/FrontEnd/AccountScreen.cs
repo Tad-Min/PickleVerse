@@ -104,7 +104,7 @@ namespace PickleVerse.FrontEnd
             bool available = runtime.Ready && !account.IsRestricted;
             foreach (var home in FindObjectsByType<HomeMenuShell>(FindObjectsInactive.Include))
             {
-                if (home.playButton) home.playButton.interactable = available && runtime.IsAuthenticated;
+                if (home.playButton) home.playButton.interactable = available && !home.IsPlayingAnimation;
                 if (home.wallet) home.wallet.gameObject.SetActive(available);
                 if (home.nav)
                     foreach (var button in home.nav.GetComponentsInChildren<UnityEngine.UI.Button>(true))
