@@ -247,6 +247,11 @@ namespace PickleVerse.FrontEnd
 
         void RefreshChoices()
         {
+            // The fourth level is the adaptive behaviour-tree bot; players see it as "Tự động".
+            if (difficultyButtons != null && difficultyButtons.Length > 3 && difficultyButtons[3])
+                foreach (var label in difficultyButtons[3].GetComponentsInChildren<TMP_Text>(true))
+                    if (label.text.Trim() == "BhTree")
+                        label.text = "Tự động";
             for (int i = 0; i < difficultyButtons.Length; i++)
                 MarkChoice(difficultyButtons[i], difficultySelected[i], i == SelectedDifficulty);
             for (int i = 0; i < environmentButtons.Length; i++)
@@ -264,9 +269,9 @@ namespace PickleVerse.FrontEnd
                 "Dễ  ·  Máy phản ứng chậm hơn, phù hợp để làm quen.",
                 "Vừa  ·  Nhịp đấu cân bằng, phù hợp để luyện combo.",
                 "Khó  ·  Máy phản ứng nhanh và đánh chính xác hơn.",
-                "BhTree  ·  Behavior graph thử nghiệm, cấu hình theo Elo local."
+                "Tự động  ·  Máy tự điều chỉnh lối đánh và độ khó theo Elo của bạn."
             }[SelectedDifficulty];
-            summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ", "THÍCH ỨNG" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
+            summary.text = "BOT " + new[] { "DỄ", "VỪA", "KHÓ", "TỰ ĐỘNG" }[SelectedDifficulty] + "   /   " + (SelectedNight ? "BAN ĐÊM" : "BAN NGÀY");
             summary.text += "   /   " + CourtVenueSelection.DisplayName(SelectedVenue);
             var previews = SelectedNight ? venueNightPreviews : venueDayPreviews;
             courtPreview.texture = previews != null && previews.Length > (int)SelectedVenue ? previews[(int)SelectedVenue] : (SelectedNight ? nightPreview : dayPreview);
