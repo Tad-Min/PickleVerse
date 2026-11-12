@@ -27,7 +27,7 @@ def sanitize(value):
     return result
 
 
-def main(source, destination):
+def main(source, destination, protocol=None):
     source, destination = Path(source), Path(destination)
     if source.resolve() == destination.resolve():
         raise ValueError("Source settings must remain unchanged.")
@@ -36,15 +36,18 @@ def main(source, destination):
         raise ValueError("The base application settings are required.")
     destination.mkdir(parents=True, exist_ok=True)
     for path in files:
-        settings = json.loads(path.read_text(encoding="utf-8-sig"))
+        settings = sanitize(json.loads(path.read_text(encoding="utf-8-sig")))
+        if protocol is not None:
+            settings.setdefault("DedicatedServer", {})["Protocol"] = protocol
         (destination / path.name).write_text(
-            json.dumps(sanitize(settings), ensure_ascii=False, indent=2) + "\n",
+            json.dumps(settings, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
     print(f"Prepared {len(files)} application configuration files without credentials.")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise SystemExit("Usage: sanitize_settings.py SOURCE_DIRECTORY OUTPUT_DIRECTORY")
-    main(*sys.argv[1:])
+    if len(sys.argv) not in (3, 4):
+        raise SystemExit("Usage: sanitize_settings.py SOURCE_DIRECTORY OUTPUT_DIRECTORY [DEDICATED_PROTOCOL]")
+    protocol = int(sys.argv[3]) if len(sys.argv) == 4 else None
+    main(sys.argv[1], sys.argv[2], protocol)

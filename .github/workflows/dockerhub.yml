@@ -150,7 +150,7 @@ jobs:
           overwrite: true
 
   publish:
-    name: Publish four digest-locked images and smoke test
+    name: Publish four release images and smoke test
     needs: [validate, native]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -185,12 +185,6 @@ jobs:
       - name: Build, push and smoke test the release
         id: release
         run: bash deploy/ci/publish-release.sh
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: release-${{ steps.release.outputs.release }}
-          path: ${{ runner.temp }}/pkv-release/
-          if-no-files-found: error
-          retention-days: 30
 
   deploy:
     name: Deploy Linux development
@@ -207,22 +201,23 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-          sparse-checkout: deploy/ci
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: release-${{ needs.publish.outputs.release }}
-          path: ${{ runner.temp }}/pkv-release
+          sparse-checkout: |
+            /deploy/ci/
+            /docker-compose.linux.yml
+            /src/Database.sql
+          sparse-checkout-cone-mode: false
       - name: Install SSH password transport
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends sshpass
-      - name: Transfer and deploy verified release
+      - name: Sync deployment files and run Compose over SSH
         env:
           GH_TOKEN: ${{ github.token }}
+          PKV_RELEASE: ${{ needs.publish.outputs.release }}
+          PKV_DEPLOY_ROOT: ${{ vars.PKV_DEPLOY_ROOT || vars.PKV_DATA_ROOT }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ vars.SSH_USER || 'min' }}
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-          DOCKERHUB_PULL_TOKEN: ${{ secrets.DOCKERHUB_PULL_TOKEN }}
-        run: bash deploy/ci/ssh-deploy.sh "$RUNNER_TEMP/pkv-release"
+        run: bash deploy/ci/ssh-deploy.sh

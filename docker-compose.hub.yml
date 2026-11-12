@@ -1,14 +1,14 @@
 # Apply after docker-compose.yml and docker-compose.dedicated.yml.
-# Use release.env from a successful workflow; never mix the mutable component aliases.
+# Use the release suffix from a successful workflow summary.
 services:
   backend-api:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:api-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:api-${PKV_RELEASE:?Set PKV_RELEASE from the workflow summary}
   ai-service:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:ai-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:ai-${PKV_RELEASE:?Set PKV_RELEASE from the workflow summary}
   game-server:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:server-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:server-${PKV_RELEASE:?Set PKV_RELEASE from the workflow summary}
   web:
-    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:web-${PKV_RELEASE:?Set PKV_RELEASE from the workflow release.env}
+    image: ${PKV_DOCKER_REPOSITORY:-tadminm/pickelverse}:web-${PKV_RELEASE:?Set PKV_RELEASE from the workflow summary}
     profiles: [admin]
     restart: unless-stopped
     environment:

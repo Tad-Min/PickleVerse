@@ -8,7 +8,6 @@ DesignPrototypes/
 .env
 .env.*
 !.env.example
-artifacts/
 /My project/Assets/PickleVerse.Testing.Generated/
 /My project/Assets/PickleVerse.Testing.Generated.meta
 node_modules/
@@ -26,3 +25,7 @@ src/AiService/models/
 ArtSource/
 Archify/
 Diagram/
+
+# Ignore temporaries from GameCI
+/[Aa]rtifacts/
+/[Cc]odeCoverage/
