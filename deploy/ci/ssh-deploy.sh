@@ -86,7 +86,26 @@ awk -v repository="$repository" -v release="$release" '
   }
 ' .env > "$next_env"
 unset DOCKER_REPOSITORY DOCKER_TAG_RELEASE
-docker compose --env-file "$next_env" -f "$next_compose" config --quiet
+staged_compose=(docker compose --env-file "$next_env" -f "$next_compose")
+"${staged_compose[@]}" config --quiet
+data_root=$("${staged_compose[@]}" config --environment | sed -n 's/^PKV_DATA_ROOT=//p')
+if [[ $data_root != /* || $data_root == *$'\n'* ]]; then
+  echo 'PKV_DATA_ROOT in .env must resolve to an absolute Linux directory path.' >&2
+  exit 1
+fi
+
+mkdir -p -- "$data_root"/{PostgresData,RedisData,S3Data}
+(umask 022; mkdir -p -- "$data_root/AiService/models")
+game_data="$data_root/GameServerData"
+if [[ ! -d $game_data ]]; then
+  mkdir -- "$game_data"
+  if ! "${staged_compose[@]}" run --rm --no-deps -T --interactive=false -u 0 --entrypoint chown \
+    game-server 10001:10001 /home/unity/.config/unity3d; then
+    rmdir -- "$game_data"
+    exit 1
+  fi
+fi
+
 chmod --reference=.env "$next_env"
 mkdir -p -- src
 next_database=$(mktemp src/.database.XXXXXXXX)

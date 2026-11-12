@@ -35,7 +35,7 @@ Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print
 1. Dùng Linux amd64 và Docker Compose có `up --wait-timeout`. Tài khoản SSH cần chạy được Docker và ghi được vào thư mục deploy. Với repository Docker Hub riêng tư, đăng nhập Docker Hub một lần bằng chính tài khoản SSH.
 2. Chuẩn bị `.env` tại thư mục deploy đã chọn, ví dụ `/mnt/data/pickleverse`. Dùng `deploy/linux/runtime.env.example` làm mẫu. CD cài `docker-compose.linux.yml` và `src/Database.sql` ở lần chạy đầu nếu các file chưa có.
 3. Điền các khóa `POSTGRES_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `JWT_KEY`, `AI_SERVICE_KEY` và `PKV_GAME_SERVER_KEY`. Khi giữ dữ liệu hiện có, dùng thông tin đăng nhập và thư mục dữ liệu của stack cũ. Ba key JWT, AI và Dedicated cần tối thiểu 32 ký tự. Dùng mật khẩu PostgreSQL không chứa dấu nháy kép hoặc xuống dòng để dùng được trong connection string.
-4. Đặt `PKV_DATA_ROOT` trong `.env` và tạo sẵn các thư mục dưới đây. Với thư mục `GameServerData` mới, cấp quyền ghi cho UID/GID `10001:10001` của Dedicated Server.
+4. Đặt `PKV_DATA_ROOT` trong `.env`. CD tạo các thư mục còn thiếu dưới đường dẫn này và cấp quyền ghi cho UID/GID `10001:10001` khi tạo mới `GameServerData`. Nếu tự chạy Compose lần đầu, chuẩn bị các thư mục và quyền ghi tương ứng.
 
 | Dữ liệu | Thư mục host | Điểm mount trong container |
 | --- | --- | --- |
