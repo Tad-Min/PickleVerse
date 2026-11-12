@@ -95,7 +95,13 @@ namespace PickleVerse.EditorTools
                     result = report.summary.result.ToString(), errors = (int)report.summary.totalErrors,
                     warnings = (int)report.summary.totalWarnings }));
                 if (report.summary.result != BuildResult.Succeeded || report.summary.totalErrors != 0)
-                    throw new BuildFailedException($"Dedicated server build {report.summary.result}: {report.summary.totalErrors} errors.");
+                {
+                    var errors = report.steps.SelectMany(step => step.messages
+                        .Where(message => message.type is LogType.Error or LogType.Exception or LogType.Assert)
+                        .Select(message => $"{step.name}: {message.content}"));
+                    var summary = $"Dedicated server build {report.summary.result}: {report.summary.totalErrors} errors.";
+                    throw new BuildFailedException(string.Join("\n", errors.Prepend(summary)));
+                }
                 if (Directory.GetFiles(outputDirectory, "*AppUINativePlugin*.so", SearchOption.AllDirectories).Any())
                     throw new BuildFailedException("Native App UI plugin must be excluded from the dedicated server.");
 

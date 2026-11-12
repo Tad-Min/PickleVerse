@@ -93,6 +93,14 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+          # The Linux Editor cannot import the client-only H.264 artwork.
+          sparse-checkout: |
+            /*
+            !/My project/Assets/FrontEndContent/Login/Playback/Login.mp4
+            !/My project/Assets/FrontEndContent/Login/Playback/Login.mp4.meta
+            !/My project/Assets/FrontEndContent/Loading/Artwork/Playback/PKV_*.mp4
+            !/My project/Assets/FrontEndContent/Loading/Artwork/Playback/PKV_*.mp4.meta
+          sparse-checkout-cone-mode: false
       - name: Verify license configuration and resolve exact Unity image
         id: editor
         env:
