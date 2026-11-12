@@ -127,7 +127,7 @@ jobs:
           buildName: PickleVerseServer
           buildsPath: artifacts/ci/unity
           customParameters: -pkvCommit ${{ github.sha }} -standaloneBuildSubtarget Server
-          dockerShmSize: 1g
+          dockerShmSize: 1025m
           versioning: None
       - name: Verify and package the native output
         run: |
