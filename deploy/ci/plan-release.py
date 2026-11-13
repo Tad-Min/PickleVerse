@@ -69,12 +69,13 @@ def main():
     pull_request = os.environ["GITHUB_EVENT_NAME"] == "pull_request"
     base = os.environ.get("PKV_PR_BASE", "")
     images = {}
-    token = ""
     full = os.environ.get("PKV_FULL_REBUILD") == "true"
-    if not pull_request and (os.environ.get("PKV_DEPLOY_STATE") or not full):
-        state = json.loads(os.environ["PKV_DEPLOY_STATE"])
-        token = state["token"]
-        if not re.fullmatch(r"[0-9a-f]{64}", token):
+    state_file = os.environ.get("PKV_DEPLOY_STATE_FILE")
+    if not pull_request and (state_file or not full):
+        if not state_file:
+            raise ValueError("Missing deployment state for release planning")
+        state = json.loads(Path(state_file).read_text(encoding="utf-8"))
+        if not re.fullmatch(r"[0-9a-f]{64}", state["token"]):
             raise ValueError("Invalid deployment state token")
         release = state["release"]
         if state["pending"] or release is None:
@@ -112,7 +113,6 @@ def main():
         "release": str(not pull_request and deploy).lower(),
         "images": json.dumps(images, separators=(",", ":")),
         "protocol": str(current_protocol),
-        "token": token,
     }
     print(f"Base: {base or 'first deployment'}; build: {output['build'] or 'none'}; "
           f"checks: {', '.join(sorted(checks)) or 'none'}; publish: {output['release']}")

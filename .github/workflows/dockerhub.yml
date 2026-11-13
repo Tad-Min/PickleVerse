@@ -38,8 +38,6 @@ jobs:
     environment:
       name: development
       deployment: false
-    outputs:
-      state: ${{ steps.state.outputs.state }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -50,7 +48,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends sshpass
       - name: Read deployment metadata over SSH
-        id: state
         env:
           PKV_DEPLOY_ROOT: ${{ vars.PKV_DEPLOY_ROOT || vars.PKV_DATA_ROOT }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -60,8 +57,16 @@ jobs:
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
-          state=$(bash deploy/ci/read-deployment-state.sh | jq -ce 'select(type == "object")')
-          printf 'state=%s\n' "$state" >> "$GITHUB_OUTPUT"
+          bash deploy/ci/read-deployment-state.sh | jq -ce '
+            select(type == "object")
+            | {token, pending, release: (.release | if . == null then null else {commit, protocol, images: (.images | {api, ai, web, server})} end)}
+          ' > "$RUNNER_TEMP/deployment-state.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: deployment-state
+          path: ${{ runner.temp }}/deployment-state.json
+          if-no-files-found: error
+          overwrite: true
 
   plan:
     name: Plan affected builds and checks
@@ -81,7 +86,6 @@ jobs:
       release: ${{ steps.plan.outputs.release }}
       images: ${{ steps.plan.outputs.images }}
       protocol: ${{ steps.plan.outputs.protocol }}
-      token: ${{ steps.plan.outputs.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -92,11 +96,16 @@ jobs:
             /deploy/ci/
             /My project/Assets/Scripts/Multiplayer/Services/MultiplayerSceneConfiguration.cs
           sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: needs.deployed.result == 'success'
+        with:
+          name: deployment-state
+          path: ${{ runner.temp }}
       - name: Compare the PR or deployed baseline
         id: plan
         env:
           PKV_PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PKV_DEPLOY_STATE: ${{ needs.deployed.outputs.state }}
+          PKV_DEPLOY_STATE_FILE: ${{ needs.deployed.result == 'success' && format('{0}/deployment-state.json', runner.temp) || '' }}
           PKV_FULL_REBUILD: ${{ inputs.full_rebuild }}
         run: python3 deploy/ci/plan-release.py
 
@@ -349,7 +358,7 @@ jobs:
 
   deploy:
     name: Deploy Linux development
-    needs: [plan, publish]
+    needs: [deployed, publish]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.deploy)
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -367,6 +376,10 @@ jobs:
             /docker-compose.linux.yml
             /src/Database.sql
           sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: deployment-state
+          path: ${{ runner.temp }}
       - name: Install SSH password transport
         run: |
           sudo apt-get update
@@ -376,11 +389,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PKV_RELEASE: ${{ needs.publish.outputs.release }}
           PKV_RELEASE_MANIFEST: ${{ needs.publish.outputs.manifest }}
-          PKV_STATE_TOKEN: ${{ needs.plan.outputs.token }}
           PKV_DEPLOY_ROOT: ${{ vars.PKV_DEPLOY_ROOT || vars.PKV_DATA_ROOT }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ vars.SSH_USER || 'min' }}
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-        run: bash deploy/ci/ssh-deploy.sh
+        run: |
+          set -euo pipefail
+          PKV_STATE_TOKEN=$(jq -er '.token' "$RUNNER_TEMP/deployment-state.json")
+          export PKV_STATE_TOKEN
+          bash deploy/ci/ssh-deploy.sh
