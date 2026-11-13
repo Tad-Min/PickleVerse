@@ -3,7 +3,7 @@
 skinparam packageStyle folder
 left to right direction
 package "PickleVerse.API" as API {
-  package "Controllers (24)" as Ctl
+  package "Controllers (28 classes)" as Ctl
   package "Filters and middleware\n(ApiResponse envelope,\nexception handler, scope)" as Flt
   package "Program (DI, JWT, CORS,\nrate limiter, Redis)" as Prog
 }

@@ -11,6 +11,7 @@ CHANGES = [
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First test documentation: 116 planned cases, 36 unit checks, no results."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten: scope with levels, entry and exit criteria; test types with objective, technique and completion criteria; tools with vendor and version; dated test milestones; 114 concrete test cases mapped to FR-01–FR-33; real results of 09–11/11/2026 (515 EditMode tests passed; 49 passed, 3 failed, 62 pending system cases); 18 defects; analysis against the release criteria."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Human resources and workflow test cases: owners aligned with BM04."),
+    ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: EditMode run of 516 tests on main @ 5963501 (EV-06) and Play Mode check of fixed defects (EV-07); defect statuses with fix commits; new defects D-19 and D-20; quick doubles case TC-F07-04; workflow names as in BM04; CI and Android status stated; counts in the text computed from the case list."),
 ]
 EV_FILE = os.environ.get("PKV_EDITMODE_RESULTS")
 
@@ -31,7 +32,8 @@ r.table(["Level", "In charge", "Inputs and time", "Focus", "Acceptance (exit) cr
 r.p("**Constraints and assumptions.**")
 r.bullets([
     "The staging server runs one dedicated-server container, so online cases that need two simultaneous matches cannot be executed.",
-    "The CI pipeline builds the dedicated server with GameCI and a Unity licence but does not yet run the Unity tests; until a test step is added, they are run with the Unity CLI on a team PC and the result file is stored with the commit hash.",
+    "The GitHub Actions pipeline has not yet completed a run (build failures on 05/11/2026, account locked for a billing issue since 06/11/2026), and it has no Unity test step. Until it runs, the Unity tests are run with the Unity CLI on a team PC and the result file is stored with the commit hash.",
+    "No Android phone has been used for testing yet; the Android cases (TC-N03, TC-N10) wait for a reference device in Round 2.",
     "Tests that need several players (rooms, friends, reports) require two or more accounts and devices at the same time.",
     "A dedicated test mailbox and seed accounts (for example a player at level 24 or with 9 passed lessons) must be added to Database.sql before Round 2.",
     "The Photon free plan limits concurrent users; group playtests are scheduled so that the limit is not reached.",
@@ -65,13 +67,13 @@ r.table(["Purpose", "Tool", "Vendor/In-house", "Version"], [
     ["Unity unit tests (EditMode, NUnit)", "Unity Test Framework", "Unity Technologies", "1.8.0"],
     ["Run tests and capture screens from the command line", "Unity CLI with the Pipeline package", "Unity Technologies", "CLI 1.0.0-beta.17, Pipeline 0.9.0-exp.1"],
     ["Python unit tests", "pytest (with httpx)", "Open source", "8.x"],
-    ["API and database integration checks", "IntegrationChecks console harness", "In-house", "main @ 7f8ee32"],
+    ["API and database integration checks", "IntegrationChecks console harness", "In-house", "main @ 5963501"],
     ["Manual API calls", "Swagger UI", "Swashbuckle (open source)", "10.3.1"],
     ["API load test (NFR-04)", "k6", "Grafana Labs (open source)", "latest stable, planned"],
     ["Frame-rate measurement", "Unity Profiler", "Unity Technologies", "6000.6.2f1"],
     ["Network statistics", "Photon Fusion statistics and dashboard", "Exit Games", "Fusion 2.1.3"],
     ["Test case and result management", "Microsoft Excel (Report5 workbooks)", "Microsoft", "Microsoft 365"],
-    ["Continuous integration", "GitHub Actions (validate job)", "GitHub", "Hosted runner"],
+    ["Continuous integration", "GitHub Actions (validate job)", "GitHub", "Hosted runner; no passing run yet, blocked since 06/11/2026"],
 ], widths=[5.2, 4.4, 3.4, 3.0], size=9, caption="Supporting tools")
 
 # ------------------------------------------------------------------ 3
@@ -98,7 +100,8 @@ r.h3("3.3 Test Milestones")
 r.table(["Milestone Task", "Start Date", "End Date"], [
     ["Round 1 – automated suites and first system pass on staging", "09/11/2026", "13/11/2026"],
     ["Prepare seed accounts, test mailbox and analytics seed", "16/11/2026", "18/11/2026"],
-    ["Round 2 – all system cases; fix verification of D-01 to D-18", "16/11/2026", "27/11/2026"],
+    ["Round 2 – all system cases; retest of the fixed defects and fix verification of D-01 to D-20", "16/11/2026", "27/11/2026"],
+    ["Android install, smoke and frame-rate test on a reference phone (NFR-03, NFR-10)", "16/11/2026", "27/11/2026"],
     ["Usability test with 10 students (NFR-01)", "23/11/2026", "27/11/2026"],
     ["Load, latency and frame-rate measurements (NFR-02 to NFR-05)", "23/11/2026", "29/11/2026"],
     ["Uptime probe for NFR-07 (14 days)", "30/11/2026", "13/12/2026"],
@@ -110,7 +113,7 @@ r.table(["Milestone Task", "Start Date", "End Date"], [
 r.h2("4. Test Cases")
 r.p("Unit test cases are documented in **Report5_Unit Test.xlsx** as decision tables (conditions, confirmations, type N/A/B and result for each UTCID) for ten core functions, each mapped to the NUnit test that implements it. Integration, system and acceptance test cases are documented in **Report5_Test Report.xlsx**, one sheet per feature group, with ID, description, procedure with concrete data, expected result, pre-conditions, three test rounds and a note that names the evidence or the reason why a case is pending.")
 cnt = Counter(c["sheet"] for c in R.CASES)
-r.p("The number of cases follows the Review 2 formula: 18 committed features × 3 cases (54) + 4 workflows + 42 state transitions (three per state machine SM-01 to SM-14) + 12 NFRs = 112 cases. Five cases are added: two for the expert review tool (FE-10), which is not in the Review 2 feature list, and three for FR-03 to FR-05, which the Review 2 feature F01 did not detail, giving **%d cases**." % len(R.CASES))
+r.p("The number of cases follows the Review 2 formula: 18 committed features × 3 cases (54) + 4 workflows + 42 state transitions (three per state machine SM-01 to SM-14) + 12 NFRs = 112 cases. Six cases are added: two for the expert review tool (FE-10), which is not in the Review 2 feature list, three for FR-03 to FR-05, which the Review 2 feature F01 did not detail, and one for quick doubles (TC-F07-04), which F07 describes only in general, giving **%d cases**." % len(R.CASES))
 r.table(["Sheet", "Scope", "Cases", "Unit", "Integration", "System", "Acceptance", "Automated"],
         [[s, name, str(cnt[s])] + [str(sum(1 for c in R.CASES if c["sheet"] == s and c["level"] == lv)) for lv in ("Unit", "Integration", "System", "Acceptance")] +
          [str(sum(1 for c in R.CASES if c["sheet"] == s and c["auto"] != "Manual"))] for s, name, _ in R.SHEETS] +
@@ -142,20 +145,24 @@ r.table(["ID", "Run", "Date", "Build / commit", "Result", "Location"], [
     ["EV-03", "UI check of the register, verification, password-reset screens and the tutorial", "11/11/2026", "main @ 7f8ee32", "See TC-F01-03, TC-F02-01", "screenshots/29–34"],
     ["EV-04", "Match history of the team test accounts (two ranked 1v1 attempts)", "09/11/2026", "staging", "Both interrupted", "screenshots/12_history.png"],
     ["EV-05", "Team-recorded IntegrationChecks on disposable PostgreSQL databases (12 areas)", "06/11/2026", "df5f671", "Reported as passed; logs not in the repository, so not counted", "Review3_Evidence.md (file names and SHA-256)"],
+    ["EV-06", "Unity EditMode suite through the Unity CLI after the UI and camera fixes (adds the camera framing test)", "11/11/2026", "main @ 5963501", "516 tests, 516 passed, 0 failed, 5.96 s", "Doc/Project_report/Report/evidence/editmode_results_20261111_5963501.json"],
+    ["EV-07", "Unity Play Mode check of the fixed defects D-03, D-04, D-05, D-07 and D-19 (menu, mode selection, bot setup, bot match, training HUD)", "11/11/2026", "main @ 5963501", "All five behave as expected; to be retested on staging in Round 2", "screenshots/05, 11, 16, 17, 19"],
 ], widths=[1.2, 5.0, 1.8, 2.6, 2.6, 2.8], size=8, caption="Test evidence")
 r.h3("5.2 Unit Test Results")
 asm = OrderedDict()
 if EV_FILE and os.path.exists(EV_FILE):
     res = json.load(open(EV_FILE, encoding="utf-8"))
-    lst = json.load(open(EV_FILE.replace("editmode_results_20261111.json", "editmode_list.json"), encoding="utf-8"))["data"]["result"]["Tests"]
+    lst = json.load(open(os.path.join(os.path.dirname(EV_FILE), "editmode_list.json"), encoding="utf-8"))["data"]["result"]["Tests"]
     amap = {t["FullName"]: t["Assembly"] for t in lst}
+    cmap = {t["FullName"].rsplit(".", 1)[0]: t["Assembly"] for t in lst}  # tests added after the list was exported
     for x in res["results"]:
-        a = amap.get(x["FullName"], "?").replace("PickleVerse.", "")
+        a = amap.get(x["FullName"]) or cmap.get(x["FullName"].split("(")[0].rsplit(".", 1)[0], "?")
+        a = a.replace("PickleVerse.", "")
         asm.setdefault(a, Counter())[x["Status"]] += 1
 rows = [[a, str(sum(v.values())), str(v.get("Passed", 0)), str(v.get("Failed", 0))] for a, v in asm.items()]
 rows.append(["**Total**", "**%d**" % sum(sum(v.values()) for v in asm.values()), "**%d**" % sum(v.get("Passed", 0) for v in asm.values()), "**%d**" % sum(v.get("Failed", 0) for v in asm.values())])
-r.table(["Test assembly", "Tests", "Passed", "Failed"], rows, widths=[6.0, 2.5, 2.5, 2.5], size=9, subheader_rows=(len(rows) - 1,), caption="Unity EditMode results by assembly (EV-01)")
-r.p("The ten decision tables of Report5_Unit Test.xlsx contain %d unit test cases (normal, abnormal and boundary), all passed in EV-01. The other automated suites were not executed for this report: the 22 pytest tests of the AI service need FastAPI and scikit-learn, which are not installed on the test PC, and the IntegrationChecks need restored NuGet packages and a PostgreSQL/Redis instance. The team recorded passing IntegrationChecks runs on 06/11/2026 (EV-05), but their logs are not in the repository, so they are not counted here. Both suites run in the GitHub Actions validate job, whose latest result must be attached in Round 2. Code coverage has not been measured yet; the Unity Code Coverage package will be enabled in Round 2." % sum(len(f["cases"]) for f in R.UNIT))
+r.table(["Test assembly", "Tests", "Passed", "Failed"], rows, widths=[6.0, 2.5, 2.5, 2.5], size=9, subheader_rows=(len(rows) - 1,), caption="Unity EditMode results by assembly (EV-06)")
+r.p("The table above shows the latest run (EV-06, 516 tests); the Round 1 run EV-01 on main @ 7f8ee32 had 515 tests, all passed, and EV-06 adds the camera framing regression test of D-03. The ten decision tables of Report5_Unit Test.xlsx contain %d unit test cases (normal, abnormal and boundary), all passed in EV-01 and EV-06. The other automated suites were not executed for this report: the 22 pytest tests of the AI service need FastAPI and scikit-learn, which are not installed on the test PC, and the IntegrationChecks need restored NuGet packages and a PostgreSQL/Redis instance. The team recorded passing IntegrationChecks runs on 06/11/2026 (EV-05), but their logs are not in the repository, so they are not counted here. Both suites are defined in the GitHub Actions validate job, which has not yet completed a run; a passing result must be attached in Round 2. Code coverage has not been measured yet; the Unity Code Coverage package will be enabled in Round 2." % sum(len(f["cases"]) for f in R.UNIT))
 r.h3("5.3 System and Integration Test Results")
 st, lv, auto = R.stats()
 rows = []
@@ -177,17 +184,22 @@ r.table(["Metric", "Value", "Target", "Status"], [
     ["Open Critical / High defects", "0 / 3 (D-09, D-17, D-18)", "0 / 0", "Not met"],
 ], widths=[6.0, 3.6, 3.2, 3.2], size=9, caption="Release criteria after Round 1")
 r.h3("5.4 Defects")
-r.table(["ID", "Summary", "Type", "Severity", "Found by", "Owner"], [[a, b, c, d_, e, g] for a, b, c, d_, e, f, g in R.DEFECTS],
-        widths=[1.2, 8.0, 2.0, 1.6, 2.0, 1.2], size=8, caption="Defects found in Round 1 (all Open)")
+r.table(["ID", "Summary", "Type", "Severity", "Found by", "Owner", "Status"],
+        [[a, b, c, d_, e, g, R.defect_status(a) + (" (" + R.DEFECT_FIX[a] + ")" if a in R.DEFECT_FIX else "")] for a, b, c, d_, e, f, g in R.DEFECTS],
+        widths=[1.1, 6.4, 2.2, 1.5, 1.8, 1.4, 1.7], size=8, caption="Defects found in Round 1 and in the checks of 11–12/11/2026")
 sev = Counter(dft[3] for dft in R.DEFECTS)
-r.p("Round 1 found %d defects: %d High, %d Medium and %d Low. Severity follows Report 3 NFR-08: Critical means loss of player data or inability to sign in or play; High means a main workflow or a security requirement fails; Medium means a requirement is partly wrong or a rule is inconsistent; Low means a cosmetic or wording problem. The defect life cycle (Open → Fixed → Verified → Closed) is tracked in PickleVerse_Project_Tracking.xlsx." % (len(R.DEFECTS), sev["High"], sev["Medium"], sev["Low"]))
+fixed = [x for x in R.DEFECTS if x[0] in R.DEFECT_FIX]
+r.p("Round 1 (09–11/11/2026) and the follow-up checks of 11–12/11/2026 found %d defects: %d High, %d Medium and %d Low. %d of them (%s) are fixed in code; the fix commit is shown in the Status column and the fix was checked in Unity Play Mode (EV-07). They stay in the Fixed state until the Round 2 retest on staging, so %d defects remain open, including all three High defects." % (len(R.DEFECTS), sev["High"], sev["Medium"], sev["Low"], len(fixed), ", ".join(x[0] for x in fixed), len(R.DEFECTS) - len(fixed)))
+r.p("Severity follows Report 3 NFR-08: Critical means loss of player data or inability to sign in or play; High means a main workflow or a security requirement fails; Medium means a requirement is partly wrong or a rule is inconsistent; Low means a cosmetic or wording problem. The defect life cycle (Open → Fixed → Verified → Closed) is tracked in PickleVerse_Project_Tracking.xlsx.")
 r.h3("5.5 Analysis and Next Actions")
 r.bullets([
-    "**Engine-level quality is good.** All 515 EditMode tests pass, and every system case that could be executed for the single-player features (training, bot match, coaching, progress screens) passed, apart from the offline analysis status (D-02).",
+    "**Engine-level quality is good.** All 516 EditMode tests pass (EV-06), and every system case that could be executed for the single-player features (training, bot match, coaching, progress screens) passed, apart from the offline analysis status (D-02).",
     "**Online play between humans is the main risk.** The only human-versus-human ranked attempts (EV-04) were interrupted (D-09), which also blocks the reconnection, report and appeal cases. Reproducing D-09 with server logs is the first task of Round 2 (owner: Đạt, by 18/11/2026).",
     "**Security requirements are not yet met** because of committed credentials and HTTP on staging (D-17, D-18). Both must be fixed before the acceptance test.",
-    "**Coverage is limited by test data, not by tooling.** 62 cases are pending mainly because seed accounts, a test mailbox and a second player were not available. These will be added to Database.sql before Round 2 (owner: Thuận, by 18/11/2026).",
-    "**Automation is below the 50%% target and not in CI.** %d of %d cases are automated. The EditMode suite will be added to the CI pipeline as a GameCI unity-test-runner step that reuses the licence secrets already used to build the dedicated server, and the pytest and IntegrationChecks results of the validate job will be linked to their test case IDs." % (auto, len(R.CASES)),
+    "**Coverage is limited by test data, not by tooling.** %d cases are pending mainly because seed accounts, a test mailbox and a second player were not available. These will be added to Database.sql before Round 2 (owner: Thuận, by 18/11/2026)." % st["Pending"],
+    "**Automation is below the 50%% target and not in CI.** %d of %d cases are automated. The pipeline must first run again (Report 2, risk 13); then the EditMode suite will be added as a GameCI unity-test-runner step that reuses the licence secrets of the dedicated-server build, and the pytest and IntegrationChecks results of the validate job will be linked to their test case IDs." % (auto, len(R.CASES)),
+    "**Five defects are fixed but not yet closed.** D-03, D-04, D-05, D-07 and D-19 were fixed on 11/11/2026 and checked in Play Mode; they are closed only after the Round 2 retest on the staging build. D-20 (unreachable GEMSTONE level) needs a decision on the XP curve with the supervisor together with D-12.",
+    "**Android is untested.** The phone controls and the mobile rendering settings are implemented, but no Android device has run the build yet; TC-N03 and TC-N10 are scheduled for Round 2.",
 ])
 
 out = r.save("Report5_Test Documentation.docx", "Report 5 – Software Test Documentation")

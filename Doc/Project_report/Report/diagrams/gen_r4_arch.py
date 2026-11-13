@@ -67,7 +67,8 @@ node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
 }
 cloud "Photon Cloud\n(Fusion 2.1.3)" as Photon
 cloud "Gmail SMTP\n:587" as Smtp
-node "GitHub Actions\n<<CI/CD>>" as CI
+node "GitHub Actions\n<<CI/CD, not yet passing>>" as CI
+actor "Developer\n(manual release)" as Dev
 node "Docker Hub\ntadminm/pickelverse" as Hub
 
 Browser --> HostNginx : HTTP
@@ -78,6 +79,7 @@ Apk --> ApiC : HTTP JSON :8080
 WinClient --> Photon : UDP
 Apk --> Photon : UDP
 WinClient --> GameC : UDP 3669
+Apk --> GameC : UDP 3669
 GameC --> ApiC : HTTP (service key)
 GameC --> Photon : UDP
 ApiC --> PgC : TCP 5432
@@ -85,8 +87,10 @@ ApiC --> RdC : TCP 6379
 ApiC --> S3C : HTTP 9000
 ApiC --> AiC : HTTP 8000
 ApiC --> Smtp : SMTP STARTTLS
-CI --> Hub : push images
-CI --> Host : SSH deploy (deploy.sh)
+CI ..> Hub : push images (planned)
+CI ..> Host : SSH deploy with deploy.sh (planned)
+Dev --> Hub : push *-manual-<date-time> images
+Dev --> Host : start the stack by hand
 Hub --> Host : pull by digest
 """
 
@@ -94,7 +98,7 @@ D["r4_pkg_backend"] = r"""
 skinparam packageStyle folder
 left to right direction
 package "PickleVerse.API" as API {
-  package "Controllers (24)" as Ctl
+  package "Controllers (28 classes)" as Ctl
   package "Filters and middleware\n(ApiResponse envelope,\nexception handler, scope)" as Flt
   package "Program (DI, JWT, CORS,\nrate limiter, Redis)" as Prog
 }

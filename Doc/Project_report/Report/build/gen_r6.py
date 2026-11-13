@@ -3,6 +3,7 @@ from report_lib import Report
 
 CHANGES = [
     ("11/11/2026", "A", "Nguyễn Gia Huy", "v1.0 – First release package description, installation guides (player, server, development) and user manual organised by the four review workflows, with real screenshots of the game and the admin web."),
+    ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Revised after the second internal review: Android controls corrected; time-outs removed; quick doubles and the lobby friends column added; workflow names as in BM04; deployment section states that the pipeline has not yet passed and staging is released manually; package counts and screenshots updated; Android build marked as not yet tested on a device."),
 ]
 
 r = Report("Report6_Software User Guides.docx", "Report 6 – Software User Guides", CHANGES)
@@ -10,19 +11,19 @@ r.h1("II. Release Package & User Guides")
 
 # ================================================================== 1
 r.h2("1. Deliverable Package")
-r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ 7f8ee32 (10/11/2026) for the software and to the v1.1 documents of 11/11/2026. The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
+r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ 5963501 (11/11/2026) for the software and to the documents of 12/11/2026 (Reports 1–5 v1.2, Report 6 v1.1 and Report 7 assembled from them). The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
 r.table(["No.", "Deliverable Item", "Description"], [
     ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: 82 tasks, 4 resources, 61 assignments, % complete as of 11/11/2026) and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
-    ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 14 product and iteration backlog items for Iterations 5 and 6 with priority, owner, estimate and status"],
+    ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 19 product and iteration backlog items for Iterations 5 and 6 with priority, owner, estimate and status"],
     ["3", "Source Codes", "Unity client and dedicated server: My project/ (Unity 6000.6.2f1, 13 runtime assemblies); Web API: src/Backend (ASP.NET Core .NET 10, 4 projects); AI coaching service: src/AiService (Python 3.12, FastAPI); admin web: src/Frontend (React 18, TypeScript, Vite); tests: src/Testing; deployment: deploy/, docker-compose*.yml, .github/workflows/dockerhub.yml"],
     ["4", "Database Script(s)", "src/Database.sql – single script with the schema (51 tables, 71 foreign keys) and seed data (roles, currencies, 15 lessons, 12 techniques, 3 paddles, 17 missions, 10 achievements, 10 ranked bot accounts) executed in one transaction"],
     ["5", "Final Report Document", "Report7_Final Project Report.docx, which consolidates Reports 1–6; the individual Reports 1–6 (.docx) and their PDF exports in Doc/Project_report/Report/pdf"],
-    ["6", "Test Cases Document", "Report5_Test Documentation.docx, Report5_Test Report.xlsx (117 cases with Round 1 results) and Report5_Unit Test.xlsx (10 functions, 66 decision-table cases); evidence files in Doc/Project_report/Report/evidence"],
-    ["7", "Defects List", "Sheet Defects of the tracking workbook (18 defects with severity, owner and status); also listed in the Test Report workbook"],
-    ["8", "Issues List", "Sheet Issues of the tracking workbook (10 issues with priority, owner, open and close dates)"],
+    ["6", "Test Cases Document", "Report5_Test Documentation.docx, Report5_Test Report.xlsx (118 cases with Round 1 results) and Report5_Unit Test.xlsx (10 functions, 66 decision-table cases); evidence files in Doc/Project_report/Report/evidence"],
+    ["7", "Defects List", "Sheet Defects of the tracking workbook (20 defects with severity, owner and status; 5 fixed and awaiting retest, 15 open); also listed in the Test Report workbook"],
+    ["8", "Issues List", "Sheet Issues of the tracking workbook (14 issues with priority, owner, open and close dates)"],
     ["9", "Slide", "Defense presentation – prepared for milestone M10 (Week 15, 14–20/12/2026)"],
-    ["10", "Server images", "Docker Hub repository tadminm/pickelverse with four digest-locked images per release: api-<release>, ai-<release>, server-<release> (Unity Linux dedicated server) and web-<release>"],
-    ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings"],
+    ["10", "Server images", "Docker Hub repository tadminm/pickelverse with four images per release: api-, ai-, server- (Unity Linux dedicated server) and web-<release>. The staging releases so far were built by hand and tagged <component>-manual-<yyyymmdd-hhmmss> (four releases, 08–10/11/2026) because the CI pipeline has not yet passed"],
+    ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings. The Android build has not yet been tested on a physical device (Report 1, LI-11)"],
     ["12", "Design sources", "PlantUML sources and rendered diagrams (Doc/Project_report/Report/diagrams), the editable draw.io file PickleVerse_UseCase_ConceptualERD.drawio and the report build scripts (Doc/Project_report/Report/build)"],
 ], widths=[1.0, 3.6, 11.4], size=8.5, first_col_bold=False, caption="Deliverable package of PickleVerse 1.0")
 
@@ -52,8 +53,9 @@ r.numbered([
     "In Settings → Security (or Apps → Special access), allow installing apps from the file manager or browser used to open the APK.",
     "Open the APK and select Install. Start PickleVerse from the app drawer; the game runs in landscape mode with touch controls (joystick and shot buttons).",
 ])
-r.h4("2.2.3 Deploy the server with the CI/CD pipeline (staging and release)")
-r.p("The staging server tad-min.io.vn is deployed automatically. Every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml):")
+r.p("Note: on 12/11/2026 the Android build has not yet been installed and tested on a physical phone; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10).")
+r.h4("2.2.3 Deploy the server (CI/CD pipeline and manual release)")
+r.p("The repository defines an automatic deployment: every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml) with the four jobs below. **Current status:** none of its runs has passed yet – the runs of 05/11/2026 failed in the build and every run since 06/11/2026 is stopped because the GitHub account is locked for a billing issue. Until the pipeline runs again, the team builds the four images on a developer PC, pushes them to Docker Hub with the tag <component>-manual-<yyyymmdd-hhmmss> and restarts the stack on the host by hand with the same .env file; writing this manual procedure as a script is part of backlog item PB-16.")
 r.numbered([
     "**Validate** – builds the .NET solution and runs the IntegrationChecks, runs the FastAPI tests and type-checks the admin web.",
     "**Build Unity Linux Dedicated Server** – builds the dedicated server with GameCI (unity-builder) using the Unity licence stored in the repository secrets.",
@@ -96,20 +98,21 @@ r.p("PickleVerse has two applications. Players use the game client on Windows or
 r.figure("r3_screenflow_game.png", "Screens of the game client and the navigation between them", width_cm=16, max_height_cm=17)
 r.table(["Workflow", "Purpose", "Main screens", "Owner (BM04)"], [
     ["W01 – Learn and sync a drill", "Create an account, learn the rules and practise a drill online or offline", "Login, Register, Tutorial, Training Academy, Drill Result", "Trần Nguyễn Hiếu Thuận"],
-    ["W02 – Play a bot match and get a tip", "Play a singles match against a bot and read the AI coaching", "Mode Selection, Bot Match Setup, Bot Match, Match Result, Coaching", "Nguyễn Gia Huy"],
-    ["W03 – Find and play an online match", "Play ranked singles or a private room with friends on the dedicated server", "Online Lobby, Ready Check, Multiplayer Court, History", "Nguyễn Văn Thành Đạt"],
-    ["W04 – Moderation and content (administrator)", "Handle reports and appeals, manage users, lessons, matches and analytics", "Admin web: Dashboard, Users, Moderation, CMS, Matches, Analytics", "Huỳnh Trung Kiên"],
+    ["W02 – Play a bot and get a tip", "Play a singles match against a bot and read the AI coaching", "Mode Selection, Bot Match Setup, Bot Match, Match Result, Coaching", "Nguyễn Gia Huy"],
+    ["W03 – Play online and save the result", "Play ranked singles, quick doubles or a private room with friends on the dedicated server; the result is saved once", "Online Lobby, Ready Check, Multiplayer Court, History", "Nguyễn Văn Thành Đạt"],
+    ["W04 – Review a report and publish a lesson (administrator)", "Handle reports and appeals and publish lessons; also manage users, matches and analytics", "Admin web: Dashboard, Users, Moderation, CMS, Matches, Analytics", "Huỳnh Trung Kiên"],
 ], widths=[4.0, 5.2, 4.4, 2.4], size=8.5, caption="Workflows of the user manual")
-r.p("**Controls.** Table %d summarises the default controls; all keys can be changed in Settings → Controls." % (r.tbl_no + 1))
+r.p("**Controls.** Table %d summarises the default controls. Keys can be changed in Settings → Controls; the size, opacity, left-handed mode and position of the touch controls are set in the same tab. During a match the shot cue under the player shows the keys of the shot being prepared, and the camera keeps the player above the cue (PC) or the touch controls (phone)." % (r.tbl_no + 1))
 r.table(["Action", "PC (keyboard)", "Android (touch)"], [
-    ["Move / run", "W, A, S, D / hold Left Shift", "Virtual joystick / run button"],
-    ["Drive (and serve)", "J – hold and release", "Shot button 1"],
-    ["Dink", "K", "Shot button 2"],
-    ["Volley", "L", "Shot button 3"],
-    ["Drop / Smash / Reset", "J+K / J+L / K+L", "Swipe combination between the shot buttons"],
-    ["Add power / aim cross-court", "Hold U / hold I while releasing the shot", "Power and cross toggles"],
-    ["Pause, settings / confirm", "Esc / Enter", "Pause button / tap"],
-], widths=[4.4, 5.6, 6.0], size=8.5, caption="Default controls")
+    ["Move / run", "W, A, S, D / hold Left Shift", "Drag the joystick on the left / hold the CHẠY button on the right"],
+    ["Drive (and serve)", "J – hold and release", "Hold and release DRIVE"],
+    ["Dink", "K – hold and release", "Hold and release DINK"],
+    ["Volley", "L – hold and release", "Hold and release VOLLEY"],
+    ["Drop / Smash / Reset", "J+K / J+L / K+L", "While holding, drag up: DINK → DROP, DRIVE → SMASH, VOLLEY → RESET"],
+    ["Add power / aim cross-court", "Hold U / hold I while releasing the shot", "While holding, drag right (LỰC) / drag left (CHÉO); for the serve drag DRIVE left or right"],
+    ["Cancel the prepared shot", "Backspace", "Drag down (HỦY)"],
+    ["Settings / help / confirm", "Esc / F1 / Enter", "CÀI ĐẶT button / help button / tap"],
+], widths=[4.0, 5.0, 7.0], size=8.5, caption="Default controls")
 r.p("The shot is decided when the first shot key is released, so press the key early and release it just before the ball reaches the paddle. A release that is too early or too late produces the feedback \"Bạn thả nút hơi sớm/muộn\".")
 
 # ---------------------------------------------------------------- W01
@@ -155,24 +158,24 @@ r.figure("02_menu_offline.png", "Menu in offline training mode", width_cm=13)
 r.figure("03_progression.png", "Training progress after practising", width_cm=13)
 
 # ---------------------------------------------------------------- W02
-r.h3("3.3 Workflow W02 – Play a Bot Match and Get a Tip")
+r.h3("3.3 Workflow W02 – Play a Bot and Get a Tip")
 r.p("**Purpose.** The player applies the techniques in a singles match against a computer opponent and receives AI coaching based on the shots of the match. Figure %d shows the flow." % (r.fig_no + 1))
-r.figure("r4_act_w02.png", "Workflow W02 – Play a bot match and get a tip", width_cm=14, max_height_cm=17)
+r.figure("r4_act_w02.png", "Workflow W02 – Play a bot and get a tip", width_cm=14, max_height_cm=17)
 r.h4("Step 1 – Set up the match")
 r.numbered([
     "In the Menu select **CHƠI NGAY** → **Đấu với bot**.",
-    "Choose the difficulty (Dễ, Vừa, Khó, or the adaptive option that follows your Elo), the time of day (Ban ngày / Ban đêm) and the court (Chuyên nghiệp / Ngoài trời), then select **VÀO SÂN**.",
+    "Choose the difficulty (Dễ, Vừa, Khó, or **Tự động**, the adaptive option that follows your Elo), the time of day (Ban ngày / Ban đêm) and the court (Chuyên nghiệp / Ngoài trời), then select **VÀO SÂN**.",
 ])
 r.figure("16_mode_selection.png", "Mode selection", width_cm=13)
 r.figure("17_bot_setup.png", "Bot match setup", width_cm=13)
 r.h4("Step 2 – Play the match")
 r.numbered([
-    "After the introduction, serve within 10 seconds: hold J behind the baseline and release to serve diagonally over the non-volley zone.",
+    "After the introduction, serve within 10 seconds: hold J (DRIVE on a phone) behind the baseline and release to serve diagonally over the non-volley zone. The hint on the left and the shot cue under the player show what to press.",
     "Let the return and the third shot bounce (two-bounce rule); afterwards volley with L only outside the non-volley zone. Faults appear as a banner, for example \"Lỗi • Bóng ra ngoài\".",
-    "A game is won at 11 points with a 2-point lead and the match at two games. Each side can take two time-outs per game from the pause menu (Esc).",
+    "A game is won at 11 points with a 2-point lead and the match at two games; in the third game the players change ends at 6 points. There are no time-outs; Esc opens the settings and F1 the help.",
 ])
 r.figure("18_botmatch_intro.png", "Bot match – introduction", width_cm=13)
-r.figure("19_botmatch_rally.png", "Bot match – rally with the score panel", width_cm=13)
+r.figure("19_botmatch_rally.png", "Bot match – serving; the shot cue under the player shows J + I (cross-court serve)", width_cm=13)
 r.h4("Step 3 – Read the result and the coaching")
 r.numbered([
     "The result shows the winner and the game score. A win gives 100 Tokenpad and 10 XP, a loss 50 Tokenpad and 5 XP; practice bot matches do not change Elo.",
@@ -184,22 +187,23 @@ r.figure("21_ai_analysis.png", "AI coaching summary with a recommended drill", w
 r.figure("12_history.png", "Match history", width_cm=13)
 
 # ---------------------------------------------------------------- W03
-r.h3("3.4 Workflow W03 – Find and Play an Online Match")
-r.p("**Purpose.** The player plays against other people: a ranked singles match that changes Elo, or a private singles or doubles room with friends. Online matches run on the dedicated server, which decides the score. Figure %d shows the flow." % (r.fig_no + 1))
-r.figure("r4_act_w03.png", "Workflow W03 – Find and play an online match", width_cm=14, max_height_cm=17)
+r.h3("3.4 Workflow W03 – Play Online and Save the Result")
+r.p("**Purpose.** The player plays against other people: a ranked singles match that changes Elo, an unrated quick doubles match, or a private singles or doubles room with friends. Online matches run on the dedicated server, which decides the score, and the result is saved once. Figure %d shows the flow." % (r.fig_no + 1))
+r.figure("r4_act_w03.png", "Workflow W03 – Play online and save the result", width_cm=14, max_height_cm=17)
 r.h4("Step 1 – Find a ranked match")
 r.numbered([
     "Select **CHƠI NGAY** → **Đấu online** → **ĐẤU ĐƠN 1v1**, then **Tìm trận**. The lobby shows \"Đang tìm đối thủ trực tuyến…\" and the waiting time; **Hủy** stops the search.",
     "When an opponent with a similar Elo is found, accept within 10 seconds. If nobody is found within 180 seconds, a ranked bot is offered instead.",
     "If the dedicated server is busy, the lobby shows \"Máy chủ đang bận • Đang chờ lượt thi đấu…\" and continues automatically when the server is free.",
 ])
-r.figure("27_online_lobby.png", "Online lobby – singles", width_cm=13)
-r.figure("28_searching.png", "Searching for an opponent", width_cm=13)
-r.h4("Step 2 – Play with friends in a private room")
+r.figure("28_searching.png", "Searching for a singles opponent (layout preview rendered in the Unity Editor)", width_cm=13)
+r.h4("Step 2 – Play quick doubles or with friends in a private room")
 r.numbered([
-    "Select **Tạo phòng** in Mode Selection and choose 1v1 or 2v2. Share the room code with friends, or invite an online friend from the friend list.",
+    "Quick doubles: select **ĐẤU ĐÔI 2v2** in the online lobby and **Tìm trận**, alone or after a friend has joined your party. The game fills two teams of two with other searching players; there is no bot, and the match does not change Elo. If no teams are found, the search ends with \"Hết thời gian tìm trận. Hãy thử lại.\"",
+    "Private room: select **Tạo phòng** in Mode Selection and choose 1v1 or 2v2. Share the room code with **SAO CHÉP**, or open the friends column on the right of the lobby and invite a friend who is in the lobby.",
     "Friends type the code in **Mã phòng** and select **THAM GIA BẰNG MÃ**, or accept the invitation. The host starts the match. Private matches do not change Elo.",
 ])
+r.figure("27_online_lobby.png", "Online lobby – doubles room with the room code and the friends column (layout preview rendered in the Unity Editor with sample friend data)", width_cm=13)
 r.figure("13_social.png", "Friends drawer used to find and invite friends", width_cm=13)
 r.h4("Step 3 – Play, reconnect and see the result")
 r.numbered([
@@ -211,10 +215,10 @@ r.figure("10_multiplayercourt_editmode.png", "Multiplayer court", width_cm=13)
 r.figure("14_leaderboard.png", "Elo leaderboard", width_cm=13)
 
 # ---------------------------------------------------------------- W04
-r.h3("3.5 Workflow W04 – Moderation and Content (Administrator)")
+r.h3("3.5 Workflow W04 – Review a Report and Publish a Lesson (Administrator)")
 r.p("**Purpose.** An administrator keeps the community and the training content healthy: handles player reports and appeals, manages accounts and roles, publishes lessons, monitors matches and reads the analytics. Figures %d and %d show the moderation and content flows. Every administrative change is recorded in the audit log." % (r.fig_no + 1, r.fig_no + 2))
-r.figure("r4_act_w04.png", "Workflow W04 – Report, sanction and appeal", width_cm=14, max_height_cm=17)
-r.figure("r4_act_content.png", "Workflow W04 – Publish training content", width_cm=14, max_height_cm=17)
+r.figure("r4_act_w04.png", "Workflow W04, part 1 – Report, sanction and appeal", width_cm=14, max_height_cm=17)
+r.figure("r4_act_content.png", "Workflow W04, part 2 – Publish a lesson", width_cm=14, max_height_cm=17)
 r.h4("Step 1 – Sign in to the admin web")
 r.p("Open the admin web address (http://tad-min.io.vn on staging), enter the e-mail and password of an Admin account and select **Xác thực & Truy cập**. Accounts without the Admin role are rejected. The dashboard shows the number of users, today's active players, matches, online time and pending reports.")
 r.figure("40_admin_login.jpg", "Admin web login", width_cm=12)
@@ -255,13 +259,14 @@ r.figure("47_admin_expert.png", "Expert labelling of a training session", width_
 # ---------------------------------------------------------------- other functions
 r.h3("3.6 Other Player Functions")
 r.table(["Function", "How to use"], [
-    ["Missions and streak", "Menu → NHIỆM VỤ: 7 daily and 10 weekly missions; select NHẬN THƯỞNG when a mission is complete and NHẬN THƯỞNG TỔNG for the set bonus. Missions renew at 07:00 Vietnam time; play at least one match per day to keep the streak."],
+    ["Missions and streak", "Menu → NHIỆM VỤ: 7 daily and 10 weekly missions; select NHẬN THƯỞNG when a mission is complete and NHẬN THƯỞNG TỔNG for the set bonus. Missions renew at 07:00 Vietnam time; play at least one match per day to keep the streak. A 3-day streak completes a weekly mission and a 5-day streak unlocks an achievement."],
+    ["Progress", "Menu → TIẾN TRÌNH: passed lessons, practice time, the most frequent error and, for each lesson, the stars, the best accuracy and the four most recent results (Gần đây)."],
     ["Shop", "Menu → CỬA HÀNG: preview a paddle and buy it with Tokenpad or Elite Token (if a price exists in that currency)."],
     ["Collection", "Menu → BỘ SƯU TẬP: owned paddles; select TRANG BỊ to use a paddle in matches."],
     ["Friends and leaderboard", "Friend drawer on the left of the Menu: search by name or ID, send or answer requests, remove or block players; the Bảng xếp hạng tab ranks players by Elo."],
     ["Replay", "LỊCH SỬ → replay button of a match: pause, seek and change speed from 0.5× to 2×. Only players of the match can watch it."],
     ["Report a player", "LỊCH SỬ → Tố cáo on a finished match: choose the player and enter the reason (up to 254 characters)."],
-    ["Decisions and appeals", "Menu → Quyết định & Khiếu nại: shows sanctions on the account; a restricted player can send one appeal (at least 10 characters) per sanction."],
+    ["Decisions and appeals", "Menu → \"!\" KHIẾU NẠI tile next to TIẾN TRÌNH: shows sanctions on the account; a restricted player can send one appeal (at least 10 characters) per sanction."],
     ["Settings", "Menu → CÀI ĐẶT: Tổng quan (sign out), Âm thanh, Đồ họa, Điều khiển (key binding and touch layout). Select ÁP DỤNG VÀ LƯU to keep the changes."],
 ], widths=[3.6, 12.4], size=8.5, first_col_bold=True, caption="Other player functions")
 for f, cap in [("15_missions.png", "Missions and daily streak"), ("22_shop.png", "Shop"), ("23_collection.png", "Collection"), ("24_settings.png", "Settings"), ("25_settings_controls.png", "Settings – key binding")]:

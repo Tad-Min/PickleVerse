@@ -8,7 +8,7 @@ participant "Web API\n(DedicatedServerService)" as API
 database "Redis\n(lease slot)" as R
 participant "DedicatedWorker\n(game server)" as W
 database "PostgreSQL" as DB
-W -> API : POST /dedicated/ready (poll for job)
+W -> API : POST /api/Server/poll (wait for a job)
 Cl -> API : POST /api/Game/dedicated/ticket
 API -> R : reserve slot for match
 alt slot busy
@@ -18,19 +18,20 @@ else slot reserved
 end
 API --> W : allocation (match, roster, lease)
 W -> W : StartDedicatedAsync (Fusion Server)
-W -> API : heartbeat (state = ready)
+W -> API : POST /api/Server/ready
 loop every 500 ms until ready
   Cl -> API : ticket
 end
 API --> Cl : ready + HMAC connection token
 Cl -> W : join session with token (UDP 3669)
 W -> W : DedicatedAdmission.Verify(token)
-W -> API : POST /dedicated/admission
+W -> API : POST /api/Server/admission
 loop during play
-  W -> API : heartbeat (score, connections)
+  W -> API : POST /api/Server/heartbeat (score, connections)
   API --> W : pending stop command, if any
 end
-W -> API : POST /dedicated/complete (result, telemetry, replay)
+W -> API : POST /api/Server/{lease}/telemetry and /replay
+W -> API : POST /api/Server/complete (result)
 API -> DB : save GameMatches, MatchScore, ratingledger, rewards (one transaction)
 API -> R : release lease
 @enduml

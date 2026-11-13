@@ -9,21 +9,25 @@ participant "GameMatchesController" as C
 participant "OnlineGameService\n(RankedSearch)" as S
 database "Redis" as R
 participant "Photon Cloud" as P
-Player -> App : Find match (1v1)
-App -> C : POST /api/Game/ranked/search
+Player -> App : Find match (1v1, or 2v2 with the party)
+App -> C : POST /api/Game/ranked/search (Mode, Members)
 C -> S : BeginRankedSearch
-S -> R : enqueue ticket (Elo window)
+S -> R : enqueue ticket (party, region, protocol, Elo)
 loop poll every few seconds
   App -> C : POST /api/Game/ranked/poll
   C -> S : PollRankedSearch
-  S -> R : try pair compatible tickets
+  S -> R : try to fill two sides with compatible tickets
 end
-alt human opponent found
+alt Singles: opponent inside the Elo window
   S --> App : MATCHED (session, region, roster)
-else no opponent within 180 s
+else Singles: no opponent within 180 s
   App -> C : POST /api/Game/ranked/bot
   C -> S : AssignRankedBot
   S --> App : BOT (virtual ranked account)
+else Doubles: parties and solo players fill 2 + 2 seats
+  S --> App : MATCHED (unrated 2v2 roster)
+else Doubles: nobody found
+  App --> Player : search times out (no bot fallback)
 end
 App -> P : start or join Photon match session
 App -> C : POST /api/Game/match/online/offer

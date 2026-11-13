@@ -12,7 +12,6 @@ class BotMatch <<MonoBehaviour>> {
   + RequestShot(id, intent) : bool
   + StepSimulation(dt, move, run) : void
   + PredictContact(end, bounce, out point, out delay) : bool
-  + Timeout() : void
   + Restart() : void
 }
 class MatchActor <<MonoBehaviour>> {
@@ -90,6 +89,7 @@ enum MatchPhase {
   Timeout
   MatchOver
 }
+note right of MatchPhase : Timeout and SinglesRules.TakeTimeout are kept\nfor protocol compatibility; since 09fd35c no HUD\ncontrol or key binding requests a time-out.
 BotMatch "1" *-- "2" MatchActor
 BotMatch "1" *-- "1" SinglesRules
 BotMatch "1" *-- "1" ShotInput
@@ -100,4 +100,25 @@ BotMatch ..> ShotTrajectory
 ShotInput ..> ShotIntent
 ShotIntent --> ShotKind
 MatchActor --> ShotIntent
+class MatchCamera <<MonoBehaviour>> {
+  + player : MatchActor
+  + DesiredPosition : Vector3
+  + DesiredRotation : Quaternion
+  + SnapToPlayer() : void
+}
+class CourtFollowView <<static>> {
+  + DesktopFeetLine = 0.25
+  + TouchFeetLine = 0.32
+  + Position(player, end, doubles) : Vector3
+  + Frame(camera, player, end, doubles, feetLine, out rotation, out fov) : void
+  + KeepFeetAbove(rotation, camera, feet, fov, feetLine) : Quaternion
+  + Apply(view, player, end, doubles, dt) : void
+}
+class HudActorClearance <<MonoBehaviour>> {
+  + Attach(panel, actor) : HudActorClearance
+}
+MatchCamera --> MatchActor : follows
+MatchCamera ..> CourtFollowView
+HudActorClearance ..> MatchActor : keeps the shot cue clear of
+note bottom of CourtFollowView : Feet stay at or above 25% of the screen\nheight on PC and 32% on Android; the view\nwidens by up to 8 degrees to keep the far\nbaseline in the frame.
 @enduml

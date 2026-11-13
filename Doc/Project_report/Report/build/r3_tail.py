@@ -32,7 +32,7 @@ BR = [
     ("BR-12", "Gameplay", "Two-bounce rule: the return of serve and the third shot must bounce once before they are hit."),
     ("BR-13", "Gameplay", "A volley may not be hit while standing in the non-volley zone, and the player's momentum after a volley may not carry them into the zone."),
     ("BR-14", "Gameplay", "The rally ends with a fault of one of 17 types: serve foot, serve motion, serve timeout, short serve, serve to the wrong court, missed serve, out, ball into own court, two-bounce rule, double bounce, double hit, kitchen volley, kitchen momentum, net touch, body hit, net plane and permanent object."),
-    ("BR-15", "Gameplay", "Each side has two time-outs per game. In the third game the players change ends when a side first reaches 6 points."),
+    ("BR-15", "Gameplay", "In the third game the players change ends when a side first reaches 6 points. Time-outs are not offered in release 1.0."),
     ("BR-16", "Gameplay", "A paddle contact is accepted only when the key is released within ±65 ms of the ideal contact time. A contact is Perfect when the contact error is ≤ 0.145 m and the timing error is within ±30 ms."),
     ("BR-17", "Gameplay", "Shot keys: J drive (and serve), K dink, L volley, J+K drop, J+L smash, K+L reset; U adds power and I aims cross-court. The shot is decided once, when the first base key is released."),
     # Training
@@ -45,16 +45,16 @@ BR = [
     ("BR-23", "Match", "A new player starts at 100 Elo, which is also the minimum. After a ranked match Elo changes by round(32 × (S − E)), where S is 1 for a win and 0 for a loss and E = 1 / (1 + 10^((R_opponent − R_own)/400)); the result is never below 100."),
     ("BR-24", "Match", "Ranked pairing uses a window of 120 Elo. During the first 30 seconds the window extends only upward (only downward for a player with 5 or more losses); after 30 seconds it extends 120 in both directions."),
     ("BR-25", "Match", "When a match is found, every player must accept within 10 seconds; a decline or a timeout cancels the offer."),
-    ("BR-26", "Match", "If no human opponent is found within 180 seconds, a ranked bot is assigned with Elo = own + 120 (own − 100 for a player with 5 or more losses)."),
+    ("BR-26", "Match", "Ranked singles only: if no human opponent is found within 180 seconds, a ranked bot is assigned with Elo = own + 120 (own − 100 for a player with 5 or more losses). Quick doubles has no bot fallback; its search ends when the search lease expires."),
     ("BR-27", "Match", "Rank tiers by Elo: Đồng < 500, Bạc < 1000, Vàng < 2000, Bạch Kim < 3500, Kim Cương < 5000, Cao Thủ < 7000, Huyền Thoại ≥ 7000."),
-    ("BR-28", "Match", "A disconnected client tries to reconnect for 30 seconds. The dedicated server sends a heartbeat every 8 seconds and the API keeps the player's slot for 35 seconds after the last heartbeat; after that the match is interrupted."),
+    ("BR-28", "Match", "A disconnected client tries to reconnect for 30 seconds, and the dedicated server keeps the player's slot for 30 seconds while the match is paused; a player who does not return is recorded as having forfeited and the match ends as interrupted. Clients send a heartbeat to the API every 8 seconds; in shared-mode matches (local development only) the API interrupts the match when a player has sent no heartbeat for 35 seconds. If the dedicated server stops renewing its lease, the lease monitor ends the match as interrupted."),
     ("BR-29", "Match", "A match result is saved exactly once. An interrupted or stopped match gives no Elo and no reward."),
     ("BR-30", "Match", "A singles room holds 2 players and a doubles room up to 4. The host starts a custom match and may start a doubles room before all four slots are filled; custom matches are unrated."),
     ("BR-31", "Match", "Bot levels Easy, Medium and Hard use fixed reaction, accuracy and error settings. The adaptive bot selects its tier from the player's Elo: below 500 beginner, below 2000 intermediate, otherwise advanced."),
     # Economy
     ("BR-32", "Economy", "Match rewards: bot match win 100 / loss 50 Tokenpad; online match win 150 / loss 75 Tokenpad; every finished match gives 10 XP for a win and 5 XP for a loss."),
     ("BR-33", "Economy", "Reaching level n+1 requires n × 200 XP at level n; surplus XP carries over."),
-    ("BR-34", "Economy", "There are 7 daily and 10 weekly missions. Daily missions renew at 07:00 Vietnam time (UTC+7) and weekly missions at the start of each mission week. Completing all daily missions gives 200 Tokenpad + 20 XP and all weekly missions 1,000 Tokenpad + 50 XP. The daily streak grows by one for each day with at least one finished match."),
+    ("BR-34", "Economy", "There are 7 daily and 10 weekly missions. Daily missions renew at 07:00 Vietnam time (UTC+7) and weekly missions at the start of each mission week. Completing all daily missions gives 200 Tokenpad + 20 XP and all weekly missions 1,000 Tokenpad + 50 XP. The daily streak grows by one for each day with at least one finished match; streaks are rewarded by the weekly mission \"3-day streak\" (350 Tokenpad + 20 XP) and the achievement \"5-day streak\" (500 Tokenpad + 30 XP)."),
     ("BR-35", "Economy", "Each mission, mission set and achievement reward can be claimed only once."),
     ("BR-36", "Economy", "A purchase requires enough balance in the chosen currency and is refused if the item is already owned; the debit and the grant are one transaction. Exactly one paddle is equipped at a time. Elite Token has no earning source in release 1.0."),
     ("BR-37", "Economy", "The THOT paddle is granted once after 10 passed lessons and the GEMSTONE paddle once at level 25, unless already owned."),
@@ -157,7 +157,7 @@ TRACE = [
     ("F08", "Private rooms", "FR-15", "UC-21 to UC-24", "W03", "Nguyễn Văn Thành Đạt"),
     ("F09", "Dedicated play", "FR-16, FR-17", "UC-25 to UC-27", "W03", "Nguyễn Văn Thành Đạt"),
     ("F10", "Result and Elo", "FR-18", "UC-25", "W03", "Nguyễn Văn Thành Đạt"),
-    ("F11", "Progress and replay", "FR-10, FR-24", "UC-15, UC-28, UC-29", "W02", "Nguyễn Gia Huy"),
+    ("F11", "Progress and replay", "FR-10, FR-21, FR-24", "UC-15, UC-28, UC-29, UC-39", "W02", "Nguyễn Gia Huy"),
     ("F12", "Friends and ranks", "FR-25, FR-26", "UC-31 to UC-36", "W03", "Trần Nguyễn Hiếu Thuận"),
     ("F13", "Daily and streak rewards", "FR-21", "UC-37 to UC-40", "W01", "Nguyễn Gia Huy"),
     ("F14", "Offline practice", "FR-09", "UC-13, UC-14", "W01", "Trần Nguyễn Hiếu Thuận"),
@@ -185,7 +185,7 @@ def write(r):
                "Server: Linux host with Docker; the dedicated game-server container is limited to 2 CPUs and 2 GB RAM by default."])
     r.h4("4.1.3 Software Interfaces")
     r.table(["Interface", "Description"], [
-        ["Web API (REST/JSON)", "122 endpoints under /api, JSON bodies wrapped in the ApiResponse<T> envelope {success, message, data}; error responses carry {success, message, code, errors}; JWT bearer authentication; Swagger/OpenAPI documentation"],
+        ["Web API (REST/JSON)", "129 endpoints under /api (Report 4, §3.9), JSON bodies wrapped in the ApiResponse<T> envelope {success, message, data}; error responses carry {success, message, code, errors}; JWT bearer authentication; Swagger/OpenAPI documentation"],
         ["AI coaching service", "Internal HTTP API POST /v1/analyze-session protected by the X-AI-Key header; called only by the Web API worker"],
         ["Dedicated server ↔ Web API", "HTTP calls for lease, heartbeat, telemetry, replay and result, authenticated with a service key; match tickets signed with HMAC-SHA256"],
         ["Photon Fusion 2.1.3", "Real-time session service (protocol version 18) used by clients and the dedicated server"],

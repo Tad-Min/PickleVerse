@@ -5,11 +5,13 @@ Results are recorded only from real runs:
   EV-02  Playtest on the staging server, 10/11/2026 (offline training, signed-in menu, bot match, AI coaching, ranked 1v1 with bot fallback)
   EV-03  UI check of the account screens and the tutorial, 11/11/2026
   EV-04  Match history of the team test accounts: two ranked 1v1 matches on 09/11/2026 21:47 and 21:55
+  EV-06  Unity EditMode run, 11/11/2026, main @ 5963501, 516 tests, 516 passed
+  EV-07  Unity Play Mode check of the fixed defects D-03, D-04, D-05, D-07 and D-19, 11/11/2026, main @ 5963501
 Every other case is Pending, with the reason in the Note column.
 """
 
 HUY, DAT = "Nguyễn Gia Huy", "Nguyễn Văn Thành Đạt"
-D10, D11, D09 = "10/11/2026", "11/11/2026", "09/11/2026"
+D10, D11, D09, D12 = "10/11/2026", "11/11/2026", "09/11/2026", "12/11/2026"
 
 SHEETS = [
     ("FE01 Account", "FE-01 Account and onboarding", "FR-01 to FR-05: registration, verification, sign-in, profile, settings"),
@@ -138,6 +140,10 @@ C("TC-F07-03", "FE04 Online", "FR-14", "Unit", "Rule", "Elo pairing window and d
   "Run the pairing-key test with Elo pairs (200, 240), (200, 320) and (200, 321) with and without expansion and 5 losses.",
   "Pairs inside the window and preferred direction match; 200 vs 321 never matches; expanded window is ±120.", "–",
   auto=EM + "ProgressionTests.MutualPairKeysEnforceBothPreferencesAndWindow", note="EV-01", **PASS_UT)
+C("TC-F07-04", "FE04 Online", "FR-14", "System", "Main", "Quick doubles fills two teams of two and has no bot fallback",
+  "1. Players A and B form a doubles party by room code; A (captain) selects Đấu đôi 2v2 → Tìm trận.\n2. Players C and D search quick doubles alone at the same time.\n3. All four accept the ready check.\n4. Repeat step 1 with no other player searching and wait until the search ends.",
+  "Step 3: one 2v2 match with A and B on the same team starts on the dedicated server and is recorded as unrated (MatchedDoubles, no Elo change). Step 4: no bot is offered; the search ends with MSG34.",
+  "Four signed-in accounts on at least two devices; dedicated server idle", note="Not run: needs four accounts at the same time. Planned in Round 2 (Đạt, Thuận).")
 C("TC-F08-01", "FE04 Online", "FR-15", "System", "Main", "Create a private singles room and join it by code",
   "1. Player A: Mode Selection → Tạo phòng → Đấu đơn 1v1; note the room code.\n2. Player B: Online lobby → enter the code → Tham gia bằng mã.\n3. Player A starts the match.",
   "Player B appears in the roster; the match starts on the dedicated server; the result is unrated.", "Two signed-in accounts on two devices",
@@ -254,14 +260,14 @@ C("TC-W01", "Workflows", "FR-01, FR-06, FR-08, FR-09", "Acceptance", "Workflow",
   "1. New player registers and chooses Người mới.\n2. Finishes the tutorial.\n3. Goes offline and passes the serve drill.\n4. Reconnects.",
   "Tutorial completion, offline stars and the first-pass reward are on the server exactly once.", "Test mailbox, network switch",
   note="Not run end to end; steps 3 partly covered by TC-F14-01.")
-C("TC-W02", "Workflows", "FR-13, FR-18, FR-19", "Acceptance", "Workflow", "W02 Play a bot match and get a tip (owner: Huy, support: Đạt)",
+C("TC-W02", "Workflows", "FR-13, FR-18, FR-19", "Acceptance", "Workflow", "W02 Play a bot and get a tip (owner: Huy, support: Đạt)",
   "1. Play a bot match to the end.\n2. Open the analysis.\n3. Open the recommended drill.", "Result with rewards; coaching summary with at most three drills; the drill briefing opens.",
   "Signed-in player; hybrid coaching enabled", status="Passed", date=D10, tester=HUY, note="EV-02 (TC-F05-01, TC-F06-01).")
-C("TC-W03", "Workflows", "FR-14, FR-16, FR-18", "Acceptance", "Workflow", "W03 Find and play an online match (owner: Đạt, support: Huy)",
+C("TC-W03", "Workflows", "FR-14, FR-16, FR-18", "Acceptance", "Workflow", "W03 Play online and save the result (owner: Đạt, support: Huy)",
   "1. Search ranked 1v1.\n2. Accept the offer.\n3. Play on the dedicated server to the result.", "The match runs on the dedicated server and both sides see the final result.",
   "Dedicated server idle", status="Passed", date=D10, tester=HUY, note="EV-02, bot-fallback variant: accept 11:03:23, match started 11:03:46, result 0:2 at 11:06:04. Human-versus-human variant is TC-F09-01 (failed). D-14 found.")
-C("TC-W04", "Workflows", "FR-27, FR-28, FR-30", "Acceptance", "Workflow", "W04 Report, sanction and appeal (owner: Kiên, support: Thuận)",
-  "1. Player reports an opponent.\n2. Admin accepts and suspends.\n3. Suspended player appeals.\n4. Admin accepts the appeal.", "Account becomes SUSPENDED, then ACTIVE after the accepted appeal; all decisions are audited.",
+C("TC-W04", "Workflows", "FR-27, FR-28, FR-30, FR-31", "Acceptance", "Workflow", "W04 Review a report and publish a lesson (owner: Kiên, support: Thuận)",
+  "1. Player reports an opponent.\n2. Admin accepts and suspends.\n3. Suspended player appeals.\n4. Admin accepts the appeal.\n5. Admin edits a lesson draft and publishes it.\n6. A player restarts the client and opens the lesson.", "Account becomes SUSPENDED, then ACTIVE after the accepted appeal; all decisions are audited; the published lesson text appears in the client.",
   "Two players and one admin", note="Not run: blocked by D-09.")
 
 # ------------------------------------------------------------------ State transitions
@@ -322,6 +328,7 @@ NFR = [("NFR-01", "Usability test with 10 first-time students", "≥ 8 of 10 fin
        ("NFR-12", "Reference check, test report and API response review", "no reverse dependency; tests pass; e-mail never exposed to players")]
 NFR_NOTE = {"NFR-03": "Not run on the reference devices. The Unity Editor showed 51–79 FPS during the 10/11 bot match (not a valid measurement).",
             "NFR-09": "Not run. Known failures already logged: D-17 (secrets in the repository) and D-18 (HTTP on staging).",
+            "NFR-10": "Not run. The Android build has not yet been installed on a physical device (Report 1, LI-11); Windows was used in EV-02.",
             "NFR-12": "Not run as a formal check; the project references follow the layered rule (checked by reading the .csproj files)."}
 for i, (nid, how, crit) in enumerate(NFR, 1):
     C("TC-N%02d" % i, "NFR", nid, "System", "NFR", how, "Follow the verification method of %s in Report 3." % nid, crit, "Release candidate on staging and reference devices",
@@ -330,7 +337,7 @@ for i, (nid, how, crit) in enumerate(NFR, 1):
 DEFECTS = [
     ("D-01", "Offline banner overlaps the titles of Progress, the training HUD and the lesson list", "UI", "Low", "TC-F14-01", D10, "Thuận"),
     ("D-02", "Offline: the analysis area stays at \"Đang phân tích…\" forever", "Functional", "Medium", "TC-F06-03", D10, "Đạt"),
-    ("D-03", "Key-hint box of the training HUD covers the player character", "UI", "Low", "TC-F03-01", D10, "Huy"),
+    ("D-03", "Key-hint box (shot cue) covers the player character in training, bot and online matches", "UI", "Low", "TC-F03-01", D10, "Huy"),
     ("D-04", "\"Quyết định & Khiếu nại\" button overlaps the PLAY button and the profile panel", "UI", "Medium", "TC-F01-02", D10, "Thuận"),
     ("D-05", "Fourth bot difficulty shows the technical name \"BhTree\"", "UI text", "Low", "TC-F05-01", D10, "Huy"),
     ("D-06", "Bot card says \"Không cần kết nối mạng\" but bot matches are disabled offline", "UI text", "Low", "TC-F14-01", D10, "Thuận"),
@@ -346,7 +353,21 @@ DEFECTS = [
     ("D-16", "Sync-UnityTests.ps1 fails to parse in Windows PowerShell 5.1 (UTF-8 file without BOM)", "Tooling", "Medium", "Unit test run", D11, "Thuận"),
     ("D-17", "Development credentials committed in appsettings.json and a fallback JWT key in Program.cs", "Security", "High", "TC-N09", D11, "Đạt"),
     ("D-18", "Staging API and admin web are served over HTTP instead of HTTPS", "Security", "High", "TC-N09", D11, "Đạt"),
+    ("D-19", "Settings tile is pushed below the screen after the Decisions and Appeals tile was added to the menu", "UI", "Low", "TC-F01-02", D11, "Huy"),
+    ("D-20", "Level 25 needs 60,000 XP in total (n × 200 per level) while a match gives 5–10 XP, so the GEMSTONE paddle (BR-37) is effectively unreachable", "Requirement", "Medium", "TC-F04-03", D12, "Kiên"),
 ]
+# Defects fixed in code after Round 1: commit on main and verification (EV-07). They are closed only after the Round 2 retest on staging.
+DEFECT_FIX = {
+    "D-03": "5963501",
+    "D-04": "31a7c2e",
+    "D-05": "d2fc5be",
+    "D-07": "6d1ed37",
+    "D-19": "9dd994c",
+}
+
+
+def defect_status(did):
+    return "Fixed" if did in DEFECT_FIX else "Open"
 
 # ------------------------------------------------------------------ Unit test decision tables
 # Each function: code, class, function, requirement, loc, conditions [(group, value)], confirms [(group, value)],
@@ -375,7 +396,7 @@ UNIT = [
          cases=[("A", [0], [0], "AccuracyThresholds(0,25)"), ("B", [1], [0], "AccuracyThresholds(100,25)"), ("N", [2], [1], "AccuracyThresholds(220,26)"), ("N", [3], [2], "AccuracyThresholds(9000,99)"),
                 ("B", [4], [3], "AccuracyThresholds(9100,100)"), ("A", [5], [3], "AccuracyThresholds(100000,100)"), ("N", [6], [4], "BotRatingAndSeededDecisions"), ("B", [7], [5], "BotRatingAndSeededDecisions")]),
     dict(code="UT-06", cls="SinglesRules", fn="CommitRally() / NextGame() / TakeTimeout()", req="FR-12, BR-10, BR-15", loc=178, file="LocalMatch/Rules/SinglesRules.cs",
-         cond=[("Score", "11–10 in a game"), ("Score", "12–10 in a game"), ("Games", "one game won"), ("Deciding game", "a side reaches 6"), ("Time-outs", "third request, or after the serve"), ("Ball", "lands on the baseline or sideline")],
+         cond=[("Score", "11–10 in a game"), ("Score", "12–10 in a game"), ("Games", "one game won"), ("Deciding game", "a side reaches 6"), ("Time-out request (rule kept for protocol compatibility; no UI control since 09fd35c)", "third request, or after the serve"), ("Ball", "lands on the baseline or sideline")],
          conf=[("Return", "game continues"), ("Return", "game won"), ("Return", "match not over"), ("State", "ends changed once"), ("Return", "time-out refused"), ("Return", "ball in")],
          cases=[("B", [0], [0], "ElevenTenDoesNotWinAndTwelveTenDoes"), ("B", [1], [1], "ElevenTenDoesNotWinAndTwelveTenDoes"), ("N", [2], [2], "MatchRequiresTwoGameWins"),
                 ("N", [3], [3], "DecidingGameChangesEndsAtSixOnlyOnce"), ("A", [4], [4], "TimeoutLimitedToTwoAndOnlyBeforeServe"), ("B", [5], [5], "BaselineAndSidelineAreIn")]),
