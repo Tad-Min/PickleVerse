@@ -299,7 +299,7 @@
       <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Done; Checks, dedicated-server build, publish and deploy pass in runs 27, 28 and 30 of 13/11/2026; 29 other runs did not pass (configuration 05/11, billing lock 06–11/11, dedicated build 11–12/11, deploy steps and one FastAPI test 13/11); Unity tests are not in CI yet (PB-09)</Notes>
+      <Notes>Complexity Medium; Done; Checks, dedicated-server build, publish and deploy pass in runs 27, 28, 30, 33 and 34 of 13/11/2026; 30 other runs did not pass (configuration 05/11, billing lock 06–11/11, dedicated build 11–12/11, deploy steps, one FastAPI test and one cancelled run 13/11); Unity tests are not in CI yet (PB-09)</Notes>
     </Task>
     <Task>
       <UID>12</UID>
