@@ -16,7 +16,8 @@ package "Dedicated game server (Unity, UNITY_SERVER)" {
   }
 }
 package "Web API" {
-  class DedicatedController <<ApiController>> {
+  class DedicatedWorkerController <<ApiController>> {
+    + Poll()
     + Ready()
     + Heartbeat()
     + Acknowledge()
@@ -25,8 +26,9 @@ package "Web API" {
     + Release()
     + Telemetry(lease)
     + Replay(lease)
+    + Chunk(lease, index)
   }
-  class GameController <<ApiController>> {
+  class DedicatedController <<ApiController>> {
     + Ticket(MatchId) : DedicatedTicket
   }
   interface IDedicatedServerService {
@@ -49,10 +51,10 @@ package "Web API" {
   }
   class DedicatedLeaseMonitor <<BackgroundService>>
 }
-DedicatedWorker ..> DedicatedController : HTTP (service key)
+DedicatedWorker ..> DedicatedWorkerController : HTTP /api/Server (service key)
 DedicatedWorker ..> DedicatedAdmission
-GameController --> IDedicatedServerService
 DedicatedController --> IDedicatedServerService
+DedicatedWorkerController --> IDedicatedServerService
 DedicatedServerService ..|> IDedicatedServerService
 DedicatedServerService --> DedicatedLeaseRepository
 DedicatedLeaseMonitor --> IDedicatedServerService

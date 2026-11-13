@@ -18,6 +18,7 @@ class MultiplayerApp <<MonoBehaviour>> {
 enum FlowState {
   Menu
   WaitingRoom
+  Delay
   Searching
   Connecting
   InMatch
@@ -81,4 +82,18 @@ NetworkMatch "1" *-- "1" PickleballRules
 NetworkMatch "1" o-- "2..4" NetworkPlayer
 NetworkMatch --> MatchRoster
 MultiplayerApp --> MatchRoster
+class PlayMultiplayerPresenter <<MonoBehaviour>> {
+  + CanInviteFriends : bool
+  + ShowInvite() : void
+  - Refresh() : void
+}
+class LobbyFriendsSidebar <<MonoBehaviour>> {
+  + IsOpen : bool
+  + Page : InvitableFriendsPage
+  + Open(focusSearch) : void
+  + Fetch(append) : Task
+  + SendAsync(friend) : Task
+}
+PlayMultiplayerPresenter --> MultiplayerApp : room and queue commands
+PlayMultiplayerPresenter "1" *-- "1" LobbyFriendsSidebar
 @enduml

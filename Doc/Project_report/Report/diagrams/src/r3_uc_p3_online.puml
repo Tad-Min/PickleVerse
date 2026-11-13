@@ -4,7 +4,7 @@ left to right direction
 actor Player
 actor "Photon Cloud" as PC
 rectangle "P3 Online Match" {
-  usecase "UC-19 Find Ranked Match" as UC19
+  usecase "UC-19 Find Online Match" as UC19
   usecase "UC-20 Confirm Match Readiness" as UC20
   usecase "UC-21 Create Private Room" as UC21
   usecase "UC-22 Join Room by Code" as UC22

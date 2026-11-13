@@ -4,7 +4,17 @@
 start
 if (Private room?) then (yes)
   :Create room and invite friend;
-else (no)
+elseif (Quick doubles?) then (yes)
+  :Search alone or with a party of two;
+  |Web API|
+  if (Two sides of two filled?) then (yes)
+    :Build unrated 2v2 roster;
+  else (no)
+    :Search times out;
+    stop
+  endif
+else (ranked singles)
+  |Player|
   :Find ranked match;
   |Web API|
   if (Opponent found within 180 s?) then (yes)

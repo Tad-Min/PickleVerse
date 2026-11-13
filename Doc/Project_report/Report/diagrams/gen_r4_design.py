@@ -179,7 +179,6 @@ class BotMatch <<MonoBehaviour>> {
   + RequestShot(id, intent) : bool
   + StepSimulation(dt, move, run) : void
   + PredictContact(end, bounce, out point, out delay) : bool
-  + Timeout() : void
   + Restart() : void
 }
 class MatchActor <<MonoBehaviour>> {
@@ -257,6 +256,7 @@ enum MatchPhase {
   Timeout
   MatchOver
 }
+note right of MatchPhase : Timeout and SinglesRules.TakeTimeout are kept\nfor protocol compatibility; since 09fd35c no HUD\ncontrol or key binding requests a time-out.
 BotMatch "1" *-- "2" MatchActor
 BotMatch "1" *-- "1" SinglesRules
 BotMatch "1" *-- "1" ShotInput
@@ -267,6 +267,27 @@ BotMatch ..> ShotTrajectory
 ShotInput ..> ShotIntent
 ShotIntent --> ShotKind
 MatchActor --> ShotIntent
+class MatchCamera <<MonoBehaviour>> {
+  + player : MatchActor
+  + DesiredPosition : Vector3
+  + DesiredRotation : Quaternion
+  + SnapToPlayer() : void
+}
+class CourtFollowView <<static>> {
+  + DesktopFeetLine = 0.25
+  + TouchFeetLine = 0.32
+  + Position(player, end, doubles) : Vector3
+  + Frame(camera, player, end, doubles, feetLine, out rotation, out fov) : void
+  + KeepFeetAbove(rotation, camera, feet, fov, feetLine) : Quaternion
+  + Apply(view, player, end, doubles, dt) : void
+}
+class HudActorClearance <<MonoBehaviour>> {
+  + Attach(panel, actor) : HudActorClearance
+}
+MatchCamera --> MatchActor : follows
+MatchCamera ..> CourtFollowView
+HudActorClearance ..> MatchActor : keeps the shot cue clear of
+note bottom of CourtFollowView : Feet stay at or above 25% of the screen\nheight on PC and 32% on Android; the view\nwidens by up to 8 degrees to keep the far\nbaseline in the frame.
 """
 
 D["r4_cls_bot"] = r"""
@@ -345,6 +366,7 @@ class MultiplayerApp <<MonoBehaviour>> {
 enum FlowState {
   Menu
   WaitingRoom
+  Delay
   Searching
   Connecting
   InMatch
@@ -408,6 +430,20 @@ NetworkMatch "1" *-- "1" PickleballRules
 NetworkMatch "1" o-- "2..4" NetworkPlayer
 NetworkMatch --> MatchRoster
 MultiplayerApp --> MatchRoster
+class PlayMultiplayerPresenter <<MonoBehaviour>> {
+  + CanInviteFriends : bool
+  + ShowInvite() : void
+  - Refresh() : void
+}
+class LobbyFriendsSidebar <<MonoBehaviour>> {
+  + IsOpen : bool
+  + Page : InvitableFriendsPage
+  + Open(focusSearch) : void
+  + Fetch(append) : Task
+  + SendAsync(friend) : Task
+}
+PlayMultiplayerPresenter --> MultiplayerApp : room and queue commands
+PlayMultiplayerPresenter "1" *-- "1" LobbyFriendsSidebar
 """
 
 D["r4_cls_dedicated"] = r"""
@@ -427,7 +463,8 @@ package "Dedicated game server (Unity, UNITY_SERVER)" {
   }
 }
 package "Web API" {
-  class DedicatedController <<ApiController>> {
+  class DedicatedWorkerController <<ApiController>> {
+    + Poll()
     + Ready()
     + Heartbeat()
     + Acknowledge()
@@ -436,8 +473,9 @@ package "Web API" {
     + Release()
     + Telemetry(lease)
     + Replay(lease)
+    + Chunk(lease, index)
   }
-  class GameController <<ApiController>> {
+  class DedicatedController <<ApiController>> {
     + Ticket(MatchId) : DedicatedTicket
   }
   interface IDedicatedServerService {
@@ -460,10 +498,10 @@ package "Web API" {
   }
   class DedicatedLeaseMonitor <<BackgroundService>>
 }
-DedicatedWorker ..> DedicatedController : HTTP (service key)
+DedicatedWorker ..> DedicatedWorkerController : HTTP /api/Server (service key)
 DedicatedWorker ..> DedicatedAdmission
-GameController --> IDedicatedServerService
 DedicatedController --> IDedicatedServerService
+DedicatedWorkerController --> IDedicatedServerService
 DedicatedServerService ..|> IDedicatedServerService
 DedicatedServerService --> DedicatedLeaseRepository
 DedicatedLeaseMonitor --> IDedicatedServerService
@@ -865,21 +903,25 @@ participant "GameMatchesController" as C
 participant "OnlineGameService\n(RankedSearch)" as S
 database "Redis" as R
 participant "Photon Cloud" as P
-Player -> App : Find match (1v1)
-App -> C : POST /api/Game/ranked/search
+Player -> App : Find match (1v1, or 2v2 with the party)
+App -> C : POST /api/Game/ranked/search (Mode, Members)
 C -> S : BeginRankedSearch
-S -> R : enqueue ticket (Elo window)
+S -> R : enqueue ticket (party, region, protocol, Elo)
 loop poll every few seconds
   App -> C : POST /api/Game/ranked/poll
   C -> S : PollRankedSearch
-  S -> R : try pair compatible tickets
+  S -> R : try to fill two sides with compatible tickets
 end
-alt human opponent found
+alt Singles: opponent inside the Elo window
   S --> App : MATCHED (session, region, roster)
-else no opponent within 180 s
+else Singles: no opponent within 180 s
   App -> C : POST /api/Game/ranked/bot
   C -> S : AssignRankedBot
   S --> App : BOT (virtual ranked account)
+else Doubles: parties and solo players fill 2 + 2 seats
+  S --> App : MATCHED (unrated 2v2 roster)
+else Doubles: nobody found
+  App --> Player : search times out (no bot fallback)
 end
 App -> P : start or join Photon match session
 App -> C : POST /api/Game/match/online/offer
@@ -899,7 +941,7 @@ participant "Web API\n(DedicatedServerService)" as API
 database "Redis\n(lease slot)" as R
 participant "DedicatedWorker\n(game server)" as W
 database "PostgreSQL" as DB
-W -> API : POST /dedicated/ready (poll for job)
+W -> API : POST /api/Server/poll (wait for a job)
 Cl -> API : POST /api/Game/dedicated/ticket
 API -> R : reserve slot for match
 alt slot busy
@@ -909,19 +951,20 @@ else slot reserved
 end
 API --> W : allocation (match, roster, lease)
 W -> W : StartDedicatedAsync (Fusion Server)
-W -> API : heartbeat (state = ready)
+W -> API : POST /api/Server/ready
 loop every 500 ms until ready
   Cl -> API : ticket
 end
 API --> Cl : ready + HMAC connection token
 Cl -> W : join session with token (UDP 3669)
 W -> W : DedicatedAdmission.Verify(token)
-W -> API : POST /dedicated/admission
+W -> API : POST /api/Server/admission
 loop during play
-  W -> API : heartbeat (score, connections)
+  W -> API : POST /api/Server/heartbeat (score, connections)
   API --> W : pending stop command, if any
 end
-W -> API : POST /dedicated/complete (result, telemetry, replay)
+W -> API : POST /api/Server/{lease}/telemetry and /replay
+W -> API : POST /api/Server/complete (result)
 API -> DB : save GameMatches, MatchScore, ratingledger, rewards (one transaction)
 API -> R : release lease
 """
@@ -1191,7 +1234,17 @@ D["r4_act_w03"] = r"""
 start
 if (Private room?) then (yes)
   :Create room and invite friend;
-else (no)
+elseif (Quick doubles?) then (yes)
+  :Search alone or with a party of two;
+  |Web API|
+  if (Two sides of two filled?) then (yes)
+    :Build unrated 2v2 roster;
+  else (no)
+    :Search times out;
+    stop
+  endif
+else (ranked singles)
+  |Player|
   :Find ranked match;
   |Web API|
   if (Opponent found within 180 s?) then (yes)
@@ -1341,8 +1394,6 @@ Intro --> Cinematic : scene loaded
 Cinematic --> PreServe : intro ends or skipped
 PreServe --> Rally : legal serve
 PreServe --> Settling : serve fault or 10 s timeout
-PreServe --> Timeout : time-out requested [remaining > 0]
-Timeout --> PreServe : resume or 60 s elapsed
 Rally --> Settling : fault, out or double bounce
 Settling --> BetweenPoints : point committed
 Settling --> BetweenGames : game won
