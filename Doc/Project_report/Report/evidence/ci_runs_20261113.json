@@ -1,0 +1,3217 @@
+{
+ "source": "GitHub REST API (GET /repos/Tad-Min/PickleVerse/actions/runs and /actions/runs/{id}/jobs), read on 13/11/2026 at 16:25 (UTC+7) without authentication",
+ "repository": "Tad-Min/PickleVerse",
+ "workflow_file": ".github/workflows/dockerhub.yml",
+ "total_runs": 32,
+ "by_conclusion": {
+  "failure": 28,
+  "startup_failure": 1,
+  "success": 3
+ },
+ "runs": [
+  {
+   "run_number": 1,
+   "id": 42014333727,
+   "workflow": "Build and publish Docker Hub images",
+   "head_sha": "f68f7c71cecedf621127eeb51dab751e2c1734bd",
+   "event": "push",
+   "created_at_utc": "2026-11-05T10:52:44Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42014333727",
+   "jobs": [
+    {
+     "name": "Validate exact source commit",
+     "conclusion": "failure",
+     "seconds": 53,
+     "steps_run": 17,
+     "failed_steps": [
+      "Check local publisher guards without network or Unity"
+     ]
+    },
+    {
+     "name": "Build ${{ matrix.component }} candidate",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Package locally built server",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Check stack and publish release",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 2,
+   "id": 42043820703,
+   "workflow": "Build and publish Docker Hub images",
+   "head_sha": "30aba283d431943e082f22626a2281a43fb03121",
+   "event": "push",
+   "created_at_utc": "2026-11-05T14:19:02Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42043820703",
+   "jobs": [
+    {
+     "name": "Build & Push web",
+     "conclusion": "failure",
+     "seconds": 45,
+     "steps_run": 9,
+     "failed_steps": [
+      "Log in to Docker Hub"
+     ]
+    },
+    {
+     "name": "Build & Push api",
+     "conclusion": "failure",
+     "seconds": 47,
+     "steps_run": 9,
+     "failed_steps": [
+      "Log in to Docker Hub"
+     ]
+    },
+    {
+     "name": "Build & Push ai",
+     "conclusion": "failure",
+     "seconds": 59,
+     "steps_run": 9,
+     "failed_steps": [
+      "Log in to Docker Hub"
+     ]
+    },
+    {
+     "name": "Build & Push Dedicated Server",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 1,
+   "id": 42225990301,
+   "workflow": "",
+   "head_sha": "82c865cca0f8d421ab5e79d2ce671656c6292ae7",
+   "event": "push",
+   "created_at_utc": "2026-11-06T13:30:10Z",
+   "conclusion": "startup_failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42225990301",
+   "jobs": []
+  },
+  {
+   "run_number": 3,
+   "id": 42226996942,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "df5f671d4880de2a99af81a6e58277655d9c4305",
+   "event": "push",
+   "created_at_utc": "2026-11-06T13:37:28Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42226996942",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 4,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 4,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 4,
+   "id": 42632332921,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "13eca0ab8cd4a8b2ca7dd0cca3546ed8e062c421",
+   "event": "push",
+   "created_at_utc": "2026-11-09T14:12:04Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42632332921",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 3,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": -1079,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 5,
+   "id": 42638466657,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "82f6a7a46b16e5a2a71905f2d220b96c1d1de28e",
+   "event": "push",
+   "created_at_utc": "2026-11-09T14:49:35Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42638466657",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 6,
+   "id": 42787551284,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "7f8ee3222ca015c061d5af07cd5fc2d89dbe1214",
+   "event": "push",
+   "created_at_utc": "2026-11-10T09:03:52Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/42787551284",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 3,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 7,
+   "id": 43023495658,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "d2d68f98a88386fa18f301163d34ee49da0e9084",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:48:13Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023495658",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 8,
+   "id": 43023538879,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "b082b266cdd642d4ff699f89d0ed52f6dc9b7b1b",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:48:31Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023538879",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 9,
+   "id": 43023547456,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "fe3a51a4f5c261c2a8f03783a97e9b4001f392f2",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:48:35Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023547456",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 10,
+   "id": 43023561239,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "c61dac6e2bc45f172b9bee39ecacb88b94892fb1",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:48:41Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023561239",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 11,
+   "id": 43023596078,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "2ba639d48ea04c8902758b6049a16624e23244a0",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:48:55Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023596078",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 3,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 12,
+   "id": 43023630538,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "0a5844e3b98fc9acd082d95f44e29c9f52df1c73",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:09Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023630538",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 13,
+   "id": 43023659525,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "5d47d158743714b1c865b65eeb0ba1bb8215813e",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:20Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023659525",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 14,
+   "id": 43023693269,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "cb658e6c4127091fc649b6f78a623bc02eea2e51",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:35Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023693269",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 15,
+   "id": 43023698643,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "679fe37575381ac003c30f9accd5f7d9c13d9424",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:37Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023698643",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 16,
+   "id": 43023729215,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "03230f73ad940ff2a5effbc34deb1a961eab675c",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:50Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023729215",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 17,
+   "id": 43023735207,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "6c8c9def4736af1eba0c69689e2e4c35cf815bb0",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:53Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023735207",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 18,
+   "id": 43023742965,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "092e4a62a039cc929df5a9e242ebe1750ccd2d31",
+   "event": "push",
+   "created_at_utc": "2026-11-11T12:49:56Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43023742965",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 1,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 19,
+   "id": 43029512030,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "f35473d9df10c670e07584b2eb80cd7b17e3d172",
+   "event": "push",
+   "created_at_utc": "2026-11-11T13:29:00Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43029512030",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 3,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 20,
+   "id": 43038053165,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "9dd994c0456b515f982df5d8eaed21591de8a076",
+   "event": "push",
+   "created_at_utc": "2026-11-11T14:23:48Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43038053165",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 136,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 217,
+     "steps_run": 8,
+     "failed_steps": [
+      "Build native Dedicated payload"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 21,
+   "id": 43038064928,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "5963501ea89ac635e3d94f1f5d2c7c9f70152841",
+   "event": "push",
+   "created_at_utc": "2026-11-11T14:23:52Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43038064928",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 103,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 225,
+     "steps_run": 8,
+     "failed_steps": [
+      "Build native Dedicated payload"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four digest-locked images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 22,
+   "id": 43248029023,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "1d6c72de0667db4e63376af39243fe45bcba9074",
+   "event": "push",
+   "created_at_utc": "2026-11-12T15:27:43Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43248029023",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 210,
+     "steps_run": 8,
+     "failed_steps": [
+      "Build native Dedicated payload"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 139,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 23,
+   "id": 43249428155,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "f1f16b960ce81b3b39217269d0e0de2dbe61bcbb",
+   "event": "push",
+   "created_at_utc": "2026-11-12T15:35:23Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43249428155",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 458,
+     "steps_run": 8,
+     "failed_steps": [
+      "Build native Dedicated payload"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 144,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 24,
+   "id": 43251852954,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "96b347cc0db90856057912bf6bfa2c27e7cd42aa",
+   "event": "push",
+   "created_at_utc": "2026-11-12T15:48:56Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43251852954",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 116,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 489,
+     "steps_run": 8,
+     "failed_steps": [
+      "Build native Dedicated payload"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 25,
+   "id": 43261652344,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "59ebeb8ee9c5664dceb6137f3f2e5b5d8e5ff5f6",
+   "event": "push",
+   "created_at_utc": "2026-11-12T16:42:50Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43261652344",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 124,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "failure",
+     "seconds": 496,
+     "steps_run": 8,
+     "failed_steps": [
+      "Build native Dedicated payload"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 26,
+   "id": 43265996665,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "bffce816ee3a84de3dfa0b0b245fc90992582b43",
+   "event": "push",
+   "created_at_utc": "2026-11-12T17:07:06Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43265996665",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "success",
+     "seconds": 643,
+     "steps_run": 8,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 121,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "success",
+     "seconds": 179,
+     "steps_run": 11,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and extract native artifact",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build, push and smoke test the release",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "failure",
+     "seconds": 97,
+     "steps_run": 6,
+     "failed_steps": [
+      "Sync deployment files and run Compose over SSH"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Sync deployment files and run Compose over SSH",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "run_number": 27,
+   "id": 43271134951,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "439957fc5c8270f404a935cee7edba4b56f67a9d",
+   "event": "push",
+   "created_at_utc": "2026-11-12T17:35:55Z",
+   "conclusion": "success",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43271134951",
+   "jobs": [
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 111,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "success",
+     "seconds": 638,
+     "steps_run": 8,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "success",
+     "seconds": 155,
+     "steps_run": 11,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and extract native artifact",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build, push and smoke test the release",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "success",
+     "seconds": 81,
+     "steps_run": 6,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Sync deployment files and run Compose over SSH",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "run_number": 28,
+   "id": 43275892051,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "1dfefe9fddff9aac1e6e3d2581784bcf305c5808",
+   "event": "push",
+   "created_at_utc": "2026-11-12T18:03:44Z",
+   "conclusion": "success",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43275892051",
+   "jobs": [
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "success",
+     "seconds": 617,
+     "steps_run": 8,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 138,
+     "steps_run": 15,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish four release images and smoke test",
+     "conclusion": "success",
+     "seconds": 188,
+     "steps_run": 11,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and extract native artifact",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build, push and smoke test the release",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "success",
+     "seconds": 84,
+     "steps_run": 6,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Sync deployment files and run Compose over SSH",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "run_number": 29,
+   "id": 43381710511,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "f52c6e7262c607be463144420cbc020b155b7ddf",
+   "event": "push",
+   "created_at_utc": "2026-11-13T06:52:24Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43381710511",
+   "jobs": [
+    {
+     "name": "Read last successful Linux deployment",
+     "conclusion": "success",
+     "seconds": 12,
+     "steps_run": 6,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Read deployment metadata over SSH",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Plan affected builds and checks",
+     "conclusion": "success",
+     "seconds": 6,
+     "steps_run": 5,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Compare the PR or deployed baseline",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Admin web type check",
+     "conclusion": "success",
+     "seconds": 22,
+     "steps_run": 7,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Backend integration checks",
+     "conclusion": "success",
+     "seconds": 113,
+     "steps_run": 9,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "success",
+     "seconds": 633,
+     "steps_run": 8,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "FastAPI tests",
+     "conclusion": "failure",
+     "seconds": 22,
+     "steps_run": 7,
+     "failed_steps": [
+      "FastAPI tests"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Post Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "failure",
+     "seconds": 2,
+     "steps_run": 3,
+     "failed_steps": [
+      "Require every selected check to pass"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Require every selected check to pass",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish changed images and smoke test the release",
+     "conclusion": "skipped",
+     "seconds": -1,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "skipped",
+     "seconds": 0,
+     "steps_run": 0,
+     "failed_steps": [],
+     "steps": []
+    }
+   ]
+  },
+  {
+   "run_number": 30,
+   "id": 43385071385,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "d9200cc2c554905f7702fddcc13d005f2aba1bec",
+   "event": "push",
+   "created_at_utc": "2026-11-13T07:20:37Z",
+   "conclusion": "success",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43385071385",
+   "jobs": [
+    {
+     "name": "Read last successful Linux deployment",
+     "conclusion": "success",
+     "seconds": 13,
+     "steps_run": 6,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Read deployment metadata over SSH",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Plan affected builds and checks",
+     "conclusion": "success",
+     "seconds": 4,
+     "steps_run": 5,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Compare the PR or deployed baseline",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "success",
+     "seconds": 560,
+     "steps_run": 8,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Backend integration checks",
+     "conclusion": "success",
+     "seconds": 115,
+     "steps_run": 9,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "FastAPI tests",
+     "conclusion": "success",
+     "seconds": 26,
+     "steps_run": 7,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Admin web type check",
+     "conclusion": "success",
+     "seconds": 15,
+     "steps_run": 7,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 3,
+     "steps_run": 3,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Require every selected check to pass",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish changed images and smoke test the release",
+     "conclusion": "success",
+     "seconds": 152,
+     "steps_run": 11,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and extract native artifact",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build, push and smoke test the release",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "success",
+     "seconds": 79,
+     "steps_run": 6,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Sync deployment files and run Compose over SSH",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "run_number": 31,
+   "id": 43398698496,
+   "workflow": "Build, publish and deploy PickleVerse",
+   "head_sha": "d9200cc2c554905f7702fddcc13d005f2aba1bec",
+   "event": "workflow_dispatch",
+   "created_at_utc": "2026-11-13T09:07:34Z",
+   "conclusion": "failure",
+   "html_url": "https://github.com/Tad-Min/PickleVerse/actions/runs/43398698496",
+   "jobs": [
+    {
+     "name": "Read last successful Linux deployment",
+     "conclusion": "success",
+     "seconds": 13,
+     "steps_run": 6,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Read deployment metadata over SSH",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Plan affected builds and checks",
+     "conclusion": "success",
+     "seconds": 7,
+     "steps_run": 5,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Compare the PR or deployed baseline",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "FastAPI tests",
+     "conclusion": "success",
+     "seconds": 20,
+     "steps_run": 7,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "FastAPI tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build Unity Linux Dedicated Server",
+     "conclusion": "success",
+     "seconds": 555,
+     "steps_run": 8,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify license configuration and resolve exact Unity image",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build native Dedicated payload",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and package the native output",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Backend integration checks",
+     "conclusion": "success",
+     "seconds": 112,
+     "steps_run": 9,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Initialize containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Backend integration checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stop containers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Admin web type check",
+     "conclusion": "success",
+     "seconds": 13,
+     "steps_run": 7,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Admin web type check",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Validate .NET, FastAPI and admin web",
+     "conclusion": "success",
+     "seconds": 6,
+     "steps_run": 3,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Require every selected check to pass",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Publish changed images and smoke test the release",
+     "conclusion": "success",
+     "seconds": 190,
+     "steps_run": 11,
+     "failed_steps": [],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify and extract native artifact",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build, push and smoke test the release",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Deploy Linux development",
+     "conclusion": "failure",
+     "seconds": 10,
+     "steps_run": 6,
+     "failed_steps": [
+      "Sync deployment files and run Compose over SSH"
+     ],
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install SSH password transport",
+       "conclusion": "success"
+      },
+      {
+       "name": "Sync deployment files and run Compose over SSH",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

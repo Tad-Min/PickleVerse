@@ -15,9 +15,12 @@ CHANGES = [
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten after the internal review: deployment diagram and architecture decisions; full package diagrams; logical ERDs covering all 51 tables with keys and a data dictionary; UML class diagrams with class specifications; 15 sequence diagrams with alternative paths; new sections for gameplay physics, netcode, bot AI, API and security design; activity diagrams with swimlanes; 14 corrected state machines."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Activity diagrams: workflow owners aligned with BM04."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: API table regenerated from the controllers (129 endpoints, access and Used by); dedicated-server controllers corrected; time-out removed from the gameplay class diagram and SM-05; FlowState Delay, camera framing, lobby classes and quick doubles added; netcode design table; table descriptions of Users, PlayerProfiles and GameMatchPlayers corrected; delivery pipeline status and data-at-rest deviation recorded; workflow names aligned with BM04."),
+    ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Deployment updated after the fixes of 12–13/11/2026 (main @ d9200cc): delivery pipeline described as it runs (plan, checks, build, publish by digest, deploy with a verified dump) with the history of the 32 runs; Caddy HTTPS reverse proxy and the ports of staging; transport, secrets and data-protection rows of the security table."),
 ]
 
 DESIGN_SRC = os.path.join(REPORT_DIR, "diagrams", "gen_r4_design.py")
+# Figures whose PlantUML source (diagrams/src) is newer than the rendered PNG. Empty this set after rendering them again.
+STALE_FIGURES = {"r4_architecture.png", "r4_deployment.png"}
 
 
 def class_blocks(diagram):
@@ -53,12 +56,16 @@ r.h2("1. System Design")
 r.h3("1.1 System Architecture")
 r.p(T.ARCH_INTRO)
 r.figure("r4_architecture.png", "System architecture (component view)", width_cm=16.5)
+if "r4_architecture.png" in STALE_FIGURES:
+    r.p("Note: the figure was drawn on 12/11/2026. It names the host proxy nginx and shows the game client calling the API directly; since 13/11/2026 the client and the admin web reach the API through the Caddy HTTPS reverse proxy, as described in Table 2.")
 r.table(["Component", "Technology", "Responsibility"], T.COMPONENTS, widths=[3.4, 3.6, 9.0], size=8.5, first_col_bold=True,
         caption="Architecture components")
 r.p(T.AUTHORITY)
 r.h4("Deployment")
 r.p(T.DEPLOY_INTRO)
 r.figure("r4_deployment.png", "Deployment diagram of the staging environment", width_cm=16.5)
+if "r4_deployment.png" in STALE_FIGURES:
+    r.p("Note: the figure was drawn on 12/11/2026. It still shows the pipeline as not passing, the manual release, the former proxy on port 80 and the clients calling port 8080; the paragraph above and Table 2 describe the deployment of 13/11/2026 (pipeline passing, Caddy reverse proxy with HTTPS on port 443 in front of the API and the admin web).")
 r.table(["Node / container", "Image or artifact", "Port", "Notes"], T.NODES, widths=[3.6, 4.2, 2.2, 6.0], size=8.5,
         caption="Deployment nodes")
 

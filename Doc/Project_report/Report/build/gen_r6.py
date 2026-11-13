@@ -4,6 +4,7 @@ from report_lib import Report
 CHANGES = [
     ("11/11/2026", "A", "Nguyễn Gia Huy", "v1.0 – First release package description, installation guides (player, server, development) and user manual organised by the four review workflows, with real screenshots of the game and the admin web."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Revised after the second internal review: Android controls corrected; time-outs removed; quick doubles and the lobby friends column added; workflow names as in BM04; deployment section states that the pipeline has not yet passed and staging is released manually; package counts and screenshots updated; Android build marked as not yet tested on a device."),
+    ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Updated after the fixes of 12–13/11/2026 (main @ d9200cc): the deployment section describes the pipeline as it runs and the new deployment script with its database dump; HTTPS address of the staging API and admin web with the Caddy reverse proxy; Android APK of 12/11/2026 with its limitation; package counts for the documents of 13/11/2026."),
 ]
 
 r = Report("Report6_Software User Guides.docx", "Report 6 – Software User Guides", CHANGES)
@@ -11,19 +12,19 @@ r.h1("II. Release Package & User Guides")
 
 # ================================================================== 1
 r.h2("1. Deliverable Package")
-r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ 5963501 (11/11/2026) for the software and to the documents of 12/11/2026 (Reports 1–5 v1.2, Report 6 v1.1 and Report 7 assembled from them). The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
+r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ d9200cc (13/11/2026) for the software and to the documents of 13/11/2026 (Reports 1–5 v1.3, Report 6 v1.2 and Report 7 assembled from them). Since main @ 5963501 (11/11/2026) the commits repaired the delivery pipeline, moved the client and the server to HTTPS and removed the credentials from the settings file; the gameplay code is unchanged. The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
 r.table(["No.", "Deliverable Item", "Description"], [
-    ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: 82 tasks, 4 resources, 61 assignments, % complete as of 11/11/2026) and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
-    ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 19 product and iteration backlog items for Iterations 5 and 6 with priority, owner, estimate and status"],
+    ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: 82 tasks, 4 resources, 61 assignments, % complete as of 13/11/2026) and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
+    ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 21 product and iteration backlog items for Iterations 4 to 6 with priority, owner, estimate and status"],
     ["3", "Source Codes", "Unity client and dedicated server: My project/ (Unity 6000.6.2f1, 13 runtime assemblies); Web API: src/Backend (ASP.NET Core .NET 10, 4 projects); AI coaching service: src/AiService (Python 3.12, FastAPI); admin web: src/Frontend (React 18, TypeScript, Vite); tests: src/Testing; deployment: deploy/, docker-compose*.yml, .github/workflows/dockerhub.yml"],
     ["4", "Database Script(s)", "src/Database.sql – single script with the schema (51 tables, 71 foreign keys) and seed data (roles, currencies, 15 lessons, 12 techniques, 3 paddles, 17 missions, 10 achievements, 10 ranked bot accounts) executed in one transaction"],
     ["5", "Final Report Document", "Report7_Final Project Report.docx, which consolidates Reports 1–6; the individual Reports 1–6 (.docx) and their PDF exports in Doc/Project_report/Report/pdf"],
-    ["6", "Test Cases Document", "Report5_Test Documentation.docx, Report5_Test Report.xlsx (118 cases with Round 1 results) and Report5_Unit Test.xlsx (10 functions, 66 decision-table cases); evidence files in Doc/Project_report/Report/evidence"],
-    ["7", "Defects List", "Sheet Defects of the tracking workbook (20 defects with severity, owner and status; 5 fixed and awaiting retest, 15 open); also listed in the Test Report workbook"],
-    ["8", "Issues List", "Sheet Issues of the tracking workbook (14 issues with priority, owner, open and close dates)"],
+    ["6", "Test Cases Document", "Report5_Test Documentation.docx, Report5_Test Report.xlsx (118 cases with the results of Round 1 and of the CI run of 13/11/2026) and Report5_Unit Test.xlsx (10 functions, 66 decision-table cases); evidence files in Doc/Project_report/Report/evidence"],
+    ["7", "Defects List", "Sheet Defects of the tracking workbook (21 defects with severity, owner and status: 7 fixed and awaiting retest, 1 accepted as designed and 13 open, one of them partly fixed); also listed in the Test Report workbook"],
+    ["8", "Issues List", "Sheet Issues of the tracking workbook (15 issues with priority, owner, open and close dates; 4 closed)"],
     ["9", "Slide", "Defense presentation – prepared for milestone M10 (Week 15, 14–20/12/2026)"],
-    ["10", "Server images", "Docker Hub repository tadminm/pickelverse with four images per release: api-, ai-, server- (Unity Linux dedicated server) and web-<release>. The staging releases so far were built by hand and tagged <component>-manual-<yyyymmdd-hhmmss> (four releases, 08–10/11/2026) because the CI pipeline has not yet passed"],
-    ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings. The Android build has not yet been tested on a physical device (Report 1, LI-11)"],
+    ["10", "Server images", "Docker Hub repository tadminm/pickelverse with four images per release: api-, ai-, server- (Unity Linux dedicated server) and web-<release>. Since 13/11/2026 the pipeline builds the images that a push changes, publishes them with the tag <commit>-<run>-<attempt> and deploys all four by digest; the four earlier staging releases (08–10/11/2026) were built by hand and tagged <component>-manual-<yyyymmdd-hhmmss>"],
+    ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings. An Android APK was built on 12/11/2026 from main @ 5963501 (190.5 MB, signed with the debug key); it predates the HTTPS switch and has not been tested on a physical device, so the release APK has to be built again from main @ d9200cc (Report 1, LI-11; Report 5, D-21)"],
     ["12", "Design sources", "PlantUML sources and rendered diagrams (Doc/Project_report/Report/diagrams), the editable draw.io file PickleVerse_UseCase_ConceptualERD.drawio and the report build scripts (Doc/Project_report/Report/build)"],
 ], widths=[1.0, 3.6, 11.4], size=8.5, first_col_bold=False, caption="Deliverable package of PickleVerse 1.0")
 
@@ -53,24 +54,28 @@ r.numbered([
     "In Settings → Security (or Apps → Special access), allow installing apps from the file manager or browser used to open the APK.",
     "Open the APK and select Install. Start PickleVerse from the app drawer; the game runs in landscape mode with touch controls (joystick and shot buttons).",
 ])
-r.p("Note: on 12/11/2026 the Android build has not yet been installed and tested on a physical phone; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10).")
+r.p("Note: on 13/11/2026 the Android build has not yet been installed and tested on a physical phone; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10). The APK built on 12/11/2026 still contains the former http:// address and forbids cleartext HTTP, so it cannot sign in; use an APK built from main @ d9200cc or later, which calls https://tad-min.io.vn (Report 5, D-21). The offline training mode does not need the server.")
 r.h4("2.2.3 Deploy the server (CI/CD pipeline and manual release)")
-r.p("The repository defines an automatic deployment: every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml) with the four jobs below. **Current status:** none of its runs has passed yet – the runs of 05/11/2026 failed in the build and every run since 06/11/2026 is stopped because the GitHub account is locked for a billing issue. Until the pipeline runs again, the team builds the four images on a developer PC, pushes them to Docker Hub with the tag <component>-manual-<yyyymmdd-hhmmss> and restarts the stack on the host by hand with the same .env file; writing this manual procedure as a script is part of backlog item PB-16.")
+r.p("The deployment is automatic: every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml) with the stages below. **Current status:** the pipeline passes since 13/11/2026 (runs 27, 28 and 30), and run 30 deployed the staging release that is running now. The 29 other runs did not pass: configuration failures on 05/11/2026, the billing lock of the GitHub account from 06/11 to 11/11, failures of the dedicated-server build on 11–12/11, one failed FastAPI test and two failed deployment steps. A push that changes only documents builds and deploys nothing, and a commit whose message contains [skip ci] does not start the workflow at all. If the pipeline is unavailable, the four images can still be built on a developer PC, pushed to Docker Hub with the tag <component>-manual-<yyyymmdd-hhmmss> and started on the host by hand with the same .env file, as was done on 08–10/11/2026.")
 r.numbered([
-    "**Validate** – builds the .NET solution and runs the IntegrationChecks, runs the FastAPI tests and type-checks the admin web.",
+    "**Plan** – reads the release that is deployed on the host and compares it with the pushed commit to select the checks and the images that the changed files need (deploy/ci/plan-release.py).",
+    "**Checks** – as selected by the plan: the twelve IntegrationChecks groups against PostgreSQL 16 and Redis 7.4 service containers, the FastAPI tests and the type check of the admin web. The job \"Validate\" passes only when every selected check passed.",
     "**Build Unity Linux Dedicated Server** – builds the dedicated server with GameCI (unity-builder) using the Unity licence stored in the repository secrets.",
-    "**Publish** – builds and pushes four digest-locked images (api, ai, server, web) to Docker Hub tadminm/pickelverse and runs a smoke test.",
-    "**Deploy** – uploads the release bundle over SSH (deploy/ci/ssh-deploy.sh) and runs deploy/linux/deploy.sh on the host. The script checks the release checksums and the database schema fingerprint, keeps the previous release for rollback and starts the stack with docker-compose.linux.yml.",
+    "**Publish** – removes the credentials from the API settings files, builds and pushes the changed images among api, ai, server and web to Docker Hub tadminm/pickelverse with the tag <component>-<commit>-<run>-<attempt>, then starts the four image digests with Docker Compose on the runner and checks the health endpoints (smoke test).",
+    "**Deploy** – over SSH (deploy/ci/ssh-deploy.sh): locks the release on the host, takes a PostgreSQL dump into .deploy/backups and checks it with pg_restore, copies docker-compose.linux.yml and src/Database.sql to the deployment root, writes the four image digests into the host .env file, runs `docker compose up -d --wait` and records the deployed release.",
 ])
-r.p("Before the first deployment the administrator of the host prepares the deployment root and creates the host `.env` file from deploy/linux/runtime.env.example. The variables are listed in Table %d; secret values are never committed to the repository." % (r.tbl_no + 1))
+r.p("Before the first deployment the administrator of the host prepares the deployment root and creates the host `.env` file from deploy/linux/runtime.env.example and installs Caddy with deploy/linux/Caddyfile, which serves the public HTTPS address, forwards /api and /health/ready to the API and every other path to the admin web. The variables are listed in Table %d; secret values are never committed to the repository. The workflow itself needs the repository secrets SSH_HOST, SSH_PORT, SSH_PASSWORD, SSH_KNOWN_HOSTS, DOCKERHUB_TOKEN, UNITY_EMAIL, UNITY_PASSWORD and UNITY_LICENSE (or UNITY_SERIAL), and the variables PKV_DEPLOY_ROOT (or PKV_DATA_ROOT), SSH_USER and DOCKERHUB_USERNAME of the GitHub environment \"development\"." % (r.tbl_no + 1))
 r.table(["Variable", "Purpose"], [
-    ["POSTGRES_PASSWORD", "Password of the PostgreSQL database user"],
+    ["PKV_API_IMAGE, PKV_AI_IMAGE, PKV_WEB_IMAGE, PKV_GAME_SERVER_IMAGE", "Image references by digest; the deploy job writes them"],
+    ["PKV_DATA_ROOT", "Absolute path of the host data directories (PostgresData, RedisData, S3Data, AiService/models, GameServerData)"],
+    ["POSTGRES_USER, POSTGRES_PASSWORD", "User name and password of the PostgreSQL database"],
     ["JWT_KEY", "Signing key of the access tokens (at least 32 random characters)"],
     ["SMTP_USERNAME, SMTP_APP_PASSWORD, SMTP_FROM_EMAIL", "Gmail account, app password and sender address for OTP e-mails"],
     ["S3_ACCESS_KEY, S3_SECRET_KEY", "Credentials of the S3-compatible replay storage"],
     ["AI_SERVICE_KEY", "Shared key between the Web API worker and the AI coaching service (X-AI-Key)"],
     ["PKV_GAME_SERVER_KEY", "Service key used by the dedicated server to call the Web API"],
-    ["PKV_API_BIND, API_PORT, WEB_BIND, WEB_PORT", "Bind address and public ports of the API (8080) and the admin web"],
+    ["API_PORT, WEB_PORT", "Local ports of the API (8080) and the admin web (3000); both are bound to 127.0.0.1 and published by Caddy"],
+    ["PGADMIN_EMAIL, PGADMIN_PASSWORD, PGADMIN_BIND, PGADMIN_PORT", "Account and local address of the pgAdmin container (127.0.0.1:15050)"],
     ["POSTGRES_PORT, POSTGRES_MAX_POOL_SIZE, REDIS_PORT, S3_PORT", "Internal ports and the database connection pool size"],
     ["PKV_GAME_CPUS, PKV_GAME_MEMORY", "Resource limits of the dedicated game server (default 2 CPUs, 2 GB)"],
     ["AI_COACHING_CALIBRATION_SHA256", "Hash of the approved coaching calibration file; the service refuses a different file"],
@@ -80,14 +85,14 @@ r.numbered([
     "On first start, the PostgreSQL container runs src/Database.sql on the empty data volume. It creates all 51 tables and the seed data in one transaction. An existing volume is never re-initialised; use a new volume name to start from an empty database in development.",
     "To use an existing PostgreSQL server instead, create an empty database and run `psql -v ON_ERROR_STOP=1 -d <database> -f src/Database.sql` once.",
     "The script creates no administrator account. Register a normal account in the game, verify its e-mail, then grant it the Admin role once with SQL: `UPDATE Users SET RoleId = (SELECT RoleId FROM Roles WHERE RoleName = 'Admin') WHERE Email = '<e-mail>';`. Further administrators are assigned from the Users page of the admin web (FR-29).",
-    "Check the deployment: `GET http://<host>:8080/health/ready` must return HTTP 200; the admin web must open at http://<host>/ and accept the administrator account.",
+    "Check the deployment: `GET https://<host>/health/ready` must return HTTP 200 with the status ready, and https://<host>/ must open the admin web and accept the administrator account. Ports 8080 and 3000 are bound to 127.0.0.1 and must not answer from another computer.",
 ])
 r.h4("2.2.5 Set up a local development environment")
 r.numbered([
     "Clone the repository and copy `.env.example` to `.env`; fill JWT_KEY, the SMTP values and AI_SERVICE_KEY.",
     "Start the back-end services with `docker compose up -d --build`. The development stack exposes PostgreSQL on 127.0.0.1:15432, pgAdmin on 15050, S3 storage on 19000, Redis on 16379 and the Web API on 8080; the AI service is reachable only inside the Docker network.",
     "Admin web: in src/Frontend run `npm install` and `npm run dev`, then open http://localhost:5173.",
-    "Unity: open the folder My project with Unity 6000.6.2f1 from Unity Hub. Select Assets/Resources/BackendApiSettings.asset and set **Base Url** to the API address (http://localhost:8080 for local development; the release build uses http://tad-min.io.vn:8080). Open the scene Assets/Scenes/UI/Login.unity and press Play.",
+    "Unity: open the folder My project with Unity 6000.6.2f1 from Unity Hub. Select Assets/Resources/BackendApiSettings.asset and set **Base Url** to the API address (http://localhost:8080 for local development; the committed setting is https://tad-min.io.vn since 13/11/2026). Open the scene Assets/Scenes/UI/Login.unity and press Play.",
     "Tests: run the Unity EditMode tests in Window → General → Test Runner (or `unity command test run --mode editor` with the Unity CLI), `python -m pytest -q` in src/AiService, and `dotnet run --project src/Testing/Backend` for the integration checks.",
 ])
 
@@ -220,7 +225,7 @@ r.p("**Purpose.** An administrator keeps the community and the training content 
 r.figure("r4_act_w04.png", "Workflow W04, part 1 – Report, sanction and appeal", width_cm=14, max_height_cm=17)
 r.figure("r4_act_content.png", "Workflow W04, part 2 – Publish a lesson", width_cm=14, max_height_cm=17)
 r.h4("Step 1 – Sign in to the admin web")
-r.p("Open the admin web address (http://tad-min.io.vn on staging), enter the e-mail and password of an Admin account and select **Xác thực & Truy cập**. Accounts without the Admin role are rejected. The dashboard shows the number of users, today's active players, matches, online time and pending reports.")
+r.p("Open the admin web address (https://tad-min.io.vn on staging since 13/11/2026), enter the e-mail and password of an Admin account and select **Xác thực & Truy cập**. Accounts without the Admin role are rejected. The dashboard shows the number of users, today's active players, matches, online time and pending reports.")
 r.figure("40_admin_login.jpg", "Admin web login", width_cm=12)
 r.figure("41_admin_dashboard.png", "Admin dashboard", width_cm=14)
 r.h4("Step 2 – Manage user accounts")

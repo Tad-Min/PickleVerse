@@ -10,6 +10,7 @@ CHANGES = [
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten after the internal review: corrected context diagram; six actors; 68 use cases in eight UML use case diagrams; screen flows from the real scenes; screen authorization matrix; conceptual ERD; 33 functional requirements with real screenshots, data fields, validation and exception flows; gameplay, economy and authentication rules; measurable NFRs; message list in the product language."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Appendix A: workflow and BM04 owner added for each Review 2 feature."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: time-outs removed (FR-12, BR-15, Bot Match screen); quick doubles added to UC-19, FR-14 and the non-screen functions; reconnection rule BR-28 and FR-17 aligned with the code; accuracy history, streak rewards and phone controls described; Menu, Online Lobby and Bot Match screens and their screenshots updated; screenshot references clarified."),
+    ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Communication interfaces: the staging environment serves the Web API and the admin web over HTTPS since 13/11/2026."),
 ]
 
 r = Report("Report3_Software Requirement Specification.docx", "Report 3 – Software Requirement Specification", CHANGES)

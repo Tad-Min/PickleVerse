@@ -8,6 +8,7 @@ CHANGES = [
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Revised after the internal review: completed the team table; rewrote the background, existing systems, business opportunity and vision; aligned FE-01 to FE-10 with the SRS; recorded the deviations from the proposal; added references."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Team table: workflow owners aligned with the Review 2 commitment BM04 (W01 Thuận, W02 Huy, W03 Đạt, W04 Kiên)."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: workflow names and BM04 approval status as in the form; quick doubles, accuracy history and streak rewards described as implemented; new limitations LI-10 (no encryption at rest) and LI-11 (Android performance target and device testing); privacy note for mobile numbers; references [2]–[4] completed."),
+    ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Staging addresses after the HTTPS switch of 13/11/2026; LI-11 updated with the Android build of 12/11/2026."),
 ]
 
 r = Report("Report1_Project Introduction.docx", "Report 1 – Project Introduction", CHANGES)
@@ -25,7 +26,7 @@ r.table(
         ["Software type", "3D multiplayer sports game for Windows desktop and Android, supported by a web API, a real-time dedicated game server, an AI coaching service and an administration web application"],
         ["Duration", "14 weeks of development, from 07/09/2026 (Week 1) to 13/12/2026 (Week 14); final defense in Week 15 (14–20/12/2026)"],
         ["Source repository", "https://github.com/Tad-Min/PickleVerse (private; access is granted to the supervisor and the review committee on request)"],
-        ["Staging environment", "Admin web: http://tad-min.io.vn – Web API: http://tad-min.io.vn:8080 – Dedicated game server: tad-min.io.vn, UDP 3669"],
+        ["Staging environment", "Admin web: https://tad-min.io.vn – Web API: https://tad-min.io.vn/api (HTTPS since 13/11/2026; HTTP on port 8080 before) – Dedicated game server: tad-min.io.vn, UDP 3669"],
     ],
     widths=[4.5, 11.5], first_col_bold=True, caption="Project information")
 
@@ -128,7 +129,7 @@ r.table(
         ["LI-08", "Technology deviations from the proposal: the web API uses ASP.NET Core (.NET 10) instead of Spring Boot or FastAPI because the team shares C# with Unity; real-time networking uses Photon Fusion 2 (shared lobby plus a dedicated server) instead of Netcode for GameObjects, after Netcode with Relay showed unstable connections during the October prototype; the game interface uses uGUI instead of UI Toolkit; ball flight uses a custom fixed-step simulation instead of PhysX for deterministic replay and server authority. The reasons are detailed in Report 4, §1.4."],
         ["LI-09", "The game interface is in Vietnamese only. The administration web application is in Vietnamese, and project documents are in English."],
         ["LI-10", "The proposal stated that stored data would be encrypted with AES-256. Version 1.0 protects secrets by one-way hashing instead (BCrypt for passwords, SHA-256 for refresh tokens, HMAC for verification and reset codes); the database files, backups and replay objects are not encrypted at rest. Disk encryption of the production host is planned before release (Report 4, §3.10)."],
-        ["LI-11", "The proposal targeted 60 FPS on all devices. The SRS keeps 60 FPS for the reference PC but sets an average of 30 FPS for a mid-range Android phone (NFR-03), because mobile rendering removes HDR, MSAA and most shadows to stay within the phone's thermal budget; the game still requests up to 60 FPS on Android. On 12/11/2026 the Android build has not yet been measured or smoke-tested on a physical device (test cases TC-N03 and TC-N10 are pending in Report 5)."],
+        ["LI-11", "The proposal targeted 60 FPS on all devices. The SRS keeps 60 FPS for the reference PC but sets an average of 30 FPS for a mid-range Android phone (NFR-03), because mobile rendering removes HDR, MSAA and most shadows to stay within the phone's thermal budget; the game still requests up to 60 FPS on Android. The Android APK was built on 12/11/2026, but on 13/11/2026 it has not yet been measured or smoke-tested on a physical device (test cases TC-N03 and TC-N10 are pending in Report 5)."],
     ],
     widths=[1.4, 14.6], size=9.5, first_col_bold=True, caption="Limitations and exclusions")
 

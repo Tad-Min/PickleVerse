@@ -32,25 +32,32 @@ AUTHORITY = ("Online matches support two authority modes recorded in GameMatches
              "authoritative match runs at a time; the API reports the slot as busy and the client waits (Report 3, MSG36). Scaling to "
              "more matches requires more server containers and is outside release 1.0.")
 
-DEPLOY_INTRO = ("Figure 2 shows the staging deployment on the host tad-min.io.vn (Ubuntu 24.04, Docker Engine). The delivery pipeline is "
-                "designed as follows: the GitHub Actions workflow dockerhub.yml validates each push to main, builds the four images (api, ai, "
-                "web, server) with publish-release.sh, pushes them to Docker Hub and calls ssh-deploy.sh, which runs deploy.sh on the host; "
-                "deploy.sh takes a PostgreSQL dump, pulls the images by digest and restarts the Docker Compose stack. **Status on 12/11/2026:** "
-                "the workflow has never completed. Of its 22 runs, those on 05/11/2026 failed in the build and every run since 06/11/2026 "
-                "stopped at once because the GitHub account is locked for a billing issue. The staging stack was therefore built and published "
-                "by hand as four releases (Docker Hub tags api-, ai-, web- and server-manual-<date-time>, 08/11 to 10/11/2026) and started on "
-                "the host manually. Restoring the pipeline is tracked in Report 2 (risk register) and Report 5 (open issues). Only the ports "
-                "listed in Table 2 are reachable from the Internet.")
+DEPLOY_INTRO = ("Figure 2 shows the staging deployment on the host tad-min.io.vn (Ubuntu 24.04, Docker Engine). On each push to main the "
+                "GitHub Actions workflow dockerhub.yml first reads the release that is deployed and plans which checks and images the changed "
+                "files need (plan-release.py). It then runs the selected checks – twelve IntegrationChecks groups on PostgreSQL and Redis, the "
+                "FastAPI tests and the admin web type check – and builds the Unity Linux dedicated server with GameCI when the Unity project "
+                "changed. **Publish** (publish-release.sh) removes the credentials from the settings files, builds the changed images among "
+                "api, ai, web and server, pushes them to Docker Hub with the tag <component>-<commit>-<run>-<attempt> and smoke-tests the four "
+                "image digests with Docker Compose on the runner. **Deploy** (ssh-deploy.sh) locks the release on the host, takes a PostgreSQL "
+                "dump and checks it with pg_restore, copies docker-compose.linux.yml and Database.sql, writes the four image digests into the "
+                "host .env file, runs docker compose up and records the deployed release. **Status on 13/11/2026:** the pipeline passes. Of "
+                "its 32 runs, 29 did not pass: two configuration failures on 05/11/2026, 18 runs that did not start while the GitHub account "
+                "was locked for a billing issue (06/11 to 11/11), six failures of the dedicated-server build (11/11 and 12/11), one failed "
+                "FastAPI test and two failed deployment steps. Runs 27, 28 and 30 of 13/11/2026 completed every job in about 15 minutes each, "
+                "and run 30 deployed the release that is running now. The four earlier staging releases (Docker Hub tags api-, ai-, web- and "
+                "server-manual-<date-time>, 08/11 to 10/11/2026) were built and started by hand. Since 13/11/2026 a Caddy reverse proxy on "
+                "the host serves the admin web and the Web API over HTTPS; Table 2 lists the ports that are reachable from the Internet.")
+
 
 NODES = [
-    ["Host nginx", "Ubuntu package", "80/tcp", "Reverse proxy to the web container; TLS termination is planned for production (port 443)"],
-    ["web", "tadminm/pickelverse:web-<release>", "3000/tcp (internal)", "nginx serving the React build; proxies /api to backend-api"],
-    ["backend-api", "tadminm/pickelverse:api-<release>", "8080/tcp", "Web API and background workers"],
+    ["Host reverse proxy", "Caddy with deploy/linux/Caddyfile", "80/tcp, 443/tcp", "Port 80 redirects to HTTPS. Port 443 terminates TLS (Let's Encrypt certificate, TLS 1.3) and forwards /api and /health/ready to backend-api and every other path to the web container"],
+    ["web", "tadminm/pickelverse:web-<release>", "3000/tcp (bound to 127.0.0.1)", "nginx serving the React build of the admin web; reached only through the reverse proxy"],
+    ["backend-api", "tadminm/pickelverse:api-<release>", "8080/tcp (bound to 127.0.0.1)", "Web API and background workers; reached from the Internet only through the reverse proxy since 13/11/2026 (port 8080 was public before)"],
     ["game-server", "tadminm/pickelverse:server-<release>", "3669/udp", "Unity dedicated server; limited to 2 CPUs and 2 GB RAM"],
     ["ai-service", "tadminm/pickelverse:ai-<release>", "8000/tcp (internal)", "FastAPI coaching service, reachable only from backend-api"],
-    ["postgres", "PostgreSQL 16 (pinned digest)", "5432/tcp (internal)", "Volume for data; schema and seed from src/Database.sql"],
-    ["redis", "Redis 7.4 (pinned digest)", "6379/tcp (internal)", "Coordination data; no persistence required"],
-    ["s3-storage", "S3-compatible server (pinned digest)", "9000/tcp (internal)", "Bucket pickleverse for replays"],
+    ["postgres", "postgres:16-alpine", "5432/tcp (internal)", "Volume for data; schema and seed from src/Database.sql; dumped before each deployment"],
+    ["redis", "redis:7.4-alpine", "6379/tcp (internal)", "Coordination data (queue, leases, presence, cache) with an append-only file on the host volume"],
+    ["s3-storage", "ghcr.io/shyim/local-s3 (S3-compatible server)", "9000/tcp (internal)", "Bucket pickleverse for replays"],
     ["Player PC / phone", "PickleVerse.exe (Windows, Mono) / PickleVerse.apk (Android 8.0+, IL2CPP, ARM64)", "–", "Connects to the API, Photon Cloud and the game server"],
 ]
 
@@ -93,7 +100,7 @@ STACK = [
     ["AI service", "Python 3.12, FastAPI, Pydantic, scikit-learn", "Coaching analysis and tier model"],
     ["Admin web", "React 18, TypeScript 5, Vite 5, TanStack React Query 5, Axios 1.6, Recharts 2, Tailwind CSS 3", "Administration UI"],
     ["Data", "PostgreSQL 16, Redis 7.4, S3-compatible storage", "Persistence, coordination, replays"],
-    ["DevOps", "Docker, Docker Compose, Docker Hub, nginx, Ubuntu 24.04; GitHub Actions workflow configured but not yet passing", "Build, delivery and hosting"],
+    ["DevOps", "Docker, Docker Compose, Docker Hub, Caddy (HTTPS reverse proxy), Ubuntu 24.04; GitHub Actions workflow with plan, check, build, publish and deploy jobs, passing since 13/11/2026", "Build, delivery and hosting"],
 ]
 
 DECISIONS = [
@@ -418,11 +425,11 @@ SECURITY = [
     ["Tokens", "JWT HS256, 2-hour access token; refresh token 14 days stored as SHA-256 hash, rotated on use; auth_version in the token is incremented to revoke all sessions (password reset, ban)"],
     ["Codes", "OTP and reset codes stored as HMAC, 10-minute expiry, 5 attempts, 60-second resend cooldown"],
     ["Authorisation", "Role-based ([Authorize(Roles = \"Admin\")]) plus access scope: restricted accounts receive scope appeals and can call only moderation endpoints; resource ownership is checked in services (own matches, replays, telemetry)"],
-    ["Transport", "HTTPS with TLS 1.2+ in production behind nginx; the staging environment currently uses HTTP and must be switched before release (Report 5 defect list)"],
-    ["Secrets", "Read from environment variables and the server .env file. The committed appsettings.json still contains development credentials and Program.cs contains a fallback JWT key; both are tracked as security defects and must be removed and rotated"],
+    ["Transport", "HTTPS with TLS 1.2+ behind the reverse proxy. Since 13/11/2026 the staging API and admin web are served only over HTTPS on port 443 (Let's Encrypt certificate, TLS 1.3; port 80 redirects and port 8080 is closed) and the game client uses https://tad-min.io.vn (commit be556a1; Report 5, D-18 fixed)"],
+    ["Secrets", "Read from environment variables and the server .env file. Commit be556a1 (13/11/2026) emptied the development credentials in appsettings.json and removed the fallback JWT key from Program.cs: the API refuses to start without a key of at least 32 bytes. The published images are also built from sanitised settings (deploy/api/sanitize_settings.py). The old values remain in the Git history and must be rotated (Report 5, D-17 partly fixed)"],
     ["Abuse protection", "Rate limiting on authentication; server-authoritative online results; idempotent commands; validation of telemetry ownership; HMAC tickets bind a player to a match and slot"],
-    ["CORS", "AdminWebPolicy allows only the admin web origins; production serves the admin web and API under the same origin through nginx"],
-    ["Data protection", "Other players never receive e-mail addresses; audit log for administrative actions; deploy.sh takes a PostgreSQL dump before every deployment (there is no scheduled daily backup yet)"],
+    ["CORS", "AdminWebPolicy allows only the admin web origins; production serves the admin web and API under the same origin through the reverse proxy"],
+    ["Data protection", "Other players never receive e-mail addresses; audit log for administrative actions; since be556a1 the deployment takes a PostgreSQL dump before every release and verifies it with pg_restore (kept under .deploy/backups on the host); there is no scheduled daily backup or off-host copy yet (Report 2, risk 11)"],
     ["Data at rest", "Passwords are BCrypt hashes, refresh tokens SHA-256 hashes and codes HMACs. Database files, backups and replays are not encrypted with AES-256 as the proposal stated; disk encryption of the production host is planned and the deviation is recorded in Report 1 (LI-10)"],
     ["Error handling", "GlobalExceptionHandler maps AppException types to status codes and hides internal details of unexpected exceptions"],
 ]

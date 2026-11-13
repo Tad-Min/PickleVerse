@@ -207,8 +207,8 @@
       <OutlineNumber>2</OutlineNumber>
       <OutlineLevel>1</OutlineLevel>
       <Start>2026-09-07T08:00:00</Start>
-      <Finish>2026-11-13T17:00:00</Finish>
-      <Duration>PT400H0M0S</Duration>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT480H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
       <Work>PT160H0M0S</Work>
       <Milestone>0</Milestone>
@@ -289,8 +289,8 @@
       <OutlineNumber>2.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
       <Start>2026-11-02T08:00:00</Start>
-      <Finish>2026-11-13T17:00:00</Finish>
-      <Duration>PT80H0M0S</Duration>
+      <Finish>2026-11-27T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
       <Work>PT32H0M0S</Work>
       <Milestone>0</Milestone>
@@ -299,7 +299,7 @@
       <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Done; Validate, publish and deploy jobs; Unity tests not in CI</Notes>
+      <Notes>Complexity Medium; Done; Checks, dedicated-server build, publish and deploy pass in runs 27, 28 and 30 of 13/11/2026; 29 other runs did not pass (configuration 05/11, billing lock 06–11/11, dedicated build 11–12/11, deploy steps and one FastAPI test 13/11); Unity tests are not in CI yet (PB-09)</Notes>
     </Task>
     <Task>
       <UID>12</UID>
@@ -402,7 +402,7 @@
       <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Done; D-07 open</Notes>
+      <Notes>Complexity Medium; Done; D-07 fixed 11/11/2026 (6d1ed37); retest in Round 2</Notes>
     </Task>
     <Task>
       <UID>17</UID>
@@ -440,8 +440,8 @@
       <Work>PT128H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>1</Summary>
-      <PercentComplete>98</PercentComplete>
-      <PercentWorkComplete>98</PercentWorkComplete>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
@@ -516,17 +516,17 @@
       <OutlineNumber>4.4</OutlineNumber>
       <OutlineLevel>2</OutlineLevel>
       <Start>2026-10-19T08:00:00</Start>
-      <Finish>2026-10-30T17:00:00</Finish>
-      <Duration>PT80H0M0S</Duration>
+      <Finish>2026-11-13T17:00:00</Finish>
+      <Duration>PT160H0M0S</Duration>
       <DurationFormat>7</DurationFormat>
       <Work>PT16H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <PercentComplete>80</PercentComplete>
-      <PercentWorkComplete>80</PercentWorkComplete>
+      <PercentComplete>100</PercentComplete>
+      <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
-      <Notes>Complexity Simple; Doing; D-07 character choice not applied everywhere</Notes>
+      <Notes>Complexity Simple; Done; D-07 fixed 11/11/2026 (6d1ed37); retest in Round 2</Notes>
     </Task>
     <Task>
       <UID>23</UID>
@@ -732,7 +732,7 @@
       <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-10-05T08:00:00</ConstraintDate>
-      <Notes>Complexity Simple; Done; D-05 label</Notes>
+      <Notes>Complexity Simple; Done; D-05 fixed (d2fc5be)</Notes>
     </Task>
     <Task>
       <UID>33</UID>
@@ -1430,7 +1430,7 @@
       <PercentWorkComplete>100</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-10-19T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Done; D-01, D-04 open</Notes>
+      <Notes>Complexity Medium; Done; D-01 open; D-04 fixed (31a7c2e), D-19 fixed (9dd994c)</Notes>
     </Task>
     <Task>
       <UID>67</UID>
@@ -1447,8 +1447,8 @@
       <Work>PT144H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>1</Summary>
-      <PercentComplete>28</PercentComplete>
-      <PercentWorkComplete>28</PercentWorkComplete>
+      <PercentComplete>32</PercentComplete>
+      <PercentWorkComplete>32</PercentWorkComplete>
       <ConstraintType>0</ConstraintType>
     </Task>
     <Task>
@@ -1466,11 +1466,11 @@
       <Work>PT40H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <PercentComplete>50</PercentComplete>
-      <PercentWorkComplete>50</PercentWorkComplete>
+      <PercentComplete>60</PercentComplete>
+      <PercentWorkComplete>60</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Doing; 515 EditMode tests passed; coverage not measured</Notes>
+      <Notes>Complexity Medium; Doing; 516 EditMode tests passed on main @ 5963501; IntegrationChecks, pytest and the web type check pass in CI on main @ d9200cc (EV-08); coverage not measured</Notes>
     </Task>
     <Task>
       <UID>69</UID>
@@ -1491,7 +1491,7 @@
       <PercentWorkComplete>30</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-11-16T08:00:00</ConstraintDate>
-      <Notes>Complexity Medium; Doing; Round 1 done; Rounds 2–3 planned</Notes>
+      <Notes>Complexity Medium; Doing; Round 1 done; 64 of 118 cases passed after the CI run of 13/11/2026; Rounds 2–3 planned</Notes>
     </Task>
     <Task>
       <UID>70</UID>
@@ -1529,11 +1529,11 @@
       <Work>PT16H0M0S</Work>
       <Milestone>0</Milestone>
       <Summary>0</Summary>
-      <PercentComplete>50</PercentComplete>
-      <PercentWorkComplete>50</PercentWorkComplete>
+      <PercentComplete>60</PercentComplete>
+      <PercentWorkComplete>60</PercentWorkComplete>
       <ConstraintType>4</ConstraintType>
       <ConstraintDate>2026-11-02T08:00:00</ConstraintDate>
-      <Notes>Complexity Simple; Doing; Staging running; release package pending</Notes>
+      <Notes>Complexity Simple; Doing; Staging deployed by the pipeline since 13/11/2026 (API and admin web on HTTPS); Android APK of 12/11/2026 to be rebuilt after the HTTPS switch; release package pending</Notes>
     </Task>
     <Task>
       <UID>72</UID>

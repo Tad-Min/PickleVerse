@@ -7,11 +7,20 @@ Results are recorded only from real runs:
   EV-04  Match history of the team test accounts: two ranked 1v1 matches on 09/11/2026 21:47 and 21:55
   EV-06  Unity EditMode run, 11/11/2026, main @ 5963501, 516 tests, 516 passed
   EV-07  Unity Play Mode check of the fixed defects D-03, D-04, D-05, D-07 and D-19, 11/11/2026, main @ 5963501
+  EV-08  GitHub Actions run 30 (id 43385071385), 13/11/2026 14:20-14:34 (UTC+7), main @ d9200cc: Backend integration checks (12 IntegrationChecks
+         groups on PostgreSQL 16 and Redis 7.4), FastAPI tests, admin web type check, dedicated-server build, image publish with smoke test
+         and deployment all succeeded; runs 27 and 28 on main @ 1dfefe9 succeeded too. Step results read from the GitHub REST API
+         (evidence/ci_runs_20261113.json).
+  EV-09  Transport and secret check, 13/11/2026. 11:30: HTTPS on port 443 but port 8080 still plain HTTP and credentials in appsettings.json.
+         16:21, after commit be556a1 was deployed: API and admin web only over HTTPS, port 8080 closed, settings files without credentials;
+         the removed values are still in the Git history (evidence/staging_check_20261113.md)
+  EV-10  Android build of main @ 5963501, 12/11/2026: APK 190.5 MB, IL2CPP ARM64, API 26-36, manifest read with aapt2; not installed on a
+         device (evidence/android_build_20261112.md)
 Every other case is Pending, with the reason in the Note column.
 """
 
 HUY, DAT = "Nguyễn Gia Huy", "Nguyễn Văn Thành Đạt"
-D10, D11, D09, D12 = "10/11/2026", "11/11/2026", "09/11/2026", "12/11/2026"
+D10, D11, D09, D12, D13 = "10/11/2026", "11/11/2026", "09/11/2026", "12/11/2026", "13/11/2026"
 
 SHEETS = [
     ("FE01 Account", "FE-01 Account and onboarding", "FR-01 to FR-05: registration, verification, sign-in, profile, settings"),
@@ -203,7 +212,7 @@ C("TC-F11-02", "FE07 Social", "FR-24", "System", "Main", "Match history shows re
   "Account with ranked matches", status="Passed", date=D10, tester=HUY, note="EV-02, screenshot 12.")
 C("TC-F11-03", "FE07 Social", "FR-24", "Integration", "Exception", "A player outside the match cannot read its replay",
   "1. As player C request GET /api/OnlineReplays/{match} of a match between A and B.", "HTTP 403; no replay data returned.",
-  "Finished match with a stored replay", note="Not run: IntegrationChecks need PostgreSQL and restored packages, unavailable on the test machine.")
+  "Finished match with a stored replay", note="Not run: the shared-replay checks are not part of the CI validate job (EV-08) and the test machine has no PostgreSQL/Redis for them.")
 C("TC-F12-01", "FE07 Social", "FR-25", "System", "Main", "Send and accept a friend request",
   "1. Player A: friend drawer → Tìm bạn → search player B by ID → send.\n2. Player B accepts.", "Both lists show each other as friends.", "Two accounts",
   note="Not run: needs two accounts at the same time.")
@@ -219,7 +228,7 @@ C("TC-F15-01", "FE08-09 Admin", "FR-29", "System", "Main", "Admin signs in and f
   "Admin account on staging", note="Not run in this round.")
 C("TC-F15-02", "FE08-09 Admin", "FR-29", "Integration", "Exception", "Role and scope protection of the admin API",
   "1. Call GET /api/Admin/users with a Player token.\n2. Call a game endpoint with a restricted (appeals scope) token.", "Both calls return HTTP 403.",
-  "Player and restricted test tokens", note="Not run: IntegrationChecks unavailable on the test machine.")
+  "Player and restricted test tokens", note="Not run as written: the admin authorisation check (--check-admin-authorization) is not part of the CI validate job.")
 C("TC-F15-03", "FE08-09 Admin", "FR-29", "System", "Rule", "Progress reset needs a preview and is refused during a search",
   "1. Start a ranked search with player P.\n2. Admin opens Progress Reset for P and confirms.\n3. Cancel the search and repeat.", "Step 2 shows MSG58; step 3 resets only the selected groups and writes an audit record.",
   "Admin and player accounts", note="Not run in this round.")
@@ -311,7 +320,7 @@ for sid, title, items in S:
         else:
             C(cid, "States", title, "Integration", "State", tr, "Set up the source state with the seed data, trigger the event through the API, then read the entity.",
               "The entity is in the target state and the change is recorded; invalid events leave the state unchanged.", "Seeded staging or local database",
-              note="Not run: needs IntegrationChecks or seeded staging data.")
+              note="Not run: not covered by the twelve IntegrationChecks groups of the CI validate job (EV-08); needs a new check or seeded staging data.")
 
 # ------------------------------------------------------------------ NFR
 NFR = [("NFR-01", "Usability test with 10 first-time students", "≥ 8 of 10 finish the tutorial in ≤ 5 min and pass the serve lesson within 3 attempts"),
@@ -328,7 +337,7 @@ NFR = [("NFR-01", "Usability test with 10 first-time students", "≥ 8 of 10 fin
        ("NFR-12", "Reference check, test report and API response review", "no reverse dependency; tests pass; e-mail never exposed to players")]
 NFR_NOTE = {"NFR-03": "Not run on the reference devices. The Unity Editor showed 51–79 FPS during the 10/11 bot match (not a valid measurement).",
             "NFR-09": "Not run. Known failures already logged: D-17 (secrets in the repository) and D-18 (HTTP on staging).",
-            "NFR-10": "Not run. The Android build has not yet been installed on a physical device (Report 1, LI-11); Windows was used in EV-02.",
+            "NFR-10": "Not run on a device. EV-10: an Android APK was built from main @ 5963501 on 12/11/2026 (190.5 MB, IL2CPP, ARM64, Android 8.0+) but has not been installed on a phone (Report 1, LI-11). That APK predates the HTTPS switch (D-21), so a new APK has to be built from main @ d9200cc for the device test. Windows was used in EV-02.",
             "NFR-12": "Not run as a formal check; the project references follow the layered rule (checked by reading the .csproj files)."}
 for i, (nid, how, crit) in enumerate(NFR, 1):
     C("TC-N%02d" % i, "NFR", nid, "System", "NFR", how, "Follow the verification method of %s in Report 3." % nid, crit, "Release candidate on staging and reference devices",
@@ -355,6 +364,7 @@ DEFECTS = [
     ("D-18", "Staging API and admin web are served over HTTP instead of HTTPS", "Security", "High", "TC-N09", D11, "Đạt"),
     ("D-19", "Settings tile is pushed below the screen after the Decisions and Appeals tile was added to the menu", "UI", "Low", "TC-F01-02", D11, "Huy"),
     ("D-20", "Level 25 needs 60,000 XP in total (n × 200 per level) while a match gives 5–10 XP, so the GEMSTONE paddle (BR-37) is effectively unreachable", "Requirement", "Medium", "TC-F04-03", D12, "Kiên"),
+    ("D-21", "The Android APK declares usesCleartextTraffic=false (manifest written by the App UI package) while BackendApiSettings used http://tad-min.io.vn:8080, so API calls from an Android phone are expected to be refused", "Configuration", "High", "TC-N10", D12, "Huy"),
 ]
 # Defects fixed in code after Round 1: commit on main and verification (EV-07). They are closed only after the Round 2 retest on staging.
 DEFECT_FIX = {
@@ -363,11 +373,32 @@ DEFECT_FIX = {
     "D-05": "d2fc5be",
     "D-07": "6d1ed37",
     "D-19": "9dd994c",
+    "D-18": "be556a1",
+    "D-21": "be556a1",
+}
+# How each fix was checked (shown with the defect list).
+DEFECT_CHECK = {
+    "D-18": "Verified on staging on 13/11/2026 16:21 (EV-09): API and admin web answer only over HTTPS, port 80 redirects and port 8080 is closed",
+    "D-21": "The client address is https://tad-min.io.vn since be556a1, so cleartext HTTP is no longer needed; not yet verified with a new Android build on a device",
+}
+
+
+# Defects with a state other than Open or Fixed: (state, date, explanation).
+DEFECT_STATE = {
+    "D-17": ("Partly fixed", D13, "Commit be556a1 emptied the credential values in appsettings.json and removed the fallback JWT key from Program.cs (the API now refuses to start without a key of at least 32 bytes). The old values are still readable in the Git history, so they must be rotated on staging and the rotation confirmed"),
+    "D-20": ("Accepted", D13, "Team decision of 13/11/2026: accepted as designed, the XP curve is not changed; closed without a fix"),
 }
 
 
 def defect_status(did):
+    if did in DEFECT_STATE:
+        return DEFECT_STATE[did][0]
     return "Fixed" if did in DEFECT_FIX else "Open"
+
+
+def defect_open(did):
+    """True while the defect still needs work (Open or Partly fixed)."""
+    return defect_status(did) in ("Open", "Partly fixed")
 
 # ------------------------------------------------------------------ Unit test decision tables
 # Each function: code, class, function, requirement, loc, conditions [(group, value)], confirms [(group, value)],
@@ -422,6 +453,67 @@ UNIT = [
          cases=[("N", [0], [0], "AcceptedOrDuplicateReceiptsRemoveTheOutboxOnce"), ("B", [1], [1], "ANewResetEpochDoesNotOverlayOldProgress"), ("A", [2], [2], "CorruptPrimaryFallsBackToTheLastValidBackup"),
                 ("A", [3], [3], "DelayedSyncResponseCannotOverwriteANewerSnapshot"), ("A", [4], [4], "OwnerMismatchCannotRemoveQueuedProgress")]),
 ]
+
+
+# ------------------------------------------------------------------ Results of 13/11/2026 (EV-08, EV-09)
+# The CI validate job runs twelve IntegrationChecks groups against PostgreSQL and Redis. A case is marked Passed only when the
+# assertions of a check cover its expected result; otherwise the case stays Pending and the note says what the check covers.
+CI_TESTER = "GitHub Actions (CI)"
+IC = "IntegrationChecks --check-%s (CI validate job)"
+CI_PASSED = {
+    "TC-F04-03": ("content", "ten passed lessons grant THOT exactly once; level 24 grants nothing and level 25 grants GEMSTONE; repeated reads add nothing and both milestone receipts are stored.",
+                  "Automated: the check seeds a player, records 10 passed lessons, sets level 24 and then 25 in the database and reads the game state after each change and once more."),
+    "TC-F18-01": ("analytics", "daily players, D1/D7/D30 retention, popular lessons, error heat map and matchmaking health equal the seeded values, including the Vietnam day boundary.",
+                  "Automated: the check seeds logins, sessions, lessons, errors and queue events, then requests the analytics report for the seeded dates from the service used by the admin web."),
+    "TC-X01-01": ("expert-review", "the review is stored with the authenticated reviewer, version 1 and its shot labels; a player cannot confirm labels and a stale version is refused. A fixture session is used, not a real labelled session (risk 8).",
+                  "Automated: the check opens a fixture training session, saves a review with level, shot labels, data group and basis, and reads it back."),
+    "TC-S01-01": ("moderation", "after the suspension the old access and refresh tokens are rejected and a new sign-in receives only the appeals scope.", None),
+    "TC-S01-02": ("moderation", "six minutes after a five-minute suspension the sign-in returns a game session again and the sanction row is kept. The expiry is evaluated at sign-in; the background expiry worker is not exercised.", None),
+    "TC-S04-03": ("training-sync", "the server applies a queued offline attempt (receipt APPLIED), answers DUPLICATE to a repeat and applies a parallel submission from two devices once.", None),
+    "TC-S08-01": ("dedicated", "the dedicated server completes a singles match; the result, the reward and one rating-ledger row per player are stored once.", None),
+    "TC-S08-02": ("dedicated", "an admin stop ends the playing match as interrupted, writes no Elo ledger and blocks a late normal result.", None),
+    "TC-S08-03": ("dedicated", "two simultaneous completions of the same match store one result (150 Tokenpad, one win).", None),
+    "TC-S10-01": ("content", "a new lesson is stored as DRAFT and is absent from the player catalogue; after publishing it appears there.", None),
+    "TC-S10-02": ("content", "unpublishing sets UNPUBLISHED and a new attempt of the lesson is refused, while an attempt already in progress finishes on its snapshot.", None),
+    "TC-S12-01": ("moderation", "accepting the appeal revokes only the linked sanction; the decision cannot be changed afterwards.", None),
+    "TC-S12-03": ("moderation", "a second appeal for the same sanction is refused with HTTP 409 and a concurrent retry creates one case.", None),
+    "TC-S13-02": ("hybrid", "with the AI service failing, the job stops at ten attempts in state failed and the cached coaching is kept.", None),
+}
+CI_PARTLY = {
+    "TC-F14-02": "the server applies each offline attempt once and returns DUPLICATE for a repeat (--check-training-sync); the client banner and screens were not checked.",
+    "TC-F15-02": "a restricted (appeals) session is refused with HTTP 403 on unmarked endpoints (--check-moderation) and a player cannot run admin operations at service level; the call to /api/Admin/users with a Player token was not made.",
+    "TC-F15-03": "preview, group selection, audit record and the refusal during an active match pass (--check-progress-reset); the refusal during a ranked search and the admin web were not checked.",
+    "TC-F16-01": "a published lesson enters the player catalogue and a draft does not (--check-content); the admin web and the client restart were not checked.",
+    "TC-F16-03": "a save with a stale version is rejected with HTTP 409 at service level (--check-content); the admin web message MSG60 was not checked.",
+    "TC-F17-01": "accepting a report stores the decision, the reviewer and the sanction in one transaction (--check-moderation); sending the report from the game and the CHECKING step were not checked.",
+    "TC-F17-02": "a stop command ends the dedicated match as interrupted without an Elo ledger (--check-dedicated); the admin web and the two clients were not checked.",
+    "TC-F17-03": "one appeal per sanction and a second appeal refused with HTTP 409 (--check-moderation); the 5-character validation and the game screen were not checked.",
+    "TC-F18-03": "the summary totals are computed correctly from seeded data (--check-analytics); the dashboard screen was not checked.",
+    "TC-X01-02": "a review without the evidence confirmation is refused (--check-expert-review); the empty-label case and MSG64 were not checked.",
+    "TC-S01-03": "an accepted appeal revokes its sanction and a revocation restores the game sign-in (--check-moderation), but not as one BANNED → ACTIVE transition.",
+    "TC-S09-03": "a match whose server heartbeat stops is ended as interrupted (--check-dedicated); the release of the lease is not asserted.",
+    "TC-S10-03": "a save with a stale version is rejected (--check-content); a stale publish is not asserted.",
+    "TC-S11-02": "a report is accepted with a sanction from its initial state (--check-moderation); the CHECKING source state is not used.",
+    "TC-N11": "exactly-once synchronisation holds for single, repeated and parallel submissions (--check-training-sync); the 20-attempt run of the method was not executed.",
+    "TC-N12": "the layering rule is checked automatically (--check-api-contract: no EF Core, PostgreSQL or Redis dependency in Services, no repository types in API) and the automated suites pass (EV-06, EV-08); the review of e-mail exposure in the API responses was not done.",
+}
+_BY_ID = {c["id"]: c for c in CASES}
+for _cid, (_chk, _what, _steps) in CI_PASSED.items():
+    _c = _BY_ID[_cid]
+    assert _c["status"] == "Pending", _cid
+    _c.update(status="Passed", date=D13, tester=CI_TESTER, auto=IC % _chk, note="EV-08: " + _what)
+    if _steps:
+        _c.update(level="Integration", steps=_steps, pre="Disposable PostgreSQL 16 database created from Database.sql; Redis 7.4")
+for _cid, _what in CI_PARTLY.items():
+    _c = _BY_ID[_cid]
+    assert _c["status"] == "Pending", _cid
+    _base = _c["note"] if _cid[:4] in ("TC-F", "TC-X") else ("Not run as specified." if _cid.startswith("TC-N") else "Not passed yet.")
+    _c["note"] = _base.rstrip() + " Partly covered by EV-08: " + _what
+_BY_ID["TC-N09"].update(status="Failed", date=D13, tester=HUY,
+                        note="EV-09 (13/11/2026). First check at 11:30: port 8080 still answered over plain HTTP and appsettings.json held the development credentials, so the case "
+                             "failed. Re-check at 16:21 after commit be556a1 was deployed: the API and the admin web answer only over HTTPS (Let's Encrypt, TLS 1.3), port 8080 is closed and the "
+                             "settings files on main @ d9200cc contain no credential (D-18 fixed). The removed values are still readable in the Git history and their rotation is not "
+                             "confirmed (D-17 partly fixed), so the case stays failed. The remaining checklist items and the negative API tests were not completed.")
 
 
 def stats():
