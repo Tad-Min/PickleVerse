@@ -15,12 +15,12 @@ CHANGES = [
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten after the internal review: deployment diagram and architecture decisions; full package diagrams; logical ERDs covering all 51 tables with keys and a data dictionary; UML class diagrams with class specifications; 15 sequence diagrams with alternative paths; new sections for gameplay physics, netcode, bot AI, API and security design; activity diagrams with swimlanes; 14 corrected state machines."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Activity diagrams: workflow owners aligned with BM04."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: API table regenerated from the controllers (129 endpoints, access and Used by); dedicated-server controllers corrected; time-out removed from the gameplay class diagram and SM-05; FlowState Delay, camera framing, lobby classes and quick doubles added; netcode design table; table descriptions of Users, PlayerProfiles and GameMatchPlayers corrected; delivery pipeline status and data-at-rest deviation recorded; workflow names aligned with BM04."),
-    ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Deployment updated after the fixes of 12–13/11/2026 (main @ d9200cc): delivery pipeline described as it runs (plan, checks, build, publish by digest, deploy with a verified dump) with the history of the 32 runs; Caddy HTTPS reverse proxy and the ports of staging; transport, secrets and data-protection rows of the security table."),
+    ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Deployment updated after the fixes of 12–13/11/2026 (main @ d9200cc): delivery pipeline described as it runs (plan, checks, build, publish by digest, deploy with a verified dump) with the history of the 35 runs; Caddy HTTPS reverse proxy and the ports of staging; transport, secrets and data-protection rows of the security table."),
 ]
 
 DESIGN_SRC = os.path.join(REPORT_DIR, "diagrams", "gen_r4_design.py")
 # Figures whose PlantUML source (diagrams/src) is newer than the rendered PNG. Empty this set after rendering them again.
-STALE_FIGURES = {"r4_architecture.png", "r4_deployment.png"}
+STALE_FIGURES = set()
 
 
 def class_blocks(diagram):

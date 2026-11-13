@@ -75,7 +75,7 @@ r.table(["Purpose", "Tool", "Vendor/In-house", "Version"], [
     ["Frame-rate measurement", "Unity Profiler", "Unity Technologies", "6000.6.2f1"],
     ["Network statistics", "Photon Fusion statistics and dashboard", "Exit Games", "Fusion 2.1.3"],
     ["Test case and result management", "Microsoft Excel (Report5 workbooks)", "Microsoft", "Microsoft 365"],
-    ["Continuous integration", "GitHub Actions (plan, checks, build, publish and deploy jobs)", "GitHub", "Hosted runner ubuntu-24.04; runs 27, 28 and 30 of 13/11/2026 passed every job"],
+    ["Continuous integration", "GitHub Actions (plan, checks, build, publish and deploy jobs)", "GitHub", "Hosted runner ubuntu-24.04; runs 27, 28, 30, 33 and 34 of 13/11/2026 passed every job"],
 ], widths=[5.2, 4.4, 3.4, 3.0], size=9, caption="Supporting tools")
 
 # ------------------------------------------------------------------ 3
@@ -212,7 +212,7 @@ r.bullets([
     "**Automation is below the 50%% target.** %d of %d cases are automated: %d by the Unity EditMode suite, which is still run by hand, and %d by the IntegrationChecks of the CI validate job. Next: add the EditMode suite as a GameCI unity-test-runner step that reuses the licence secrets of the dedicated-server build, and add the check groups that the job does not run yet (admin authorisation, shared replays, social, password recovery) so that the remaining state-transition cases can be linked to them." % (auto, len(R.CASES), sum(1 for c in R.CASES if c["auto"].startswith(R.EM)), len(R.CI_PASSED)),
     "**%d defects are fixed but not yet closed.** D-03, D-04, D-05, D-07 and D-19 were fixed on 11/11/2026 and checked in Play Mode; D-18 and D-21 were fixed by be556a1 on 13/11/2026. All are closed only after the Round 2 retest on the staging build. D-20 (60,000 XP for the GEMSTONE level) was accepted as designed on 13/11/2026 and is closed without a fix; D-12 (no Elite Token source) is still open." % len(fixed),
     "**Android is built but untested.** An APK was built from main @ 5963501 on 12/11/2026 (EV-10) and its inspection found D-21; no Android device has run the game yet. A new APK from main @ d9200cc, which uses the HTTPS address, is needed for TC-N03 and TC-N10 in Round 2.",
-    "**The delivery pipeline works.** Of the 32 runs, 29 did not pass: two configuration failures on 05/11, 18 runs that did not start while the GitHub account was locked for a billing issue from 06/11 to 11/11, six dedicated-server build failures, one failed FastAPI test and two failed deployment steps (one of them a manual re-run on 13/11 at 16:07). Runs 27, 28 and 30 of 13/11/2026 completed checks, build, publication and deployment in about 15 minutes each, and run 30 deployed the release that is on staging now.",
+    "**The delivery pipeline works.** Of the 35 runs, 30 did not pass: two configuration failures on 05/11, 18 runs that did not start while the GitHub account was locked for a billing issue from 06/11 to 11/11, six dedicated-server build failures, one failed FastAPI test, two failed deployment steps (one of them a manual re-run on 13/11 at 16:07, fixed by commit ef72552) and one cancelled manual run. Runs 27, 28, 30, 33 and 34 of 13/11/2026 completed checks, build, publication and deployment in about 15 minutes each, and run 34 deployed the release that is on staging now.",
 ])
 
 out = r.save("Report5_Test Documentation.docx", "Report 5 – Software Test Documentation")

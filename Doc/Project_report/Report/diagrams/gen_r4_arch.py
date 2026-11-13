@@ -67,7 +67,7 @@ node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
 }
 cloud "Photon Cloud\n(Fusion 2.1.3)" as Photon
 cloud "Gmail SMTP\n:587" as Smtp
-node "GitHub Actions\n<<CI/CD: validate, build,\npublish, deploy>>" as CI
+node "GitHub Actions\n<<CI/CD: plan, checks, build,\npublish, deploy>>" as CI
 actor "Developer" as Dev
 node "Docker Hub\ntadminm/pickelverse" as Hub
 

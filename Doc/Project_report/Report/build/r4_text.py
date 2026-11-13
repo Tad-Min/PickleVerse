@@ -41,10 +41,10 @@ DEPLOY_INTRO = ("Figure 2 shows the staging deployment on the host tad-min.io.vn
                 "image digests with Docker Compose on the runner. **Deploy** (ssh-deploy.sh) locks the release on the host, takes a PostgreSQL "
                 "dump and checks it with pg_restore, copies docker-compose.linux.yml and Database.sql, writes the four image digests into the "
                 "host .env file, runs docker compose up and records the deployed release. **Status on 13/11/2026:** the pipeline passes. Of "
-                "its 32 runs, 29 did not pass: two configuration failures on 05/11/2026, 18 runs that did not start while the GitHub account "
+                "its 35 runs, 30 did not pass: two configuration failures on 05/11/2026, 18 runs that did not start while the GitHub account "
                 "was locked for a billing issue (06/11 to 11/11), six failures of the dedicated-server build (11/11 and 12/11), one failed "
-                "FastAPI test and two failed deployment steps. Runs 27, 28 and 30 of 13/11/2026 completed every job in about 15 minutes each, "
-                "and run 30 deployed the release that is running now. The four earlier staging releases (Docker Hub tags api-, ai-, web- and "
+                "FastAPI test, two failed deployment steps and one cancelled manual run. Runs 27, 28, 30, 33 and 34 of 13/11/2026 completed every "
+                "job in about 15 minutes each, and run 34 (17:07) deployed the release that is running now. The four earlier staging releases (Docker Hub tags api-, ai-, web- and "
                 "server-manual-<date-time>, 08/11 to 10/11/2026) were built and started by hand. Since 13/11/2026 a Caddy reverse proxy on "
                 "the host serves the admin web and the Web API over HTTPS; Table 2 lists the ports that are reachable from the Internet.")
 
