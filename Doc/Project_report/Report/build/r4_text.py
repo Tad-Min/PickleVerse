@@ -1,7 +1,7 @@
 """Text content of Report 4 (kept apart from the layout code in gen_r4.py)."""
 import os
 
-API_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_endpoints.txt")
+API_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_endpoints.json")
 
 ARCH_INTRO = ("PickleVerse uses a client–server architecture with five deployable sub-systems (Figure 1). The Unity game client "
               "contains the presentation, the local gameplay simulation used for training and bot matches, and an offline store. "
@@ -32,9 +32,15 @@ AUTHORITY = ("Online matches support two authority modes recorded in GameMatches
              "authoritative match runs at a time; the API reports the slot as busy and the client waits (Report 3, MSG36). Scaling to "
              "more matches requires more server containers and is outside release 1.0.")
 
-DEPLOY_INTRO = ("Figure 2 shows the staging deployment on the host tad-min.io.vn (Ubuntu 24.04, Docker Engine). GitHub Actions validates "
-                "each push to main, publishes images to Docker Hub and deploys them over SSH with deploy.sh, which pulls images by digest "
-                "and restarts the Docker Compose stack. Only the ports listed in Table 2 are reachable from the Internet.")
+DEPLOY_INTRO = ("Figure 2 shows the staging deployment on the host tad-min.io.vn (Ubuntu 24.04, Docker Engine). The delivery pipeline is "
+                "designed as follows: the GitHub Actions workflow dockerhub.yml validates each push to main, builds the four images (api, ai, "
+                "web, server) with publish-release.sh, pushes them to Docker Hub and calls ssh-deploy.sh, which runs deploy.sh on the host; "
+                "deploy.sh takes a PostgreSQL dump, pulls the images by digest and restarts the Docker Compose stack. **Status on 12/11/2026:** "
+                "the workflow has never completed. Of its 22 runs, those on 05/11/2026 failed in the build and every run since 06/11/2026 "
+                "stopped at once because the GitHub account is locked for a billing issue. The staging stack was therefore built and published "
+                "by hand as four releases (Docker Hub tags api-, ai-, web- and server-manual-<date-time>, 08/11 to 10/11/2026) and started on "
+                "the host manually. Restoring the pipeline is tracked in Report 2 (risk register) and Report 5 (open issues). Only the ports "
+                "listed in Table 2 are reachable from the Internet.")
 
 NODES = [
     ["Host nginx", "Ubuntu package", "80/tcp", "Reverse proxy to the web container; TLS termination is planned for production (port 443)"],
@@ -49,7 +55,7 @@ NODES = [
 ]
 
 PKG_BACKEND = [
-    ["01", "PickleVerse.API", "Entry point: 24 controllers, Program.cs (dependency injection, JWT, CORS, rate limiter, Redis), filters that wrap responses in ApiResponse<T>, the global exception handler that maps service exceptions to HTTP status codes"],
+    ["01", "PickleVerse.API", "Entry point: 28 controller classes in 24 files, Program.cs (dependency injection, JWT, CORS, rate limiter, Redis), filters that wrap responses in ApiResponse<T>, the global exception handler that maps service exceptions to HTTP status codes"],
     ["02", "PickleVerse.Services", "Business logic: service interfaces (Interfaces) and implementations (Implementations), background workers, typed settings (ServerSettings) and pure rule classes (TrainingEngine, ProgressionEngine, EloPolicy)"],
     ["03", "PickleVerse.Repositories", "Data access: PickleVerseContext (Npgsql EF Core mapping of the 51 tables), IUnitOfWork, repositories, GameRepository partial classes for match and progress persistence, Redis repositories for queues, leases and caches"],
     ["04", "PickleVerse.Entities", "Shared model: EF entity classes, DTOs and contracts, enums, configuration models (RedisSettings, DedicatedServerSettings) and exception/response types (AppException, ApiResponse)"],
@@ -87,12 +93,12 @@ STACK = [
     ["AI service", "Python 3.12, FastAPI, Pydantic, scikit-learn", "Coaching analysis and tier model"],
     ["Admin web", "React 18, TypeScript 5, Vite 5, TanStack React Query 5, Axios 1.6, Recharts 2, Tailwind CSS 3", "Administration UI"],
     ["Data", "PostgreSQL 16, Redis 7.4, S3-compatible storage", "Persistence, coordination, replays"],
-    ["DevOps", "Docker, Docker Compose, GitHub Actions, Docker Hub, nginx, Ubuntu 24.04", "Build, delivery and hosting"],
+    ["DevOps", "Docker, Docker Compose, Docker Hub, nginx, Ubuntu 24.04; GitHub Actions workflow configured but not yet passing", "Build, delivery and hosting"],
 ]
 
 DECISIONS = [
     ["1", "ASP.NET Core Web API (.NET 10)", "Spring Boot; FastAPI", "The team writes C# for Unity; sharing the language reduces context switching and lets DTOs be checked against the Unity client in IntegrationChecks", "The AI service stays in Python; two runtimes on the server"],
-    ["2", "Photon Fusion 2 with a dedicated server", "Netcode for GameObjects with Relay (prototype 07–21/10/2026); Mirror", "The NGO prototype showed unstable relayed connections; Fusion provides lag compensation, input authority and a server mode", "Dependency on Photon Cloud and its CCU plan (Report 2, risk 4)"],
+    ["2", "Photon Fusion 2 with a dedicated server", "Netcode for GameObjects with Relay (prototype 07–21/10/2026); Mirror", "The NGO prototype showed unstable relayed connections; Fusion provides input authority, a server mode and tick-based state replication on which client prediction is built", "Dependency on Photon Cloud and its CCU plan (Report 2, risk 4)"],
     ["3", "Custom fixed-step ball simulation (120 Hz)", "Unity PhysX rigidbody", "Deterministic, engine-independent flight and bounce that the server and replays can reproduce exactly", "Collision with paddle and net is implemented by the team (sphere sweep against a contact box)"],
     ["4", "uGUI for the game interface", "UI Toolkit", "Existing art assets and world-space panels were built with uGUI; better support for runtime animation", "Two UI systems are not mixed; layout code is in C#"],
     ["5", "Server-authoritative results and rewards", "Client-reported results", "Prevents cheating on Elo, currency and missions", "Bot matches are reported by the client; only Elo-neutral practice uses this path except Ranked Bot, whose result is validated against the server-created match"],
@@ -119,11 +125,11 @@ ERD_FIGS = [
 
 TABLE_DESC = {
     "Roles": "Role catalogue (Player, Admin).",
-    "Users": "Account: e-mail, BCrypt password hash, role, status (ACTIVE, SUSPENDED, BANNED), e-mail verification flag and auth version used to revoke tokens.",
+    "Users": "Account: e-mail, BCrypt password hash, role, status (ACTIVE, SUSPENDED, BANNED), creation time and the auth version used to revoke tokens. Whether the e-mail is verified is read from VerificationEmail.IsVerified.",
     "RefreshTokens": "Refresh tokens stored as SHA-256 hashes with expiry and revocation time.",
-    "VerificationEmail": "E-mail verification codes (HMAC of the code), expiry, attempts and resend time.",
+    "VerificationEmail": "E-mail verification record of an account: HMAC of the current code, expiry, failed attempts and the IsVerified flag.",
     "PasswordResetChallenges": "The current password-reset challenge of an account (one per user).",
-    "PlayerProfiles": "Game profile of an account: display name, character, onboarding choice, level, XP, Elo, wins, losses, streaks, statistics and equipped items.",
+    "PlayerProfiles": "Game profile of an account: display name, avatar, gender of the character, onboarding and tutorial state, level, XP, Elo, wins, losses, streaks, reset epochs and lifetime statistics. Equipped items are stored in PlayerCosmetics.Equipped.",
     "FriendRequests": "Friend requests with status PENDING, ACCEPTED or DECLINED.",
     "Friendships": "Accepted friendships stored once per pair (UserId1 < UserId2).",
     "BlockedUsers": "Blocks from one user to another.",
@@ -155,7 +161,7 @@ TABLE_DESC = {
     "GameCommands": "Idempotency log of client commands (purchase, claim, sync) per player and command ID.",
     "TrainingSessions": "Each training attempt with lesson, drill, shots, hits, timing, stars and receipt status.",
     "MatchScore": "Score of each game of a match (weak entity identified by match and game number).",
-    "GameMatchPlayers": "Participants of a match with team, slot, character, bot flag, Elo input and outcome.",
+    "GameMatchPlayers": "Participants of a match: team, party group, roster slot, Elo before the match, replay-writer flag, valid serves and returns, end reason, last-seen time and outcome (WIN, LOSE, INTERRUPTED). Names, characters and bot accounts are joined from the profile tables.",
     "CurrencyTransactions": "Ledger of every currency change with reason and reference.",
     "ratingledger": "Elo before, delta and after for one player in one ranked match.",
     "aitelemetrysessions": "Telemetry batch of a drill or match with source, mode and status.",
@@ -224,7 +230,10 @@ RESP = {
     "PaddleContact": "Checks the contact window (±65 ms) and the contact quality (Perfect, Good)",
     "BallFlight": "Fixed-step ball flight: gravity, drag-free arc and bounce with restitution 0.73",
     "ShotTrajectory": "Computes launch velocity for a target point and flight time",
-    "MatchPhase": "Phases of a match (Intro, PreServe, Rally, Settling, BetweenPoints, BetweenGames, Timeout, MatchOver, Cinematic)",
+    "MatchPhase": "Phases of a match (Intro, Cinematic, PreServe, Rally, Settling, BetweenPoints, BetweenGames, MatchOver); Timeout remains in the enum, with SinglesRules.TakeTimeout, only for protocol compatibility and is no longer entered",
+    "MatchCamera": "Follows the local player behind the baseline and smooths position and rotation",
+    "CourtFollowView": "Shared framing rule for local and online matches: keeps the player's feet above the bottom HUD band and the far baseline in view",
+    "HudActorClearance": "Moves the shot-cue panel so that it never covers the player",
     # bot
     "IAdaptiveBotContext": "Information the bot needs about ball, court and opponent, independent of local or network play",
     "LocalAdaptiveBotContext": "Bot context for a local bot match",
@@ -244,10 +253,13 @@ RESP = {
     "NetworkPlayer": "Networked player: input, position and animation",
     "PickleballRules": "Rules engine used by the network match (singles and doubles)",
     "MatchRoster": "Teams, slots, bot flags and mode of a match",
+    "PlayMultiplayerPresenter": "Online lobby screen: singles or doubles room, room code, search timer, invite button and ready state",
+    "LobbyFriendsSidebar": "Collapsible friends column of the lobby: paged list of friends who can be invited, search and send invitation",
     # dedicated
     "DedicatedWorker": "Main loop of the dedicated server: lease, admission, heartbeats, telemetry, replay and result",
     "DedicatedAdmission": "Validates HMAC tickets and admits players to the session",
-    "DedicatedController": "REST endpoints used by clients (ticket) and by the server (lease, heartbeat, result)",
+    "DedicatedController": "Player endpoint /api/Game/dedicated/ticket: reserves the slot and returns the signed connection ticket",
+    "DedicatedWorkerController": "Service-key endpoints /api/Server/* used only by the dedicated server: poll, ready, heartbeat, admission, operation acknowledgement, telemetry, replay chunks, result and release",
     "GameController": "REST endpoints for profile, wallet, catalogue, purchase and claims",
     "IDedicatedServerService": "Contract of dedicated-server coordination",
     "DedicatedServerService": "Allocates the slot, signs tickets, records heartbeats and settles results",
@@ -308,7 +320,7 @@ SECTIONS = [
               ("r4_seq_reset_pwd", "Reset password", "The reset request always returns the same message; the mail queue sends the code only for a verified account. A valid code changes the hash and revokes every refresh token.")]},
     {"num": "3.2", "title": "3.2 Gameplay Core and Ball Physics", "short": "gameplay core", "cls": "r4_cls_gameplay",
      "cls_caption": "Class diagram – gameplay core (bot match)",
-     "intro": "The gameplay core implements FR-11 to FR-13. BotMatch drives the match phases. Each MatchActor reads its intent from ShotInput (player) or a bot. PaddleContact accepts the hit, ShotTrajectory computes the launch velocity, BallFlight advances the ball and SinglesRules decides the outcome. The rule and physics classes have no Unity dependencies, so the same code runs in the client, in the dedicated server and in EditMode unit tests.",
+     "intro": "The gameplay core implements FR-11 to FR-13. BotMatch drives the match phases. Each MatchActor reads its intent from ShotInput (player) or a bot. PaddleContact accepts the hit, ShotTrajectory computes the launch velocity, BallFlight advances the ball and SinglesRules decides the outcome. The rule and physics classes have no Unity dependencies, so the same code runs in the client, in the dedicated server and in EditMode unit tests. The camera follows the common sports-game convention of a view from behind the player's own baseline: MatchCamera and the online camera both call CourtFollowView, which keeps the player's feet above the bottom HUD band (shot cue on PC, touch controls on Android) and widens the view slightly so that the far baseline stays visible; HudActorClearance moves the shot cue if it would still cover the player (defect D-03).",
      "params": [["Simulation step", "120 Hz (1/120 s)", "BallFlight fixed step, independent of frame rate"],
                 ["Gravity", "9.81 m/s²", "Ball flight"],
                 ["Bounce restitution", "0.73", "Vertical speed kept after a bounce"],
@@ -317,7 +329,10 @@ SECTIONS = [
                 ["Contact window", "±65 ms", "PaddleContact; outside the window the swing misses"],
                 ["Perfect contact", "≤ 0.145 m and ±30 ms", "Higher speed and accuracy"],
                 ["Serve timer", "10 s", "Fault ServeTimeout"],
-                ["Contact delay per shot", "serve 0.80 s, dink 0.367 s, drop 0.533 s, smash 0.50 s, volley/reset 0.233 s, drive 0.433 s", "ShotIntent.ContactDelay: time from release to the animation's contact frame"]],
+                ["Contact delay per shot", "serve 0.80 s, dink 0.367 s, drop 0.533 s, smash 0.50 s, volley/reset 0.233 s, drive 0.433 s", "ShotIntent.ContactDelay: time from release to the animation's contact frame"],
+                ["Camera height / distance / field of view", "5.3 m / 4.25 m / 56°", "CourtFollowView: position behind the player's baseline"],
+                ["Feet line", "25 % of screen height on PC, 32 % on Android", "CourtFollowView.DesktopFeetLine / TouchFeetLine: the feet are never drawn lower"],
+                ["Extra field of view", "up to 8°", "Added only when needed to keep the far baseline and the opponent's head in view"]],
      "params_caption": "Gameplay and physics parameters"},
     {"num": "3.3", "title": "3.3 Training and Offline Synchronisation", "short": "training", "cls": "r4_cls_training",
      "cls_caption": "Class diagram – training and synchronisation",
@@ -335,10 +350,22 @@ SECTIONS = [
      "seqs": [("r4_seq_bot_match", "Play a bot match", "The loop fragment repeats rallies until one side wins two games; at the end the client reports the result to GameMatchesController, which settles rewards.")]},
     {"num": "3.5", "title": "3.5 Online Matchmaking and Netcode", "short": "online play", "cls": "r4_cls_online",
      "cls_caption": "Class diagram – online client",
-     "intro": "Online play implements FR-14 to FR-18. MultiplayerApp is a state machine over FlowState. PhotonSession connects to Fusion; NetworkMatch and NetworkPlayer replicate state from the authority. Clients send only input (32-input history per tick) and render remote objects with snapshot interpolation; the protocol version (18) must match between client and server or the connection is refused.",
-     "seqs": [("r4_seq_ranked", "Find a ranked match", "The client polls the search. The alternatives show a human opponent found, the bot fallback after 180 seconds, all players accepting, and a decline or timeout that closes the offer."),
+     "intro": "Online play implements FR-14 to FR-18. MultiplayerApp is a state machine over FlowState; PlayMultiplayerPresenter and LobbyFriendsSidebar form the lobby screen. Unity Gaming Services code from the earlier prototype (files guarded by PICKLEVERSE_LEGACY_NGO) is not compiled; the live path uses only Photon Fusion and the Web API. Ranked singles, quick doubles (unrated 2v2, filled from solo players and parties of two, no bot fallback) and private rooms share the same ready check and dedicated-server allocation. PhotonSession connects to Fusion; NetworkMatch and NetworkPlayer replicate state from the dedicated server, which is the only authority. Table below gives the netcode design: clients send input only, predict their own movement and reconcile with the server frame; remote players are interpolated.",
+     "params": [["Authority", "Dedicated server (Fusion server mode)", "Shared mode is kept only for local development without a server"],
+                ["Client input", "DedicatedInput {Movement, Running, Sequence}", "Sent every tick; shot commands travel as reliable messages (JSON, at most 16 KB) and are judged on the server"],
+                ["Local prediction", "Own player only", "The client applies its input at once and keeps the unacknowledged moves in a sequence-numbered list"],
+                ["Server frame", "PlayerFrame {position, velocity, sequence, motionEpoch, movement, running}", "Networked state of each player; sequence acknowledges the last input applied"],
+                ["Reconciliation", "Replay unacknowledged moves from the server state", "Acknowledged moves are dropped; the visible correction is smoothed and clamped to 1.5 m; a new motionEpoch (serve reset, teleport) forces a hard reset"],
+                ["Movement integration", "120 Hz sub-steps", "Same step as the authority, so prediction and server agree"],
+                ["Remote players and ball", "Interpolated in Render", "Fusion snapshot interpolation"],
+                ["Lag compensation", "Disabled", "Hits are judged on the server's own state"],
+                ["Tick rate", "Fusion project default", "No explicit override in the project settings"],
+                ["Protocol version", "18", "Client and server must match or the connection is refused"],
+                ["Reconnection", "client 30 s; server keeps the slot 30 s; API interrupts after 35 s without heartbeat (heartbeat every 8 s)", "MultiplayerSettings.reconnectSeconds, NetworkMatch reservations, OnlineMatch settings (BR-28)"]],
+     "params_caption": "Netcode design parameters",
+     "seqs": [("r4_seq_ranked", "Find a ranked or quick doubles match", "The client polls the search. For singles the alternatives show a human opponent inside the Elo window and the bot fallback after 180 seconds. For quick doubles the captain sends the party members; the API fills two sides of two from parties and solo players, the match is unrated and there is no bot fallback. In both modes all players must accept, and a decline or timeout closes the offer."),
               ("r4_seq_invite", "Invite a friend to a room", "The invitation is rejected when the friend is not in the lobby, is blocked or the room is full; otherwise the friend polls and accepts it."),
-              ("r4_seq_dedicated", "Allocate the dedicated server and play", "When the slot is busy the client waits. When the slot is reserved the API signs tickets; the client polls every 500 ms until the server is ready; during play the server sends heartbeats and at the end the result.")],
+              ("r4_seq_dedicated", "Allocate the dedicated server and play", "The server waits for work on /api/Server/poll. When the slot is busy the client waits. When the slot is reserved the API signs tickets; the client polls every 500 ms until the server is ready; during play the server sends heartbeats and at the end telemetry, replay and the result.")],
      "extra_cls": [("r4_cls_dedicated", "Class diagram – dedicated server coordination", "dedicated server")]},
     {"num": "3.6", "title": "3.6 AI Coaching", "short": "AI coaching", "cls": "r4_cls_coaching",
      "cls_caption": "Class diagram – AI coaching",
@@ -364,7 +391,16 @@ SECTIONS = [
               ("r4_seq_stop", "Stop a live match", "The stop request is stored as a dedicated operation; the server reads it with the next heartbeat, ends the match as interrupted and acknowledges.")]},
 ]
 
-API_INTRO = "The Web API exposes 122 REST endpoints in 24 controllers. Table below lists the conventions, and the full list of endpoints with their access level follows."
+API_INTRO = ("The Web API exposes 129 REST endpoints in 28 controller classes (24 source files). The endpoint list below is extracted from the "
+             "controller attributes by build/api_extract.py, so routes and access levels are those of the code on 12/11/2026. The column "
+             "Used by shows which program calls each route (game client, dedicated game server or admin web), found by searching the client "
+             "sources; code compiled only for the old Netcode prototype is ignored. Access: Anonymous (no token), Player (any signed-in "
+             "account with game scope), Player, Restricted (also allowed for a restricted account with appeals scope), Admin (role Admin), "
+             "Service key (dedicated server only).")
+API_LEGACY = ("24 endpoints are marked Not called. They belong to the first resource-style controllers (Achievements, Economy, Friends, "
+              "Matches, Missions, Profiles, Replays, Training) and to three AiCoaching routes; the game now uses the command-style /api/Game "
+              "routes for the same data. They still require authentication and pass through the same services, but they are not tested by "
+              "the clients and are recorded as issue I-12 of the project tracking workbook: they will be removed or documented as public API before release.")
 API_RULES = [
     ["Base path and format", "/api/<Controller>/...; JSON (UTF-8); enum values serialised as strings"],
     ["Envelope", "Success: ApiResponse<T> {success: true, message, data}. Error: ApiResponse {success: false, message, code, errors}"],
@@ -377,21 +413,6 @@ API_RULES = [
 ]
 
 
-def access(route, method):
-    r = route.lower()
-    if r.startswith("/api/admin"):
-        return "Admin"
-    if r.startswith("/api/auth"):
-        return "Player" if r.endswith("/logout") else "Anonymous"
-    if r.startswith("/api/dedicated"):
-        return "Player" if r.endswith("/ticket") else "Service key"
-    if r.startswith("/api/moderation"):
-        return "Player, Restricted"
-    if r.startswith("/api/appactivity"):
-        return "Anonymous / Player"
-    return "Player"
-
-
 SECURITY = [
     ["Passwords", "BCrypt hash with salt; 6–128 characters; never logged"],
     ["Tokens", "JWT HS256, 2-hour access token; refresh token 14 days stored as SHA-256 hash, rotated on use; auth_version in the token is incremented to revoke all sessions (password reset, ban)"],
@@ -401,16 +422,17 @@ SECURITY = [
     ["Secrets", "Read from environment variables and the server .env file. The committed appsettings.json still contains development credentials and Program.cs contains a fallback JWT key; both are tracked as security defects and must be removed and rotated"],
     ["Abuse protection", "Rate limiting on authentication; server-authoritative online results; idempotent commands; validation of telemetry ownership; HMAC tickets bind a player to a match and slot"],
     ["CORS", "AdminWebPolicy allows only the admin web origins; production serves the admin web and API under the same origin through nginx"],
-    ["Data protection", "Other players never receive e-mail addresses; audit log for administrative actions; daily database backup"],
+    ["Data protection", "Other players never receive e-mail addresses; audit log for administrative actions; deploy.sh takes a PostgreSQL dump before every deployment (there is no scheduled daily backup yet)"],
+    ["Data at rest", "Passwords are BCrypt hashes, refresh tokens SHA-256 hashes and codes HMACs. Database files, backups and replays are not encrypted with AES-256 as the proposal stated; disk encryption of the production host is planned and the deviation is recorded in Report 1 (LI-10)"],
     ["Error handling", "GlobalExceptionHandler maps AppException types to status codes and hides internal details of unexpected exceptions"],
 ]
 
 ACTIVITIES = [
     ("r4_act_w01.png", "W01 – Learn and sync a drill (owner: Trần Nguyễn Hiếu Thuận)", "The player signs in or opens offline training; a beginner is sent to the tutorial; the player practises a drill; the attempt is applied online or queued offline and synchronised when the network returns."),
-    ("r4_act_w02.png", "W02 – Play a bot match and get a tip (owner: Nguyễn Gia Huy)", "The player sets up a bot match and plays rallies until a side wins; the API settles the result, the AI service analyses the telemetry and the player reads the tip and opens the recommended drill."),
-    ("r4_act_w03.png", "W03 – Find and play an online match (owner: Nguyễn Văn Thành Đạt)", "The player either creates a private room or searches a ranked match; the bot fallback applies after 180 seconds; all players must accept; the dedicated server runs the match unless it is stopped or the lease is lost."),
-    ("r4_act_w04.png", "W04 – Report, sanction and appeal (owner: Huỳnh Trung Kiên)", "A player reports an opponent; the administrator reviews and may sanction; the restricted player may appeal; the administrator decides the appeal."),
-    ("r4_act_content.png", "Supporting workflow – publish training content", "The administrator edits and publishes a lesson; the API checks the expected version and that prerequisites are published; clients receive the new catalogue version."),
+    ("r4_act_w02.png", "W02 – Play a bot and get a tip (owner: Nguyễn Gia Huy)", "The player sets up a bot match and plays rallies until a side wins; the API settles the result, the AI service analyses the telemetry and the player reads the tip and opens the recommended drill."),
+    ("r4_act_w03.png", "W03 – Play online and save the result (owner: Nguyễn Văn Thành Đạt)", "The player creates a private room, starts quick doubles (alone or with a party of two) or searches a ranked singles match; only ranked singles has the bot fallback after 180 seconds; all players must accept; the dedicated server runs the match unless it is stopped or the lease is lost, and the API saves the result once."),
+    ("r4_act_w04.png", "W04 – Review a report and publish a lesson, part 1: report, sanction and appeal (owner: Huỳnh Trung Kiên)", "A player reports an opponent; the administrator reviews and may sanction; the restricted player may appeal; the administrator decides the appeal."),
+    ("r4_act_content.png", "W04 – Review a report and publish a lesson, part 2: publish a lesson (owner: Huỳnh Trung Kiên)", "The administrator edits and publishes a lesson; the API checks the expected version and that prerequisites are published; clients receive the new catalogue version."),
 ]
 
 STATES = [
@@ -418,8 +440,8 @@ STATES = [
     ("r4_sm_email.png", "SM-02 E-mail verification code", "Pending, verified, expired and locked after 5 wrong attempts; a resend creates a new pending code."),
     ("r4_sm_training.png", "SM-03 Training attempt and receipt", "Briefing, practice, result; the receipt is APPLIED, DUPLICATE or REJECTED."),
     ("r4_sm_offline.png", "SM-04 Offline queue item", "Queued, sending, applied, duplicate or rejected; network failure returns the item to the queue."),
-    ("r4_sm_botmatch.png", "SM-05 Match phase (local match)", "Intro, PreServe, Rally, Settling, BetweenPoints, BetweenGames, Timeout, MatchOver and Cinematic."),
-    ("r4_sm_search.png", "SM-06 Matchmaking search", "SEARCHING ends in MATCHED, BOT (fallback), CANCELLED or TIMEOUT; a declined offer returns the other player to SEARCHING."),
+    ("r4_sm_botmatch.png", "SM-05 Match phase (local match)", "Intro, Cinematic, PreServe, Rally, Settling, BetweenPoints, BetweenGames and MatchOver. Time-outs were removed from play, so the Timeout value of the enum is never entered."),
+    ("r4_sm_search.png", "SM-06 Matchmaking search", "SEARCHING ends in MATCHED, BOT (ranked singles fallback only), CANCELLED or TIMEOUT; a declined offer returns the other player to SEARCHING."),
     ("r4_sm_room.png", "SM-07 Online room phase", "idle, searching, assigning-bot, ready, loading, playing, interrupted, closed and rejected."),
     ("r4_sm_match.png", "SM-08 Game match", "PREPARING, PLAYING, FINISHED and CANCELLED; interruption and administrator stop end the match without Elo."),
     ("r4_sm_lease.png", "SM-09 Dedicated server lease", "queued, starting, ready, finishing, pending and busy; an expired lease releases the slot."),

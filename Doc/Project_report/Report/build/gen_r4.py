@@ -14,6 +14,7 @@ CHANGES = [
     ("06/11/2026", "A", "Nguyễn Văn Thành Đạt", "v0.2 – First SDD on the official template: architecture, packages, database groups, 7 class/sequence pairs, activities and state machines."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.0 – Rewritten after the internal review: deployment diagram and architecture decisions; full package diagrams; logical ERDs covering all 51 tables with keys and a data dictionary; UML class diagrams with class specifications; 15 sequence diagrams with alternative paths; new sections for gameplay physics, netcode, bot AI, API and security design; activity diagrams with swimlanes; 14 corrected state machines."),
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Activity diagrams: workflow owners aligned with BM04."),
+    ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: API table regenerated from the controllers (129 endpoints, access and Used by); dedicated-server controllers corrected; time-out removed from the gameplay class diagram and SM-05; FlowState Delay, camera framing, lobby classes and quick doubles added; netcode design table; table descriptions of Users, PlayerProfiles and GameMatchPlayers corrected; delivery pipeline status and data-at-rest deviation recorded; workflow names aligned with BM04."),
 ]
 
 DESIGN_SRC = os.path.join(REPORT_DIR, "diagrams", "gen_r4_design.py")
@@ -142,15 +143,13 @@ for sec in T.SECTIONS:
 r.h3("3.9 API Design")
 r.p(T.API_INTRO)
 r.table(["Item", "Design"], T.API_RULES, widths=[3.6, 12.4], size=8.5, first_col_bold=True, caption="API conventions")
-eps = [l.rstrip("\n") for l in open(T.API_FILE, encoding="utf-8") if l.strip()]
-rows = []
-for l in eps:
-    parts = [x.strip() for x in l.split("|")]
-    method, route = parts[0].split(None, 1)
-    ctl, action = parts[1].split(".", 1)
-    rows.append([ctl, method, route.strip(), action, T.access(route.strip(), method)])
-rows.sort(key=lambda x: (x[0], x[2], x[1]))
-r.table(["Controller", "Method", "Route", "Action", "Access"], rows, widths=[2.6, 1.4, 6.6, 3.4, 2.0], size=7, caption="Web API endpoints (122)")
+import json  # noqa: E402
+eps = json.load(open(T.API_FILE, encoding="utf-8"))
+rows = sorted([[e["controller"], e["method"], e["route"], e["action"], e["access"], e["usedBy"]] for e in eps],
+              key=lambda x: (x[0], x[2], x[1]))
+r.table(["Controller", "Method", "Route", "Action", "Access", "Used by"], rows, widths=[2.4, 1.3, 5.8, 2.7, 1.9, 1.9], size=7,
+        caption="Web API endpoints (%d)" % len(rows))
+r.p(T.API_LEGACY)
 
 r.h3("3.10 Security Design")
 r.table(["Concern", "Design"], T.SECURITY, widths=[3.4, 12.6], size=8.5, first_col_bold=True, caption="Security design")
@@ -158,7 +157,7 @@ r.table(["Concern", "Design"], T.SECURITY, widths=[3.4, 12.6], size=8.5, first_c
 # ================================================================== 4. Workflows and states
 r.h2("4. Workflows and State Changes")
 r.h3("4.1 Activity Diagrams")
-r.p("Each review workflow is owned by one team member, as committed in the Review 2 form BM04 (W01 Trần Nguyễn Hiếu Thuận, W02 Nguyễn Gia Huy, W03 Nguyễn Văn Thành Đạt, W04 Huỳnh Trung Kiên), and is drawn as a UML activity diagram with one swimlane per participant, decisions and exception branches.")
+r.p("Each review workflow is owned by one team member, as committed in the Review 2 form BM04 (W01 Learn and sync a drill – Trần Nguyễn Hiếu Thuận; W02 Play a bot and get a tip – Nguyễn Gia Huy; W03 Play online and save the result – Nguyễn Văn Thành Đạt; W04 Review a report and publish a lesson – Huỳnh Trung Kiên), and is drawn as a UML activity diagram with one swimlane per participant, decisions and exception branches. W04 has two independent parts and therefore two diagrams.")
 for f, cap, text in T.ACTIVITIES:
     r.h4(cap)
     r.p(text)

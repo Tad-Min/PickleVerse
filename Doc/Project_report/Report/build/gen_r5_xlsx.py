@@ -17,7 +17,7 @@ PROJECT = "PickleVerse – Multiplayer Pickleball Skill-Training and Match Game 
 WRAP = Alignment(wrap_text=True, vertical="top")
 GROUP_FILL = PatternFill("solid", fgColor="DDEBF7")
 STATUS_FILL = {"Passed": "C6EFCE", "Failed": "FFC7CE", "Pending": "FFEB9C"}
-ISSUE = datetime.date(2026, 11, 11)
+ISSUE = datetime.date(2026, 11, 12)
 
 
 def d(text):
@@ -30,8 +30,8 @@ def cover(ws, title_code, changes):
     ws["F4"] = R.HUY
     ws["F5"] = ISSUE
     ws["F5"].number_format = "dd/mm/yyyy"
-    ws["B6"] = "PKV_%s_v1.0" % title_code
-    ws["F6"] = "1.0"
+    ws["B6"] = "PKV_%s_v1.1" % title_code
+    ws["F6"] = "1.1"
     for i, row in enumerate(changes):
         for j, v in enumerate(row):
             c = ws.cell(row=11 + i, column=1 + j, value=v)
@@ -46,6 +46,7 @@ def build_test_report():
     cover(wb["Cover"], "TestReport", [
         (d("06/11/2026"), "0.1", "Test case list", "A", "First list of 116 planned cases (all Not run)", "Report 3 v0.2"),
         (d("11/11/2026"), "1.0", "All sheets", "M", "Rewritten: 114 cases with concrete steps and data, mapped to FR-01–FR-33, real results of 09–11/11/2026, automated test names", "Report 3 v1.0, Report 4 v1.0"),
+        (d("12/11/2026"), "1.1", "All sheets", "M", "%d cases: quick doubles case TC-F07-04 added; workflow names as in BM04; Defects sheet with D-19, D-20 and the fix commits of D-03, D-04, D-05, D-07 and D-19" % len(R.CASES), "Report 5 v1.2"),
     ])
     base = wb["Feature 1"]
     # ---------------- Test Cases sheet
@@ -53,7 +54,7 @@ def build_test_report():
     tc["D3"] = PROJECT
     tc["D4"] = "PKV"
     tc["D5"] = ("Staging: http://tad-min.io.vn (admin web), API :8080, dedicated server UDP 3669 (Ubuntu 24.04, Docker). Client: Windows 11 PC, "
-                "Unity 6000.6.2f1 Editor and Windows build of main @ 7f8ee32. Unit: Unity Test Framework EditMode through the Unity CLI.")
+                "Unity 6000.6.2f1 Editor and Windows build of main @ 7f8ee32 (Round 1) and main @ 5963501 (fix checks). Unit: Unity Test Framework EditMode through the Unity CLI. No Android device yet.")
     for r in range(9, tc.max_row + 1):
         for c in range(2, 7):
             tc.cell(row=r, column=c).value = None
@@ -121,10 +122,10 @@ def build_test_report():
     st["C4"] = "PKV"
     st["H3"] = R.HUY
     st["H4"] = "Huỳnh Trung Kiên"
-    st["C5"] = "PKV_TestReport_v1.0"
+    st["C5"] = "PKV_TestReport_v1.1"
     st["H5"] = ISSUE
     st["H5"].number_format = "dd/mm/yyyy"
-    st["C6"] = "Round 1 of release candidate main @ 7f8ee32. Modules: FE-01 to FE-10, workflows, state transitions and NFRs."
+    st["C6"] = "Round 1 (09–11/11/2026) on main @ 7f8ee32; fixed defects checked on main @ 5963501. Modules: FE-01 to FE-10, workflows, state transitions and NFRs."
     for r in range(9, 30):
         for c in range(2, 9):
             st.cell(row=r, column=c).value = None
@@ -157,20 +158,20 @@ def build_test_report():
     st.cell(row=tot + 5, column=6, value="of %d (%.1f%%); run locally with the Unity CLI, not yet in CI" % (len(R.CASES), auto * 100.0 / len(R.CASES)))
     # ---------------- defects sheet (reference list; the tracking workbook owns the life cycle)
     ws = wb.create_sheet("Defects")
-    hdr = ["Defect ID", "Summary", "Type", "Severity", "Found by test", "Found on", "Owner", "Status"]
+    hdr = ["Defect ID", "Summary", "Type", "Severity", "Found by test", "Found on", "Owner", "Status", "Fix commit"]
     for j, h in enumerate(hdr):
         c = ws.cell(row=1, column=1 + j, value=h)
         c.font = Font(bold=True)
         c.fill = PatternFill("solid", fgColor="D9E2F3")
     for i, dft in enumerate(R.DEFECTS):
-        vals = list(dft) + ["Open"]
+        vals = list(dft) + [R.defect_status(dft[0]), R.DEFECT_FIX.get(dft[0], "")]
         vals[5] = d(vals[5])
         for j, v in enumerate(vals):
             c = ws.cell(row=2 + i, column=1 + j, value=v)
             c.alignment = WRAP
             if j == 5:
                 c.number_format = "dd/mm/yyyy"
-    for col, w in zip("ABCDEFGH", [10, 70, 14, 10, 16, 12, 10, 10]):
+    for col, w in zip("ABCDEFGHI", [10, 70, 14, 10, 16, 12, 10, 10, 12]):
         ws.column_dimensions[col].width = w
     for row in st.iter_rows(min_row=11, max_row=tot + 5, min_col=2, max_col=8):
         for c in row:
@@ -186,10 +187,11 @@ def build_unit():
     cover(wb["Cover"], "UnitTest", [
         (d("06/11/2026"), "0.1", "Unit test list", "A", "36 selected unit checks (24 passed, 12 not run)", "Report 5 v0.2"),
         (d("11/11/2026"), "1.0", "All sheets", "M", "Rebuilt on the template: 10 core functions as decision tables mapped to NUnit tests; EditMode run of 11/11/2026 (515/515 passed)", "EV-01"),
+        (d("12/11/2026"), "1.1", "Functions, Statistics", "M", "Latest EditMode run on main @ 5963501: 516/516 passed (camera framing test added)", "EV-06"),
     ])
     fl = wb["Functions"]
     fl["E6"] = 100
-    fl["E7"] = "Unity 6000.6.2f1 Editor (Windows 11), Unity Test Framework EditMode, run through the Unity CLI Pipeline on main @ 7f8ee32 (11/11/2026, 515 tests, 6.19 s)."
+    fl["E7"] = "Unity 6000.6.2f1 Editor (Windows 11), Unity Test Framework EditMode, run through the Unity CLI Pipeline on main @ 7f8ee32 (11/11/2026, 515 tests, 6.19 s) and again on main @ 5963501 (11/11/2026, 516 tests, 5.96 s)."
     for r in range(11, 24):
         for c in range(1, 9):
             fl.cell(row=r, column=c).value = None
@@ -275,7 +277,7 @@ def build_unit():
     st["F6"] = ISSUE
     st["F6"].number_format = "dd/mm/yyyy"
     st["B6"] = "PKV_UnitTest_v1.0"
-    st["B7"] = "Core rule, rating, input, matchmaking, economy and offline-sync functions of the Unity client (10 functions, %d test cases)" % sum(len(f["cases"]) for f in R.UNIT) + ". The full EditMode suite (515 tests) passed on 11/11/2026."
+    st["B7"] = "Core rule, rating, input, matchmaking, economy and offline-sync functions of the Unity client (10 functions, %d test cases)" % sum(len(f["cases"]) for f in R.UNIT) + ". The full EditMode suite passed on 11/11/2026 (515 tests on main @ 7f8ee32; 516 tests on main @ 5963501)."
     for r in range(12, 30):
         for c in range(1, 10):
             st.cell(row=r, column=c).value = None

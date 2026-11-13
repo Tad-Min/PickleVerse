@@ -402,7 +402,27 @@ class Report:
             para.paragraph_format.first_line_indent = Cm(-0.8)
             para.paragraph_format.space_after = Pt(3)
 
+    def _drop_double_page_breaks(self):
+        """Removes an empty page-break paragraph that directly follows another page break (it printed a blank page)."""
+        def only_break(el):
+            if el.tag != qn("w:p"):
+                return False
+            text = "".join(t.text or "" for t in el.iter(qn("w:t"))).strip()
+            return not text and any(b.get(qn("w:type")) == "page" for b in el.iter(qn("w:br")))
+
+        def ends_with_break(el):
+            if el.tag != qn("w:p"):
+                return False
+            runs = list(el.iter(qn("w:r")))
+            return bool(runs) and any(b.get(qn("w:type")) == "page" for b in runs[-1].iter(qn("w:br")))
+
+        children = list(self.doc.element.body.iterchildren())
+        for prev, el in zip(children, children[1:]):
+            if only_break(el) and (only_break(prev) or ends_with_break(prev)):
+                el.getparent().remove(el)
+
     def save(self, filename, short_title=None):
+        self._drop_double_page_breaks()
         if short_title:
             self.header_footer(short_title)
         core = self.doc.core_properties

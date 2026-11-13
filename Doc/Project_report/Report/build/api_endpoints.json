@@ -1,0 +1,1034 @@
+[
+ {
+  "controller": "Achievements",
+  "method": "GET",
+  "route": "/api/Achievements",
+  "action": "GetMyAchievements",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Achievements",
+  "method": "POST",
+  "route": "/api/Achievements/{achievementId}/claim",
+  "action": "ClaimReward",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Admin",
+  "method": "GET",
+  "route": "/api/Admin/users",
+  "action": "GetUsers",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/users/assign-role",
+  "action": "AssignRole",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/users/ban",
+  "action": "BanUser",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/users/{userId}/unban",
+  "action": "UnbanUser",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/users/{playerId}/reset-elo",
+  "action": "ResetPlayerElo",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/users/{userId}/verify-email",
+  "action": "ManualVerifyUserEmail",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/cms/lessons",
+  "action": "CreateLesson",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/cms/drills",
+  "action": "CreateDrill",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/cms/cosmetics",
+  "action": "CreateCosmetic",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/cms/missions",
+  "action": "CreateMission",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "GET",
+  "route": "/api/Admin/matches/recent",
+  "action": "GetRecentMatches",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "GET",
+  "route": "/api/Admin/reports",
+  "action": "GetReports",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Admin",
+  "method": "POST",
+  "route": "/api/Admin/reports/review",
+  "action": "ReviewReport",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "AiCoaching",
+  "method": "POST",
+  "route": "/api/AiCoaching/telemetry",
+  "action": "Telemetry",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "AiCoaching",
+  "method": "GET",
+  "route": "/api/AiCoaching/summary",
+  "action": "Summary",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "AiCoaching",
+  "method": "GET",
+  "route": "/api/AiCoaching/mastery",
+  "action": "GetMastery",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "AiCoaching",
+  "method": "GET",
+  "route": "/api/AiCoaching/recommendation",
+  "action": "GetRecommendation",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "AiCoaching",
+  "method": "POST",
+  "route": "/api/AiCoaching/log-error",
+  "action": "LogTechniqueError",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Analytics",
+  "method": "GET",
+  "route": "/api/Admin/analytics/summary",
+  "action": "Summary",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Analytics",
+  "method": "GET",
+  "route": "/api/Admin/analytics/error-heatmap",
+  "action": "Errors",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Analytics",
+  "method": "GET",
+  "route": "/api/Admin/analytics/report",
+  "action": "Report",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "AppActivity",
+  "method": "POST",
+  "route": "/api/Game/activity/open",
+  "action": "OpenActivity",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "AppActivity",
+  "method": "POST",
+  "route": "/api/Game/activity/checkpoint",
+  "action": "Activity",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/register",
+  "action": "Register",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/login",
+  "action": "Login",
+  "access": "Anonymous",
+  "usedBy": "Admin web, Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/verify-email",
+  "action": "VerifyEmail",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/refresh-token",
+  "action": "RefreshToken",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/resend-otp",
+  "action": "ResendOtp",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/logout",
+  "action": "Logout",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/forgot-password",
+  "action": "ForgotPassword",
+  "access": "Anonymous",
+  "usedBy": "Admin web, Game client"
+ },
+ {
+  "controller": "Auth",
+  "method": "POST",
+  "route": "/api/Auth/reset-password",
+  "action": "ResetPassword",
+  "access": "Anonymous",
+  "usedBy": "Admin web, Game client"
+ },
+ {
+  "controller": "Content",
+  "method": "GET",
+  "route": "/api/Admin/cms/lessons",
+  "action": "List",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Content",
+  "method": "GET",
+  "route": "/api/Admin/cms/lessons/{id:int}",
+  "action": "Get",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Content",
+  "method": "PUT",
+  "route": "/api/Admin/cms/lessons/{id:int}",
+  "action": "Save",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Content",
+  "method": "POST",
+  "route": "/api/Admin/cms/lessons/{id:int}/publish",
+  "action": "Publish",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Content",
+  "method": "POST",
+  "route": "/api/Admin/cms/lessons/{id:int}/unpublish",
+  "action": "Unpublish",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "TechniqueReferences",
+  "method": "GET",
+  "route": "/api/Admin/cms/techniques/references",
+  "action": "References",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "TechniqueReferences",
+  "method": "POST",
+  "route": "/api/Admin/cms/techniques/{id:int}/references",
+  "action": "Create",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Dedicated",
+  "method": "POST",
+  "route": "/api/Game/dedicated/ticket",
+  "action": "Ticket",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/poll",
+  "action": "Poll",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/ready",
+  "action": "Ready",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/heartbeat",
+  "action": "Heartbeat",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/operations/ack",
+  "action": "Acknowledge",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/admission",
+  "action": "AuthorizeAdmission",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/complete",
+  "action": "Complete",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/release",
+  "action": "Release",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/{lease}/telemetry",
+  "action": "Telemetry",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/{lease}/replay",
+  "action": "Replay",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/{lease}/replay/chunks/{index:int}",
+  "action": "Chunk",
+  "access": "Service key",
+  "usedBy": "Game server"
+ },
+ {
+  "controller": "Economy",
+  "method": "GET",
+  "route": "/api/Economy/currencies",
+  "action": "GetCurrencies",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Economy",
+  "method": "GET",
+  "route": "/api/Economy/shop",
+  "action": "GetShopItems",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Economy",
+  "method": "POST",
+  "route": "/api/Economy/buy",
+  "action": "BuyCosmetic",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Economy",
+  "method": "GET",
+  "route": "/api/Economy/my-inventory",
+  "action": "GetMyCosmetics",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Economy",
+  "method": "POST",
+  "route": "/api/Economy/equip",
+  "action": "EquipCosmetic",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "GET",
+  "route": "/api/Admin/coaching/sessions",
+  "action": "Sessions",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "GET",
+  "route": "/api/Admin/coaching/demo-sessions",
+  "action": "DemoSessions",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "GET",
+  "route": "/api/Admin/coaching/demo-sessions/{sessionId}",
+  "action": "DemoEvidence",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "GET",
+  "route": "/api/Admin/coaching/sessions/{batch:guid}",
+  "action": "Evidence",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "POST",
+  "route": "/api/Admin/coaching/sessions/{batch:guid}/review",
+  "action": "Review",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "GET",
+  "route": "/api/Admin/coaching/dataset/tier",
+  "action": "TierDataset",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ExpertReview",
+  "method": "GET",
+  "route": "/api/Admin/coaching/dataset/coaching",
+  "action": "CoachingDataset",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Friends",
+  "method": "POST",
+  "route": "/api/Friends/request",
+  "action": "SendFriendRequest",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Friends",
+  "method": "POST",
+  "route": "/api/Friends/respond",
+  "action": "RespondFriendRequest",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Friends",
+  "method": "GET",
+  "route": "/api/Friends",
+  "action": "GetFriends",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Friends",
+  "method": "DELETE",
+  "route": "/api/Friends/{friendId}",
+  "action": "RemoveFriend",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Friends",
+  "method": "POST",
+  "route": "/api/Friends/block/{targetUserId}",
+  "action": "BlockUser",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Game",
+  "method": "POST",
+  "route": "/api/Game/onboarding",
+  "action": "Onboarding",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Game",
+  "method": "GET",
+  "route": "/api/Game/catalog",
+  "action": "Catalog",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Game",
+  "method": "GET",
+  "route": "/api/Game/state",
+  "action": "State",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Game",
+  "method": "POST",
+  "route": "/api/Game/claim",
+  "action": "Claim",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Game",
+  "method": "POST",
+  "route": "/api/Game/purchase",
+  "action": "Purchase",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Game",
+  "method": "POST",
+  "route": "/api/Game/equip",
+  "action": "Equip",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Game",
+  "method": "POST",
+  "route": "/api/Game/tutorial",
+  "action": "Tutorial",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/ranked/room-ready",
+  "action": "PublishRoom",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/ranked/poll",
+  "action": "Poll",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/ranked/search",
+  "action": "Search",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/ranked/cancel",
+  "action": "CancelSearch",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/ranked/bot",
+  "action": "Bot",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/bot/start",
+  "action": "StartBot",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/bot/complete",
+  "action": "FinishBot",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/online/offer",
+  "action": "OfferOnline",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/online/prepare",
+  "action": "PrepareOnline",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/online/start",
+  "action": "StartOnline",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/online/report",
+  "action": "ReportOnline",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/online/leave",
+  "action": "LeaveOnline",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameMatches",
+  "method": "POST",
+  "route": "/api/Game/match/online/heartbeat",
+  "action": "HeartbeatOnline",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameTraining",
+  "method": "POST",
+  "route": "/api/Game/training/sync",
+  "action": "SyncTraining",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameTraining",
+  "method": "POST",
+  "route": "/api/Game/training/start",
+  "action": "Start",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameTraining",
+  "method": "POST",
+  "route": "/api/Game/training/checkpoint",
+  "action": "Checkpoint",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "GameTraining",
+  "method": "POST",
+  "route": "/api/Game/training/complete",
+  "action": "Complete",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Matches",
+  "method": "POST",
+  "route": "/api/Matches/finish",
+  "action": "FinishMatch",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Matches",
+  "method": "GET",
+  "route": "/api/Matches/my-history",
+  "action": "GetMyMatchHistory",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Matches",
+  "method": "GET",
+  "route": "/api/Matches/{id:guid}/report-targets",
+  "action": "ReportTargets",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Matches",
+  "method": "POST",
+  "route": "/api/Matches/report",
+  "action": "ReportPlayer",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Missions",
+  "method": "GET",
+  "route": "/api/Missions",
+  "action": "GetMyMissions",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Missions",
+  "method": "POST",
+  "route": "/api/Missions/{missionId}/claim",
+  "action": "ClaimReward",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Moderation",
+  "method": "GET",
+  "route": "/api/Moderation/decisions",
+  "action": "Decisions",
+  "access": "Player, Restricted",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Moderation",
+  "method": "GET",
+  "route": "/api/Moderation/appeals",
+  "action": "Appeals",
+  "access": "Player, Restricted",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Moderation",
+  "method": "POST",
+  "route": "/api/Moderation/appeals",
+  "action": "Appeal",
+  "access": "Player, Restricted",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "AdminModeration",
+  "method": "GET",
+  "route": "/api/Admin/sanctions",
+  "action": "Sanctions",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "AdminModeration",
+  "method": "GET",
+  "route": "/api/Admin/appeals",
+  "action": "Appeals",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "AdminModeration",
+  "method": "POST",
+  "route": "/api/Admin/appeals/{id:guid}/review",
+  "action": "Review",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "AdminModeration",
+  "method": "POST",
+  "route": "/api/Admin/matches/{match:guid}/stop",
+  "action": "Stop",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "AdminModeration",
+  "method": "GET",
+  "route": "/api/Admin/matches/{match:guid}/stop",
+  "action": "StopOperation",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "LiveMatches",
+  "method": "GET",
+  "route": "/api/Admin/matches/live",
+  "action": "Live",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "OnlineReplays",
+  "method": "GET",
+  "route": "/api/Game/replays",
+  "action": "List",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "OnlineReplays",
+  "method": "GET",
+  "route": "/api/Game/replays/{match:guid}",
+  "action": "Read",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "OnlineReplays",
+  "method": "PUT",
+  "route": "/api/Game/replays/{match:guid}",
+  "action": "Save",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "OnlineReplays",
+  "method": "PUT",
+  "route": "/api/Game/replays/{match:guid}/chunks/{index:int}",
+  "action": "Upload",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "OnlineReplays",
+  "method": "GET",
+  "route": "/api/Game/replays/{match:guid}/chunks/{index:int}",
+  "action": "Chunk",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "OnlineSocial",
+  "method": "GET",
+  "route": "/api/Game/social",
+  "action": "Read",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "OnlineSocial",
+  "method": "POST",
+  "route": "/api/Game/social",
+  "action": "Act",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Profiles",
+  "method": "GET",
+  "route": "/api/Profiles/me",
+  "action": "GetMyProfile",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Profiles",
+  "method": "GET",
+  "route": "/api/Profiles/{playerId}",
+  "action": "GetProfileById",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Profiles",
+  "method": "PUT",
+  "route": "/api/Profiles/me",
+  "action": "UpdateProfile",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Profiles",
+  "method": "POST",
+  "route": "/api/Profiles/sync-time",
+  "action": "SyncTime",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Profiles",
+  "method": "GET",
+  "route": "/api/Profiles/leaderboard",
+  "action": "GetLeaderboard",
+  "access": "Anonymous",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "ProgressReset",
+  "method": "POST",
+  "route": "/api/Admin/users/{player:guid}/progress-reset/preview",
+  "action": "Preview",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "ProgressReset",
+  "method": "POST",
+  "route": "/api/Admin/users/{player:guid}/progress-reset",
+  "action": "Reset",
+  "access": "Admin",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "Replays",
+  "method": "POST",
+  "route": "/api/Replays/save",
+  "action": "SaveReplay",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Replays",
+  "method": "GET",
+  "route": "/api/Replays/{matchId}",
+  "action": "GetReplay",
+  "access": "Player",
+  "usedBy": "Admin web"
+ },
+ {
+  "controller": "RoomInvitations",
+  "method": "POST",
+  "route": "/api/Game/lobby/presence",
+  "action": "Presence",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "RoomInvitations",
+  "method": "GET",
+  "route": "/api/Game/lobby/friends",
+  "action": "Friends",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "RoomInvitations",
+  "method": "POST",
+  "route": "/api/Game/lobby/invitations",
+  "action": "Send",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "RoomInvitations",
+  "method": "POST",
+  "route": "/api/Game/lobby/invitations/{id}/respond",
+  "action": "Respond",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Training",
+  "method": "GET",
+  "route": "/api/Training/lessons",
+  "action": "GetLessons",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Training",
+  "method": "POST",
+  "route": "/api/Training/submit-drill",
+  "action": "SubmitDrill",
+  "access": "Player",
+  "usedBy": "Not called"
+ }
+]

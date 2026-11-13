@@ -24,7 +24,7 @@ def fr(r, code, title, ucs, trigger, desc, shots=(), refs=(), layout=None, field
         if os.path.exists(os.path.join(SCREENS, name)):
             shown.append(shot(r, name, cap))
     if refs:
-        r.p("The layout is also shown in " + ", ".join("Figure %d" % FIG[x] for x in refs if x in FIG) + ".")
+        r.p("This function uses the screen already shown in " + ", ".join("Figure %d" % FIG[x] for x in refs if x in FIG) + "; no separate screenshot is repeated here.")
     if layout:
         r.table(["Area", "Elements and behaviour"], layout, widths=[3.6, 12.4], size=8.5,
                 caption="%s screen layout" % code)
@@ -151,7 +151,7 @@ def write(r):
     fr(r, "FR-08", "Practise Drill", "UC-12 Practise Drill",
        "Lesson briefing → **Bắt đầu**; Drill Result → **Luyện lại**.",
        "The player performs the drill on the training court, for example eight serves into the highlighted service court. For each shot the game measures whether the ball lands in the target area and the timing error between the key release and the ideal contact. In-drill feedback tells the player whether the release was early or late. At the end the client sends the attempt and its telemetry to the API, which validates it, applies the stars and the first-pass reward and returns a receipt.",
-       shots=[("05_serve_flight.png", "Practice HUD with coach panel and success feedback"), ("07_training_finished.png", "Drill result – target not reached")],
+       shots=[("05_serve_flight.png", "Practice HUD of the volley drill: coach panel, feedback after a late hit (\"Chưa đúng • Thử lại\") and the shot cue L under the player"), ("07_training_finished.png", "Drill result – target not reached")],
        fields=[["Shots / target", "Integer", "System", "Fixed per lesson (for example 6 of 8 for the serve lesson)"],
                ["Hits in target", "Integer", "System", "Counted by the rules engine"],
                ["Mean timing error", "Seconds", "System", "Absolute difference between release and ideal contact"],
@@ -177,7 +177,7 @@ def write(r):
 
     fr(r, "FR-10", "View Training Progress", "UC-15 View Training Progress",
        "Menu → **Tiến trình**.",
-       "The progress popup summarises the player's learning: passed lessons out of 15, the next lesson, the latest post-session feedback, total practice time, the most frequent error and the most retried lesson, and the best result of every lesson with a Retry shortcut. Tabs give access to daily and weekly missions (FR-21).",
+       "The progress popup summarises the player's learning: passed lessons out of 15, the next lesson, the latest post-session feedback, total practice time, the most frequent error and the most retried lesson. For every lesson it shows the stars, the best accuracy and the four most recent accuracy results (\"Gần đây\"), so that the player can see the trend, with a Retry shortcut. Technique mastery is updated from the same attempts. Tabs give access to daily and weekly missions and achievements (FR-21).",
        shots=[("03_progression.png", "Training progress popup")],
        rules="BR-18.",
        normal=["The player opens Progress; the data is loaded from the profile.", "The player selects **Luyện lại** on a lesson to open its briefing."])
@@ -186,11 +186,13 @@ def write(r):
     r.h3("3.4 Core Gameplay and Bot Practice (FE-03)")
     fr(r, "FR-11", "Control the Player and Hit Shots", "UC-12, UC-16, UC-25",
        "Any rally in a drill, bot match or online match.",
-       "The player moves with W/A/S/D (or the virtual joystick on phones), runs with Left Shift and hits by holding and releasing shot keys. One of seven shot kinds is chosen from the key combination when the first key is released; U adds power and I aims cross-court. The paddle contact is accepted only inside the timing window, and the quality of the contact (Perfect, Good, early or late) affects the ball speed and accuracy. The ball flight, bounce and net contact are simulated at 120 Hz.",
-       shots=[("19_botmatch_rally.png", "Rally in a bot match with score panel and rule feedback")],
-       layout=[["Score panel (top left)", "Mode and difficulty, game number, games and points of each side, serving side, rule hint"],
-               ["Controls (top right)", "Settings (Esc), help (F1), touch layout toggle"],
-               ["Court", "Player character, opponent, ball, landing marker and fault banner"]],
+       "On PC the player moves with W/A/S/D, runs with Left Shift and hits by holding and releasing shot keys. One of seven shot kinds is chosen from the key combination when the first key is released; U adds power and I aims cross-court. On phones the left joystick moves the player, the CHẠY button is held to run, and the DRIVE, DINK and VOLLEY buttons are held and released; dragging a held button up turns DRIVE into SMASH, DINK into DROP and VOLLEY into RESET, dragging left aims cross-court (CHÉO), dragging right adds power (LỰC) and dragging down cancels (HỦY); the serve uses DRIVE. The paddle contact is accepted only inside the timing window, and the quality of the contact (Perfect, Good, early or late) affects the ball speed and accuracy. The ball flight, bounce and net contact are simulated at 120 Hz. The camera stays behind the player's baseline and keeps the player above the shot cue (PC) or the touch controls (phone).",
+       shots=[("19_botmatch_rally.png", "Bot match: the player is serving; the shot cue under the player shows the key combination J + I (cross-court serve)")],
+       layout=[["Score panel (top left)", "Mode and difficulty, game number, games and points of each side, serving side and serve timer"],
+               ["Rule hint (left)", "What the player must do now, for example \"Bạn giao • giữ rồi thả J\" and the score to call"],
+               ["Controls (top right)", "Settings (Esc) and help (F1)"],
+               ["Court", "Player character, opponent, ball, landing marker and fault banner"],
+               ["Shot cue (bottom centre)", "Key combination and name of the shot being prepared; on phones the joystick and shot buttons take this area"]],
        rules="BR-16, BR-17.",
        normal=["The player moves to the ball and holds a shot key (J, K or L, alone or combined).", "The player releases the key close to the contact moment; the game selects the shot kind and checks the timing.",
                "The ball is hit towards the target computed from the shot kind and modifiers."],
@@ -205,7 +207,7 @@ def write(r):
                "The return and the third shot must bounce; afterwards volleys are allowed outside the non-volley zone.",
                "When a fault occurs, the rally ends, a fault banner (MSG30) is shown and the point or side-out is applied.",
                "A game ends at 11 points with a 2-point lead; the first side to win two games wins the match (MSG31)."],
-       exceptions=["A1 – A side calls a time-out (at most two per game): the match pauses.", "A2 – In the third game the players change ends when a side reaches 6 points.",
+       exceptions=["A1 – In the third game the players change ends when a side reaches 6 points.",
                    "E1 – The serve timer expires: fault ServeTimeout and MSG29."])
 
     fr(r, "FR-13", "Set Up and Play a Bot Match", "UC-16 Play Bot Match",
@@ -222,23 +224,24 @@ def write(r):
 
     # ============================================================ FE-04
     r.h3("3.5 Online Matches (FE-04)")
-    fr(r, "FR-14", "Find a Ranked Match", "UC-19 Find Ranked Match, UC-20 Confirm Match Readiness",
-       "Mode Selection → **Đấu online** → Online Lobby → **Đấu đơn 1v1** → **Tìm trận**.",
-       "The player joins the ranked singles queue. The matchmaking worker pairs two searching players whose Elo is within the pairing window; both must accept within 10 seconds. If no human opponent is found within 180 seconds, a ranked bot opponent is assigned. When all players accept, the API allocates the dedicated server and issues signed tickets, and the clients load the multiplayer court.",
-       shots=[("27_online_lobby.png", "Online lobby – singles"), ("28_searching.png", "Searching for an opponent with elapsed time")],
+    fr(r, "FR-14", "Find an Online Match", "UC-19 Find Online Match, UC-20 Confirm Match Readiness",
+       "Mode Selection → **Đấu online** → Online Lobby → **Đấu đơn 1v1** (ranked singles) or **Đấu đôi 2v2** (quick doubles) → **Tìm trận**.",
+       "**Ranked singles:** the player joins the ranked queue; the matchmaking worker pairs two searching players whose Elo is within the pairing window, and if no human opponent is found within 180 seconds a ranked bot opponent is assigned. **Quick doubles:** a player searches alone or the captain of a party of two (formed by room code or invitation) searches for both; the API fills two teams of two from solo players and parties in the same region, without Elo pairing and without a bot; the match is unrated. In both modes every player must accept within 10 seconds. When all players accept, the API allocates the dedicated server and issues signed tickets, and the clients load the multiplayer court.",
+       shots=[("28_searching.png", "Searching for a singles opponent with the elapsed time (layout preview rendered in the Unity Editor)")],
        rules="BR-22 to BR-27.",
-       normal=["The player selects **Tìm trận**; MSG32 and a timer are shown.", "A pair is found; the Ready Check shows MSG33 with a 10-second countdown.",
-               "Both players accept; the server allocates the match and the court loads (FR-16)."],
-       exceptions=["A1 – No opponent within 180 seconds: a ranked bot is assigned and the match starts on the dedicated server.",
-                   "A2 – The player selects **Hủy** while searching: the ticket is cancelled.",
+       normal=["The player selects **Tìm trận**; MSG32 and a timer are shown.", "A pair (or two full teams for doubles) is found; the Ready Check shows MSG33 with a 10-second countdown.",
+               "All players accept; the server allocates the match and the court loads (FR-16)."],
+       exceptions=["A1 – Ranked singles only: no opponent within 180 seconds: a ranked bot is assigned and the match starts on the dedicated server.",
+                   "A2 – Quick doubles: no two full teams are found before the search lease ends: MSG34; there is no bot fallback.",
+                   "A3 – The player selects **Hủy** while searching: the ticket is cancelled.",
                    "E1 – A player declines or the countdown ends: the offer closes; the decliner sees MSG35 and the other player returns to the queue.",
                    "E2 – The dedicated server is busy: MSG36 and the request waits for the slot.",
                    "E3 – The player already has a search or an unfinished match: MSG41.", "E4 – Search expired: MSG34."])
 
     fr(r, "FR-15", "Private Rooms and Invitations", "UC-21 Create Private Room, UC-22 Join Room by Code, UC-23 Invite Friend to Room, UC-24 Respond to Room Invitation",
        "Mode Selection → **Tạo phòng**; Online Lobby → **Mã phòng** + **Tham gia bằng mã**; friend list → invite.",
-       "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The host can change teams, remove a guest and start the match. Custom matches are unrated and give no Elo.",
-       refs=("27_online_lobby.png",),
+       "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The collapsible friends column of the lobby lists the friends who can be invited; only friends who are in the lobby receive invitations. The host can change teams, remove a guest and start the match. Custom matches are unrated and give no Elo. A doubles room of two players can also be used as a party for quick doubles (FR-14).",
+       shots=[("27_online_lobby.png", "Online lobby – doubles room with the room code and the friends column (layout preview rendered in the Unity Editor with sample friend data)")],
        fields=[["Room code", "Text", "Yes (to join)", "Code of an open room on Photon; wrong code → MSG39"], ["Mode", "Choice", "Yes", "Singles 1v1 or Doubles 2v2"]],
        rules="BR-22, BR-30, BR-38.",
        normal=["The host creates the room; the lobby shows the room code and roster slots.", "Guests join by code or by accepting an invitation.", "The host starts the match; the dedicated server is allocated as in FR-14."],
@@ -255,7 +258,7 @@ def write(r):
 
     fr(r, "FR-17", "Reconnect to or Leave a Match", "UC-26 Reconnect to Match, UC-27 Leave Match",
        "Connection loss during an online match; pause menu → leave.",
-       "If a player's connection drops, the client shows a reconnecting overlay and retries for up to 30 seconds with the same identity. The server keeps the player's slot for 35 seconds after the last heartbeat. A player who reconnects in time continues with the server score. A player who leaves, or who does not return in time, causes the match to end as interrupted; interrupted matches change no Elo and give no reward.",
+       "If a player's connection drops, the client shows a reconnecting overlay and retries for up to 30 seconds with the same identity. The dedicated server pauses the match and keeps the player's slot for 30 seconds. A player who reconnects in time continues with the server score. A player who leaves, or who does not return within 30 seconds, is recorded as having forfeited and the server ends the match as interrupted; interrupted matches change no Elo and give no reward. If the dedicated server itself is lost, its lease expires and the API ends the match as interrupted (BR-28).",
        layout=[["Reconnecting overlay", "Status text and countdown; the court stays visible in the background"], ["Leave dialog", "Warning about the consequence and Confirm / Cancel buttons"]],
        rules="BR-28, BR-29.",
        normal=["The client detects the loss and starts reconnecting.", "The player rejoins with the same ticket identity and control is restored."],
@@ -291,7 +294,7 @@ def write(r):
 
     fr(r, "FR-21", "Missions, Streak and Achievements", "UC-37 to UC-40",
        "Menu → **Nhiệm vụ**; Progress → **Nhiệm vụ ngày / tuần**.",
-       "Seven daily and ten weekly missions track matches, wins, points, valid returns and serves, bot matches and human matches. Completing all daily or weekly missions unlocks a set bonus. The daily streak counts consecutive days with at least one match. Ten achievements reward long-term goals such as 5, 25 and 100 wins.",
+       "Seven daily and ten weekly missions track matches, wins, points, valid returns and serves, bot matches and human matches. Completing all daily or weekly missions unlocks a set bonus. The daily streak counts consecutive days with at least one match; it has no reward of its own but is rewarded through the weekly mission for a 3-day streak (350 Tokenpad, 20 XP) and the achievement for a 5-day streak (500 Tokenpad, 30 XP). Ten achievements reward long-term goals such as 5, 25 and 100 wins.",
        shots=[("15_missions.png", "Missions popup with daily streak and reset countdown")],
        rules="BR-34, BR-35.",
        normal=["The player opens Missions; progress and the reset countdown are shown.", "A completed mission shows **NHẬN THƯỞNG** (or **NHẬN THƯỞNG TỔNG** for the set bonus); the player claims it and the reward is added.", "Achievement rewards are claimed in the same way (MSG49)."],
