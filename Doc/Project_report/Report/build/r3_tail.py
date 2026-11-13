@@ -193,7 +193,7 @@ def write(r):
         ["S3-compatible storage", "Replay manifests and chunks through the S3 API"],
     ], widths=[4.0, 12.0], size=9, caption="Software interfaces")
     r.h4("4.1.4 Communication Interfaces")
-    r.bullets(["Client and admin web to Web API: HTTP/1.1 with JSON over TLS in production (port 443); the staging environment exposes HTTP on port 8080.",
+    r.bullets(["Client and admin web to Web API: HTTP/1.1 with JSON over TLS in production (port 443); the staging environment serves the API and the admin web over HTTPS on port 443 since 13/11/2026 (HTTP on port 8080 until then).",
                "Game traffic: UDP through Photon Cloud and to the dedicated server on UDP port 3669.",
                "E-mail: SMTP with STARTTLS on port 587 to Gmail.",
                "All timestamps are exchanged in UTC (ISO 8601) and displayed in Vietnam time (UTC+7)."])

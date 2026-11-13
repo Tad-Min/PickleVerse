@@ -31,7 +31,7 @@ PLAN = {
     "2.1": (0, 1, "Done", 100, "Unity project initialised 17/09/2026"),
     "2.2": (3, 3, "Done", 100, "Normalised schema 31/10/2026 (51 tables)"),
     "2.3": (4, 4, "Done", 100, "Docker deployment 04/11/2026"),
-    "2.4": (4, 5, "Doing", 60, "Validate, publish and deploy jobs written; no run has passed (build failures 05/11, account billing lock since 06/11); staging released manually 08–10/11; Unity tests not in CI"),
+    "2.4": (4, 5, "Done", 100, "Checks, dedicated-server build, publish and deploy pass in runs 27, 28 and 30 of 13/11/2026; 29 other runs did not pass (configuration 05/11, billing lock 06–11/11, dedicated build 11–12/11, deploy steps and one FastAPI test 13/11); Unity tests are not in CI yet (PB-09)"),
     "3.1": (2, 2, "Done", 100, "Covered by EditMode tests"),
     "3.2": (2, 2, "Done", 100, "PaddleContactTests, SinglesMatchTests"),
     "3.3": (2, 2, "Done", 100, "SinglesMatchTests, MultiplayerRulesTests"),
@@ -75,10 +75,10 @@ PLAN = {
     "14.1": (1, 2, "Done", 100, ""),
     "14.2": (2, 2, "Done", 100, ""),
     "14.3": (3, 4, "Done", 100, "D-01 open; D-04 fixed (31a7c2e), D-19 fixed (9dd994c)"),
-    "15.1": (4, 5, "Doing", 50, "516 EditMode tests passed on main @ 5963501; coverage not measured"),
-    "15.2": (5, 6, "Doing", 30, "Round 1 done; Rounds 2–3 planned"),
+    "15.1": (4, 5, "Doing", 60, "516 EditMode tests passed on main @ 5963501; IntegrationChecks, pytest and the web type check pass in CI on main @ d9200cc (EV-08); coverage not measured"),
+    "15.2": (5, 6, "Doing", 30, "Round 1 done; %d of %d cases passed after the CI run of 13/11/2026; Rounds 2–3 planned" % (R.stats()[0]["Passed"], len(R.CASES))),
     "15.3": (5, 6, "Pending", 0, "Acceptance 07–11/12/2026"),
-    "15.4": (4, 6, "Doing", 50, "Staging running; release package pending"),
+    "15.4": (4, 6, "Doing", 60, "Staging deployed by the pipeline since 13/11/2026 (API and admin web on HTTPS); Android APK of 12/11/2026 to be rebuilt after the HTTPS switch; release package pending"),
 }
 MEMBERS = [("Huỳnh Trung Kiên", "Kiên", "KienHT"), ("Nguyễn Văn Thành Đạt", "Đạt", "DatNVT"), ("Nguyễn Gia Huy", "Huy", "HuyNG"), ("Trần Nguyễn Hiếu Thuận", "Thuận", "ThuanTNH")]
 SHORT = {m[1]: m[0] for m in MEMBERS}
@@ -111,7 +111,7 @@ def tracking():
     wb = openpyxl.load_workbook(TPL)
     # ---------------- WBS
     ws = wb["WBS"]
-    ws["D5"] = "PROJECT WORK BREAKDOWN STRUCTURE – PickleVerse (PKV), updated 12/11/2026"
+    ws["D5"] = "PROJECT WORK BREAKDOWN STRUCTURE – PickleVerse (PKV), updated 13/11/2026"
     clear(ws, 8, 14)
     extra = ["WBS ID", "Owner", "Est. effort (man-days)", "Start", "End", "% complete", "Notes"]
     for j, h in enumerate(extra):
@@ -151,24 +151,26 @@ def tracking():
         c.fill = HEAD
     items = [
         ("PB-01", "As a player I want ranked matches between two humans to finish normally so that my Elo changes", "Defect fix", "High", "Iteration 5", "Đạt", 3, "Doing", "D-09; TC-F09-01, TC-F09-03"),
-        ("PB-02", "Remove committed credentials, rotate them and load secrets from the environment", "Security", "High", "Iteration 5", "Đạt", 1, "Pending", "D-17; TC-N09"),
-        ("PB-03", "Serve the API and admin web over HTTPS on staging", "Security", "High", "Iteration 5", "Đạt", 1, "Pending", "D-18; TC-N09"),
+        ("PB-02", "Remove committed credentials, rotate them and load secrets from the environment", "Security", "High", "Iteration 5", "Đạt", 1, "Doing", "D-17 partly fixed 13/11/2026 (be556a1): values removed from appsettings.json and Program.cs; left: rotate the exposed values on staging and record it; TC-N09"),
+        ("PB-03", "Serve the API and admin web over HTTPS on staging", "Security", "High", "Iteration 4", "Đạt", 1, "Done", "D-18 fixed 13/11/2026 (be556a1) and verified by EV-09: API and admin web on https://tad-min.io.vn, port 8080 closed; retest in Round 2"),
         ("PB-04", "Add seed accounts, a test mailbox and an analytics seed to Database.sql", "Test data", "High", "Iteration 5", "Thuận", 2, "Pending", "Pending cases of Report 5"),
         ("PB-05", "As an offline player I want a clear analysis status so that I know when tips will arrive", "Defect fix", "Medium", "Iteration 5", "Đạt", 0.5, "Pending", "D-02; TC-F06-03"),
         ("PB-06", "Apply the selected character in bot match, training and tutorial", "Defect fix", "Medium", "Iteration 4", "Huy", 1, "Done", "D-07 fixed 11/11/2026 (6d1ed37); retest in Round 2"),
         ("PB-07", "Fix overlapping UI elements (offline banner, appeals button, result button, key hints)", "Defect fix", "Medium", "Iteration 5", "Thuận", 1.5, "Doing", "D-03, D-04, D-19 fixed 11/11/2026; D-01, D-10 open"),
         ("PB-08", "Decide the starting Elo and the Elite Token source with the supervisor and implement the decision", "Decision", "Medium", "Iteration 5", "Kiên", 1, "Pending", "D-08, D-12; Q&A 3–4"),
-        ("PB-09", "Run the EditMode suite automatically and link results to test case IDs", "Test automation", "Medium", "Iteration 5", "Thuận", 2, "Pending", "Issue I-07"),
+        ("PB-09", "Run the EditMode suite automatically and link results to test case IDs", "Test automation", "Medium", "Iteration 5", "Thuận", 2, "Doing", "Issue I-07; IntegrationChecks of the CI job linked to 14 cases on 13/11/2026; EditMode step still missing"),
         ("PB-10", "Measure NFR-02 to NFR-05 and run the usability test (NFR-01)", "Test", "Medium", "Iteration 5", "Thuận", 3, "Pending", "TC-N01–TC-N05"),
         ("PB-11", "Bot balance session with players of known level", "Balance", "Medium", "Iteration 5", "Huy", 1, "Pending", "D-13"),
         ("PB-12", "Write Report 6 – user guides (installation, player, administrator)", "Document", "High", "Iteration 4", "Huy", 3, "Done", "M09; v1.0 on 11/11/2026"),
         ("PB-13", "Write Report 7 – final report consolidating Reports 1–6", "Document", "High", "Iteration 4", "Huy", 3, "Done", "M10; v1.0 on 11/11/2026"),
         ("PB-15", "Prepare the defense slides and rehearse the demo of W01–W04", "Document", "High", "Iteration 6", "Kiên", 2, "Pending", "M10"),
         ("PB-14", "Acceptance test W01–W04 with the supervisor", "Test", "High", "Iteration 6", "Kiên", 1, "Pending", "TC-W01–TC-W04"),
-        ("PB-16", "Restore the CI/CD pipeline: resolve the GitHub billing lock, then fix the build failures of 05/11/2026", "DevOps", "High", "Iteration 5", "Kiên", 1.5, "Pending", "Issue I-11; Report 2 risk 13"),
-        ("PB-17", "Install the Android build on a reference phone; smoke test and frame-rate capture", "Test", "High", "Iteration 5", "Thuận", 1.5, "Pending", "TC-N03, TC-N10; Report 1 LI-11"),
-        ("PB-18", "Decide the XP curve or the GEMSTONE level with the supervisor and implement it", "Decision", "Medium", "Iteration 5", "Kiên", 1, "Pending", "D-20, D-12; Q&A 9"),
+        ("PB-16", "Restore the CI/CD pipeline: resolve the GitHub billing lock, then fix the build and deployment failures", "DevOps", "High", "Iteration 4", "Kiên", 1.5, "Done", "Lock lifted 11/11/2026; dedicated build and deployment fixed by Đạt 12–13/11/2026; runs 27, 28 and 30 pass (EV-08); issue I-11 closed"),
+        ("PB-17", "Install the Android build on a reference phone; smoke test and frame-rate capture", "Test", "High", "Iteration 5", "Thuận", 1.5, "Pending", "TC-N03, TC-N10; Report 1 LI-11; the APK of 12/11/2026 (EV-10) predates the HTTPS switch – rebuild first (PB-20)"),
+        ("PB-18", "Decide the XP curve or the GEMSTONE level and record the decision", "Decision", "Medium", "Iteration 4", "Kiên", 1, "Done", "D-20 accepted as designed on 13/11/2026 (no change); Q&A 9 closed; D-12 stays in PB-08"),
         ("PB-19", "Remove the 24 endpoints that no client calls, or document them as public API", "Maintenance", "Low", "Iteration 5", "Kiên", 1, "Pending", "Issue I-12; Report 4 §3.9"),
+        ("PB-20", "Set the Android package name, label and version, then rebuild the APK from main @ d9200cc, which uses the HTTPS address", "Defect fix", "High", "Iteration 5", "Huy", 0.5, "Pending", "D-21 fixed in be556a1; TC-N10"),
+        ("PB-21", "Add a daily database dump with an off-host copy (since be556a1 the pipeline takes a verified dump before each deployment, kept on the same host)", "DevOps", "Medium", "Iteration 5", "Đạt", 1, "Pending", "NFR-08; Report 2 risk 11"),
     ]
     write_rows(bl, 2, [list(x) for x in items])
     for col, w in zip("ABCDEFGHI", [8, 70, 14, 10, 12, 10, 12, 10, 28]):
@@ -179,18 +181,19 @@ def tracking():
     issues = [
         ("Reports 1–4 were first submitted on 06/11/2026, 4–8 weeks after their due dates", "Lower process marks; review comments arrive late", "High", "KienHT", dt.date(2026, 11, 6), dt.date(2026, 11, 11), "Closed", "Reports revised to v1.0; deadlines now tracked weekly (Report 2 §1.2)"),
         ("Two ranked 1v1 matches between humans ended interrupted on 09/11/2026", "Main online workflow W03 cannot be accepted", "High", "DatNVT", dt.date(2026, 11, 9), None, "Open", "D-09; reproduce with server logs by 18/11/2026"),
-        ("Development credentials and a fallback JWT key are committed to the repository", "Account takeover or e-mail abuse if the repository leaks", "High", "DatNVT", dt.date(2026, 11, 10), None, "Open", "D-17; rotate values and move them to the server .env file"),
-        ("Staging API and admin web use HTTP", "Credentials and tokens travel unencrypted", "High", "DatNVT", dt.date(2026, 11, 10), None, "Open", "D-18"),
+        ("Development credentials and a fallback JWT key are committed to the repository", "Account takeover or e-mail abuse if the repository leaks", "High", "DatNVT", dt.date(2026, 11, 10), None, "Open", "D-17 partly fixed 13/11/2026 (be556a1): removed from the settings file and the code; the values are still in the Git history, so rotate them on staging and record the rotation (PB-02)"),
+        ("Staging API and admin web use HTTP", "Credentials and tokens travel unencrypted", "High", "DatNVT", dt.date(2026, 11, 10), dt.date(2026, 11, 13), "Closed", "D-18 fixed by be556a1 and verified on 13/11/2026 16:21 (EV-09): HTTPS only, port 80 redirects, port 8080 closed"),
         ("Uneven contribution: two members hold most of the commits", "Key-person risk; members cannot explain modules they did not build", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pairing sessions and workflow ownership (Report 2 risk 1)"),
         ("No pull-request review before 10/11/2026", "Defects and secrets reach main without review", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pull requests with one reviewer from Iteration 5"),
         ("Unity tests are not run in CI (the pipeline builds the server with a Unity licence but has no test step)", "Automation target of Review 2 not demonstrated", "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-09"),
-        ("No test mailbox, seed accounts or analytics seed", "62 test cases pending", "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-04"),
+        ("No test mailbox, seed accounts or analytics seed", "%d test cases pending" % R.stats()[0]["Pending"], "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-04"),
         ("Elite Token has no earning source", "GEMSTONE can only be granted at level 25", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "D-12; Q&A 3"),
         ("One dedicated-server slot on staging", "One online match at a time; capacity target not reachable", "Medium", "DatNVT", dt.date(2026, 11, 3), None, "Open", "Report 1 LI-07; Q&A 2"),
-        ("GitHub Actions has never passed: build failures on 05/11/2026, account locked for a billing issue since 06/11/2026", "No automated validation or deployment; staging releases are manual (*-manual-<date-time> tags)", "High", "KienHT", dt.date(2026, 11, 6), None, "Open", "PB-16; Report 2 risk 13"),
+        ("GitHub Actions did not pass before 13/11/2026: configuration failures on 05/11, account locked for a billing issue from 06/11 to 11/11, dedicated-server build failures on 11–12/11", "No automated validation or deployment; staging was released by hand on 08–10/11/2026", "High", "KienHT", dt.date(2026, 11, 6), dt.date(2026, 11, 13), "Closed", "Runs 27, 28 and 30 passed every job on 13/11/2026 (EV-08); PB-16 done"),
         ("24 API endpoints are not called by the game, the server or the admin web", "Untested surface that still accepts requests", "Low", "DatNVT", dt.date(2026, 11, 12), None, "Open", "PB-19; Report 4 §3.9"),
         ("Stored data is not encrypted at rest (proposal: AES-256)", "Deviation from the proposal; database and backups readable on the host", "Medium", "DatNVT", dt.date(2026, 11, 12), None, "Open", "Report 1 LI-10; disk encryption before release"),
-        ("The Android build has not been tested on a device", "NFR-03 and NFR-10 unverified; touch controls only checked in the Editor", "Medium", "ThuanTNH", dt.date(2026, 11, 12), None, "Open", "PB-17; Report 1 LI-11"),
+        ("The Android build has not been tested on a device", "NFR-03 and NFR-10 unverified; touch controls only checked in the Editor", "Medium", "ThuanTNH", dt.date(2026, 11, 12), None, "Open", "PB-17, PB-20; Report 1 LI-11; the APK of 12/11/2026 (EV-10) predates the HTTPS switch"),
+        ("The admin web was not reachable at the staging address after the deployment of 13/11/2026 01:18", "The admin workflow W04 and the admin test cases could not be run on staging", "High", "DatNVT", dt.date(2026, 11, 13), dt.date(2026, 11, 13), "Closed", "Fixed by be556a1 (the Caddyfile routes every path except /api and /health/ready to the admin web); https://tad-min.io.vn opens the admin web since the deployment of 14:34 (EV-09)"),
     ]
     write_rows(ws, 4, [[i + 1] + list(x) for i, x in enumerate(issues)])
     ws.data_validations.dataValidation = []
@@ -208,20 +211,23 @@ def tracking():
         c.font = Font(bold=True)
         c.fill = HEAD
     feat = {"TC-F14-01": "FE-02", "TC-F06-03": "FE-05", "TC-F03-01": "FE-02", "TC-F01-02": "FE-01", "TC-F05-01": "FE-03", "TC-F10-01": "FE-04",
-            "TC-F09-01": "FE-04", "TC-F06-01": "FE-05", "TC-F04-01": "FE-06", "TC-F04-03": "FE-06", "TC-W03": "FE-04", "TC-F07-01": "FE-04", "Unit test run": "Testing", "TC-N09": "Security"}
+            "TC-F09-01": "FE-04", "TC-F06-01": "FE-05", "TC-F04-01": "FE-06", "TC-F04-03": "FE-06", "TC-W03": "FE-04", "TC-F07-01": "FE-04", "Unit test run": "Testing", "TC-N09": "Security", "TC-N10": "Android client"}
     tester = {"TC-F09-01": "Nguyễn Gia Huy, Nguyễn Văn Thành Đạt"}
     rows = []
     for did, summary, typ, sev, tc, date, own in R.DEFECTS:
         c = next((x for x in R.CASES if x["id"] == tc), None)
         screen = c["desc"] if c else "Sync-UnityTests.ps1"
-        rows.append([feat.get(tc, ""), screen, tester.get(tc, "Nguyễn Gia Huy"), summary + (" [fixed in %s]" % R.DEFECT_FIX[did] if did in R.DEFECT_FIX else ""), SHORT[own],
-                     "Fixed" if did in R.DEFECT_FIX else "Assigned", typ, did, sev, dt.datetime.strptime(date, "%d/%m/%Y").date(), tc])
+        state = R.DEFECT_STATE.get(did)
+        suffix = " [fixed in %s]" % R.DEFECT_FIX[did] if did in R.DEFECT_FIX else (" [%s on %s: %s]" % (state[0].lower(), state[1], state[2]) if state else "")
+        life = "Fixed" if did in R.DEFECT_FIX else ("Closed" if state and state[0] == "Accepted" else "Assigned")
+        rows.append([feat.get(tc, ""), screen, tester.get(tc, "Nguyễn Gia Huy"), summary + suffix, SHORT[own],
+                     life, typ, did, sev, dt.datetime.strptime(date, "%d/%m/%Y").date(), tc])
     write_rows(ws, 4, rows)
     ws.data_validations.dataValidation = []
     dv = DataValidation(type="list", formula1='"Pending, Assigned, Fixed, Closed, Cancelled"', allow_blank=True)
     dv.add("F4:F%d" % (3 + len(rows)))
     ws.add_data_validation(dv)
-    ws.cell(row=2, column=1, value="Life cycle: Pending → Assigned → Fixed → Closed (after retest). Severity: Critical, High, Medium, Low (Report 5 §5.4).")
+    ws.cell(row=2, column=1, value="Life cycle: Pending → Assigned → Fixed → Closed (after retest, or when the team accepts the behaviour as designed). Severity: Critical, High, Medium, Low (Report 5 §5.4).")
     # ---------------- Q&A
     ws = wb["Q&A"]
     clear(ws, 4, 6)
@@ -238,7 +244,8 @@ def tracking():
     ]
     by = ["Huỳnh Trung Kiên", "Nguyễn Văn Thành Đạt", "Huỳnh Trung Kiên", "Nguyễn Văn Thành Đạt", "Nguyễn Gia Huy", "Huỳnh Trung Kiên", "Trần Nguyễn Hiếu Thuận", "Huỳnh Trung Kiên", "Huỳnh Trung Kiên"]
     pr = ["High", "High", "Medium", "Medium", "Medium", "High", "Medium", "High", "Medium"]
-    write_rows(ws, 4, [[dt.date(2026, 11, 11) if i < 8 else dt.date(2026, 11, 12), q, by[i], pr[i], "Open", "To be asked at the next supervisor meeting; answer and date to be recorded here"] for i, q in enumerate(qa)])
+    answers = {8: ("Closed", "13/11/2026: accepted as designed. The XP curve and the GEMSTONE level are not changed; D-20 is closed without a fix (PB-18).")}
+    write_rows(ws, 4, [[dt.date(2026, 11, 11) if i < 8 else dt.date(2026, 11, 12), q, by[i], pr[i]] + list(answers.get(i, ("Open", "To be asked at the next supervisor meeting; answer and date to be recorded here"))) for i, q in enumerate(qa)])
     for name in wb.sheetnames:
         wb[name].sheet_view.zoomScale = 90
     out = os.path.join(REPORT_DIR, "PickleVerse_Project_Tracking.xlsx")

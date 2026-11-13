@@ -17,21 +17,22 @@ PROJECT = "PickleVerse – Multiplayer Pickleball Skill-Training and Match Game 
 WRAP = Alignment(wrap_text=True, vertical="top")
 GROUP_FILL = PatternFill("solid", fgColor="DDEBF7")
 STATUS_FILL = {"Passed": "C6EFCE", "Failed": "FFC7CE", "Pending": "FFEB9C"}
-ISSUE = datetime.date(2026, 11, 12)
+ISSUE = datetime.date(2026, 11, 12)      # Unit Test workbook v1.1 (unchanged)
+ISSUE_TR = datetime.date(2026, 11, 13)   # Test Report workbook v1.2
 
 
 def d(text):
     return datetime.datetime.strptime(text, "%d/%m/%Y").date() if text else None
 
 
-def cover(ws, title_code, changes):
+def cover(ws, title_code, changes, version="1.1", issue=None):
     ws["B4"] = PROJECT
     ws["B5"] = "PKV"
     ws["F4"] = R.HUY
-    ws["F5"] = ISSUE
+    ws["F5"] = issue or ISSUE
     ws["F5"].number_format = "dd/mm/yyyy"
-    ws["B6"] = "PKV_%s_v1.1" % title_code
-    ws["F6"] = "1.1"
+    ws["B6"] = "PKV_%s_v%s" % (title_code, version)
+    ws["F6"] = version
     for i, row in enumerate(changes):
         for j, v in enumerate(row):
             c = ws.cell(row=11 + i, column=1 + j, value=v)
@@ -47,14 +48,17 @@ def build_test_report():
         (d("06/11/2026"), "0.1", "Test case list", "A", "First list of 116 planned cases (all Not run)", "Report 3 v0.2"),
         (d("11/11/2026"), "1.0", "All sheets", "M", "Rewritten: 114 cases with concrete steps and data, mapped to FR-01–FR-33, real results of 09–11/11/2026, automated test names", "Report 3 v1.0, Report 4 v1.0"),
         (d("12/11/2026"), "1.1", "All sheets", "M", "%d cases: quick doubles case TC-F07-04 added; workflow names as in BM04; Defects sheet with D-19, D-20 and the fix commits of D-03, D-04, D-05, D-07 and D-19" % len(R.CASES), "Report 5 v1.2"),
-    ])
+        (d("13/11/2026"), "1.2", "FE04 Online, FE06 Progress, FE08-09 Admin, FE10 Expert, States, NFR, Defects, Test Statistics", "M", "Results of the CI run EV-08: %d cases passed by the IntegrationChecks of the validate job, %d cases annotated as partly covered; TC-N09 executed and failed (EV-09); defect D-21 added; D-18 and D-21 fixed, D-17 partly fixed, D-20 accepted" % (len(R.CI_PASSED), len(R.CI_PARTLY)), "Report 5 v1.3"),
+    ], version="1.2", issue=ISSUE_TR)
     base = wb["Feature 1"]
     # ---------------- Test Cases sheet
     tc = wb["Test Cases"]
     tc["D3"] = PROJECT
     tc["D4"] = "PKV"
-    tc["D5"] = ("Staging: http://tad-min.io.vn (admin web), API :8080, dedicated server UDP 3669 (Ubuntu 24.04, Docker). Client: Windows 11 PC, "
-                "Unity 6000.6.2f1 Editor and Windows build of main @ 7f8ee32 (Round 1) and main @ 5963501 (fix checks). Unit: Unity Test Framework EditMode through the Unity CLI. No Android device yet.")
+    tc["D5"] = ("Staging tad-min.io.vn (Ubuntu 24.04, Docker, Caddy): Web API and admin web on https://tad-min.io.vn since 13/11/2026 (in Round 1 the API was on "
+                "http://tad-min.io.vn:8080 and the admin web on http://tad-min.io.vn), dedicated server UDP 3669. Client: Windows 11 PC, Unity 6000.6.2f1 Editor and Windows build of "
+                "main @ 7f8ee32 (Round 1) and main @ 5963501 (fix checks). Unit: Unity Test Framework EditMode through the Unity CLI. Integration: IntegrationChecks in the GitHub Actions "
+                "pipeline on main @ d9200cc (PostgreSQL 16, Redis 7.4). Android APK built on 12/11/2026 from main @ 5963501, no Android device yet.")
     for r in range(9, tc.max_row + 1):
         for c in range(2, 7):
             tc.cell(row=r, column=c).value = None
@@ -122,10 +126,10 @@ def build_test_report():
     st["C4"] = "PKV"
     st["H3"] = R.HUY
     st["H4"] = "Huỳnh Trung Kiên"
-    st["C5"] = "PKV_TestReport_v1.1"
-    st["H5"] = ISSUE
+    st["C5"] = "PKV_TestReport_v1.2"
+    st["H5"] = ISSUE_TR
     st["H5"].number_format = "dd/mm/yyyy"
-    st["C6"] = "Round 1 (09–11/11/2026) on main @ 7f8ee32; fixed defects checked on main @ 5963501. Modules: FE-01 to FE-10, workflows, state transitions and NFRs."
+    st["C6"] = "Round 1 (09–11/11/2026) on main @ 7f8ee32; fixed defects checked on main @ 5963501; IntegrationChecks of the CI run of 13/11/2026 on main @ d9200cc (EV-08). Modules: FE-01 to FE-10, workflows, state transitions and NFRs."
     for r in range(9, 30):
         for c in range(2, 9):
             st.cell(row=r, column=c).value = None
@@ -155,23 +159,25 @@ def build_test_report():
     auto = sum(1 for c in R.CASES if c["auto"] != "Manual")
     st.cell(row=tot + 5, column=3, value="Automated test cases")
     st.cell(row=tot + 5, column=5, value=auto)
-    st.cell(row=tot + 5, column=6, value="of %d (%.1f%%); run locally with the Unity CLI, not yet in CI" % (len(R.CASES), auto * 100.0 / len(R.CASES)))
+    st.cell(row=tot + 5, column=6, value="of %d (%.1f%%); %d run locally with the Unity CLI, %d run in CI (EV-08)" % (
+        len(R.CASES), auto * 100.0 / len(R.CASES), sum(1 for c in R.CASES if c["auto"].startswith(R.EM)), sum(1 for c in R.CASES if c["tester"] == R.CI_TESTER)))
     # ---------------- defects sheet (reference list; the tracking workbook owns the life cycle)
     ws = wb.create_sheet("Defects")
-    hdr = ["Defect ID", "Summary", "Type", "Severity", "Found by test", "Found on", "Owner", "Status", "Fix commit"]
+    hdr = ["Defect ID", "Summary", "Type", "Severity", "Found by test", "Found on", "Owner", "Status", "Fix commit", "Status note"]
     for j, h in enumerate(hdr):
         c = ws.cell(row=1, column=1 + j, value=h)
         c.font = Font(bold=True)
         c.fill = PatternFill("solid", fgColor="D9E2F3")
     for i, dft in enumerate(R.DEFECTS):
-        vals = list(dft) + [R.defect_status(dft[0]), R.DEFECT_FIX.get(dft[0], "")]
+        state = R.DEFECT_STATE.get(dft[0])
+        vals = list(dft) + [R.defect_status(dft[0]), R.DEFECT_FIX.get(dft[0], ""), "%s: %s" % (state[1], state[2]) if state else (R.DEFECT_CHECK.get(dft[0], "Fix checked in Play Mode (EV-07)") + "; retest in Round 2" if dft[0] in R.DEFECT_FIX else "")]
         vals[5] = d(vals[5])
         for j, v in enumerate(vals):
             c = ws.cell(row=2 + i, column=1 + j, value=v)
             c.alignment = WRAP
             if j == 5:
                 c.number_format = "dd/mm/yyyy"
-    for col, w in zip("ABCDEFGHI", [10, 70, 14, 10, 16, 12, 10, 10, 12]):
+    for col, w in zip("ABCDEFGHIJ", [10, 70, 14, 10, 16, 12, 10, 12, 12, 60]):
         ws.column_dimensions[col].width = w
     for row in st.iter_rows(min_row=11, max_row=tot + 5, min_col=2, max_col=8):
         for c in row:

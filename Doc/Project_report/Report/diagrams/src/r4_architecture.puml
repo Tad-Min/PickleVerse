@@ -11,7 +11,7 @@ node "Browser" {
 }
 cloud "Photon Cloud" as Photon
 node "Linux host (Docker Compose)" {
-  [nginx reverse proxy] as Nginx
+  [HTTPS reverse proxy\n(Caddy)] as Nginx
   [Web API\nASP.NET Core 10] as API
   [Background workers\nHybridAiWorker, DedicatedLeaseMonitor] as Workers
   [AI Coaching Service\nPython FastAPI] as AI
@@ -23,9 +23,9 @@ node "Linux host (Docker Compose)" {
 cloud "Gmail SMTP" as SMTP
 Player --> Client
 Admin --> Web
-Web --> Nginx : HTTPS / HTTP
+Web --> Nginx : HTTPS
 Nginx --> API : /api (JSON, JWT)
-Client --> API : REST JSON, JWT
+Client --> Nginx : HTTPS REST JSON, JWT
 Client --> Photon : Fusion Shared lobby (UDP)
 Client --> DS : Fusion client, signed ticket (UDP 3669)
 DS --> Photon : session registration

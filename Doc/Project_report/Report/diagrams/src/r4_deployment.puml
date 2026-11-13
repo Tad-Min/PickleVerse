@@ -11,9 +11,9 @@ node "Admin workstation" as AdminPC {
   artifact "Web browser" as Browser
 }
 node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
-  node "nginx (host)\n:80" as HostNginx
-  node "web container\nnginx + React build\n:3000" as WebC
-  node "backend-api container\nASP.NET Core 10\n:8080" as ApiC
+  node "Caddy reverse proxy (host)\n:80 redirect, :443 TLS" as HostNginx
+  node "web container\nnginx + React build\n127.0.0.1:3000" as WebC
+  node "backend-api container\nASP.NET Core 10\n127.0.0.1:8080" as ApiC
   node "ai-service container\nPython 3.12 FastAPI\n:8000 (internal)" as AiC
   node "game-server container\nUnity Linux Dedicated Server\n:3669/udp" as GameC
   node "postgres container\nPostgreSQL 16\n:5432 (internal)" as PgC
@@ -22,15 +22,15 @@ node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
 }
 cloud "Photon Cloud\n(Fusion 2.1.3)" as Photon
 cloud "Gmail SMTP\n:587" as Smtp
-node "GitHub Actions\n<<CI/CD, not yet passing>>" as CI
-actor "Developer\n(manual release)" as Dev
+node "GitHub Actions\n<<CI/CD: validate, build,\npublish, deploy>>" as CI
+actor "Developer" as Dev
 node "Docker Hub\ntadminm/pickelverse" as Hub
 
-Browser --> HostNginx : HTTP
-HostNginx --> WebC
-WebC --> ApiC : /api proxy
-WinClient --> ApiC : HTTP JSON :8080
-Apk --> ApiC : HTTP JSON :8080
+Browser --> HostNginx : HTTPS
+WinClient --> HostNginx : HTTPS JSON
+Apk --> HostNginx : HTTPS JSON
+HostNginx --> ApiC : /api, /health/ready
+HostNginx --> WebC : other paths
 WinClient --> Photon : UDP
 Apk --> Photon : UDP
 WinClient --> GameC : UDP 3669
@@ -42,9 +42,8 @@ ApiC --> RdC : TCP 6379
 ApiC --> S3C : HTTP 9000
 ApiC --> AiC : HTTP 8000
 ApiC --> Smtp : SMTP STARTTLS
-CI ..> Hub : push images (planned)
-CI ..> Host : SSH deploy with deploy.sh (planned)
-Dev --> Hub : push *-manual-<date-time> images
-Dev --> Host : start the stack by hand
+Dev --> CI : push to main
+CI --> Hub : push changed images\n<component>-<commit>-<run>-<attempt>
+CI --> Host : SSH: verified pg_dump,\nimage digests, docker compose up
 Hub --> Host : pull by digest
 @enduml
