@@ -145,8 +145,7 @@ try {
         Write-Host "`n[3/3] Skipping Docker push (-NoPush)." -ForegroundColor Yellow
     }
 
-    Write-Host "`nDone! You can run the Dedicated Server using:" -ForegroundColor Cyan
-    Write-Host "  docker compose -f docker-compose.yml -f docker-compose.dedicated.yml up -d game-server" -ForegroundColor White
+    Write-Host "`nTo deploy a matching release of API, AI, web and Dedicated Server, see Doc/CI_CD_DockerHub.md." -ForegroundColor Cyan
 }
 finally {
     Pop-Location

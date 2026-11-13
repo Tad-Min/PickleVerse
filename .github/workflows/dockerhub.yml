@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      full_rebuild:
+        description: Rebuild all four images and run all checks
+        type: boolean
+        default: false
       deploy:
         description: Deploy the verified release to Linux development
         type: boolean
@@ -15,13 +19,91 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pickleverse-workflow-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   PKV_DOCKER_REPOSITORY: tadminm/pickelverse
   DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME || 'tadminm' }}
 
 jobs:
-  validate:
-    name: Validate .NET, FastAPI and admin web
+  deployed:
+    name: Read last successful Linux deployment
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (!inputs.full_rebuild || inputs.deploy)))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment:
+      name: development
+      deployment: false
+    outputs:
+      state: ${{ steps.state.outputs.state }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: deploy/ci
+      - name: Install SSH password transport
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends sshpass
+      - name: Read deployment metadata over SSH
+        id: state
+        env:
+          PKV_DEPLOY_ROOT: ${{ vars.PKV_DEPLOY_ROOT || vars.PKV_DATA_ROOT }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ vars.SSH_USER || 'min' }}
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          state=$(bash deploy/ci/read-deployment-state.sh | jq -ce 'select(type == "object")')
+          printf 'state=%s\n' "$state" >> "$GITHUB_OUTPUT"
+
+  plan:
+    name: Plan affected builds and checks
+    needs: deployed
+    if: >-
+      ${{ !cancelled() && (github.event_name == 'pull_request' || needs.deployed.result == 'success' ||
+          (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' &&
+           inputs.full_rebuild && !inputs.deploy && needs.deployed.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      build: ${{ steps.plan.outputs.build }}
+      test_api: ${{ steps.plan.outputs.test_api }}
+      test_ai: ${{ steps.plan.outputs.test_ai }}
+      test_web: ${{ steps.plan.outputs.test_web }}
+      native: ${{ steps.plan.outputs.native }}
+      release: ${{ steps.plan.outputs.release }}
+      images: ${{ steps.plan.outputs.images }}
+      protocol: ${{ steps.plan.outputs.protocol }}
+      token: ${{ steps.plan.outputs.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          # Sparse checkout also fetches history without downloading every blob.
+          sparse-checkout: |
+            /deploy/ci/
+            /My project/Assets/Scripts/Multiplayer/Services/MultiplayerSceneConfiguration.cs
+          sparse-checkout-cone-mode: false
+      - name: Compare the PR or deployed baseline
+        id: plan
+        env:
+          PKV_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PKV_DEPLOY_STATE: ${{ needs.deployed.outputs.state }}
+          PKV_FULL_REBUILD: ${{ inputs.full_rebuild }}
+        run: python3 deploy/ci/plan-release.py
+
+  backend:
+    name: Backend integration checks
+    needs: plan
+    if: needs.plan.outputs.test_api == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
@@ -49,19 +131,10 @@ jobs:
             src
             contracts
             My project/Assets/Scripts
+            My project/Assets/Resources/BackendApiSettings.asset
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: '10.0.x'
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: src/AiService/requirements*.txt
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: src/Frontend/package-lock.json
       - name: Backend integration checks
         env:
           PKV_TEST_POSTGRES: Host=127.0.0.1;Port=15432;Database=pickleverse;Username=sa;Password=ci-only-postgres;GSS Encryption Mode=Disable;Maximum Pool Size=40
@@ -72,20 +145,85 @@ jobs:
           for check in client-security api-contract schema status-enums content training-sync progress-reset moderation analytics expert-review dedicated hybrid; do
             dotnet run --project src/Testing/Backend --configuration Release --no-build -- "--check-$check"
           done
+
+  ai:
+    name: FastAPI tests
+    needs: plan
+    if: needs.plan.outputs.test_ai == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            src/AiService
+            contracts
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: src/AiService/requirements*.txt
       - name: FastAPI tests
         working-directory: src/AiService
         run: |
           python -m pip install -r requirements-dev.txt
           python -m pytest -q
+
+  web:
+    name: Admin web type check
+    needs: plan
+    if: needs.plan.outputs.test_web == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: src/Frontend
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: src/Frontend/package-lock.json
       - name: Admin web type check
         working-directory: src/Frontend
         run: |
           npm ci
           npm run type-check
 
+  validate:
+    name: Validate .NET, FastAPI and admin web
+    needs: [plan, backend, ai, web]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PLAN: ${{ needs.plan.result }}
+      TEST_API: ${{ needs.plan.outputs.test_api }}
+      TEST_AI: ${{ needs.plan.outputs.test_ai }}
+      TEST_WEB: ${{ needs.plan.outputs.test_web }}
+      API_RESULT: ${{ needs.backend.result }}
+      AI_RESULT: ${{ needs.ai.result }}
+      WEB_RESULT: ${{ needs.web.result }}
+    steps:
+      - name: Require every selected check to pass
+        run: |
+          set -euo pipefail
+          [[ $PLAN == success ]]
+          verify() {
+            if [[ $1 == true ]]; then [[ $2 == success ]]; else [[ $1 == false && $2 == skipped ]]; fi
+          }
+          verify "$TEST_API" "$API_RESULT"
+          verify "$TEST_AI" "$AI_RESULT"
+          verify "$TEST_WEB" "$WEB_RESULT"
+
   native:
     name: Build Unity Linux Dedicated Server
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: plan
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
+      needs.plan.outputs.release == 'true' && needs.plan.outputs.native == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -159,12 +297,18 @@ jobs:
           overwrite: true
 
   publish:
-    name: Publish four release images and smoke test
-    needs: [validate, native]
+    name: Publish changed images and smoke test the release
+    needs: [plan, validate, native]
+    if: >-
+      ${{ !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
+          needs.plan.outputs.release == 'true' && needs.validate.result == 'success' &&
+          ((needs.plan.outputs.native == 'true' && needs.native.result == 'success') ||
+           (needs.plan.outputs.native == 'false' && needs.native.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     outputs:
       release: ${{ steps.release.outputs.release }}
+      manifest: ${{ steps.release.outputs.manifest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -176,10 +320,12 @@ jobs:
             My project/ProjectSettings
             My project/Assets/Scripts/Multiplayer/Services
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: needs.plan.outputs.native == 'true'
         with:
           name: native-${{ github.sha }}
           path: ${{ runner.temp }}/pkv-native
       - name: Verify and extract native artifact
+        if: needs.plan.outputs.native == 'true'
         run: |
           set -euo pipefail
           mkdir -p artifacts/ci/dedicatedserver
@@ -187,17 +333,22 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pkv-native/native.tar.gz" -C artifacts/ci/dedicatedserver
           python3 deploy/ci/verify-native.py artifacts/ci/dedicatedserver "$GITHUB_SHA"
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        if: needs.plan.outputs.build != ''
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build, push and smoke test the release
         id: release
+        env:
+          PKV_BUILD_COMPONENTS: ${{ needs.plan.outputs.build }}
+          PKV_BASE_IMAGES: ${{ needs.plan.outputs.images }}
+          PKV_PROTOCOL: ${{ needs.plan.outputs.protocol }}
         run: bash deploy/ci/publish-release.sh
 
   deploy:
     name: Deploy Linux development
-    needs: publish
+    needs: [plan, publish]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.deploy)
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -223,6 +374,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PKV_RELEASE: ${{ needs.publish.outputs.release }}
+          PKV_RELEASE_MANIFEST: ${{ needs.publish.outputs.manifest }}
+          PKV_STATE_TOKEN: ${{ needs.plan.outputs.token }}
           PKV_DEPLOY_ROOT: ${{ vars.PKV_DEPLOY_ROOT || vars.PKV_DATA_ROOT }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}

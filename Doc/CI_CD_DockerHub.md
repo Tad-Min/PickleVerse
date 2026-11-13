@@ -2,15 +2,17 @@
 
 ## Luồng phát hành
 
-Workflow `Build, publish and deploy PickleVerse` chạy khi push vào `main`. Nó kiểm tra backend, FastAPI và web admin, đồng thời dùng GameCI để build Unity Dedicated Server Linux x86-64 trực tiếp từ commit đó. Job publish xác minh ELF, phiên bản Unity, protocol và checksum trước khi build bốn image `api`, `ai`, `web`, `server` trong `tadminm/pickelverse`.
+Workflow `Build, publish and deploy PickleVerse` giữ một file Compose trên Ubuntu. Trên PR, workflow so với commit của nhánh đích để chọn các bài kiểm tra backend, FastAPI và TypeScript. Khi push vào `main`, workflow đọc commit đã triển khai thành công gần nhất trên Ubuntu để quyết định build lại image nào. Ví dụ, sửa giao diện admin chỉ build image web và giữ nguyên image API, AI và Dedicated. Thay đổi protocol build cả API và Dedicated. Các thay đổi chỉ có tài liệu không build hay deploy khi đã có mốc phát hành.
 
-Mỗi lượt publish dùng tag `<component>-<commit>-<run_id>-<attempt>`. API image chứa protocol của Dedicated Server cùng lượt build. Sau smoke test, phần Summary trên GitHub Actions hiển thị `DOCKER_REPOSITORY` và `DOCKER_TAG_RELEASE`. Job deploy gửi `docker-compose.linux.yml` và `src/Database.sql` từ commit của lượt build qua SSH. Sau khi kiểm tra cấu hình, job cài các file còn thiếu, thay file nếu nội dung khác, cập nhật hai giá trị trong `.env` rồi chạy Docker Compose. GitHub chạy nối tiếp các job deploy. Lượt build của commit cũ bỏ qua deploy nếu `main` đã tiến lên.
+Mỗi image mới có tag `<component>-<commit>-<run_id>-<attempt>` trong `tadminm/pickelverse`. Job publish ghim bốn image bằng digest, chạy smoke test với đúng tổ hợp đó và đối chiếu protocol giữa API và Dedicated. Phần Summary hiển thị `PKV_API_IMAGE`, `PKV_AI_IMAGE`, `PKV_WEB_IMAGE` và `PKV_GAME_SERVER_IMAGE`.
 
-Pull request chạy validation. **Run workflow** từ `main` có thể build và publish lại. Chọn `deploy` nếu muốn lượt chạy thủ công cũng deploy. Thiết lập GitHub Environment `development` cho nhánh `main` và để job chạy tự động theo lựa chọn đã chốt.
+Job deploy gửi `docker-compose.linux.yml` và `src/Database.sql` qua SSH, pull image cần thiết, xác minh bản backup PostgreSQL rồi thay bốn tham chiếu image trong `.env`. Các mật khẩu và cấu hình do bạn đặt vẫn giữ nguyên. Sau khi xác minh API, web và các container, job mới ghi commit, protocol và bốn digest vào `.deploy/release.json`. Nếu lỗi giữa chừng, lượt sau build lại đầy đủ. Nếu một lượt khác đã cập nhật mốc deploy trong lúc đang build, chạy lại workflow để lập kế hoạch từ mốc mới.
+
+Lần đầu chạy cơ chế này sẽ build cả bốn image để tạo mốc. Dùng **Run workflow** từ `main` và chọn `full_rebuild` khi cần build lại toàn bộ. Chọn thêm `deploy` để cập nhật Ubuntu. Lượt build đầy đủ không deploy có thể chạy mà không cần kết nối SSH.
 
 ## GitHub Secrets và Variables
 
-Thêm giá trị trong **Settings → Secrets and variables → Actions**. Dùng repository secrets cho Unity và token publish. Có thể đặt thông tin SSH trong environment `development` để chỉ job deploy nhận chúng.
+Thêm giá trị trong **Settings → Secrets and variables → Actions**. Dùng repository secrets cho Unity và token publish. Các job đọc mốc deploy và cập nhật máy chủ dùng thông tin SSH trong environment `development`. Job đọc mốc không tạo bản ghi deployment trên GitHub.
 
 | Secret | Giá trị |
 | --- | --- |
@@ -34,7 +36,7 @@ Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print
 
 1. Dùng Linux amd64 và Docker Compose có `up --wait-timeout`. Tài khoản SSH cần chạy được Docker và ghi được vào thư mục deploy. Với repository Docker Hub riêng tư, đăng nhập Docker Hub một lần bằng chính tài khoản SSH.
 2. Chuẩn bị `.env` tại thư mục deploy đã chọn, ví dụ `/mnt/data/pickleverse`. Dùng `deploy/linux/runtime.env.example` làm mẫu. CD cài `docker-compose.linux.yml` và `src/Database.sql` ở lần chạy đầu nếu các file chưa có.
-3. Điền các khóa `POSTGRES_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `JWT_KEY`, `AI_SERVICE_KEY` và `PKV_GAME_SERVER_KEY`. Khi giữ dữ liệu hiện có, dùng thông tin đăng nhập và thư mục dữ liệu của stack cũ. Ba key JWT, AI và Dedicated cần tối thiểu 32 ký tự. Dùng mật khẩu PostgreSQL không chứa dấu nháy kép hoặc xuống dòng để dùng được trong connection string.
+3. Điền các khóa `POSTGRES_PASSWORD`, `PGADMIN_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `JWT_KEY`, `AI_SERVICE_KEY` và `PKV_GAME_SERVER_KEY`. Khi giữ dữ liệu hiện có, dùng thông tin đăng nhập và thư mục dữ liệu của stack cũ. Ba key JWT, AI và Dedicated cần tối thiểu 32 ký tự. Dùng mật khẩu PostgreSQL không chứa dấu nháy kép hoặc xuống dòng để dùng được trong connection string.
 4. Đặt `PKV_DATA_ROOT` trong `.env`. CD tạo các thư mục còn thiếu dưới đường dẫn này và cấp quyền ghi cho UID/GID `10001:10001` khi tạo mới `GameServerData`. Nếu tự chạy Compose lần đầu, chuẩn bị các thư mục và quyền ghi tương ứng.
 
 | Dữ liệu | Thư mục host | Điểm mount trong container |
@@ -45,9 +47,15 @@ Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print
 | AI artifact | `AiService/models` | `/models`, chỉ đọc |
 | Dedicated | `GameServerData` | `/home/unity/.config/unity3d` |
 
+## HTTPS và sao lưu
+
+`deploy/linux/Caddyfile` phục vụ admin tại `https://tad-min.io.vn/login` và chuyển tiếp `/api/*` cùng `/health/ready` tới API. Caddy chạy trên host hoặc dùng mạng host để truy cập API và web ở `127.0.0.1:8080` và `127.0.0.1:3000`. Caddy giữ chứng chỉ trong vùng lưu trữ riêng. Cài và nạp cấu hình Caddy một lần trên host. Nếu đổi `API_PORT` hoặc `WEB_PORT`, cập nhật địa chỉ đích trong Caddyfile tương ứng. Unity client dùng `https://tad-min.io.vn` làm Base Url.
+
+CD lưu bản dump PostgreSQL dạng custom tại `<PKV_DEPLOY_ROOT>/.deploy/backups/` với quyền truy cập giới hạn cho tài khoản deploy. Bước kiểm tra đọc toàn bộ archive bằng `pg_restore` mà không ghi vào database. Lần cài mới với thư mục PostgreSQL trống được phép chạy khi chưa có container PostgreSQL. Nếu đã có dữ liệu mà PostgreSQL không chạy, khởi động đúng service trước khi deploy. Quản lý dung lượng và thời hạn giữ bản sao lưu trên host.
+
 ## Cập nhật phiên bản
 
-Khi cập nhật thủ công, chép `docker-compose.linux.yml` và `src/Database.sql` từ commit cần chạy, điền hai giá trị trong Summary của lượt build đã qua smoke test vào `.env`, rồi chạy lệnh sau trong thư mục deploy.
+Ưu tiên cập nhật qua workflow để mốc so sánh phản ánh bản đang chạy. Nếu cập nhật thủ công, chép `docker-compose.linux.yml` và `src/Database.sql` từ commit cần chạy, điền bốn tham chiếu image đã qua smoke test trong Summary vào `.env`, rồi chạy lệnh sau trong thư mục deploy. Sau lần cập nhật thủ công, chọn `full_rebuild` và `deploy` cho lượt CD tiếp theo để ghi lại mốc.
 
 ```bash
 docker compose -f docker-compose.linux.yml up -d --wait

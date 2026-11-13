@@ -534,9 +534,7 @@ static class UnityFixture
             var sql = new Repositories.Data.PostgresCommands(context);
             if (!await context.Users.AnyAsync(u => u.Userid == id && u.Email == fixture["email"]))
                 throw new InvalidOperationException("Fixture identity does not match the database.");
-            var storageConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
-            { ["Storage:ServiceUrl"] = "http://localhost:19000", ["Storage:AccessKey"] = "minioadmin", ["Storage:SecretKey"] = "minioadmin", ["Storage:BucketName"] = "pickleverse" }).Build();
-            var storage = new StorageService(storageConfig, NullLogger<StorageService>.Instance);
+            var storage = new StorageService(TestSettings.StorageConfiguration(), NullLogger<StorageService>.Instance);
             await using var cleanupTx = await context.Database.BeginTransactionAsync();
             var matches = await sql.Query("SELECT matchid FROM gamematchplayers WHERE playerid=@id", r => r.GetGuid(0), Repositories.Data.PostgresCommands.P("id", id));
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM users WHERE userid = {id} AND email = {fixture["email"]}");

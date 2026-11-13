@@ -11,4 +11,13 @@ static class TestSettings
           // Stable timing fixture, independent of a developer's local gameplay settings.
           ["Matchmaking:BotFallbackSeconds"] = "360", ["Matchmaking:ReadyConfirmationSeconds"] = "120" }).Build();
     public static ServerSettings Load() => new(Configuration());
+
+    public static IConfigurationRoot StorageConfiguration() => new ConfigurationBuilder()
+        .AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Storage:ServiceUrl"] = Environment.GetEnvironmentVariable("PKV_TEST_S3_URL") ?? "http://127.0.0.1:19000",
+            ["Storage:AccessKey"] = Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
+            ["Storage:SecretKey"] = Environment.GetEnvironmentVariable("S3_SECRET_KEY"),
+            ["Storage:BucketName"] = "pickleverse"
+        }).Build();
 }

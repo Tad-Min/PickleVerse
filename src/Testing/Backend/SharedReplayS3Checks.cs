@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,9 +23,7 @@ static class SharedReplayS3Checks
 {
     public static async Task Run(DbContextOptions<PickleVerseContext> options,Action<bool,string> check)
     {
-        var storage=new StorageService(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{
-            ["Storage:ServiceUrl"]=Environment.GetEnvironmentVariable("PKV_TEST_S3_URL")??"http://127.0.0.1:19000",
-            ["Storage:AccessKey"]="minioadmin",["Storage:SecretKey"]="minioadmin",["Storage:BucketName"]="pickleverse"}).Build(),NullLogger<StorageService>.Instance);
+        var storage=new StorageService(TestSettings.StorageConfiguration(),NullLogger<StorageService>.Instance);
         var key=new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(64));
         var builder=WebApplication.CreateBuilder();builder.Logging.ClearProviders();builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddScoped(_=>new PickleVerseContext(options));builder.Services.AddScoped<PostgresCommands>();

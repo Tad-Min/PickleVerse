@@ -22,8 +22,10 @@ public class StorageService : IStorageService
     {
         _logger = logger;
         _serviceUrl = configuration["Storage:ServiceUrl"] ?? "http://localhost:9000";
-        var accessKey = configuration["Storage:AccessKey"] ?? "minioadmin";
-        var secretKey = configuration["Storage:SecretKey"] ?? "minioadmin";
+        var accessKey = configuration["Storage:AccessKey"];
+        var secretKey = configuration["Storage:SecretKey"];
+        if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey))
+            throw new InvalidOperationException("Configure Storage:AccessKey and Storage:SecretKey.");
         _bucketName = configuration["Storage:BucketName"] ?? "pickleverse";
 
         var credentials = new BasicAWSCredentials(accessKey, secretKey);

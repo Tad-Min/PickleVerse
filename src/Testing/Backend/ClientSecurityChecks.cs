@@ -3,6 +3,7 @@ using System.Text;
 using Entities.Game;
 using PickleVerse.Multiplayer;
 using PickleVerse.Progression;
+using PickleVerse.Services.Utilities;
 
 static class ClientSecurityChecks
 {
@@ -10,6 +11,10 @@ static class ClientSecurityChecks
     {
         int checks = 0;
         void Check(bool ok, string name) { if (!ok) throw new Exception(name); checks++; Console.WriteLine("PASS: " + name); }
+        var settingsPath = Path.Combine(TestSettings.Root, "My project", "Assets", "Resources", "BackendApiSettings.asset");
+        var baseUrl = File.ReadLines(settingsPath).Single(line => line.StartsWith("  baseUrl: "))["  baseUrl: ".Length..];
+        Check(ApiUrl.Build(baseUrl, "api/Auth/login", development: false) == "https://tad-min.io.vn/api/Auth/login",
+            "the packaged Unity API settings can reach the HTTPS login endpoint in release builds");
         string secret = new('a', 64), match = Guid.NewGuid().ToString("N"), lease = Guid.NewGuid().ToString("N"), player = Guid.NewGuid().ToString("N");
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         byte[] Token(long expires, string matchId, string playerId)
@@ -38,6 +43,6 @@ static class ClientSecurityChecks
         Check(QuickCoachingRules.Tip([assisted]).Contains("trễ"), "observable unassisted late serve gets a tip");
         Check(QuickCoachingRules.Tip([new() { kitchen = true, volley = false }]) == "", "standing in kitchen alone is not a volley fault");
         Check(QuickCoachingRules.Tip([new() { outcome = "Net" }], 1) == "", "previous rally excluded from current feedback");
-        Console.WriteLine($"SUCCESS: {checks} admission/coaching assertions against actual Unity source.");
+        Console.WriteLine($"SUCCESS: {checks} client URL, admission and coaching assertions against actual Unity source.");
     }
 }

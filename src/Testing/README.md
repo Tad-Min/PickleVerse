@@ -1,5 +1,7 @@
 # Kiểm thử PickleVerse
 
+Các ca dùng S3 thật và dọn fixture Unity đọc `S3_ACCESS_KEY` và `S3_SECRET_KEY` từ môi trường tiến trình. Dùng credential của stack dev đang chạy. `PKV_TEST_S3_URL` có thể ghi đè địa chỉ mặc định `http://127.0.0.1:19000`.
+
 Mã kiểm thử hiện được nhóm theo môi trường chạy. Các assembly, dependency và nhóm ca hiện có vẫn được dùng để kiểm tra hồi quy.
 
 ```text

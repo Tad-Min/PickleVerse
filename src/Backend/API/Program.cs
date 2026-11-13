@@ -13,6 +13,10 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Configure Jwt:Key with at least 32 bytes.");
+
 // The API composition root owns configuration binding and Redis connection setup.
 var redisSettings = builder.Configuration.GetSection("Redis").Get<RedisSettings>()
     ?? throw new InvalidOperationException("Redis configuration is required.");
@@ -45,11 +49,8 @@ builder.Services.AddCors(options =>
 });
 
 // 3. Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PickleVerseAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PickleVerseClient";
-if (jwtKey.Length < 32)
-    throw new InvalidOperationException("Jwt:Key must contain at least 32 characters.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
