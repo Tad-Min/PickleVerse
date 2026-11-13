@@ -33,6 +33,8 @@ def classify(paths, protocol_changed, full=False):
             build.add("api")
         if path.startswith("src/AiService/"):
             build.add("ai")
+        if path.startswith("src/Testing/AiService/"):
+            checks.add("ai")
         if path.startswith(("src/Frontend/", "deploy/web/")):
             build.add("web")
         if path.startswith((UNITY + "Assets/", UNITY + "Packages/", UNITY + "ProjectSettings/",
