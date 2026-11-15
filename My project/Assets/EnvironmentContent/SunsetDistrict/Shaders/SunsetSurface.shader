@@ -199,7 +199,7 @@ Shader "PickleVerse/Environment/Sunset Surface"
                 Light mainLight = GetMainLight(shadowCoord);
                 half shadow = mainLight.shadowAttenuation;
                 half pools = 0;
-                if (_SunMask > 0.5 && _PV_SunMaskOn + _PV_NightLightsOn > 0.5)
+                if (_SunMask > 0.5 && _PV_SunMaskOn + _PV_NightLightsOn > 0.001)
                 {
                     // One fetch serves both times of day: R = golden-hour sun visibility, G = sqrt(lamp pools).
                     float2 muv = 0.5 + (i.positionWS.xz - _PV_SunMaskParams.zw) * _PV_SunMaskParams.x;
