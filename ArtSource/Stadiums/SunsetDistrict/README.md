@@ -15,6 +15,7 @@ bản đã nâng cấp nằm ở `*_Sunset.blend`.
   mang chi tiết vật liệu (hạt acrylic, nhựa đường, gạch lát, thớ gỗ...). Nhờ vậy nhiều vật thể dùng
   chung một vật liệu: 24 vật liệu cũ của sân Professional còn 8, 17 của LowPoly còn 9.
 - Lá cây: vertex colour R = độ uốn theo gió, G = pha, B = che khuất, A = sắc độ.
+- Mặt nhà (`SD_Facade`): vertex alpha = mã ngẫu nhiên của từng tòa, shader chọn cửa sổ sáng ban đêm theo mã này.
 - Mặt trời chiều tà: cao 21°, Euler Unity (21, 62, 0) — phải khớp `MatchEnvironmentLighting.GoldenHourSun`
   vì mặt nạ bóng được nướng theo đúng hướng này.
 
@@ -44,5 +45,5 @@ Sau đó trong Unity (Edit mode, qua `unity command script eval`):
 | `build_trees.py` | Xà cừ tán tròn, sấu/long não tán cao, phượng vĩ (lá kép + chùm hoa), cọ; thẻ lá alpha có pháp tuyến hình vòm tán; LOD0/1/2 + billboard chéo |
 | `build_district.py` | Vành đai đường bo cong 2 làn có vỉa, vạch, vạch qua đường; quảng trường lát gạch; 4 sân pickleball lân cận có rào và lưới; hồ, giàn hoa vòm, đài phun, ki-ốt cà phê; đèn đường cần cổ thiên nga, đèn công viên hoa văn xoắn; ghế gang uốn S; nhà phố (phía nắng thấp, phía đối diện cao), đường chân trời |
 | `upgrade_courts.py` | Gom vật liệu, chiếu UV theo mét, giữ nguyên từng đỉnh mặt sân và lưới (có assert); cột đèn hình đàn lia + đầu đèn LED có lá tản nhiệt |
-| `bake_sunmask.py` | Cycles, chỉ nắng trực tiếp: bóng của nhà, cây (alpha), rào, khán đài lên mặt đất → mặt nạ 1024² cho 224 m |
+| `bake_sunmask.py` | Cycles: kênh R = nắng chiều tà (bóng nhà, cây có alpha, rào, khán đài trên mặt đất); kênh G = căn bậc hai vũng sáng ban đêm của 32 đèn đường/đèn công viên (đèn đường là spot chiếu xuống, có bóng cây cắt vào). Một texture 1024² cho 224 m, shader đọc một lần cho cả ngày lẫn đêm |
 | `assemble.py`, `preview_render.py` | Ghép bối cảnh + cây + sân như trong Unity để nướng và render duyệt |

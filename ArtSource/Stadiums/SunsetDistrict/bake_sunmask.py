@@ -5,6 +5,7 @@
 The static district, its trees and the venue are assembled exactly as in Unity; ground surfaces are the
 only camera-visible objects and everything else only casts shadows (alpha-tested leaves included).
 Output: Assets/EnvironmentContent/SunsetDistrict/Textures/SD_SunMask_<venue>.png
+  R = golden-hour sun visibility, G = sqrt(night lamp light pools from the 32 district lamps), B unused.
 UV in Unity: (0.5 + x / SPAN, 0.5 + z / SPAN), SPAN = sd_common.MASK_SPAN, centred on the court.
 """
 import math
@@ -127,13 +128,55 @@ mask[~seen] = 1.0
 # Blender image rows run bottom-up with +X right = Unity -x and +Y up = Unity -z: rotate 180 degrees so
 # that texture u grows with Unity x and v with Unity z.
 mask = mask[::-1, ::-1]
+
+# ---- night pass: warm light pools of the street lamps and park lanterns (everything still casts shadows,
+# so trees, benches and fences break up the pools the way they do under real lamps).
+import json
+layout = json.load(open(os.path.join(os.path.dirname(__file__), "district_layout.json")))
+ground = [o for o in scene.objects if o.name.startswith("District_")][0].location.z
+bpy.data.objects.remove(sun)
+lamps = 0
+for lamp in layout["lamps"]:
+    street = lamp["z"] > 5.0
+    # Street heads throw a downward cone (cut-off optics) so pools stay distinct; park lanterns glow round.
+    data = bpy.data.lights.new("BakeLamp", 'SPOT' if street else 'POINT')
+    if street:
+        data.energy = 1700.0
+        data.spot_size = math.radians(118)
+        data.spot_blend = 0.55
+    else:
+        data.energy = 560.0
+    data.shadow_soft_size = 0.12
+    o = bpy.data.objects.new("BakeLamp", data)
+    o.location = (-lamp["x"], -lamp["y"], ground + lamp["z"] - 0.14)
+    scene.collection.objects.link(o)
+    lamps += 1
+cy.samples = 160
+tmp_night = os.path.join(os.path.dirname(__file__), "_impostor", f"lamps_{VENUE}.exr")
+scene.render.filepath = tmp_night
+bpy.ops.render.render(write_still=True)
+nimg = bpy.data.images.load(tmp_night)
+nraw = np.array(nimg.pixels[:], dtype=np.float32).reshape(RES, RES, 4)
+npx = nraw[..., 0] / np.maximum(nraw[..., 3], 1e-6)
+ref = np.percentile(npx[seen & (npx > 1e-5)], 99.7) if np.any(seen & (npx > 1e-5)) else 1.0
+lin = np.clip(npx / ref, 0.0, 1.0)
+lin = np.clip((lin - 0.02) / 0.98, 0.0, 1.0)         # cut the faint inverse-square wash between lamps
+pad = np.pad(lin, 1, mode='edge')                    # 3x3 smoothing removes Cycles speckle under leaves
+lin = sum(pad[1 + dy:1 + dy + RES, 1 + dx:1 + dx + RES] for dy in (-1, 0, 1) for dx in (-1, 0, 1)) / 9.0
+pools = np.sqrt(lin)                                 # sqrt: 8-bit precision where the falloff is dim
+pools[~seen] = 0.0
+pools = pools[::-1, ::-1]
+
 out = bpy.data.images.new(f"SD_SunMask_{VENUE}", RES, RES, alpha=False, float_buffer=False)
 out.colorspace_settings.name = 'Non-Color'
 rgba = np.ones((RES, RES, 4), dtype=np.float32)
-rgba[..., 0] = rgba[..., 1] = rgba[..., 2] = mask
+rgba[..., 0] = mask
+rgba[..., 1] = pools
+rgba[..., 2] = 0.0
 out.pixels.foreach_set(rgba.ravel())
 path = os.path.join(TEXTURES, f"SD_SunMask_{VENUE}.png")
 out.filepath_raw = path
 out.file_format = 'PNG'
 out.save()
-print("SUNMASK", VENUE, path, "receivers", receivers, "lit_ref", float(lit), "shadowed_fraction", float((mask < 0.5).mean()))
+print("SUNMASK", VENUE, path, "receivers", receivers, "lit_ref", float(lit), "shadowed_fraction", float((mask < 0.5).mean()),
+      "lamps", lamps, "lamp_ref", float(ref), "pool_fraction", float((pools > 0.25).mean()))

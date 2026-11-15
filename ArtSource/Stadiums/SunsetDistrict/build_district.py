@@ -498,7 +498,10 @@ def buildings(walk_out_edge):
         area = sum(cw[k][0] * cw[(k + 1) % len(cw)][1] - cw[(k + 1) % len(cw)][0] * cw[k][1] for k in range(len(cw)))
         if area < 0:      # counter-clockwise from above, so wall() faces outward
             cw = cw[::-1]
-        fac.wall(cw, Z_WALK, height, "SD_Facade", tint, uv_scale=24.0, closed=True, smooth=rounded)
+        # Vertex alpha = per-building seed: the facade shader picks which windows are lit at night from it,
+        # so neighbouring towers never share the same pattern. A separate RNG keeps the layout unchanged.
+        seed = rng(int(abs(a[0]) * 1000 + abs(a[1]) * 37)).random()
+        fac.wall(cw, Z_WALK, height, "SD_Facade", (tint[0], tint[1], tint[2], seed), uv_scale=24.0, closed=True, smooth=rounded)
         # ground-floor shopfront band + canopy
         paint.wall([(p[0], p[1]) for p in offset_polyline(cw, -0.03, closed=True)], Z_WALK, 3.6, "SD_Paint", shade(tint, 0.35), uv_scale=4.0, closed=True, smooth=rounded)
         # roof slab and parapet
