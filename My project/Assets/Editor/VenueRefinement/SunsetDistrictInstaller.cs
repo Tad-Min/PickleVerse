@@ -84,14 +84,8 @@ public static class SunsetDistrictInstaller
             string n = Path.GetFileNameWithoutExtension(path);
             var t = (TextureImporter)AssetImporter.GetAtPath(path);
             bool normal = n.EndsWith("_N"), mask = n.StartsWith("SD_SunMask"), cutout = Cutouts.Contains(n), white = n == "SD_White";
-            t.textureType = normal ? TextureImporterType.NormalMap : mask ? TextureImporterType.SingleChannel : TextureImporterType.Default;
-            if (mask)
-            {
-                var s = new TextureImporterSettings();
-                t.ReadTextureSettings(s);
-                s.singleChannelComponent = TextureImporterSingleChannelComponent.Red;
-                t.SetTextureSettings(s);
-            }
+            // Venue mask: R = golden-hour sun visibility, G = sqrt(night lamp pools). Linear data, two channels.
+            t.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
             t.sRGBTexture = !(normal || mask || n == "SD_Cloud");
             t.alphaSource = cutout || n == "SD_Facade" ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
             t.alphaIsTransparency = cutout;
@@ -118,7 +112,7 @@ public static class SunsetDistrictInstaller
             t.SetPlatformTextureSettings(a);
             var pc = t.GetPlatformTextureSettings("Standalone");
             pc.name = "Standalone"; pc.overridden = mask; pc.maxTextureSize = size;
-            if (mask) pc.format = TextureImporterFormat.BC4;
+            if (mask) pc.format = TextureImporterFormat.BC5;
             t.SetPlatformTextureSettings(pc);
             t.SaveAndReimport();
             rows.Add(new { n, size, android, cutout, normal, mask });
@@ -219,6 +213,60 @@ public static class SunsetDistrictInstaller
         return materials.Keys.Concat(new[] { "GoldenHourSky" }).ToArray();
     }
 
+    // ------------------------------------------------------------------ night glare sprites
+    static Material HaloMaterial() => Mat("SD_Halo", "PickleVerse/Environment/Lamp Halo", m =>
+    {
+        m.SetColor("_Color", new Color(1.0f, .70f, .40f));
+        m.SetFloat("_Intensity", 1.1f);
+        m.SetFloat("_MinAngular", .012f);
+        m.enableInstancing = false;
+        m.renderQueue = (int)RenderQueue.Transparent + 20;
+    });
+
+    /// <summary>One static mesh, one draw call: every sprite's four vertices sit at the lamp centre; the shader
+    /// expands them towards the camera. UV0 = corner, UV1 = (radius m, strength).</summary>
+    static Mesh HaloMesh(string name, IList<Vector3> centres, IList<Vector2> lamps)
+    {
+        Directory.CreateDirectory(Folder + "/Meshes");
+        string path = Folder + "/Meshes/" + name + ".asset";
+        var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (!mesh) { mesh = new Mesh { name = name }; AssetDatabase.CreateAsset(mesh, path); }
+        mesh.Clear();
+        var vertices = new List<Vector3>(); var corners = new List<Vector2>(); var data = new List<Vector2>(); var triangles = new List<int>();
+        for (int i = 0; i < centres.Count; i++)
+        {
+            int b = vertices.Count;
+            foreach (var c in new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) })
+            { vertices.Add(centres[i]); corners.Add(c); data.Add(lamps[i]); }
+            triangles.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
+        }
+        mesh.SetVertices(vertices); mesh.SetUVs(0, corners); mesh.SetUVs(1, data); mesh.SetTriangles(triangles, 0);
+        var bounds = new Bounds(centres[0], Vector3.zero);
+        foreach (var c in centres) bounds.Encapsulate(c);
+        bounds.Expand(6f);      // sprites grow around their centres in the vertex shader
+        mesh.bounds = bounds;
+        mesh.UploadMeshData(false);
+        EditorUtility.SetDirty(mesh);
+        AssetDatabase.SaveAssetIfDirty(mesh);
+        return mesh;
+    }
+
+    static GameObject HaloObject(string name, Transform parent, Mesh mesh)
+    {
+        var old = parent.Find(name);
+        if (old) UnityEngine.Object.DestroyImmediate(old.gameObject);
+        var go = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
+        go.transform.SetParent(parent, false);
+        go.GetComponent<MeshFilter>().sharedMesh = mesh;
+        var r = go.GetComponent<MeshRenderer>();
+        r.sharedMaterial = HaloMaterial();
+        r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false;
+        r.lightProbeUsage = LightProbeUsage.Off; r.reflectionProbeUsage = ReflectionProbeUsage.Off;
+        r.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
+        GameObjectUtility.SetStaticEditorFlags(go, 0);
+        return go;
+    }
+
     static Material Remap(Material source)
     {
         string n = source ? source.name.Replace(" (Instance)", "") : "";
@@ -312,6 +360,10 @@ public static class SunsetDistrictInstaller
                 tree.transform.localRotation = Quaternion.Euler(0, (float)row["yaw"], 0);
                 tree.transform.localScale = Vector3.one * (float)row["scale"];
             }
+            // Street lamps (7 m heads) get a larger glare than the 3.6 m park lanterns.
+            var lamps = layout["lamps"].Select(l => new { p = new Vector3((float)l["x"], (float)l["z"] - 0.12f, (float)l["y"]), street = (float)l["z"] > 5 }).ToArray();
+            HaloObject("District Halos", root.transform, HaloMesh("DistrictHalos", lamps.Select(l => l.p).ToList(),
+                lamps.Select(l => l.street ? new Vector2(1.5f, 1.0f) : new Vector2(0.95f, 0.85f)).ToList()));
             PrefabUtility.SaveAsPrefabAsset(root, Prefabs + "/SunsetDistrict.prefab");
             return new
             {
@@ -386,6 +438,9 @@ public static class SunsetDistrictInstaller
                     Flags(r, true);
                 }
             }
+            // Floodlight glare at the four luminaires (visual only; the four realtime spotlights are unchanged).
+            var heads = root.transform.Cast<Transform>().Where(t => t.name.StartsWith("White LED Fixture")).Select(t => t.localPosition + Vector3.down * 0.12f).ToList();
+            HaloObject("Floodlight Halos", root.transform, HaloMesh("FloodlightHalos_" + key, heads, heads.Select(_ => new Vector2(1.9f, 0.8f)).ToList()));
             e.sunShadowMask = T("SD_SunMask_" + key);
             e.sunMaskGroundY = Ground[key];
             e.sunMaskSpan = 224;
