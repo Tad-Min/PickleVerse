@@ -79,6 +79,33 @@ nên FPS trung bình không phân biệt được chi phí; thời gian GPU gầ
 khung tăng 2–25 % ở phần lớn ca (thêm cả một khu đô thị trong tầm nhìn, far clip 100 → 460 m).
 Tam giác trong khung của Unity tính cả lượt shadow và 4 nhân vật.
 
+## Đèn đêm (bổ sung 15/11/2026)
+
+Theo cách các game AAA dựng đêm thành phố cho phần cứng di động: không thêm đèn realtime nào.
+
+- **Vũng sáng dưới đèn:** nướng trong Cycles từ 32 đèn (đèn đường là spot chiếu xuống, đèn công viên tỏa tròn;
+  cây, ghế, rào đổ bóng vào vũng sáng), lưu vào kênh G của mặt nạ sân. Shader mặt đất đọc một lần cho cả ngày
+  (bóng nắng, kênh R) lẫn đêm (vũng đèn), nên không thêm lần đọc texture nào.
+- **Quầng sáng:** sprite cộng sáng quay về camera ở 32 đầu đèn và 4 đèn pha sân, mỗi nhóm gộp một mesh
+  (tổng 2 draw call); co về 0 khi trời sáng; có kích thước góc tối thiểu để đèn ở xa vẫn đọc được.
+- **Cửa sổ:** khoảng 1/4 sáng, chọn ngẫu nhiên theo mã từng tòa; đa số vàng ấm, một số trắng, ít ô xanh lạnh;
+  độ sáng khác nhau, sáng đậm dần từ trần, thỉnh thoảng có rèm. Ô tối giữ phản chiếu bầu trời đêm.
+- **Sương mù đêm:** kéo dài 90 → 210 m; phần phát sáng (đèn, cửa sổ, quầng) chỉ bị sương làm mờ một phần nên
+  xuyên qua màn sương, giữ được bóng dáng thành phố phía sau sân.
+
+Ảnh: `BlenderWork/SunsetDistrict20261115/night/NightLights-BeforeAfter.jpg`.
+
+| Cấu hình (Editor, RTX 3050) | FPS trước → sau | p95 ms | Draw call | Tam giác |
+|---|---:|---:|---:|---:|
+| Professional desktop đêm | 141,4 → 143,6 | 7,31 → 7,17 | 176 → 178 | +72 |
+| LowPoly desktop đêm | 144,0 → 144,0 | 7,25 → 7,19 | 188 → 190 | +72 |
+| Professional mobile-preview đêm | 136,5 → 141,8 | 9,78 → 7,39 | 144 → 146 | +72 |
+| LowPoly mobile-preview đêm | 136,4 → 144,0 | 7,38 → 7,18 | 154 → 156 | +72 |
+
+Thời gian GPU chênh ±0,1 ms; các ca ban ngày cũng không đổi. Cột "trước" lấy từ lần đo ở phiên trước với
+cùng fixture; FPS trung bình gần trần ~144 của Editor nên chủ yếu xem p95 và GPU ms. Chưa đo trên điện thoại.
+Hình học hai sân vẫn đạt 12/12 sau khi cài lại.
+
 ## Kiểm thử
 
 - Hình học: 12/12 đạt — mặt sân/vạch/lưới (từng đỉnh, sai số 0,1 mm), điểm vào sân và điểm kết quả,
