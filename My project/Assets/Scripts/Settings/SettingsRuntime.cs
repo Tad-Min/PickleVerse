@@ -22,7 +22,9 @@ namespace PickleVerse.Settings
         public static int FrameRate(int requested) => Enabled ? Mathf.Min(60, requested) : requested;
         public static void Configure(UniversalRenderPipelineAsset p)
         {
-            p.msaaSampleCount = 1;
+            // 2x MSAA resolves on-tile on mobile GPUs; it keeps court lines, fences and the net crisp and
+            // drives alpha-to-coverage on leaves. Lower user choices (off) are respected.
+            p.msaaSampleCount = Mathf.Clamp(p.msaaSampleCount, 1, 2);
             p.supportsHDR = false;
             p.supportsCameraOpaqueTexture = false;
             SetShadowFeatures(p, false, false);

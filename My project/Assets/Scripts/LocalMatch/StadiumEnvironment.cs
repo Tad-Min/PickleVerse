@@ -18,6 +18,19 @@ namespace PickleVerse.LocalMatch
         public MeshFilter competitionSurface, kitchenSurface, courtLines, netStructure;
         public Transform nearEntrance, farEntrance, nearResult, farResult;
         public Vector2 courtsideCameraLimits;
+        [Header("Golden-hour district")]
+        [Tooltip("Top-down sun visibility of the ground for MatchEnvironmentLighting.GoldenHourSun, baked in Blender.")]
+        public Texture2D sunShadowMask;
+        [Tooltip("District ground height relative to this venue's court surface.")]
+        public float sunMaskGroundY;
+        [Tooltip("Metres covered by the mask, centred on the court.")]
+        public float sunMaskSpan = 224;
+        void OnDisable()
+        {
+            // The mask belongs to this venue; another venue or scene must not inherit its shadows.
+            if (sunShadowMask)
+                Shader.SetGlobalFloat("_PV_SunMaskOn", 0);
+        }
         public Vector3 KeepCameraInside(Vector3 position)
         {
             if (position.y < 4 && courtsideCameraLimits.x > 0 && courtsideCameraLimits.y > 0)
