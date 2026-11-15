@@ -5,6 +5,7 @@ using System.Text;
 using PickleVerse.Multiplayer;
 using PickleVerse.Progression;
 using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Services.Implementations;
 
@@ -81,7 +82,7 @@ public sealed partial class OnlineGameService
     // A match advisory lock serializes consent/results. Profile locks always use UUID order,
     // including across different matches, so wallet and progression transactions cannot race.
     async Task<T> OnlineTransaction<T>(Guid caller, Guid match, OnlineMatchRequest? create,
-        Func<OnlineMatch, Dictionary<Guid, Session>, List<Participant>, Task<T>> action)
+        Func<OnlineMatch, Dictionary<Guid, Session>, List<Participant>, Task<T>> action, bool loadProgression = true)
     {
         await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
         await _unitOfWork.Game.Lock("online-match:"+match.ToString("N"));
@@ -98,7 +99,7 @@ public sealed partial class OnlineGameService
             throw new AppException("Bạn không thuộc trận này.", HttpStatusCode.Forbidden);
         if (create != null && (RosterKey(stored.roster) != RosterKey(create.Roster) || stored.session != create.Session || stored.host != create.HostPlayerId))
             throw Conflict("Đội hình hoặc phòng Photon của trận đã thay đổi.");
-        if (create != null && !stored.roster.custom && !stored.roster.RankedBot && !string.IsNullOrEmpty(create.SearchId))
+        if (create != null && stored.phase == "PREPARING" && !stored.roster.custom && !stored.roster.RankedBot && !string.IsNullOrEmpty(create.SearchId))
         {
             var assigned = await matchmaking.Get(caller, MatchId(create.SearchId), false);
             if (assigned.state != MatchmakingSearchStatus.Matched || assigned.matchId != match.ToString("N") || assigned.session != stored.session || assigned.host != stored.host
@@ -117,14 +118,15 @@ public sealed partial class OnlineGameService
         }
         if (saved == null)
             foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order()) await _unitOfWork.Users.LockUserAsync(id);
-        var catalog = await catalogs.Load();
         var players = new Dictionary<Guid, Session>();
-        foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order())
+        if (saved == null || loadProgression)
         {
-            var s = await Load(id, catalog);
-            players.Add(id, s);
-            if (saved == null)
+            var catalog = await catalogs.Load();
+            foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order())
             {
+                var s = await Load(id, catalog);
+                players.Add(id, s);
+                if (saved != null) continue;
                 if (s.Player.pendingMatch != null)
                     throw Conflict("Một người chơi vẫn còn trận chưa hoàn tất.");
                 if (await _unitOfWork.Game.AccountStatus(id) != UserStatus.Active)
@@ -158,6 +160,8 @@ public sealed partial class OnlineGameService
         {
             if (stored.phase is "FINISHED" or "CANCELLED")
                 await matchmaking.ReleaseMatch(stored.roster);
+            if (stored.phase == "CANCELLED" && leases != null)
+                await leases.CancelReservation(stored.roster.matchId);
             if (stored.phase == "FINISHED")
                 await leaderboard.Invalidate();
         }
@@ -169,11 +173,18 @@ public sealed partial class OnlineGameService
         return result;
     }
     static MatchKind OnlineKind(MatchRoster r) => r.custom ? MatchKind.Custom : r.mode == PlayMode.Singles ? MatchKind.RankedSingles : MatchKind.MatchedDoubles;
-    static OnlineMatchTicket Ticket(OnlineMatch m, List<Participant> participants)
+    static OnlineMatchTicket Ticket(OnlineMatch m, List<Participant> participants, Guid caller)
     {
         foreach (var member in m.roster.members)
             member.ready = participants.Single(p => p.id == MatchId(member.id)).accepted;
-        return new() { authorityMode = m.authorityMode, roster = m.roster, allAccepted = participants.All(p => p.accepted), phase = m.phase };
+        var own = m.roster.Find(caller.ToString("N"));
+        return new()
+        {
+            authorityMode = m.authorityMode, roster = m.roster, allAccepted = participants.All(p => p.accepted),
+            phase = m.phase, accepted = own.ready,
+            partyAccepted = m.roster.members.Where(member => member.id == own.id ||
+                !string.IsNullOrEmpty(own.group) && member.group == own.group).All(member => member.ready)
+        };
     }
     MatchResult OnlineResult(OnlineMatch match, RoomMember member) => new()
     {
@@ -192,32 +203,72 @@ public sealed partial class OnlineGameService
         var match = MatchId(request.Roster.matchId);
         return await OnlineTransaction(id, match, request, async (m, players, participants) =>
         {
+            if (m.phase == "CANCELLED")
+            {
+                await ReadPreviousConsents();
+                return Ticket(m, participants, id);
+            }
+            if (m.phase == "PLAYING")
+                return Ticket(m, participants, id);
             if (m.phase != "PREPARING")
                 throw Conflict("Trận không còn nhận xác nhận.");
-            if (await _unitOfWork.Game.MatchCreated(match) < Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds))
-                throw Conflict("Lượt xác nhận đã hết hạn.");
+            if (await matchmaking.ReadyCancelled(m.roster.matchId))
+                return await CancelOffer();
+            if (m.authorityMode == "dedicated")
+            {
+                var pool = leases ?? throw new InvalidOperationException("Dedicated lease repository is required.");
+                var allocation = await pool.Reserve(new()
+                {
+                    MatchId = m.roster.matchId, LeaseId = Guid.NewGuid().ToString("N"), Session = "ds-" + m.roster.matchId,
+                    Region = m.roster.region, Roster = m.roster, Protocol = settings.Dedicated.Protocol,
+                    TelemetryEnabled = settings.HybridAi.IngestEnabled, ReplayWriter = m.host
+                }, settings.Dedicated.MaxConcurrentMatches, settings.Matchmaking.ReadyConfirmationSeconds + 20);
+                if (allocation == null)
+                {
+                    if (await matchmaking.ReadyExists(m.roster.matchId)) return await CancelOffer();
+                    var waiting = Ticket(m, participants, id);
+                    waiting.phase = "WAITING_CAPACITY";
+                    return waiting;
+                }
+            }
             var ready = await matchmaking.Consent(m.roster.matchId, Hash(RosterKey(m.roster) + m.session + m.host),
                 m.roster.members.Select(x => x.id).ToArray(), m.roster.members.Where(x => x.bot).Select(x => x.id).ToArray(),
                 accept ? id.ToString("N") : null, Milliseconds, settings.Matchmaking.ReadyConfirmationSeconds);
             foreach (var p in participants)
                 p.accepted = ready.Accepted.Contains(p.id.ToString("N"));
-            var ticket = Ticket(m, participants);
+            if (!ready.AllAccepted && ready.Deadline <= Milliseconds)
+                return await CancelOffer();
+            var ticket = Ticket(m, participants, id);
             ticket.readyRemainingSeconds = Math.Max(0, (ready.Deadline - Milliseconds) / 1000d);
             return ticket;
-        });
+
+            async Task<OnlineMatchTicket> CancelOffer()
+            {
+                await ReadPreviousConsents();
+                m.phase = "CANCELLED";
+                await SaveOnline(match, m);
+                return Ticket(m, participants, id);
+            }
+            async Task ReadPreviousConsents()
+            {
+                var accepted = await matchmaking.ReadyAccepted(m.roster.matchId);
+                foreach (var participant in participants)
+                    participant.accepted = accepted.Contains(participant.id.ToString("N"));
+            }
+        }, loadProgression: false);
     }
     public Task<OnlineMatchTicket> OfferOnline(Guid id, OnlineMatchRequest request) => ConsentOnline(id, request, false);
     public Task<OnlineMatchTicket> PrepareOnline(Guid id, OnlineMatchRequest request) => ConsentOnline(id, request, true);
-    public Task<OnlineMatchTicket> StartOnline(Guid id, OnlineMatchRequest request)
+    public async Task<OnlineMatchTicket> StartOnline(Guid id, OnlineMatchRequest request)
     {
         ValidateRoster(id, request);
         var match = MatchId(request.Roster.matchId);
-        return OnlineTransaction(id, match, null, async (m, players, participants) =>
+        var ticket = await OnlineTransaction(id, match, null, async (m, players, participants) =>
         {
             if (RosterKey(m.roster) != RosterKey(request.Roster) || m.session != request.Session || m.host != request.HostPlayerId)
                 throw Conflict("Phòng hoặc đội hình không khớp xác nhận.");
             if (m.phase == "PLAYING")
-                return Ticket(m, participants);
+                return Ticket(m, participants, id);
             if (m.phase != "PREPARING")
                 throw Conflict("Trận không còn nhận xác nhận.");
             var ready = await matchmaking.Consent(m.roster.matchId, Hash(RosterKey(m.roster) + m.session + m.host),
@@ -226,8 +277,8 @@ public sealed partial class OnlineGameService
                 throw Conflict("Mọi người phải xác nhận trước khi tải sân.");
             foreach (var p in participants)
                 p.accepted = true;
-            if (await _unitOfWork.Game.MatchCreated(match) < Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds))
-                throw Conflict("Lượt xác nhận đã hết hạn.");
+            if (m.authorityMode == "dedicated" && (leases == null || await leases.ReadMatch(m.roster.matchId) == null))
+                throw Conflict("Máy chủ đã mất chỗ giữ cho trận.");
             if (players.Values.Any(s => s.Player.pendingMatch != null))
                 throw Conflict("Một người chơi vẫn còn trận chưa hoàn tất.");
             m.phase = "PLAYING";
@@ -243,14 +294,19 @@ public sealed partial class OnlineGameService
             var now=Now;
             await _unitOfWork.Game.TouchParticipants(match, null, now);
             await SaveOnline(match, m);
-            return Ticket(m, participants);
+            logger?.LogInformation("Online match {MatchId} starts from search {SearchId} with {HumanCount} humans",
+                match, m.searchId, m.roster.HumanCount);
+            return Ticket(m, participants, id);
         });
+        if (ticket.authorityMode == "dedicated" && leases != null)
+            await leases.Activate(match.ToString("N"), settings.Dedicated.LeaseSeconds);
+        return ticket;
     }
     static string ResultFingerprint(MatchResult r, int team) => Hash(GameJson.Payload(new
     {
         a = team == 0 ? r.gamesWon : r.gamesLost,
         b = team == 0 ? r.gamesLost : r.gamesWon,
-        scores = r.scores.Select(g => new { a = team == 0 ? g.own : g.opponent, b = team == 0 ? g.opponent : g.own })
+        scores = r.scores.Select(g => new { a = team == 0 ? g.own : g.opponent, b = team == 0 ? g.opponent : g.own, g.teamAStartSide })
     }));
     static void ValidateReport(OnlineMatch match, Guid id, MatchResult r)
     {
@@ -258,7 +314,7 @@ public sealed partial class OnlineGameService
             || r.outcome is not (MatchOutcome.Won or MatchOutcome.Lost) || r.localForfeit
             || r.gamesWon is < 0 or > 2 || r.gamesLost is < 0 or > 2 || Math.Max(r.gamesWon, r.gamesLost) != 2 || r.gamesWon == r.gamesLost
             || (r.outcome == MatchOutcome.Won) != (r.gamesWon == 2) || r.scores == null || r.scores.Count is < 2 or > 3
-            || r.scores.Any(g => g == null || !g.completed || g.own is < 0 or > 100000 || g.opponent is < 0 or > 100000
+            || r.scores.Any(g => g == null || !g.completed || g.own is < 0 or > 100000 || g.opponent is < 0 or > 100000 || g.teamAStartSide is not (null or -1 or 1)
                 || Math.Max(g.own, g.opponent) < 11 || (Math.Max(g.own, g.opponent) == 11 ? Math.Min(g.own, g.opponent) > 9 : Math.Abs(g.own - g.opponent) != 2))
             || r.scores.Count(g => g.own > g.opponent) != r.gamesWon || r.scores.Count(g => g.own < g.opponent) != r.gamesLost
             || r.points < 0 || r.points != r.scores.Sum(g => g.own) || r.validReturns is < 0 or > 1000000 || r.validServes is < 0 or > 1000000)
@@ -301,7 +357,7 @@ public sealed partial class OnlineGameService
             // One shared score candidate, normalized to team A. It becomes canonical
             // only when all participant fingerprints agree and the match is FINISHED.
             if (!participants.Any(p => p.result != null && p.id != id))
-                await _unitOfWork.Game.SaveScores(match,team==0?canonical.scores:canonical.scores.Select(g=>new GameScore(g.opponent,g.own,g.completed)).ToList());
+                await _unitOfWork.Game.SaveScores(match,team==0?canonical.scores:canonical.scores.Select(g=>new GameScore(g.opponent,g.own,g.completed,g.teamAStartSide)).ToList());
             await SaveSubmittedResult(match,id,canonical,reportedAt);
             // Only a server-assigned virtual seat can be completed by mirroring the
             // human's score. Human-v-human matches still require both authenticated reports.
@@ -311,7 +367,7 @@ public sealed partial class OnlineGameService
                 mirror.outcome = canonical.outcome == MatchOutcome.Won ? MatchOutcome.Lost : MatchOutcome.Won;
                 mirror.gamesWon = canonical.gamesLost;
                 mirror.gamesLost = canonical.gamesWon;
-                mirror.scores = canonical.scores.Select(g => new GameScore(g.opponent, g.own, g.completed)).ToList();
+                mirror.scores = canonical.scores.Select(g => new GameScore(g.opponent, g.own, g.completed, g.teamAStartSide)).ToList();
                 mirror.points = mirror.scores.Sum(g => g.own);
                 var participant = participants.Single(p => p.id == MatchId(bot.id));
                 participant.result = mirror;
@@ -326,7 +382,7 @@ public sealed partial class OnlineGameService
             return players[id].Snapshot();
         });
     }
-    async Task FinishOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players)
+    async Task FinishOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players, IReadOnlyList<GameScore>? authoritativeScores = null)
     {
         if (m.phase == "FINISHED")
             return;
@@ -346,7 +402,7 @@ public sealed partial class OnlineGameService
             await FinalizeParticipant(id,result);
         }
         var a = m.results[m.roster.members.First(x => x.team == 0).id];
-        await _unitOfWork.Game.SaveScores(match,a.scores);
+        await _unitOfWork.Game.SaveScores(match, authoritativeScores ?? a.scores);
         await FinalizeMatch(match);
         foreach(var member in m.roster.members)
             await RecordRating(MatchId(member.id),m.results[member.id]);
@@ -354,7 +410,8 @@ public sealed partial class OnlineGameService
         await SaveOnline(match, m);
         await replays.PublishAvailable(match);
     }
-    async Task EndOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players, int? loser, string reason, HashSet<Guid> forfeits)
+    async Task EndOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players, int? loser, string reason,
+        HashSet<Guid> forfeits, IReadOnlyList<GameScore>? authoritativeScores = null)
     {
         m.results = m.roster.members.ToDictionary(x => x.id, x =>
         {
@@ -364,7 +421,7 @@ public sealed partial class OnlineGameService
             r.reason = reason;
             return r;
         });
-        await FinishOnline(match, m, players);
+        await FinishOnline(match, m, players, authoritativeScores);
     }
     public Task<GameSnapshot> LeaveOnline(Guid id, OnlineMatchCommand request)
     {

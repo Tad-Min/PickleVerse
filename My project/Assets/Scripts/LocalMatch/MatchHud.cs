@@ -21,7 +21,7 @@ namespace PickleVerse.LocalMatch
         int resultGamesA = -1, resultGamesB = -1;
         MatchPhase modalPhase = (MatchPhase)(-1);
         bool modalPaused;
-        int modalPointsA = -1, modalPointsB = -1, modalGamesA = -1, modalGamesB = -1, modalTimeouts = -1;
+        int modalPointsA = -1, modalPointsB = -1, modalGamesA = -1, modalGamesB = -1;
         float nextHint;
         string rallyHint = "", driveKey, shownKeys, shownSelection;
         public void Bind(BotMatch owner)
@@ -71,7 +71,7 @@ namespace PickleVerse.LocalMatch
                 }
                 else rallyHint = "";
                 var phase = match.Phase;
-                broadcast.SetClock(phase == MatchPhase.PreServe ? CourtClockMode.Serve : phase == MatchPhase.Rally ? CourtClockMode.Rally : phase == MatchPhase.Timeout ? CourtClockMode.Timeout : phase == MatchPhase.MatchOver ? CourtClockMode.Finished : phase == MatchPhase.BetweenGames ? CourtClockMode.Break : CourtClockMode.Waiting, phase == MatchPhase.Timeout ? match.TimeoutRemaining : 10 - match.ServeElapsed, rules.Bounces > 0, phase == MatchPhase.PreServe ? (rules.Server == 0 ? "BẠN ĐANG GIAO" : "MÁY ĐANG GIAO") : rallyHint);
+                broadcast.SetClock(phase == MatchPhase.PreServe ? CourtClockMode.Serve : phase == MatchPhase.Rally ? CourtClockMode.Rally : phase == MatchPhase.MatchOver ? CourtClockMode.Finished : phase == MatchPhase.BetweenGames ? CourtClockMode.Break : CourtClockMode.Waiting, 10 - match.ServeElapsed, rules.Bounces > 0, phase == MatchPhase.PreServe ? (rules.Server == 0 ? "BẠN ĐANG GIAO" : "MÁY ĐANG GIAO") : rallyHint);
             }
             else scoreboard.text = "<color=#83E6CD>BẠN</color>  " + rules.Points[0] + "   :   " + rules.Points[1] + "  <color=#F9BC7A>BOT</color>\n<size=17>GAME " + Mathf.Min(3, rules.GameNumber) + "    •    Số ván thắng " + rules.Games[0] + "–" + rules.Games[1] + "    •    Đấu đơn 1v1</size>";
             status.text = match.Message;
@@ -112,14 +112,14 @@ namespace PickleVerse.LocalMatch
                 serveClock.text += "\n<size=16>Thả " + GameSettings.KeyName(GameSettings.Current.KeyFor(GameAction.Drive)) + " sau " + Mathf.Max(0, eta - .433f).ToString("0.0") + "s</size>";
             if (!broadcast)
                 difficultyLabel.text = "Bot: " + match.BotLabel;
-            bool show = !SettingsOverlay.IsOpen && (match.Paused || match.Phase == MatchPhase.Intro || match.Phase == MatchPhase.Timeout);
+            bool show = !SettingsOverlay.IsOpen && (match.Paused || match.Phase == MatchPhase.Intro);
             modal.SetActive(show);
             if (!show)
             {
                 modalPhase = (MatchPhase)(-1);
                 return;
             }
-            if (modalPhase == match.Phase && modalPaused == match.Paused && modalPointsA == rules.Points[0] && modalPointsB == rules.Points[1] && modalGamesA == rules.Games[0] && modalGamesB == rules.Games[1] && modalTimeouts == rules.Timeouts[0])
+            if (modalPhase == match.Phase && modalPaused == match.Paused && modalPointsA == rules.Points[0] && modalPointsB == rules.Points[1] && modalGamesA == rules.Games[0] && modalGamesB == rules.Games[1])
                 return;
             modalPhase = match.Phase;
             modalPaused = match.Paused;
@@ -127,13 +127,12 @@ namespace PickleVerse.LocalMatch
             modalPointsB = rules.Points[1];
             modalGamesA = rules.Games[0];
             modalGamesB = rules.Games[1];
-            modalTimeouts = rules.Timeouts[0];
             bool intro = match.Phase == MatchPhase.Intro;
             ((RectTransform)modal.transform).sizeDelta = new Vector2(760, 370);
             modalBody.rectTransform.anchoredPosition = new Vector2(0, 6);
             modalBody.rectTransform.sizeDelta = new Vector2(710, 235);
             modalBody.fontSize = 19;
-            modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI MÁY" : match.Phase == MatchPhase.MatchOver ? match.Message : match.Phase == MatchPhase.Timeout ? "TIME-OUT" : "KẾT THÚC GAME";
+            modalTitle.text = match.Paused ? "TẠM DỪNG" : intro ? "PICKLEVERSE / ĐẤU VỚI MÁY" : "KẾT THÚC GAME";
             modalBody.text = intro ? "WASD di chuyển • Shift chạy\nGiữ J / K / L để chọn; thả để đánh. Ghép 2 phím để dùng combo.\n\nGiao chéo bằng J • Hai cú đầu phải nảy\nVolley ngoài vùng cấm vô lê • 11 điểm, cách 2 • Thắng 2/3 ván\n\nNhấn Vào sân / Enter để bắt đầu." : match.Paused ? "Esc / Enter để tiếp tục\nF1 hướng dẫn" : match.Phase == MatchPhase.MatchOver ? "Ván thắng: " + rules.Games[0] + "–" + rules.Games[1] + "\nSố pha bóng: " + match.TotalRallies + " • Pha bóng dài nhất: " + match.LongestRally + " cú\nChơi lại cùng độ khó và bối cảnh đã chọn." : "Điểm: " + rules.Points[0] + "–" + rules.Points[1] + "\nEnter để tiếp tục sớm; máy đồng ý.\nĐổi sân giữa các ván và tại 6 điểm trong ván quyết định.";
             continueButton.GetComponentInChildren<TMP_Text>().text = intro ? "Vào sân / Enter" : "Enter / Tiếp tục";
             ((RectTransform)continueButton.transform).anchoredPosition = new Vector2(-245, 20);

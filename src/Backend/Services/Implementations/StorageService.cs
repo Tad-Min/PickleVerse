@@ -11,7 +11,7 @@ using Services.Interfaces;
 
 namespace Services.Implementations;
 
-public class StorageService : IStorageService
+public class StorageService : IStorageService, ISocialObjectStorage, IDisposable
 {
     private readonly IAmazonS3 _s3Client;
     private readonly string _bucketName;
@@ -137,4 +137,32 @@ public class StorageService : IStorageService
     {
         return $"{_serviceUrl.TrimEnd('/')}/{_bucketName}/{fileName}";
     }
+
+    public async Task WriteVideo(string key, Stream input, CancellationToken cancellation)
+    {
+        await _s3Client.PutObjectAsync(new PutObjectRequest
+        {
+            BucketName = _bucketName, Key = key, InputStream = input,
+            ContentType = "video/mp4", UseChunkEncoding = false, AutoCloseStream = false
+        }, cancellation);
+    }
+
+    public async Task<(Stream Stream, bool IsPartial)> ReadVideo(string key, long start, long end, bool partial,
+        CancellationToken cancellation)
+    {
+        var request = new GetObjectRequest { BucketName = _bucketName, Key = key };
+        if (partial) request.ByteRange = new ByteRange(start, end);
+        try
+        {
+            var response = await _s3Client.GetObjectAsync(request, cancellation);
+            // Disposing the response stream also returns the underlying HTTP connection.
+            return (response.ResponseStream, response.HttpStatusCode == System.Net.HttpStatusCode.PartialContent);
+        }
+        catch (AmazonS3Exception exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new Entities.Exceptions.NotFoundException("Video không còn sẵn sàng.");
+        }
+    }
+
+    public void Dispose() => _s3Client.Dispose();
 }

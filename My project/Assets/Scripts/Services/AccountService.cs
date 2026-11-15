@@ -125,6 +125,33 @@ namespace PickleVerse.Services
             CheckGeneration(version);
             return result;
         }
+        internal async Task<T> WithAccessTokenAsync<T>(Func<string, Task<T>> send, CancellationToken cancellation)
+        {
+            if (!IsSignedIn) throw new ApiException(401, "Vui lòng đăng nhập để tiếp tục.");
+            int version = generation;
+            string token = accessToken;
+            try
+            {
+                var result = await send(token);
+                CheckGeneration(version);
+                return result;
+            }
+            catch (ApiException error) when (error.StatusCode == 401)
+            {
+                CheckGeneration(version);
+                if (token == accessToken)
+                {
+                    if (refreshTask == null || refreshTask.IsCompleted)
+                        refreshTask = RefreshCoreAsync(version);
+                    await refreshTask;
+                }
+                CheckGeneration(version);
+                cancellation.ThrowIfCancellationRequested();
+                var result = await send(accessToken);
+                CheckGeneration(version);
+                return result;
+            }
+        }
         async Task<T> AuthorizedAsync<T>(string method, string path, object body, CancellationToken cancellation)
         {
             if (!IsSignedIn)

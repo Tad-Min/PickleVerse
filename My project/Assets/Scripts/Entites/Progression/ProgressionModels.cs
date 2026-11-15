@@ -91,12 +91,14 @@ namespace PickleVerse.Progression
     {
         public int own, opponent;
         public bool completed;
+        public int? teamAStartSide;
         public GameScore() { }
-        public GameScore(int own, int opponent, bool completed)
+        public GameScore(int own, int opponent, bool completed, int? teamAStartSide = null)
         {
             this.own = own;
             this.opponent = opponent;
             this.completed = completed;
+            this.teamAStartSide = teamAStartSide;
         }
     }
     [Serializable]

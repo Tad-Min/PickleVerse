@@ -10,6 +10,7 @@ namespace PickleVerse.Multiplayer
     {
         RectTransform root, safeArea;
         TMP_Text title, subtitle, countdown, seats, hint;
+        TMP_Text accepted;
         UnityEngine.UI.Image progress;
         UnityEngine.UI.Button accept, cancel;
         bool wasVisible;
@@ -45,6 +46,8 @@ namespace PickleVerse.Multiplayer
             progress = MatchPresentationUi.Image("Remaining", track.transform, Vector2.zero, Vector2.one, MatchPresentationUi.Gold);
             accept = MatchPresentationUi.Button("Accept", card, font, "CHẤP NHẬN", new Vector2(.09f, .15f), new Vector2(.62f, .27f), true);
             cancel = MatchPresentationUi.Button("Cancel", card, font, "HỦY", new Vector2(.65f, .15f), new Vector2(.91f, .27f), false);
+            accepted = MatchPresentationUi.Label("Accepted", card, font, "ĐÃ XÁC NHẬN", 24,
+                new Vector2(.09f, .15f), new Vector2(.91f, .27f), MatchPresentationUi.Gold);
             ScreenUiTheme.ButtonStyle(accept, true);
             ScreenUiTheme.ButtonStyle(cancel);
             hint = MatchPresentationUi.Label("Hint", card, font, "", 16, new Vector2(.05f, .02f), new Vector2(.95f, .13f), new Color(.65f, .73f, .8f));
@@ -88,9 +91,12 @@ namespace PickleVerse.Multiplayer
             countdown.text = Mathf.CeilToInt(app.ReadySeconds).ToString("00");
             seats.text = $"{app.ReadyCount} / {app.Roster.Count} ĐÃ XÁC NHẬN";
             progress.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(app.ReadySeconds / app.ReadyConfirmationSeconds), 1);
+            accepted.gameObject.SetActive(app.ReadyCheckAccepted);
+            accept.gameObject.SetActive(!app.ReadyCheckAccepted);
+            cancel.gameObject.SetActive(!app.ReadyCheckAccepted);
             accept.interactable = app.CanAcceptMatch;
             cancel.interactable = !app.ReadyCheckBusy && !app.ReadyCheckAccepted;
-            accept.GetComponentInChildren<TMP_Text>().text = app.ReadyCheckAccepted ? "ĐÃ CHẤP NHẬN" : app.ReadyCheckBusy ? "ĐANG GỬI…" : "CHẤP NHẬN";
+            accept.GetComponentInChildren<TMP_Text>(true).text = app.ReadyCheckBusy ? "ĐANG GỬI…" : "CHẤP NHẬN";
             hint.text = app.ReadyCheckAccepted ? "Chờ mọi người xác nhận • Nếu trận bị hủy, bạn sẽ tự tìm tiếp." : app.CanAcceptMatch ? $"Xác nhận trong {app.ReadyConfirmationSeconds} giây • Hủy để dừng tìm trận." : "Đang kết nối những người chơi đã tìm thấy…";
         }
     }

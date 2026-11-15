@@ -881,18 +881,20 @@ namespace PickleVerse.LocalMatch
         void OnApplicationFocus(bool focused)
         {
             if (!focused)
-            {
-                SaveActive();
-                SetPaused(true);
-            }
+                ReleaseBackgroundInput();
         }
         void OnApplicationPause(bool paused)
         {
             if (paused)
-            {
-                SaveActive();
-                SetPaused(true);
-            }
+                ReleaseBackgroundInput();
+        }
+        void ReleaseBackgroundInput()
+        {
+            TouchShotMask = 0;
+            TouchMovement = Vector2.zero;
+            TouchRun = false;
+            input.Cancel();
+            SaveActive();
         }
         void OnDestroy()
         {

@@ -29,6 +29,14 @@ Chạy `./src/Testing/Sync-UnityTests.ps1` sau khi clone và sau khi sửa test 
 
 Web admin hiện có `npm run type-check` và `npm run build` trong `src/Frontend`. Có thể bổ sung bộ test trình duyệt sau khi thống nhất phạm vi E2E.
 
+## Kiểm thử nhiều trận Fusion
+
+Chạy `--check-dedicated` để kiểm tra bốn người tìm 2v2 riêng, hủy và tìm lại, cùng 500 reservation trên Redis. Dùng build Windows Development cùng phiên bản protocol với Linux Dedicated để kiểm thử Fusion thật. `--provision-photon-fixtures <thư-mục> <số-người>` tạo tài khoản test trên PostgreSQL PickleVerse cục bộ và lưu thông tin đăng nhập trong `artifacts`.
+
+Dùng `docker-compose.yml` cùng `docker-compose.functional-local.yml` và profile `dedicated` để chạy nhiều worker trên máy dev. Đặt `PKV_GAME_SERVER_IMAGE` theo image Linux Dedicated đã build và `PKV_GAME_REPLICAS` theo số worker đang nghiệm thu.
+
+`Start-AcceptanceClients.ps1` nhận `-BuildPath`, `-FixturePath`, `-OutputPath` và `-BaseUrl` loopback. `-PublicSearch` dùng ghép trận thường. Thêm `-Doubles` cho bốn client tìm riêng hoặc thêm cả `-PartyPairs` để kiểm tra hai party. Chạy hai lượt với `-FixtureOffset` khác nhau để chọn tài khoản riêng cho từng trận. `-HoldSeconds 1800` giữ sân trong 30 phút và ghi thời gian vào sân, thời lượng giữ sân và nhịp khung hình vào JSON. Đối chiếu số slot, log worker, CPU, RAM và CCU trước khi tăng số client.
+
 ## Các kiến trúc có thể áp dụng
 
 | Kiến trúc | Bố trí | Phù hợp khi | Chi phí vận hành |

@@ -107,6 +107,22 @@ backup_postgres() {
     echo 'Start the existing PickleVerse PostgreSQL service before deploying.' >&2
     return 1
   fi
+  local schema_ready
+  schema_ready=$(docker exec -i "$postgres" sh -ec '
+    [ "$POSTGRES_DB" = pickleverse ]
+    export PGPASSWORD="$POSTGRES_PASSWORD"
+    exec psql -XAtq --no-password --username="$POSTGRES_USER" --dbname=pickleverse -v ON_ERROR_STOP=1
+  ' <<'SQL'
+SELECT to_regclass('public.socialposts') IS NOT NULL
+   AND to_regclass('public.socialmessages') IS NOT NULL
+   AND EXISTS (SELECT 1 FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = 'matchscore' AND column_name = 'teamastartside');
+SQL
+  )
+  if [[ $schema_ready != t ]]; then
+    echo 'PostgreSQL needs the schema from this release before the images can be activated.' >&2
+    return 1
+  fi
 
   backup_dir="$root/.deploy/backups"
   if [[ -L $root/.deploy || -L $backup_dir ]]; then
@@ -138,15 +154,6 @@ backup_postgres
 
 mkdir -p -- "$data_root"/{PostgresData,RedisData,S3Data}
 (umask 022; mkdir -p -- "$data_root/AiService/models")
-game_data="$data_root/GameServerData"
-if [[ ! -d $game_data ]]; then
-  mkdir -- "$game_data"
-  if ! "${staged_compose[@]}" run --rm --no-deps -T --interactive=false -u 0 --entrypoint chown \
-    game-server 10001:10001 /home/unity/.config/unity3d; then
-    rmdir -- "$game_data"
-    exit 1
-  fi
-fi
 
 chmod 0600 "$next_env"
 mkdir -p -- src
@@ -184,9 +191,8 @@ check_http backend-api 8080 /health/ready
 check_http web 80 /healthz
 expected_images=$(printf '%s' "$image_env_payload" | base64 --decode)
 for service in backend-api ai-service web game-server; do
-  container=$("${compose[@]}" ps --quiet "$service")
-  [[ -n $container ]]
-  actual=$(docker inspect -f '{{.Config.Image}}' "$container")
+  containers=$("${compose[@]}" ps --quiet "$service")
+  [[ -n $containers ]]
   case "$service" in
     backend-api) key=PKV_API_IMAGE ;;
     ai-service) key=PKV_AI_IMAGE ;;
@@ -195,10 +201,13 @@ for service in backend-api ai-service web game-server; do
   esac
   expected=$(sed -n "s/^$key=//p" <<< "$expected_images")
   [[ -n $expected ]]
-  if [[ $actual != "$expected" ]]; then
-    echo "Running image does not match the release for $service." >&2
-    exit 1
-  fi
+  while IFS= read -r container; do
+    actual=$(docker inspect -f '{{.Config.Image}}' "$container")
+    if [[ $actual != "$expected" ]]; then
+      echo "Running image does not match the release for $service ($container)." >&2
+      exit 1
+    fi
+  done <<< "$containers"
 done
 mv -fT -- "$next_state" "$state_file"
 rm -- "$pending_file"

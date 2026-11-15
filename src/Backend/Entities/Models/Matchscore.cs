@@ -7,5 +7,6 @@ public partial class Matchscore
     public int Teamascore { get; set; }
     public int Teambscore { get; set; }
     public bool Completed { get; set; }
+    public short? Teamastartside { get; set; }
     public virtual Gamematch Match { get; set; } = null!;
 }

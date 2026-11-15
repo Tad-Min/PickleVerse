@@ -6,6 +6,7 @@ using System.Text;
 using Entities.Models;
 using PickleVerse.Progression;
 using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 using Services.Configuration;
 
 namespace Services.Implementations;
@@ -19,8 +20,12 @@ public sealed partial class OnlineGameService : IOnlineGameService, IGameTrainin
     private readonly RedisGameState matchmaking;
     private readonly LeaderboardCache leaderboard;
     private readonly IMatchReplayService replays;
+    private readonly DedicatedLeaseRepository? leases;
+    private readonly ILogger<OnlineGameService>? logger;
 
-    public OnlineGameService(IUnitOfWork unitOfWork, IGameCatalogService catalogs, TimeProvider clock, ServerSettings settings, RedisGameState matchmaking, LeaderboardCache leaderboard, IMatchReplayService replays)
+    public OnlineGameService(IUnitOfWork unitOfWork, IGameCatalogService catalogs, TimeProvider clock, ServerSettings settings,
+        RedisGameState matchmaking, LeaderboardCache leaderboard, IMatchReplayService replays,
+        DedicatedLeaseRepository? leases = null, ILogger<OnlineGameService>? logger = null)
     {
         _unitOfWork = unitOfWork;
         this.catalogs = catalogs;
@@ -29,6 +34,8 @@ public sealed partial class OnlineGameService : IOnlineGameService, IGameTrainin
         this.matchmaking = matchmaking;
         this.leaderboard = leaderboard;
         this.replays = replays;
+        this.leases = leases;
+        this.logger = logger;
     }
 
     sealed class PlayerState

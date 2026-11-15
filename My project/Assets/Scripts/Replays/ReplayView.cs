@@ -13,17 +13,20 @@ namespace PickleVerse.Replays
     {
         public static string PlayerId, MatchId;
         public static Action Return;
-        public static void Select(string player, string match, Action onReturn = null)
+        public static long? SocialPostId { get; private set; }
+        public static void Select(string player, string match, Action onReturn = null, long? socialPostId = null)
         {
             PlayerId = player;
             MatchId = match;
             Return = onReturn;
+            SocialPostId = socialPostId;
         }
         public static void Close()
         {
             var callback = Return;
             Return = null;
             PlayerId = MatchId = null;
+            SocialPostId = null;
             if (callback != null)
                 callback();
             else SceneManager.LoadScene("Menu");
@@ -32,6 +35,7 @@ namespace PickleVerse.Replays
         static void Reset()
         {
             PlayerId = MatchId = null;
+            SocialPostId = null;
             Return = null;
         }
     }
@@ -59,7 +63,7 @@ namespace PickleVerse.Replays
         async void Start()
         {
             BuildControls();
-            repository = ReplayStorage.Repository;
+            repository = ReplayLaunch.SocialPostId.HasValue ? new OnlineReplayRepository(ReplayLaunch.SocialPostId) : ReplayStorage.Repository;
             try
             {
                 metadata = repository is IOnlineReplayRepository online ? await online.ReadAsync(ReplayLaunch.PlayerId, ReplayLaunch.MatchId) : repository.Read(ReplayLaunch.PlayerId, ReplayLaunch.MatchId);

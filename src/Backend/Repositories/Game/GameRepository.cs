@@ -27,7 +27,12 @@ public sealed partial class GameRepository(PickleVerseContext db) : IAppActivity
     public Task<int> SaveChangesAsync() => db.SaveChangesAsync();
     public void ClearTracking() => db.ChangeTracker.Clear();
     public Task Lock(string key) => db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({key},0))");
-    public Task<bool> CanConnect(CancellationToken cancellationToken) => db.Database.CanConnectAsync(cancellationToken);
+    public async Task CheckSchema(CancellationToken cancellationToken)
+    {
+        await db.Matchscores.OrderBy(score => score.Matchid).Select(score => score.Teamastartside).Take(1).ToListAsync(cancellationToken);
+        await db.Set<SocialPost>().OrderBy(post => post.PostId).Select(post => post.PostId).Take(1).ToListAsync(cancellationToken);
+        await db.Set<SocialMessage>().OrderBy(message => message.MessageId).Select(message => message.MessageId).Take(1).ToListAsync(cancellationToken);
+    }
 
     public Task<Playerprofile?> LockProfile(Guid player, bool tracking = true)
     {

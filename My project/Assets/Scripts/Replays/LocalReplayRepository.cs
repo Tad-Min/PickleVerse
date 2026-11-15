@@ -170,7 +170,9 @@ namespace PickleVerse.Replays
             try
             {
                 var m = Repository.Read(player, match);
-                return m == null || m.chunks.Count == 0 ? "Chưa có replay" : m.complete ? "Xem replay" : "Xem replay · chưa hoàn tất";
+                if (m == null) return "Chưa có replay";
+                if (!m.complete) return "Đang hoàn thiện replay · Làm mới";
+                return m.chunks.Count > 0 ? "Xem replay" : "Chưa có replay";
             }
             catch
             {

@@ -57,8 +57,6 @@ namespace PickleVerse.LocalMatch.Editor
             if (pad.Receiver is TrainingDirector training)
             {
                 training.hud.Refresh();
-                if (!training.Paused && training.hud.pausePanel)
-                    training.hud.pausePanel.SetActive(false);
             }
             var canvas = pad.GetComponentInParent<Canvas>(true);
             var camera = Camera.main;

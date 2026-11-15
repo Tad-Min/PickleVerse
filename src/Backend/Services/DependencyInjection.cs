@@ -18,7 +18,9 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<PasswordRecoveryMailQueue>();
         services.AddHostedService(sp => sp.GetRequiredService<PasswordRecoveryMailQueue>());
-        services.AddScoped<IStorageService, StorageService>();
+        services.AddScoped<StorageService>();
+        services.AddScoped<IStorageService>(sp => sp.GetRequiredService<StorageService>());
+        services.AddScoped<ISocialObjectStorage>(sp => sp.GetRequiredService<StorageService>());
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<ITrainingService, TrainingService>();
@@ -47,6 +49,11 @@ public static class DependencyInjection
         services.AddScoped<IAppActivityService, AppActivityService>();
         services.AddScoped<OnlineSocialService>();
         services.AddScoped<IOnlineSocialService>(sp => sp.GetRequiredService<OnlineSocialService>());
+        services.AddScoped<ISocialContentService, SocialContentService>();
+        services.AddScoped<ISocialDirectService, SocialDirectService>();
+        services.AddSingleton<ISocialSessionService, SocialSessionService>();
+        services.AddScoped<ISocialMediaService, SocialMediaService>();
+        services.AddHostedService<SocialMediaCleanup>();
         services.AddScoped<RoomInvitationService>();
         services.AddScoped<IRoomInvitationService>(sp => sp.GetRequiredService<RoomInvitationService>());
         services.AddScoped<MatchReplayService>();

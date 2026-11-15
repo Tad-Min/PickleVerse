@@ -26,7 +26,11 @@ public sealed partial class OnlineGameService
             if (forfeits.Count > 0 || input.Any(x => x.result.outcome == MatchOutcome.Interrupted))
             {
                 var teams = m.roster.members.Where(x => forfeits.Contains(MatchId(x.id))).Select(x => x.team).Distinct().ToList();
-                await EndOnline(match, m, players, teams.Count == 1 ? teams[0] : null, "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits);
+                var scores = input.Select(entry => CanonicalScores(entry.result, m.roster.Find(entry.onlineId).team)).ToArray();
+                if (scores.Skip(1).Any(scorecard => !GameJson.Write(scorecard).Equals(GameJson.Write(scores[0]), StringComparison.Ordinal)))
+                    throw Bad("Điểm hai đội không khớp.");
+                await EndOnline(match, m, players, teams.Count == 1 ? teams[0] : null,
+                    "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits, scores[0]);
                 return true;
             }
             string? fingerprint = null;
@@ -48,6 +52,16 @@ public sealed partial class OnlineGameService
             await FinishOnline(match, m, players);
             return true;
         });
+    }
+    static IReadOnlyList<GameScore> CanonicalScores(MatchResult result, int team)
+    {
+        if (result.scores == null || result.scores.Count > 3 || result.scores.Where((game, index) =>
+            game == null || game.own is < 0 or > 100000 || game.opponent is < 0 or > 100000
+            || game.teamAStartSide is not (null or -1 or 1) || !game.completed && index != result.scores.Count - 1
+            || game.completed && game.own == game.opponent).Any())
+            throw Bad("Tỷ số ván của máy chủ không hợp lệ.");
+        return team == 0 ? result.scores : result.scores.Select(game =>
+            new GameScore(game.opponent, game.own, game.completed, game.teamAStartSide)).ToArray();
     }
     public async Task InterruptDedicated(Guid match)
     {

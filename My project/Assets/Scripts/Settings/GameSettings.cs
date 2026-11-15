@@ -5,12 +5,12 @@ using UnityEngine.InputSystem;
 
 namespace PickleVerse.Settings
 {
-    public enum GameAction { Forward, Backward, Left, Right, Run, Drive, Dink, Volley, Power, Cross, CancelShot, Timeout, Help, Continue, Settings }
+    public enum GameAction { Forward, Backward, Left, Right, Run, Drive, Dink, Volley, Power, Cross, CancelShot, Help, Continue, Settings }
 
     [Serializable]
     public sealed class SettingsData
     {
-        public int version = 3;
+        public int version = 4;
         public float master = 1, music = .8f, effects = 1;
         public int graphics = 2, fps = 60, msaa = 4;
         public float renderScale = 1;
@@ -23,7 +23,7 @@ namespace PickleVerse.Settings
         public static SettingsData Defaults()
         {
             var d = new SettingsData();
-            d.keys = new[] { Key.W, Key.S, Key.A, Key.D, Key.LeftShift, Key.J, Key.K, Key.L, Key.U, Key.I, Key.Backspace, Key.T, Key.F1, Key.Enter, Key.Escape }.Select(k => (int)k).ToArray();
+            d.keys = new[] { Key.W, Key.S, Key.A, Key.D, Key.LeftShift, Key.J, Key.K, Key.L, Key.U, Key.I, Key.Backspace, Key.F1, Key.Enter, Key.Escape }.Select(k => (int)k).ToArray();
             d.touchPositions = new[] { new Vector2(.103f, .245f), new Vector2(.758f, .286f), new Vector2(.746f, .554f), new Vector2(.895f, .727f), new Vector2(.899f, .245f), new Vector2(.858f, .165f), new Vector2(.772f, .165f), new Vector2(.944f, .245f), new Vector2(.858f, .245f) };
             return d;
         }
@@ -39,6 +39,8 @@ namespace PickleVerse.Settings
         {
             var defaults = Defaults();
             bool migrateTouch = version < 3 && touchPositions != null && touchPositions.Length == 9;
+            if (keys?.Length == defaults.keys.Length + 1)
+                keys = keys.Where((_, index) => index != (int)GameAction.Help).ToArray();
             if (keys == null || keys.Length != defaults.keys.Length)
                 keys = defaults.keys;
             if (touchPositions == null || touchPositions.Length != 9)
@@ -51,10 +53,11 @@ namespace PickleVerse.Settings
                     touchPositions[i] = defaults.touchPositions[i] + (touchPositions[i] - old[i]);
                 touchPositions[4] = defaults.touchPositions[4]; // Former standalone Drop is now the sprint target.
             }
-            version = 3;
-            if (keys.Distinct().Count() != keys.Length || keys.Where((key, index) => !Enum.IsDefined(typeof(Key), key) || key == (int)Key.None || (index != 14 && key == (int)Key.Escape)).Any())
+            version = 4;
+            int settingsIndex = (int)GameAction.Settings;
+            keys[settingsIndex] = (int)Key.Escape;
+            if (keys.Distinct().Count() != keys.Length || keys.Any(key => !Enum.IsDefined(typeof(Key), key) || key == (int)Key.None))
                 keys = defaults.keys;
-            keys[14] = (int)Key.Escape;
             master = Mathf.Clamp01(master);
             music = Mathf.Clamp01(music);
             effects = Mathf.Clamp01(effects);
@@ -110,7 +113,7 @@ namespace PickleVerse.Settings
             SettingsRuntime.Apply(current);
             Changed?.Invoke();
         }
-        public static string ActionName(GameAction action) => new[] { "Tiến lên", "Lùi", "Sang trái", "Sang phải", "Chạy", "Đánh bạt / Giao bóng", "Bóng ngắn", "Vô lê", "Tăng lực", "Đánh chéo", "Hủy chọn cú", "Hội ý", "Hướng dẫn", "Tiếp tục / Bỏ qua giới thiệu", "Mở cài đặt (cố định)" }[(int)action];
+        public static string ActionName(GameAction action) => new[] { "Tiến lên", "Lùi", "Sang trái", "Sang phải", "Chạy", "Đánh bạt / Giao bóng", "Bóng ngắn", "Vô lê", "Tăng lực", "Đánh chéo", "Hủy chọn cú", "Hướng dẫn", "Tiếp tục / Bỏ qua giới thiệu", "Mở cài đặt (cố định)" }[(int)action];
         public static string KeyName(Key key) => key == Key.LeftShift ? "Shift trái" : key == Key.RightShift ? "Shift phải" : key == Key.Space ? "Space" : key.ToString();
         public static bool TryBind(SettingsData data, GameAction action, Key key, out string error)
         {
@@ -121,9 +124,6 @@ namespace PickleVerse.Settings
                 return false;
             }
             int conflict = Array.IndexOf(data.keys, (int)key);
-            // Time-outs were removed from play; their legacy key slot never blocks a binding.
-            if (conflict == (int)GameAction.Timeout)
-                conflict = Array.IndexOf(data.keys, (int)key, conflict + 1);
             if (conflict >= 0 && conflict != (int)action)
             {
                 error = "Phím này đang dùng cho: " + ActionName((GameAction)conflict);

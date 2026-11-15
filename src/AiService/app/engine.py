@@ -61,11 +61,20 @@ def observations(s: Shot, threshold: float | None):
 
 def analyze(request: AnalyzeRequest, tier_predictor=None):
     findings, rows = [], {}
+    games = {}
     seen = set()
+
+    def count(target, technique, code, severity, failed):
+        row = target.setdefault((technique, code), dict(
+            technique=technique, code=code, opportunities=0, errors=0, severity=severity))
+        row["opportunities"] += 1
+        row["errors"] += int(failed)
+
     for s in sorted(request.shots, key=lambda x: x.sequence):
         if s.shotId in seen:
             raise ValueError("duplicate shotId")
         seen.add(s.shotId)
+        game = games.setdefault(s.gameNumber, {}) if s.gameNumber is not None else None
         threshold = request.dinkClearanceThreshold
         if (request.dinkAssisted is not None and s.assisted != request.dinkAssisted
                 or request.dinkEngineAimed is not None and s.engineAimed != request.dinkEngineAimed
@@ -73,10 +82,9 @@ def analyze(request: AnalyzeRequest, tier_predictor=None):
             threshold = None
         for code, failed, evidence in observations(s, threshold):
             severity, tip = TIPS[code]
-            key = s.technique, code
-            row = rows.setdefault(key, dict(technique=s.technique, code=code, opportunities=0, errors=0, severity=severity))
-            row["opportunities"] += 1
-            row["errors"] += int(failed)
+            count(rows, s.technique, code, severity, failed)
+            if game is not None:
+                count(game, s.technique, code, severity, failed)
             if failed:
                 findings.append(dict(shotId=s.shotId, technique=s.technique, code=code,
                                      severity=severity, tip=tip, evidence=evidence, ruleVersion=request.ruleVersion))
@@ -119,7 +127,8 @@ def analyze(request: AnalyzeRequest, tier_predictor=None):
             recommendations.append(dict(id=fallback.id, title=fallback.title, reason="Bài tập phù hợp với mức kỹ năng đã quan sát." if tier_fallback else "Tiếp tục lộ trình luyện tập hiện tại."))
     return dict(sessionId=request.sessionId, ruleVersion=request.ruleVersion,
                 summary=session_summary(request.shots, list(rows.values()), findings), findings=findings,
-                metrics=list(rows.values()), recommendations=recommendations, tier=tier)
+                metrics=list(rows.values()), recommendations=recommendations, tier=tier,
+                gameMetrics=[dict(gameNumber=number, metrics=list(games[number].values())) for number in sorted(games)])
 
 
 def session_summary(shots, metrics, findings):

@@ -127,7 +127,7 @@ namespace PickleVerse.Multiplayer
         public Vector3 BallPosition => match.BallPosition;
         public Vector3 BallVelocity => match.BallVelocity;
         public Vector3 OpponentPosition => NetworkPlayer.All.Where(p => p && p.Team != player.Team).Select(p => p.transform.position).FirstOrDefault();
-        public bool Active => !match.Paused && !match.Finished && !match.BetweenGames && !match.BetweenPoints && !match.TimedOut;
+        public bool Active => !match.Paused && !match.Finished && !match.BetweenGames && !match.BetweenPoints;
         public bool Incoming => Active && match.Rules.live && match.Rules.lastHitTeam != player.Team;
         public bool Serving => match.Rules.waitingServe;
         public bool IsServer => match.Rules.servingTeam == player.Team && match.Rules.serverIndex == player.Index;

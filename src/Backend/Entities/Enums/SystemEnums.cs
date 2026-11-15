@@ -81,6 +81,7 @@ namespace Entities.Enums
     [JsonConverter(typeof(StatusJsonConverter<DedicatedAllocationStatus>))]
     public enum DedicatedAllocationStatus
     {
+        [EnumMember(Value = "reserved")] Reserved,
         [EnumMember(Value = "queued")] Queued,
         [EnumMember(Value = "starting")] Starting,
         [EnumMember(Value = "ready")] Ready,

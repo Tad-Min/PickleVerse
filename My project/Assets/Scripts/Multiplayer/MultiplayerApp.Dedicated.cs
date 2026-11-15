@@ -19,7 +19,7 @@ namespace PickleVerse.Multiplayer
             public string session, region, connectionToken;
             public MatchRoster roster;
         }
-        async Task ConnectDedicatedAsync(string matchId, bool custom, CancellationToken cancellation = default)
+        async Task ConnectDedicatedAsync(string matchId, CancellationToken cancellation = default)
         {
             var account = AccountRuntime.Ensure().Account;
             int expectedOperation = operation;
@@ -32,9 +32,7 @@ namespace PickleVerse.Multiplayer
                 if (!IsCurrent()) throw new OperationCanceledException();
                 ticket = await account.SendAuthorizedAsync<DedicatedTicket>("POST", "api/Game/dedicated/ticket", new { MatchId = matchId }, cancellation);
                 if (ticket.state == DedicatedTicketState.Ready) break;
-                if (ticket.state == DedicatedTicketState.Busy && !custom && !reconnecting)
-                    deadline = Time.realtimeSinceStartupAsDouble + 120;
-                SetNotice(ticket.state == DedicatedTicketState.Busy ? "Máy chủ đang bận • Đang chờ lượt thi đấu…" : "Đang chuẩn bị máy chủ thi đấu…");
+                SetNotice("Đang chuẩn bị máy chủ thi đấu…");
                 if (Time.realtimeSinceStartupAsDouble >= deadline) throw new TimeoutException("Máy chủ thi đấu chưa sẵn sàng. Vui lòng tìm lại trận.");
                 await Task.Delay(500, cancellation);
             } while (true);
@@ -46,7 +44,8 @@ namespace PickleVerse.Multiplayer
             Mode = Roster.mode;
             session.PrepareDedicated(Roster);
             AttachMatch(session);
-            courtLoading = true; CourtSceneSynchronized = false;
+            courtLoading = true;
+            connectingUntil = Time.realtimeSinceStartupAsDouble + 120;
             SceneLoading.BeginExternal("MultiplayerCourt");
             try
             {
@@ -65,7 +64,7 @@ namespace PickleVerse.Multiplayer
                 if (Match == session) await LeaveMatchAsync();
                 throw;
             }
-            Debug.Log("[Dedicated] Client connected via " + session.Runner.CurrentConnectionType);
+            Debug.Log($"[Dedicated] Client match={matchId} connected via {session.Runner.CurrentConnectionType}");
         }
 
 #if !UNITY_SERVER
@@ -105,7 +104,7 @@ namespace PickleVerse.Multiplayer
                     }
                     try
                     {
-                        await ConnectDedicatedAsync(matchId, custom: false, cancellation: timeout.Token);
+                        await ConnectDedicatedAsync(matchId, cancellation: timeout.Token);
                         return;
                     }
                     catch (ApiException error) when (error.StatusCode is 400 or 401 or 403 or 404 or 409 or 410)
@@ -145,7 +144,6 @@ namespace PickleVerse.Multiplayer
                 NetworkMatch.Instance?.ReserveDisconnected((ulong)peer.RawEncoded);
                 RemoveClientIdentity((ulong)peer.RawEncoded);
             };
-            CourtSceneSynchronized = true;
         }
         public void RegisterDedicatedPeer(Fusion.PlayerRef peer, string player)
         {

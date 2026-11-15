@@ -12,22 +12,37 @@ namespace PickleVerse.Multiplayer
     public sealed partial class MultiplayerApp
     {
         [Serializable]
-        sealed class MatchTicket { public MatchRoster roster; public bool allAccepted; public string phase, authorityMode = "shared"; public double readyRemainingSeconds; }
+        sealed class MatchTicket
+        {
+            public MatchRoster roster;
+            public bool allAccepted, accepted, partyAccepted;
+            public string phase, authorityMode = "shared";
+            public double readyRemainingSeconds;
+        }
         string onlineAuthorityMode = "shared";
         MatchRoster canonicalRoster;
-        Task readyOffer;
-        double serverReadyUntil = double.PositiveInfinity;
-        Task EnsureReadyOfferAsync() => readyOffer == null || readyOffer.IsFaulted || readyOffer.IsCanceled ? (readyOffer = OfferOnlineMatchAsync()) : readyOffer;
-        async Task OfferOnlineMatchAsync()
+        MatchTicket readyTicket;
+        object stagingRequest;
+        double serverReadyUntil, nextReadyPoll;
+        bool declineRequested, partyConfirmed;
+        async Task<MatchTicket> ReadReadyAsync(bool accept)
         {
-            var match = Match;
-            var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<MatchTicket>("POST", "api/Game/match/online/offer", OnlineRequest());
-            if (Match != match)
+            var request = stagingRequest;
+            int generation = operation;
+            string route = accept ? "prepare" : "offer";
+            var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<MatchTicket>("POST", "api/Game/match/online/" + route, request);
+            if (generation != operation || stagingRequest != request)
                 throw new OperationCanceledException();
+            // A status poll already in flight when Accept returned must not undo the decision.
+            if (!accept && readyTicket?.accepted == true && ticket.phase == "PREPARING" && !ticket.accepted)
+                return readyTicket;
+            readyTicket = ticket;
+            partyConfirmed |= ticket.partyAccepted;
             canonicalRoster = ticket.roster;
             onlineAuthorityMode = ticket.authorityMode;
             Roster = canonicalRoster;
             serverReadyUntil = Time.realtimeSinceStartupAsDouble + ticket.readyRemainingSeconds;
+            return ticket;
         }
         readonly Dictionary<string, Task> resultWrites = new Dictionary<string, Task>();
         bool heartbeatBusy;
@@ -35,22 +50,42 @@ namespace PickleVerse.Multiplayer
         void TickOnlineHeartbeat()
         {
             var runtime = ProgressionRuntime.Instance;
-            var pending = runtime.Ready ? runtime.Player.pendingMatch : null;
-            if (heartbeatBusy || pending == null || pending.Bot || Match == null || Time.realtimeSinceStartupAsDouble < nextHeartbeat)
+            var session = Match;
+            if (heartbeatBusy || !runtime.Ready || session == null || Time.realtimeSinceStartupAsDouble < nextHeartbeat)
+                return;
+            var pending = runtime.Player.pendingMatch;
+            string matchId = session.IsDedicated && State == FlowState.InMatch ? Roster?.matchId
+                : pending?.Bot == false ? pending.id : null;
+            if (string.IsNullOrEmpty(matchId))
                 return;
             heartbeatBusy = true;
             nextHeartbeat = Time.realtimeSinceStartupAsDouble + runtime.Snapshot.catalog.onlineMatch.heartbeatSeconds;
-            _ = HeartbeatAsync(pending.id);
+            _ = HeartbeatAsync(session, matchId);
         }
-        async Task HeartbeatAsync(string matchId)
+        async Task HeartbeatAsync(PhotonSession session, string matchId)
         {
+            int generation = operation;
+            var account = AccountRuntime.Ensure().Account;
+            int accountSession = account.SessionVersion;
+            bool IsCurrent() => this && !quitting && !closing && !reconnecting && Match == session &&
+                operation == generation && account.SessionVersion == accountSession;
             try
             {
-                await ProgressionRuntime.Instance.CommandAsync("match/online/heartbeat", new { MatchId = matchId, RequestId = Guid.NewGuid().ToString("N") });
+                var snapshot = await ProgressionRuntime.Instance.CommandAsync("match/online/heartbeat",
+                    new { MatchId = matchId, RequestId = Guid.NewGuid().ToString("N") });
+                // Photon Relay may still keep the runner alive after the worker's lease has expired.
+                if (!IsCurrent() || !session.IsDedicated || State != FlowState.InMatch) return;
+                var match = NetworkMatch.Instance;
+                if (match && match.Runner == session.Runner && match.Finished) return;
+                var interrupted = snapshot.player.history.FirstOrDefault(result =>
+                    result.id == matchId && result.outcome == MatchOutcome.Interrupted);
+                if (interrupted != null)
+                    await ReturnToRoomAsync(string.IsNullOrWhiteSpace(interrupted.reason)
+                        ? "Máy chủ thi đấu mất kết nối. Trận đã gián đoạn." : interrupted.reason);
             }
             catch (Exception error)
             {
-                if (!quitting)
+                if (IsCurrent())
                     SetNotice("Chưa đồng bộ trạng thái trận: " + error.Message);
             }
             finally
@@ -65,26 +100,17 @@ namespace PickleVerse.Multiplayer
             Session = Match.Id,
             HostPlayerId = Match.Runner.GetPlayerUserId(Match.Lobby.Object.StateAuthority)
         };
-        async Task PrepareOnlineMatchAsync()
-        {
-            var match = Match;
-            var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<MatchTicket>("POST", "api/Game/match/online/prepare", OnlineRequest());
-            if (Match != match)
-                throw new OperationCanceledException();
-            canonicalRoster = ticket.roster;
-            onlineAuthorityMode = ticket.authorityMode;
-            Roster = canonicalRoster;
-        }
         async Task StartOnlineMatchAsync()
         {
-            var match = Match;
-            var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<MatchTicket>("POST", "api/Game/match/online/start", OnlineRequest());
-            if (Match != match)
+            var request = stagingRequest;
+            int generation = operation;
+            var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<MatchTicket>("POST", "api/Game/match/online/start", request);
+            if (generation != operation || stagingRequest != request)
                 throw new OperationCanceledException();
+            readyTicket = ticket;
             canonicalRoster = ticket.roster;
             onlineAuthorityMode = ticket.authorityMode;
             Roster = canonicalRoster;
-            await ProgressionRuntime.Instance.ReloadAsync();
         }
         public Task PersistProgressionResultsAsync(string json)
         {

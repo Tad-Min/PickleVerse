@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddSingleton<LeaderboardCache>();
         services.AddSingleton<LobbyRepository>();
         services.AddSingleton<DedicatedLeaseRepository>();
+        services.AddSingleton<SocialPresenceRepository>();
         services.AddScoped<GameRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();

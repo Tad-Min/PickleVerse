@@ -20,6 +20,15 @@ public sealed partial class GameRepository
     public Task<AiTelemetrySession?> TelemetryBatch(Guid batch) => db.AiTelemetrySessions.AsNoTracking().SingleOrDefaultAsync(s => s.BatchId == batch);
     public Task<AiCoachingSession?> SessionCoaching(Guid player, Guid session, string type) => db.AiCoachingSessions.AsNoTracking()
         .SingleOrDefaultAsync(s => s.PlayerId == player && s.SessionId == session && s.SessionType == type);
+    public sealed record MatchAnalysis(Guid PlayerId, string? Result, string? State);
+    public Task<List<MatchAnalysis>> MatchAnalyses(Guid match) =>
+        (from session in db.AiTelemetrySessions.AsNoTracking()
+         where session.SessionId == match && session.SessionType == "match"
+         join job in db.AiAnalysisJobs on session.BatchId equals job.BatchId into jobs
+         from job in jobs.DefaultIfEmpty()
+         join report in db.AiCoachingSessions on session.BatchId equals report.BatchId into reports
+         from report in reports.DefaultIfEmpty()
+         select new MatchAnalysis(session.PlayerId, report == null ? null : report.Result, job == null ? null : job.State)).ToListAsync();
     public Task<bool> OwnsCoachingSession(Guid player, Guid session, string type) => type == "match"
         ? db.Gamematchplayers.AnyAsync(p => p.Playerid == player && p.Matchid == session)
         : db.TrainingSessionRecords.AnyAsync(s => s.PlayerId == player && s.AttemptId == session);

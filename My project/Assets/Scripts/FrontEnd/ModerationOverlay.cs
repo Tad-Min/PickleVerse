@@ -22,6 +22,8 @@ namespace PickleVerse.FrontEnd
         readonly List<SanctionDecision> decisions=new List<SanctionDecision>();readonly List<PlayerAppeal> appeals=new List<PlayerAppeal>();
         readonly List<ReportTarget> targets=new List<ReportTarget>();
         int index, requestVersion, autoSession=-1; bool opened, reporting, busy; string matchId;
+        Guid? targetPlayer;
+        public static bool IsOpen => instance && instance.opened;
         AccountService Account => AccountRuntime.Ensure().Account;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot() { if (!instance) new GameObject("Moderation Coordinator").AddComponent<ModerationOverlay>(); }
@@ -117,9 +119,17 @@ namespace PickleVerse.FrontEnd
             }
             return tile;
         }
-        public static void ShowReport(string id) { if(instance)instance.OpenReport(id); }
-        void OpenReport(string id) { EnsureView();opened=true;reporting=true;matchId=id;index=0;statement.text="";statement.characterLimit=254;Reload(); }
-        void OpenDecisions() { EnsureView();opened=true;reporting=false;index=0;statement.text="";statement.characterLimit=4000;Reload(); }
+        public static void ShowReport(string id, Guid player) { if(instance)instance.OpenReport(id, player); }
+        void OpenReport(string id, Guid? player = null)
+        {
+            EnsureView();
+            if (busy) return;
+            opened=true;reporting=true;matchId=id;targetPlayer=player;index=0;statement.text="";statement.characterLimit=254;
+            targets.Clear();
+            Render();
+            Reload();
+        }
+        void OpenDecisions() { EnsureView();opened=true;reporting=false;targetPlayer=null;index=0;statement.text="";statement.characterLimit=4000;Reload(); }
         void Select(int delta) { index=Mathf.Clamp(index+delta,0,Math.Max(0,(reporting?targets.Count:decisions.Count)-1));statement.text="";Render(); }
         async void Reload()
         {
@@ -129,7 +139,7 @@ namespace PickleVerse.FrontEnd
                 if(reporting)
                 {
                     var data=await Account.SendAuthorizedAsync<List<ReportTarget>>("GET","api/Matches/"+matchId+"/report-targets");
-                    if(!Current(request,session))return;targets.Clear();targets.AddRange(data);
+                    if(!Current(request,session))return;targets.Clear();targets.AddRange(data.Where(target => !targetPlayer.HasValue || target.PlayerId == targetPlayer));
                 }
                 else
                 {
@@ -147,6 +157,9 @@ namespace PickleVerse.FrontEnd
         void Render()
         {
             heading.text=reporting?"Tố cáo người chơi":"Quyết định và khiếu nại";
+            previous.gameObject.SetActive(!targetPlayer.HasValue);
+            next.gameObject.SetActive(!targetPlayer.HasValue);
+            submit.interactable = reporting ? targets.Count > 0 : decisions.Count > 0;
             if(reporting)
             {
                 selected.text=targets.Count==0?"Không có người chơi phù hợp để tố cáo":targets[index].PlayerName+" · "+(index+1)+"/"+targets.Count;
@@ -174,6 +187,7 @@ namespace PickleVerse.FrontEnd
         static string Status(AppealReviewStatus status)=>status==AppealReviewStatus.Accepted?"Được chấp nhận":status==AppealReviewStatus.Declined?"Bị từ chối":status==AppealReviewStatus.Checking?"Đang xem xét":"Đang chờ";
         async void Send()
         {
+            if (reporting && targets.Count == 0 || !reporting && decisions.Count == 0) return;
             if(busy)return;string text=statement.text.Trim();if(text.Length<(reporting?3:10)){feedback.text="Vui lòng nhập nội dung đầy đủ.";return;}
             busy=true;int request=++requestVersion,session=Account.SessionVersion;
             try

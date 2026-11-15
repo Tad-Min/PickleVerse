@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using PickleVerse.Replays;
+using PickleVerse.Services;
 using PickleVerse.Progression;
 using PickleVerse.Multiplayer;
 using TMPro;
@@ -35,6 +37,8 @@ namespace PickleVerse.FrontEnd
         bool opened;
         public bool IsOpen => opened;
         long listRevision;
+        int menuRequest;
+        bool replayLoading, replayError;
         PickleVerse.Settings.UiListPages listPages;
         static readonly Color Ink = PickleVerse.Settings.LobbyPanelStyle.Background, Surface = PickleVerse.Settings.LobbyPanelStyle.Surface, Card = PickleVerse.Settings.LobbyPanelStyle.Card, Mint = PickleVerse.Settings.ScreenUiTheme.Mint, Lime = PickleVerse.Settings.ScreenUiTheme.Gold, White = PickleVerse.Settings.ScreenUiTheme.Text, Muted = PickleVerse.Settings.ScreenUiTheme.Muted;
 
@@ -92,8 +96,15 @@ namespace PickleVerse.FrontEnd
                 return;
             RefreshIdentityActions();
             ApplySafeArea();
+#if !UNITY_SERVER
+            if (ModerationOverlay.IsOpen)
+                return;
+#endif
             if (Keyboard.current?.escapeKey.wasPressedThisFrame == true)
-                Close();
+            {
+                if (detailPanel && detailPanel.gameObject.activeSelf) BackToHistory();
+                else Close();
+            }
             if (Time.realtimeSinceStartupAsDouble >= nextTick)
             {
                 nextTick = Time.realtimeSinceStartupAsDouble + 1;
@@ -139,6 +150,13 @@ namespace PickleVerse.FrontEnd
             }
             opened = true;
             view = next;
+            if (detailPanel) detailPanel.gameObject.SetActive(false);
+            int request = ++menuRequest;
+            int accountVersion = AccountRuntime.Ensure().Account.SessionVersion;
+            bool Current() => this && opened && menuRequest == request && AccountRuntime.Ensure().Account.SessionVersion == accountVersion;
+            replayLoading = next == View.Career && AccountRuntime.Ensure().Account.IsSignedIn;
+            replayError = false;
+            if (next == View.Career) listRevision++;
             modal.SetAsLastSibling();
             ApplySafeArea();
             Refresh();
@@ -147,15 +165,25 @@ namespace PickleVerse.FrontEnd
             try
             {
                 await ProgressionRuntime.Instance.ReloadAsync();
-                if (next == View.Career && PickleVerse.Replays.ReplayStorage.Repository is PickleVerse.Replays.IOnlineReplayRepository replays)
+                if (Current() && replayLoading && ReplayStorage.Repository is IOnlineReplayRepository replays)
                     await replays.RefreshAsync();
-                if (this && modal.gameObject.activeSelf)
-                    Refresh();
             }
             catch (Exception error)
             {
-                if (this && modal.gameObject.activeSelf)
+                if (Current())
+                {
+                    replayError = replayLoading;
                     feedback.text = "Không tải được dữ liệu mới: " + error.Message;
+                }
+            }
+            finally
+            {
+                if (Current())
+                {
+                    replayLoading = false;
+                    if (next == View.Career) listRevision++;
+                    Refresh();
+                }
             }
         }
         public void Close()
@@ -164,6 +192,9 @@ namespace PickleVerse.FrontEnd
             if (!modal)
                 return;
             opened = false;
+            menuRequest++;
+            detailRequest++;
+            if (detailPanel) detailPanel.gameObject.SetActive(false);
             // AccountScreen can close an authored menu before this component's Awake.
             var presentation = modal.GetComponent<PickleVerse.Settings.UiModalPresentation>();
             if (presentation)
@@ -388,9 +419,11 @@ namespace PickleVerse.FrontEnd
             var detail = Text("Detail", row, "Bấm để xem tỷ số từng ván", 13, Muted, new Vector2(0, 0), new Vector2(.98f, .28f), new Vector2(18, 4), new Vector2(-12, 0));
             var button = row.GetComponent<Button>() ?? row.gameObject.AddComponent<Button>();
             button.targetGraphic = row.GetComponent<Image>();
+            button.targetGraphic.raycastTarget = true;
             StyleButton(button, Card);
-            bool expanded = false;
-            var replayLabel = PickleVerse.Replays.ReplayStorage.Availability(result.playerId, result.id);
+            var replayLabel = replayLoading ? "Đang tải replay…" : replayError ? "Tải replay thất bại · Thử lại"
+                : ReplayStorage.Availability(result.playerId, result.id);
+            bool refreshReplay = replayError || replayLabel.StartsWith("Đang hoàn thiện replay", StringComparison.Ordinal);
             var replayRect = Panel("WatchReplay", row, Card);
             var replayControl = replayRect.GetComponent<Button>() ?? replayRect.gameObject.AddComponent<Button>();
             replayRect.anchorMin = new Vector2(.53f, 0);
@@ -403,33 +436,25 @@ namespace PickleVerse.FrontEnd
             replayControl.targetGraphic = replayImage;
             var replayButton = replayControl;
             StyleButton(replayButton, Card);
-            replayButton.interactable = replayLabel.StartsWith("Xem replay", StringComparison.Ordinal);
+            replayButton.interactable = refreshReplay || replayLabel == "Xem replay";
             Text("Label", replayRect, replayLabel, 13, Mint, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
             replayButton.onClick.AddListener(() =>
             {
-                float prior = scroll.verticalNormalizedPosition;
-                Close();
-                PickleVerse.Replays.ReplayLaunch.Select(result.playerId, result.id, () =>
-                {
-                    PickleVerse.Shop.LobbyNavigation.ReturnToLobby();
-                    StartCoroutine(RestoreHistory(prior));
-                });
-                PickleVerse.Shop.LobbyNavigation.OpenReplay();
+                if (refreshReplay) OpenCareer();
+                else PlayHistoryReplay(result);
             });
-#if !UNITY_SERVER
-            if (result.kind != MatchKind.BotPractice && PickleVerse.Services.AccountRuntime.Ensure().Account.IsSignedIn)
+            button.onClick.AddListener(() => OpenMatchDetail(result));
+        }
+        void PlayHistoryReplay(MatchResult result)
+        {
+            float prior = scroll.verticalNormalizedPosition;
+            Close();
+            ReplayLaunch.Select(result.playerId, result.id, () =>
             {
-                var report = RuntimeForms.Button("ReportPlayer", row, "Tố cáo", () => ModerationOverlay.ShowReport(result.id), new Vector2(.28f,0),new Vector2(.51f,.27f));
-                report.GetComponentInChildren<TMP_Text>().fontSize = 13;
-            }
-#endif
-            button.onClick.AddListener(() =>
-            {
-                expanded = !expanded;
-                row.GetComponent<LayoutElement>().preferredHeight = expanded ? 158 : 112;
-                detail.text = expanded ? string.Join("   ·   ", result.scores.Select((s, i) => $"Ván {i + 1}: {s.own}–{s.opponent}{(s.completed ? "" : " (chưa xong)")}")) + (string.IsNullOrEmpty(result.reason) ? "" : "\n" + result.reason) : "Bấm để xem tỷ số từng ván";
-                LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+                PickleVerse.Shop.LobbyNavigation.ReturnToLobby();
+                StartCoroutine(RestoreHistory(prior));
             });
+            PickleVerse.Shop.LobbyNavigation.OpenReplay();
         }
         void AddMessage(string heading, string body)
         {
@@ -645,11 +670,23 @@ namespace PickleVerse.FrontEnd
         {
             var rect = Rect(name, parent, min ?? Vector2.zero, max ?? Vector2.one);
             var image = rect.GetComponent<Image>() ?? rect.gameObject.AddComponent<Image>();
+            StylePanel(image, color);
+            return rect;
+        }
+        internal RectTransform AddListPanel(string name, Transform parent, Color color, float height)
+        {
+            var row = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+            row.transform.SetParent(parent, false);
+            StylePanel(row.GetComponent<Image>(), color);
+            row.GetComponent<LayoutElement>().preferredHeight = height;
+            return (RectTransform)row.transform;
+        }
+        void StylePanel(Image image, Color color)
+        {
             image.color = color;
             image.sprite = rounded;
             image.type = Image.Type.Sliced;
             image.raycastTarget = false;
-            return rect;
         }
         public TMP_Text Text(string name, Transform parent, string value, int size, Color color, Vector2 min, Vector2 max, Vector2 offsetMin, Vector2 offsetMax, TextAlignmentOptions alignment = TextAlignmentOptions.MidlineLeft)
         {
@@ -682,6 +719,7 @@ namespace PickleVerse.FrontEnd
             var rect = Panel(name, parent, color, min, max);
             var button = rect.GetComponent<Button>() ?? rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
+            button.targetGraphic.raycastTarget = true;
             button.onClick.RemoveAllListeners();
             StyleButton(button, color);
             Text("Label", rect, caption, fontSize, textColor, Vector2.zero, Vector2.one, new Vector2(10, 0), new Vector2(-10, 0), TextAlignmentOptions.Center);

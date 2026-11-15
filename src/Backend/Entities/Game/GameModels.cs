@@ -173,6 +173,8 @@ public sealed class OnlineMatchTicket
     public string authorityMode = "shared";
     public PickleVerse.Multiplayer.MatchRoster roster = new();
     public bool allAccepted;
+    public bool accepted;
+    public bool partyAccepted;
     public string phase = "PREPARING";
     public double readyRemainingSeconds;
 }

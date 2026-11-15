@@ -32,7 +32,7 @@ public static class RelationalMatch
         var opponents = m.Gamematchplayers.Where(x => x.Team != p.Team).OrderBy(x => x.Rosterindex).ThenBy(x => x.Playerid).ToList();
         var scores = includeReport ? m.Matchscores.OrderBy(s => s.Gamenumber)
             .Select(s => new GameScore(p.Team == 0 ? s.Teamascore : s.Teambscore,
-                p.Team == 0 ? s.Teambscore : s.Teamascore, s.Completed)).ToList() : [];
+                p.Team == 0 ? s.Teambscore : s.Teamascore, s.Completed, s.Teamastartside)).ToList() : [];
         bool finalized = p.Finalizedat != null;
         int won = scores.Count(s => s.completed && s.own > s.opponent);
         int lost = scores.Count(s => s.completed && s.own < s.opponent);

@@ -19,7 +19,7 @@ namespace PickleVerse.Multiplayer
         public MultiplayerCinematic cinematic;
         public bool EndAnnouncementReceived { get; private set; }
         public bool EndAnnouncementFinished { get; private set; }
-        public UnityEngine.UI.Button continueButton, restartButton, modeButton;
+        public UnityEngine.UI.Button restartButton, modeButton;
         public UnityEngine.UI.Button leave, returnToRoom;
         public MultiplayerResultScreen resultScreen;
         public MatchScoreboard broadcast;
@@ -30,8 +30,7 @@ namespace PickleVerse.Multiplayer
         int displayedTeam = -1, serviceTeam = -1, serviceIndex = -1, serviceNumber = -1, resultA = -1, resultB = -1;
         string serviceText = "", matchType = "Multiplayer", shownKeys, shownSelection, matchStatus = "";
         Unity.Collections.FixedString512Bytes statusValue;
-        bool modalVisible, modalTimeout;
-        int modalSecond = -1;
+        bool modalVisible;
         string modalReason;
         struct Notice { public string text; public float duration; }
         readonly System.Collections.Generic.Queue<Notice> notices = new System.Collections.Generic.Queue<Notice>();
@@ -236,7 +235,7 @@ namespace PickleVerse.Multiplayer
                     serviceNumber = match.ServerNumber;
                     serviceText = (serviceTeam == displayedTeam ? "ĐỘI BẠN" : "ĐỐI THỦ") + " · NGƯỜI " + (serviceIndex + 1) + " · LƯỢT " + serviceNumber;
                 }
-                broadcast.SetClock(match.TimedOut ? CourtClockMode.Timeout : match.Finished ? CourtClockMode.Finished : match.BetweenGames ? CourtClockMode.Break : match.WaitingServe ? CourtClockMode.Serve : match.Ball.live ? CourtClockMode.Rally : CourtClockMode.Waiting, match.TimedOut ? match.TimeoutRemaining : 10 - match.ServeElapsed, match.Bounces > 0, match.WaitingServe ? serviceText : "");
+                broadcast.SetClock(match.Finished ? CourtClockMode.Finished : match.BetweenGames ? CourtClockMode.Break : match.WaitingServe ? CourtClockMode.Serve : match.Ball.live ? CourtClockMode.Rally : CourtClockMode.Waiting, 10 - match.ServeElapsed, match.Bounces > 0, match.WaitingServe ? serviceText : "");
             }
             else if (score && hasMatch)
             {
@@ -251,7 +250,7 @@ namespace PickleVerse.Multiplayer
             if (leaveLabel)
                 leaveLabel.text = app && app.Searching ? "Hủy" : "Rời trận";
             if (server && !broadcast)
-                server.text = !hasMatch ? "" : match.TimedOut ? $"TIME-OUT  {match.TimeoutRemaining:0}s" : match.WaitingServe ? $"GIAO BÓNG  {Mathf.Max(0, 10 - match.ServeElapsed):0.0}s\n<size=16>Đội {(match.ServerTeam == 0 ? "A" : "B")} • Người {match.ServerIndex + 1} • Lượt {match.ServerNumber}</size>" : match.Ball.live ? match.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY" : "";
+                server.text = !hasMatch ? "" : match.WaitingServe ? $"GIAO BÓNG  {Mathf.Max(0, 10 - match.ServeElapsed):0.0}s\n<size=16>Đội {(match.ServerTeam == 0 ? "A" : "B")} • Người {match.ServerIndex + 1} • Lượt {match.ServerNumber}</size>" : match.Ball.live ? match.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY" : "";
             if (returnLabel)
                 returnLabel.text = nextGame ? "Ván tiếp" : "Về phòng";
             bool results = hasMatch && match.Finished && (!announcements || !announcements.Busy) && !SettingsOverlay.IsOpen;
@@ -285,16 +284,13 @@ namespace PickleVerse.Multiplayer
                 timing.gameObject.SetActive(false);
             if (modeLabel && !broadcast)
                 modeLabel.text = hasMatch ? matchType : "Multiplayer";
-            bool showModal = hasMatch && !SettingsOverlay.IsOpen && (match.TimedOut || match.Paused);
+            bool showModal = hasMatch && !SettingsOverlay.IsOpen && match.Paused;
             if (modal)
                 modal.SetActive(showModal);
-            int second = hasMatch ? Mathf.CeilToInt(match.TimeoutRemaining) : 0;
-            bool refreshModal = showModal && (!modalVisible || modalTimeout != match.TimedOut || modalSecond != second || modalReason != matchStatus);
+            bool refreshModal = showModal && (!modalVisible || modalReason != matchStatus);
             modalVisible = showModal;
             if (refreshModal)
             {
-                modalTimeout = match.TimedOut;
-                modalSecond = second;
                 modalReason = matchStatus;
                 ((RectTransform)modal.transform).sizeDelta = new Vector2(760, 370);
                 if (modalBody)
@@ -303,19 +299,12 @@ namespace PickleVerse.Multiplayer
                     modalBody.rectTransform.sizeDelta = new Vector2(710, 235);
                     modalBody.fontSize = 19;
                 }
-                if (continueButton)
-                    ((RectTransform)continueButton.transform).anchoredPosition = new Vector2(-245, 20);
                 if (restartButton)
                     ((RectTransform)restartButton.transform).anchoredPosition = new Vector2(0, 20);
                 if (modalTitle)
-                    modalTitle.text = match.TimedOut ? "TIME-OUT" : "CHỜ KẾT NỐI LẠI";
+                    modalTitle.text = "CHỜ KẾT NỐI LẠI";
                 if (modalBody)
-                    modalBody.text = match.TimedOut ? $"Đội {(match.TimeoutTeam == 0 ? "A" : "B")} • Còn {match.TimeoutRemaining:0} giây\nĐiểm {match.ScoreA}–{match.ScoreB}\nĐội xin hội ý bấm Enter / Tiếp tục để kết thúc sớm." : match.Status.ToString();
-                if (continueButton)
-                {
-                    continueButton.gameObject.SetActive(match.TimedOut);
-                    continueButton.interactable = owner && owner.Team == match.TimeoutTeam;
-                }
+                    modalBody.text = matchStatus;
                 if (restartButton)
                     restartButton.gameObject.SetActive(true);
             }
@@ -373,10 +362,6 @@ namespace PickleVerse.Multiplayer
             help.SetActive(!help.activeSelf);
             if (help.activeSelf)
                 help.transform.SetAsLastSibling();
-        }
-        public void Continue()
-        {
-            NetworkPlayer.All.FirstOrDefault(p => p.IsLocalHuman)?.ResumeTimeout();
         }
         public void ReturnToRoom()
         {

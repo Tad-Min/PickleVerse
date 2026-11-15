@@ -185,7 +185,7 @@ namespace PickleVerse.Multiplayer
         {
             var match = NetworkMatch.Instance;
             return match && match.Started && !match.Paused && !match.Finished &&
-                !match.BetweenGames && !match.BetweenPoints && !match.TimedOut && Connected;
+                !match.BetweenGames && !match.BetweenPoints && Connected;
         }
         void Update()
         {
@@ -216,11 +216,6 @@ namespace PickleVerse.Multiplayer
             if (!IsLocalHuman)
                 return;
             var keyboard = Keyboard.current;
-            if (keyboard != null && CanReadKeyboard() && !InputBlocked())
-            {
-                if (match && match.TimedOut && GameControls.Pressed(GameAction.Continue))
-                    ResumeTimeoutServerRpc();
-            }
             if (!CanMove() || InputBlocked())
             {
                 shotInput = new LocalShotInput();
@@ -405,19 +400,6 @@ namespace PickleVerse.Multiplayer
             serverRun = run;
             Actor.ObserveMovement(serverAxes * -CourtEnd, run);
             NetworkMatch.Instance?.TrySwing(this, new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt });
-        }
-        void TimeoutFrom()
-        {
-            NetworkMatch.Instance?.RequestTimeout(this);
-        }
-        void ResumeTimeoutFrom()
-        {
-            NetworkMatch.Instance?.ResumeTimeout(this);
-        }
-        public void ResumeTimeout()
-        {
-            if (IsOwner && IsSpawned)
-                ResumeTimeoutServerRpc();
         }
         void Reconcile(PlayerFrame old, PlayerFrame frame)
         {

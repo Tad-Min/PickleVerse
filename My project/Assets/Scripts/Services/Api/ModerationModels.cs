@@ -18,7 +18,8 @@ namespace PickleVerse.Services.Api
     public enum DedicatedTicketState
     {
         [EnumMember(Value = "queued")] Queued, [EnumMember(Value = "starting")] Starting, [EnumMember(Value = "ready")] Ready,
-        [EnumMember(Value = "finishing")] Finishing, [EnumMember(Value = "pending")] Pending, [EnumMember(Value = "busy")] Busy
+        [EnumMember(Value = "finishing")] Finishing, [EnumMember(Value = "pending")] Pending, [EnumMember(Value = "busy")] Busy,
+        [EnumMember(Value = "reserved")] Reserved
     }
     [JsonConverter(typeof(WireStatusConverter))]
     public enum RankedSearchState

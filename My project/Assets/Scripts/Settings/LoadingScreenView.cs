@@ -43,6 +43,7 @@ namespace PickleVerse.Settings
             picture = pictures.Length > 0 ? nextPicture++ % pictures.Length : 0;
             currentMotion = artwork.GetComponent<CinematicArtwork>();
             nextMotion = nextArtwork.GetComponent<CinematicArtwork>();
+            KeepArtworkBehindContent();
             preparingNext = false;
             fadeAge = -1;
             if (nextMotion) nextMotion.Stop();
@@ -96,10 +97,25 @@ namespace PickleVerse.Settings
                     caption.text = pictureCaptions[picture];
             }
         }
+        void KeepArtworkBehindContent()
+        {
+            var parent = artwork.rectTransform.parent;
+            if (parent == nextArtwork.rectTransform.parent && parent.name == "LoadingArtwork")
+                return;
+            var layer = new GameObject("LoadingArtwork", typeof(RectTransform)).GetComponent<RectTransform>();
+            layer.SetParent(parent, false);
+            layer.anchorMin = Vector2.zero;
+            layer.anchorMax = Vector2.one;
+            layer.offsetMin = layer.offsetMax = Vector2.zero;
+            layer.SetAsFirstSibling();
+            artwork.rectTransform.SetParent(layer, false);
+            nextArtwork.rectTransform.SetParent(layer, false);
+        }
         void PlayArtwork(RawImage image, CinematicArtwork motion, int index)
         {
             var poster = pictures.Length > index ? pictures[index] : null;
-            if (motion) motion.Play(movies != null && movies.Length > index ? movies[index] : null, poster);
+            bool rendering = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null;
+            if (motion) motion.Play(rendering && movies != null && movies.Length > index ? movies[index] : null, poster);
             else image.texture = poster;
             Crop(image);
         }

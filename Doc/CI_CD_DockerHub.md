@@ -37,7 +37,7 @@ Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print
 1. Dùng Linux amd64 và Docker Compose có `up --wait-timeout`. Tài khoản SSH cần chạy được Docker và ghi được vào thư mục deploy. Với repository Docker Hub riêng tư, đăng nhập Docker Hub một lần bằng chính tài khoản SSH.
 2. Chuẩn bị `.env` tại thư mục deploy đã chọn, ví dụ `/mnt/data/pickleverse`. Dùng `deploy/linux/runtime.env.example` làm mẫu. CD cài `docker-compose.linux.yml` và `src/Database.sql` ở lần chạy đầu nếu các file chưa có.
 3. Điền các khóa `POSTGRES_PASSWORD`, `PGADMIN_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `JWT_KEY`, `AI_SERVICE_KEY` và `PKV_GAME_SERVER_KEY`. Khi giữ dữ liệu hiện có, dùng thông tin đăng nhập và thư mục dữ liệu của stack cũ. Ba key JWT, AI và Dedicated cần tối thiểu 32 ký tự. Dùng mật khẩu PostgreSQL không chứa dấu nháy kép hoặc xuống dòng để dùng được trong connection string.
-4. Đặt `PKV_DATA_ROOT` trong `.env`. CD tạo các thư mục còn thiếu dưới đường dẫn này và cấp quyền ghi cho UID/GID `10001:10001` khi tạo mới `GameServerData`. Nếu tự chạy Compose lần đầu, chuẩn bị các thư mục và quyền ghi tương ứng.
+4. Đặt `PKV_DATA_ROOT` trong `.env`. CD tạo các thư mục còn thiếu dưới đường dẫn này. Nếu tự chạy Compose lần đầu, chuẩn bị các thư mục theo bảng.
 
 | Dữ liệu | Thư mục host | Điểm mount trong container |
 | --- | --- | --- |
@@ -45,7 +45,9 @@ Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print
 | Redis | `RedisData` | `/data` |
 | S3 | `S3Data` | `/data` |
 | AI artifact | `AiService/models` | `/models`, chỉ đọc |
-| Dedicated | `GameServerData` | `/home/unity/.config/unity3d` |
+| Dedicated | Volume riêng của từng replica | `/home/unity/.config/unity3d` |
+
+Mỗi replica giữ một trận. `PKV_GAME_REPLICAS` vừa đặt số container vừa đặt giới hạn cấp phát của API, tối đa 500. Mặc định giữ một replica đến khi có kết quả tải trên máy triển khai và đã kiểm tra CCU của AppId. `PKV_GAME_UDP_RANGE` mặc định là `3669-4168`. Compose cấp một cổng khác nhau từ dải này cho mỗi replica. `PKV_GAME_CPUS` và `PKV_GAME_MEMORY` áp dụng cho từng replica.
 
 ## HTTPS và sao lưu
 
@@ -63,7 +65,7 @@ docker compose -f docker-compose.linux.yml up -d --wait
 
 Cờ `-f` chọn file Compose, `-d` chạy container nền và `--wait` chờ dịch vụ chạy hoặc đạt kiểm tra sức khỏe. Khi job deploy báo `Development release active`, Compose đã hoàn thành bước này.
 
-PostgreSQL dùng `src/Database.sql` khi khởi tạo thư mục dữ liệu rỗng. Với database đã có dữ liệu, xử lý thay đổi schema theo quy trình database development trước khi deploy bản cần schema mới.
+PostgreSQL dùng `src/Database.sql` khi khởi tạo thư mục dữ liệu rỗng. Với database đã có dữ liệu, CD kiểm tra bảng Social và cột phía sân trước khi đổi image. Với instance development cục bộ đã xác minh, script `scripts/reset-development-database.sh --reset-pickleverse-development` dừng API và các worker, xác minh bản sao lưu, tạo lại database từ `src/Database.sql` và dọn cache riêng của PickleVerse. Sau đó khởi động API, Dedicated và client cùng protocol.
 
 ## Tài liệu tham chiếu
 

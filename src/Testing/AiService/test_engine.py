@@ -19,6 +19,18 @@ def test_shared_contract():
     assert {f["code"] for f in result["findings"]} == {"LateServe", "Kitchen"}
     assert result["recommendations"][0]["id"] == "serve"
 
+def test_match_metrics_follow_game_number_without_attributing_old_shots():
+    shots = [
+        dict(shotId="first", sequence=0, gameNumber=1, kind="Serve", technique="Serve", outcome="LateServe"),
+        dict(shotId="second", sequence=1, gameNumber=2, kind="Serve", technique="Serve", outcome="Contact"),
+        dict(shotId="legacy", sequence=2, kind="Serve", technique="Serve", outcome="LateServe"),
+    ]
+    result = analyze(AnalyzeRequest(sessionId="fixture-match", mode="match", shots=shots))
+    assert [game["gameNumber"] for game in result["gameMetrics"]] == [1, 2]
+    assert any(tag["code"] == "LateServe" and tag["errors"] == 1 for tag in result["gameMetrics"][0]["metrics"])
+    assert all(tag["errors"] == 0 for tag in result["gameMetrics"][1]["metrics"])
+    assert any(tag["code"] == "LateServe" and tag["errors"] == 2 for tag in result["metrics"])
+
 
 def test_signed_timing_and_missing_metrics():
     result = analyze(request([dict(shotId="early", sequence=0, kind="Drive", technique="Drive", assisted=False, timingError=-.1),

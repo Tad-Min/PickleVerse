@@ -16,7 +16,6 @@ namespace PickleVerse.LocalMatch
         public RectTransform safeArea, catalogue, content, briefing, practice, results;
         public TMP_Text heading, overview, lessonTitle, lessonBody, coachText, keys, status, timing, trial, resultTitle, resultBody;
         public Button start, continueButton, retry, next;
-        public GameObject pausePanel;
         public TrainingStars resultStars;
         public MatchAnnouncements announcements;
         int filter = -1;
@@ -133,9 +132,6 @@ namespace PickleVerse.LocalMatch
             retry = Button("Retry", results, "LUYỆN LẠI", () => training.Retry(), .06f, .15f, .475f, .255f, false);
             next = Button("Next", results, "BÀI TIẾP THEO", () => training.NextLesson(), .525f, .15f, .94f, .255f, true);
             Button("Lessons", results, "DANH SÁCH BÀI", () => training.Catalogue(), .06f, .025f, .94f, .115f, false);
-            pausePanel = Block("Pause", safeArea, .36f, .40f, .64f, .60f, glass).gameObject;
-            Text("Paused", pausePanel.transform, "ĐÃ TẠM DỪNG", .05f, .52f, .95f, .94f, 22, White);
-            Button("Resume", pausePanel.transform, "TIẾP TỤC", () => training.SetPaused(false), .08f, .08f, .92f, .43f, true);
         }
         void Update()
         {
@@ -149,8 +145,6 @@ namespace PickleVerse.LocalMatch
                 safeArea.anchorMax = new Vector2(area.xMax / screen.x, area.yMax / screen.y);
                 safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
             }
-            if (pausePanel)
-                pausePanel.SetActive(training && training.Paused && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading);
         }
         void Pages(TrainingPhase phase)
         {

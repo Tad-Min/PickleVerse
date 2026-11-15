@@ -34,7 +34,7 @@ static class StatusEnumChecks
         Wire<ContentPublishStatus>("DRAFT", "PUBLISHED", "UNPUBLISHED");
         Wire<AppealStatus>("PENDING", "CHECKING", "ACCEPTED", "DECLINED");
         Wire<SyncItemStatus>("APPLIED", "DUPLICATE", "REJECTED");
-        Wire<DedicatedAllocationStatus>("queued", "starting", "ready", "finishing", "pending", "busy");
+        Wire<DedicatedAllocationStatus>("reserved", "queued", "starting", "ready", "finishing", "pending", "busy");
         Wire<ProgressResetGroup>("LEARNING", "RANKING", "MISSIONS", "ECONOMY");
         Wire<SessionScope>("game", "appeals");
         Wire<MatchmakingSearchStatus>("SEARCHING","MATCHED","BOT","CANCELLED","TIMEOUT");

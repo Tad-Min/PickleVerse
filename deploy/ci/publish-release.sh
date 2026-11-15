@@ -48,7 +48,7 @@ done
 
 # Test the exact four digests selected for deployment.
 scratch="$RUNNER_TEMP/pkv-smoke"
-mkdir -p "$scratch"/{PostgresData,RedisData,S3Data,AiService/models,GameServerData}
+mkdir -p "$scratch"/{PostgresData,RedisData,S3Data,AiService/models}
 runtime="$RUNNER_TEMP/pkv-smoke.env"
 for component in api ai web server; do
   printf '%s=%s\n' "${keys[$component]}" "${images[$component]}"
@@ -59,16 +59,15 @@ printf '%s\n' 'POSTGRES_PASSWORD=ci-only-postgres' 'PGADMIN_PASSWORD=ci-only-pga
 for key in S3_ACCESS_KEY S3_SECRET_KEY JWT_KEY AI_SERVICE_KEY PKV_GAME_SERVER_KEY; do
   printf '%s=%s\n' "$key" "$(openssl rand -hex 32)" >> "$runtime"
 done
-printf 'PKV_DATA_ROOT=%s\n' "$scratch" >> "$runtime"
+printf 'PKV_DATA_ROOT=%s\nPKV_GAME_REPLICAS=2\n' "$scratch" >> "$runtime"
 compose=(docker compose --project-name pkv-ci --env-file "$runtime" -f docker-compose.linux.yml)
 cleanup() {
   local status=$?
   if ((status != 0)); then "${compose[@]}" ps >&2 || true; fi
-  "${compose[@]}" down --timeout 20 || true
+  "${compose[@]}" down --timeout 20 --volumes || true
 }
 trap cleanup EXIT
 "${compose[@]}" pull --quiet
-"${compose[@]}" run --rm --no-deps -u 0 --entrypoint chown game-server 10001:10001 /home/unity/.config/unity3d
 "${compose[@]}" up --detach --no-build --pull never --wait --wait-timeout 180
 curl --fail --silent --show-error --retry 15 --retry-all-errors http://127.0.0.1:8080/health/ready >/dev/null
 curl --fail --silent --show-error http://127.0.0.1:3000/healthz >/dev/null
@@ -78,11 +77,13 @@ if [[ $status != 401 ]]; then
   exit 1
 fi
 api_protocol=$("${compose[@]}" exec -T backend-api cat /app/appsettings.json | jq -er '.DedicatedServer.Protocol')
-server_protocol=$("${compose[@]}" exec -T game-server cat /app/build-info.json | jq -er '.protocol')
-if [[ $api_protocol != "$PKV_PROTOCOL" || $server_protocol != "$PKV_PROTOCOL" ]]; then
-  echo "Dedicated protocol mismatch: release=$PKV_PROTOCOL API=$api_protocol server=$server_protocol" >&2
-  exit 1
-fi
+for index in 1 2; do
+  server_protocol=$("${compose[@]}" exec -T --index "$index" game-server cat /app/build-info.json | jq -er '.protocol')
+  if [[ $api_protocol != "$PKV_PROTOCOL" || $server_protocol != "$PKV_PROTOCOL" ]]; then
+    echo "Dedicated protocol mismatch: release=$PKV_PROTOCOL API=$api_protocol worker-$index=$server_protocol" >&2
+    exit 1
+  fi
+done
 "${compose[@]}" exec -T ai-service python -c 'import json, urllib.request; data=json.load(urllib.request.urlopen("http://localhost:8000/ready", timeout=5)); assert data["model"] == "unavailable", data'
 manifest=$(jq -cn --arg commit "$GITHUB_SHA" --argjson protocol "$PKV_PROTOCOL" \
   --arg api "${images[api]}" --arg ai "${images[ai]}" --arg web "${images[web]}" --arg server "${images[server]}" \

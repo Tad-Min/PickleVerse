@@ -21,6 +21,7 @@ public partial class PickleVerseContext
         ConfigureFunctional(modelBuilder);
         ConfigureModeration(modelBuilder);
         ConfigureAnalytics(modelBuilder);
+        ConfigureSocial(modelBuilder);
         modelBuilder.Entity<CosmeticPrice>(entity =>
         {
             entity.ToTable("cosmeticprices");

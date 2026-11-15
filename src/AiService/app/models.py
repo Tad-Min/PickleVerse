@@ -14,6 +14,7 @@ class Shot(WireModel):
     outcome: str = Field(default="unknown", max_length=40)
     sequence: int = Field(ge=0)
     rally: int = Field(default=0, ge=0)
+    gameNumber: int | None = Field(default=None, ge=1, le=3)
     time: float = Field(default=0, ge=0)
     timingError: float | None = None
     rawPressedAt: float | None = Field(default=None, ge=0)

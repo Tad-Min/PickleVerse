@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Entities.Exceptions;
 using Entities.Game;
+using Microsoft.Extensions.Logging;
 using PickleVerse.Progression;
 using PickleVerse.Replays;
 using Repositories.Caching;
@@ -13,7 +14,8 @@ using Services.Interfaces;
 namespace Services.Implementations;
 
 public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepository leases, ServerSettings settings,
-    IDedicatedMatchResults game, IHybridCoachingService coaching, IMatchReplayService replays) : IDedicatedServerService
+    IDedicatedMatchResults game, IHybridCoachingService coaching, IMatchReplayService replays,
+    ILogger<DedicatedServerService>? logger = null) : IDedicatedServerService
 {
     public bool Authenticate(string key) => settings.Dedicated.Enabled && key.Length == settings.Dedicated.ServiceKey.Length &&
         CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(key), Encoding.UTF8.GetBytes(settings.Dedicated.ServiceKey));
@@ -30,10 +32,10 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
                 StopOperation = await unit.Game.DedicatedOperation(match.Matchid) });
         return output;
     }
-    async Task<DedicatedAllocation> Guard(string lease)
+    async Task<DedicatedAllocation> Guard(string lease, string worker)
     {
-        var allocation = await leases.Read();
-        if (allocation == null || allocation.LeaseId != lease) throw Error("Phiên máy chủ đã hết hiệu lực.", HttpStatusCode.Gone);
+        var allocation = await leases.ReadLease(lease, worker);
+        if (allocation == null) throw Error("Phiên máy chủ đã hết hiệu lực.", HttpStatusCode.Gone);
         return allocation;
     }
     public async Task<DedicatedTicket> Ticket(Guid player, DedicatedCommand request)
@@ -45,26 +47,16 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
         if (record.Authoritymode != MatchAuthorityMode.Dedicated) throw Error("Không thể chuyển máy chủ khi trận đang diễn ra.");
         if (record.Status != MatchStatus.Playing) throw Error("Trận chưa sẵn sàng hoặc đã kết thúc.");
         if (!await unit.Game.CanAdmitDedicated(match, player)) throw Error("Bạn không còn quyền tham gia trận này.", HttpStatusCode.Forbidden);
-        var allocation = await leases.Read();
-        if (allocation?.MatchId != match.ToString("N"))
+        var allocation = await leases.ReadMatch(match.ToString("N"));
+        if (allocation == null)
         {
-            if (record.Serverheartbeatat.HasValue)
-            {
-                await game.InterruptDedicated(match);
-                throw Error("Máy chủ mất phiên thi đấu; trận đã gián đoạn.", HttpStatusCode.Gone);
-            }
-            if (!await leases.HasWorker()) throw Error("Máy chủ thi đấu chưa sẵn sàng.", HttpStatusCode.ServiceUnavailable);
-            allocation = await leases.Allocate(new() { MatchId = match.ToString("N"), LeaseId = Guid.NewGuid().ToString("N"),
-                Session = "ds-" + match.ToString("N"), Region = record.Region ?? "asia", Roster = Mapping.RelationalMatch.Roster(record),
-                Protocol = settings.Dedicated.Protocol, TelemetryEnabled = settings.HybridAi.IngestEnabled,
-                ReplayWriter = record.Gamematchplayers.Single(p => p.Isreplaywriter).Playerid.ToString("N") });
-            if (allocation == null)
-            {
-                if (record.Kind == "Custom") throw Error("Máy chủ đang bận. Vui lòng thử lại.");
-                return new() { State = DedicatedAllocationStatus.Busy };
-            }
-            await unit.Game.MarkDedicated(match);
+            await game.InterruptDedicated(match);
+            throw Error("Máy chủ mất phiên thi đấu; trận đã gián đoạn.", HttpStatusCode.Gone);
         }
+        // A client can recover activation if the API stopped after committing PLAYING.
+        if (allocation.State == DedicatedAllocationStatus.Reserved)
+            allocation = await leases.Activate(allocation.MatchId, settings.Dedicated.LeaseSeconds)
+                ?? throw Error("Máy chủ đã mất chỗ giữ cho trận.", HttpStatusCode.Gone);
         var ticket = new DedicatedTicket { State = allocation.State, Session = allocation.Session, Region = allocation.Region, Roster = allocation.Roster };
         if (allocation.State == DedicatedAllocationStatus.Ready)
         {
@@ -73,18 +65,21 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
         }
         return ticket;
     }
-    public async Task<DedicatedAllocation?> Poll(string workerId)
+    public Task<DedicatedAllocation?> Poll(string workerId, int protocol)
     {
         if (!Guid.TryParseExact(workerId, "N", out _)) throw Error("Mã worker không hợp lệ.", HttpStatusCode.BadRequest);
-        await leases.WorkerAlive(); return await leases.Claim(workerId, settings.Dedicated.LeaseSeconds);
+        if (protocol != settings.Dedicated.Protocol) throw Error("Phiên bản máy chủ thi đấu không khớp.");
+        return leases.Poll(workerId, settings.Dedicated.LeaseSeconds);
     }
-    public async Task<DedicatedHeartbeat> Renew(DedicatedCommand request, bool ready)
+    public async Task<DedicatedHeartbeat> Renew(DedicatedCommand request, bool ready, string worker)
     {
-        var allocation = await Guard(request.LeaseId);
-        if (ready) allocation.State = DedicatedAllocationStatus.Ready;
-        if (!await leases.Renew(allocation, settings.Dedicated.LeaseSeconds)) throw Error("Phiên máy chủ đã hết hiệu lực.", HttpStatusCode.Gone);
-        await leases.WorkerAlive();
-        await unit.Game.TouchDedicated(Guid.Parse(allocation.MatchId));
+        var allocation = await Guard(request.LeaseId, worker);
+        if (!await leases.Renew(allocation.LeaseId, worker, ready ? DedicatedAllocationStatus.Ready : null, settings.Dedicated.LeaseSeconds))
+            throw Error("Phiên máy chủ đã hết hiệu lực.", HttpStatusCode.Gone);
+        var match = Guid.Parse(allocation.MatchId);
+        if (ready && allocation.State == DedicatedAllocationStatus.Starting)
+            logger?.LogInformation("Dedicated ready {MatchId} on worker {WorkerId}", match, worker);
+        await unit.Game.TouchDedicated(match);
         if (request.Live != null)
         {
             var live = request.Live;
@@ -101,56 +96,65 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
         await game.InterruptDedicated(op.MatchId);
         return new() { StopOperationId = op.OperationId, Reason = op.Reason };
     }
-    public async Task Acknowledge(DedicatedCommand request)
+    public async Task Acknowledge(DedicatedCommand request, string worker)
     {
-        var allocation = await Guard(request.LeaseId);
+        var allocation = await Guard(request.LeaseId, worker);
         var op = await unit.Game.DedicatedOperation(Guid.Parse(allocation.MatchId));
         if (op == null || op.OperationId != request.OperationId || op.LeaseId != request.LeaseId)
             throw Error("Lệnh vận hành không thuộc phiên máy chủ.", HttpStatusCode.Forbidden);
         await game.InterruptDedicated(op.MatchId);
         await unit.Game.AcknowledgeOperation(op.OperationId, request.LeaseId, DateTime.UtcNow);
     }
-    public async Task AuthorizeAdmission(DedicatedAdmissionCommand request)
+    public async Task AuthorizeAdmission(DedicatedAdmissionCommand request, string worker)
     {
-        var allocation = await Guard(request.LeaseId);
+        var allocation = await Guard(request.LeaseId, worker);
         if (!allocation.Roster.members.Any(m => !m.bot && Guid.TryParse(m.id, out var id) && id == request.PlayerId)
             || !await unit.Game.CanAdmitDedicated(Guid.Parse(allocation.MatchId), request.PlayerId))
             throw Error("Quyền vào trận không còn hiệu lực.", HttpStatusCode.Forbidden);
     }
-    public async Task Complete(DedicatedCompletion request)
+    public async Task Complete(DedicatedCompletion request, string worker)
     {
-        var allocation = await Guard(request.LeaseId);
+        var allocation = await Guard(request.LeaseId, worker);
         await game.CompleteDedicated(Guid.Parse(allocation.MatchId), request.Results);
-        allocation.State = DedicatedAllocationStatus.Finishing;
-        await leases.Renew(allocation, settings.Dedicated.LeaseSeconds);
+        await leases.Renew(allocation.LeaseId, worker, DedicatedAllocationStatus.Finishing, settings.Dedicated.LeaseSeconds);
     }
-    public Task Release(DedicatedCommand request) => leases.Release(request.LeaseId);
+    public async Task Release(DedicatedCommand request, string worker)
+    {
+        var allocation = await leases.Release(request.LeaseId, worker);
+        if (allocation != null)
+            await game.InterruptDedicated(Guid.Parse(allocation.MatchId));
+    }
     public async Task InterruptExpired()
     {
         foreach (var match in await unit.Game.PendingStops()) await game.InterruptDedicated(match);
-        foreach (var match in await unit.Game.ExpiredDedicated(DateTime.UtcNow.AddSeconds(-settings.Dedicated.LeaseSeconds)))
-            await game.InterruptDedicated(match);
+        var now = DateTime.UtcNow;
+        foreach (var match in await unit.Game.ExpiredDedicated(now.AddSeconds(-settings.Dedicated.LeaseSeconds)))
+            if (await leases.ReadMatch(match.ToString("N")) == null)
+                await game.InterruptDedicated(match);
+        foreach (var match in await unit.Game.ExpiredDedicatedPreparations(now.AddSeconds(-Math.Max(30, settings.Matchmaking.ReadyConfirmationSeconds + 15))))
+            if (await leases.ReadMatch(match.ToString("N")) == null && !await leases.IsWaiting(match.ToString("N")))
+                await game.InterruptDedicated(match);
     }
-    public async Task<TelemetryReceipt> Telemetry(string lease, TelemetryBatch batch)
+    public async Task<TelemetryReceipt> Telemetry(string lease, TelemetryBatch batch, string worker)
     {
-        var allocation = await Guard(lease);
+        var allocation = await Guard(lease, worker);
         if (batch.sessionId != allocation.MatchId || batch.sessionType != "match" || !Guid.TryParse(batch.playerId, out var player) ||
             !allocation.Roster.members.Any(m => m.id == batch.playerId && !m.bot)) throw Error("Telemetry không thuộc trận được cấp.", HttpStatusCode.Forbidden);
         return await coaching.Ingest(player, batch, true);
     }
-    async Task<(Guid writer, Guid match)> ReplayAccess(string lease)
+    async Task<(Guid writer, Guid match)> ReplayAccess(string lease, string worker)
     {
-        var allocation = await Guard(lease); var match = Guid.Parse(allocation.MatchId);
+        var allocation = await Guard(lease, worker); var match = Guid.Parse(allocation.MatchId);
         var record = await unit.Game.Match(m => m.Matchid == match) ?? throw Error("Không tìm thấy trận.");
         return (record.Gamematchplayers.Single(p => p.Isreplaywriter).Playerid, match);
     }
-    public async Task<ReplayMetadata> SaveReplay(string lease, ReplayMetadata metadata)
+    public async Task<ReplayMetadata> SaveReplay(string lease, ReplayMetadata metadata, string worker)
     {
-        var access = await ReplayAccess(lease);
+        var access = await ReplayAccess(lease, worker);
         if (metadata.matchId != access.match.ToString("N")) throw Error("Replay không thuộc trận được cấp.", HttpStatusCode.Forbidden);
         metadata.playerId = access.writer.ToString("N");
         return await replays.Save(access.writer, access.match, metadata, true);
     }
-    public async Task<ReplayChunkInfo> UploadReplay(string lease, int index, ReplayChunkUpload chunk)
-    { var access = await ReplayAccess(lease); return await replays.Upload(access.writer, access.match, index, chunk, true); }
+    public async Task<ReplayChunkInfo> UploadReplay(string lease, int index, ReplayChunkUpload chunk, string worker)
+    { var access = await ReplayAccess(lease, worker); return await replays.Upload(access.writer, access.match, index, chunk, true); }
 }

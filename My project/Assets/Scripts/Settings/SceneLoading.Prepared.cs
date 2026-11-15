@@ -136,6 +136,7 @@ namespace PickleVerse.Settings
         async Task WarmPrepared(string scene, Func<bool> remainsReady, double deadline, CancellationToken token)
         {
             var gate = new SceneWarmup();
+            double visualDeadline = Time.realtimeSinceStartupAsDouble + VisualWarmupSeconds;
             int observedFrame = -1;
             double lastRender = 0;
             void Rendered(Camera camera)
@@ -151,7 +152,7 @@ namespace PickleVerse.Settings
             Camera.onPostRender += Rendered;
             try
             {
-                while (!gate.Ready(GameSettings.Current.fps))
+                while (RendersFrames && Time.realtimeSinceStartupAsDouble < visualDeadline && !gate.Ready(GameSettings.Current.fps))
                 {
                     token.ThrowIfCancellationRequested();
                     if (remainsReady != null && !remainsReady()) throw new InvalidOperationException("Session changed during warm-up.");

@@ -27,6 +27,8 @@ public sealed partial class GameRepository
         .Where(m => m.Status == MatchStatus.Playing && m.Kind != "BotPractice" && m.Gamematchplayers.Any(p => p.Playerid == player))
         .OrderBy(m => m.Createdat).Select(m => (Guid?)m.Matchid).FirstOrDefaultAsync();
     public Task<bool> MatchEnded(Guid match) => db.Gamematches.AnyAsync(m => m.Matchid == match && (m.Status == MatchStatus.Finished || m.Status == MatchStatus.Cancelled));
+    public Task<bool> WaitingOnline(Guid match) => db.Gamematches.AnyAsync(m => m.Matchid == match && m.Status == MatchStatus.Preparing);
+    public Task<bool> PlayingOnline(Guid match) => db.Gamematches.AnyAsync(m => m.Matchid == match && m.Status == MatchStatus.Playing);
     public Task<DateTime> MatchCreated(Guid match) => db.Gamematches.Where(m => m.Matchid == match).Select(m => m.Createdat).SingleAsync();
     public Task<bool> InMatch(Guid player, DateTime readyAfter) => db.Gamematches.AnyAsync(m => (m.Status == MatchStatus.Playing || m.Status == MatchStatus.Preparing && m.Createdat >= readyAfter)
         && m.Gamematchplayers.Any(p => p.Playerid == player));

@@ -60,12 +60,6 @@ namespace PickleVerse.Multiplayer
                 }
                 Save(data);
             }
-            if (!data.party && data.phase == "ready" && Runner.SimulationTime >= data.deadline)
-            {
-                data.phase = "rejected";
-                data.notice = "Có người chưa xác nhận tham gia.";
-                Save(data);
-            }
             CheckAllConnected();
         }
         public void PlayerGone(PlayerRef player)
@@ -95,7 +89,6 @@ namespace PickleVerse.Multiplayer
         bool Captain(PlayerRef source) => source == Object.StateAuthority;
         void Send(string kind, object data) => PhotonSession.Find(Runner).Send(Object.StateAuthority, Object, kind, data);
         public void Reserve(string json) => Send("reserve", json);
-        public void Ready(bool accept) => Send("ready", accept);
         public void Command(string kind, string value) => Send("command", new[] { kind, value });
         public void Team(string id, int team) => Send("team", new TeamCommand { id = id, team = team });
         public void Kick(string id) => Send("kick", id);
@@ -118,8 +111,6 @@ namespace PickleVerse.Multiplayer
                 return;
             if (kind == "reserve")
                 ReserveFrom(JsonConvert.DeserializeObject<string>(payload), source);
-            else if (kind == "ready")
-                ReadyFrom(JsonConvert.DeserializeObject<bool>(payload), source);
             else if (kind == "command")
             {
                 var command = JsonConvert.DeserializeObject<string[]>(payload);
@@ -225,9 +216,11 @@ namespace PickleVerse.Multiplayer
             }
             foreach (var member in requested)
             {
-                member.group = group;
                 if (!preserveTeams)
+                {
+                    member.group = group;
                     member.team = team;
+                }
                 member.bot = false;
                 member.ready = false;
                 data.seats.Add(new PhotonSeat { member = member, peer = member.id == identity ? source.RawEncoded : 0 });
@@ -250,7 +243,6 @@ namespace PickleVerse.Multiplayer
         void BeginReady(PhotonRoomData data)
         {
             data.phase = "ready";
-            data.deadline = Runner.SimulationTime + PickleVerse.Progression.ProgressionRuntime.Instance.Snapshot.catalog.matchmaking.readyConfirmationSeconds;
             foreach (var seat in data.seats)
                 seat.decision = seat.member.bot ? ReadyDecision.Accepted : ReadyDecision.Pending;
         }
@@ -280,24 +272,6 @@ namespace PickleVerse.Multiplayer
             }
         }
         void Reject(PlayerRef player, string reason) => PhotonSession.Find(Runner).Send(player, Object, "reject", reason);
-        void ReadyFrom(bool accept, PlayerRef source)
-        {
-            var data = Data;
-            if (data.party || data.phase != "ready")
-                return;
-            var seat = data.seats.FirstOrDefault(s => s.peer == source.RawEncoded);
-            if (seat == null || seat.decision != ReadyDecision.Pending)
-                return;
-            seat.decision = accept ? ReadyDecision.Accepted : ReadyDecision.Declined;
-            if (!accept)
-            {
-                data.phase = "rejected";
-                data.notice = "Có người từ chối tham gia.";
-            }
-            else if (data.seats.All(s => s.decision == ReadyDecision.Accepted))
-                data.phase = "loading";
-            Save(data);
-        }
         void CommandFrom(string kind, string value, PlayerRef source)
         {
             var data = Data;
@@ -333,6 +307,8 @@ namespace PickleVerse.Multiplayer
                 data.phase = "closed";
                 data.notice = "Chủ phòng đã đóng nhóm.";
             }
+            else if (kind == "load" && !data.party && data.phase == "ready")
+                data.phase = "loading";
             else if (kind == "playing" && !data.party && data.phase == "loading")
                 data.phase = "playing";
             else return;

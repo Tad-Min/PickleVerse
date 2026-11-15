@@ -33,6 +33,7 @@ namespace PickleVerse.Progression
     {
         public string shotId = "", kind = "", technique = "", source = "", outcome = "unknown";
         public int sequence, rally;
+        public int? gameNumber;
         public double time;
         // Signed seconds: negative = early, positive = late. Null means unobserved.
         public float? timingError;
@@ -109,6 +110,12 @@ namespace PickleVerse.Progression
         public int opportunities, errors, severity;
     }
     [Serializable]
+    public sealed class GameTechniqueMetrics
+    {
+        public int gameNumber;
+        public List<TechniqueMetric> metrics = new List<TechniqueMetric>();
+    }
+    [Serializable]
     public sealed class DrillRecommendation
     {
         public string id = "", title = "", reason = "";
@@ -126,6 +133,7 @@ namespace PickleVerse.Progression
         public string sessionId = "", ruleVersion = "rules-v1", summary = "";
         public List<CoachingFinding> findings = new List<CoachingFinding>();
         public List<TechniqueMetric> metrics = new List<TechniqueMetric>();
+        public List<GameTechniqueMetrics> gameMetrics = new List<GameTechniqueMetrics>();
         public List<DrillRecommendation> recommendations = new List<DrillRecommendation>();
         public TierEstimate tier = new TierEstimate();
     }

@@ -27,8 +27,14 @@ namespace PickleVerse.Multiplayer
         }
         Allocation job;
         [Serializable] sealed class HeartbeatReply { public string stopOperationId, reason; }
+        sealed class ServerApiFailure : IOException
+        {
+            public readonly long Status;
+            public ServerApiFailure(long status) : base("Server API returned HTTP " + status) => Status = status;
+            public bool IsTransient => Status == 0 || Status >= 500;
+        }
         string serviceKey, url, results, abandonedLease;
-        bool stopping, fenced, handlingStop;
+        bool stopping, fenced, handlingStop, measureTicks;
         PhotonSession session;
         readonly Dictionary<string, CoachingSession> telemetry = new Dictionary<string, CoachingSession>();
         readonly HashSet<string> usedNonces = new HashSet<string>();
@@ -44,6 +50,7 @@ namespace PickleVerse.Multiplayer
             Instance = this; DontDestroyOnLoad(gameObject); Application.runInBackground = true; Application.targetFrameRate = 60;
             serviceKey = Environment.GetEnvironmentVariable("PKV_GAME_SERVER_KEY") ?? "";
             url = (Environment.GetEnvironmentVariable("PKV_BACKEND_URL") ?? "http://backend-api:8080").TrimEnd('/');
+            measureTicks = Environment.GetEnvironmentVariable("PKV_SAMPLE_TICKS") == "1";
             Replays = new LocalReplayRepository(Path.Combine(Application.persistentDataPath, "server-replays"));
             if (serviceKey.Length < 32) { Debug.LogError("[Dedicated] Missing PKV_GAME_SERVER_KEY."); Application.Quit(78); return; }
             _ = Loop();
@@ -86,10 +93,30 @@ namespace PickleVerse.Multiplayer
                         return valid;
                     });
                     if (fenced) throw new IOException("Allocation interrupted during startup.");
-                    await HandleOperation(await Post<HeartbeatReply>("ready", Command()));
-                    Debug.Log("[Dedicated] Session ready: " + job.matchId);
+                    await HandleOperation(await Retry(() => Post<HeartbeatReply>("ready", Command())));
+                    Debug.Log($"[Dedicated] Session ready match={job.matchId} worker={workerId} players={job.roster.HumanCount}");
+                    double courtUntil = Time.realtimeSinceStartupAsDouble + 115;
                     double until = Time.realtimeSinceStartupAsDouble + 7200;
-                    while (!stopping && !fenced && results == null && Time.realtimeSinceStartupAsDouble < until) await Task.Delay(100);
+                    double lastSample = 0;
+                    int lastTick = 0;
+                    while (!stopping && !fenced && results == null && Time.realtimeSinceStartupAsDouble < until)
+                    {
+                        var match = NetworkMatch.Instance;
+                        double now = Time.realtimeSinceStartupAsDouble;
+                        bool inCourt = match && match.Runner == session.Runner && match.Started;
+                        if (now >= courtUntil && !inCourt)
+                            throw new TimeoutException("Court did not start before its admission deadline.");
+                        if (measureTicks && inCourt && now - lastSample >= 15)
+                        {
+                            int tick = session.Runner.Tick.Raw;
+                            int advanced = tick - lastTick;
+                            if (lastSample > 0)
+                                Debug.Log($"[Dedicated] Tick sample match={job.matchId} worker={workerId} ticks={advanced} seconds={now - lastSample:F3}");
+                            lastSample = now;
+                            lastTick = tick;
+                        }
+                        await Task.Delay(100);
+                    }
                     if (fenced || results == null) throw new InvalidOperationException("Lease lost or session timed out.");
                     await Task.Delay(500);
                     var recorder = NetworkMatch.Instance?.GetComponent<ReplayRecorder>();
@@ -104,19 +131,20 @@ namespace PickleVerse.Multiplayer
                     double deliveryDeadline = Time.realtimeSinceStartupAsDouble + 5;
                     while (NetworkMatch.Instance && !NetworkMatch.Instance.ResultsDelivered && Time.realtimeSinceStartupAsDouble < deliveryDeadline && !fenced)
                         await Task.Delay(100);
-                    await Post<JToken>("release", Command());
-                    Debug.Log("[Dedicated] Session persisted and released: " + job.matchId);
+                    Debug.Log($"[Dedicated] Session persisted match={job.matchId} worker={workerId}");
                 }
                 catch (Exception error)
                 {
                     // Never start a failed allocation again with empty simulation state or reusable tickets.
                     if (job != null) abandonedLease = job.leaseId;
-                    Debug.LogWarning("[Dedicated] Session stopped (" + error.GetType().Name + "). Backend lease monitor owns interruption.");
+                    Debug.LogWarning($"[Dedicated] Session stopped match={job?.matchId} worker={workerId}: {error.Message}");
                 }
                 finally
                 {
                     fenced = true;
                     if (session != null) { try { await session.LeaveAsync(); } catch { } session = null; }
+                    if (job != null)
+                        try { await Post<JToken>("release", Command()); } catch (IOException) { }
                     job = null; results = null;
                 }
                 await Task.Delay(1000);
@@ -136,7 +164,7 @@ namespace PickleVerse.Multiplayer
                 if (fenced || job?.leaseId != lease || !runner || !runner.ActivePlayers.Contains(peer)) return;
                 var app = MultiplayerApp.Instance;
                 app.RegisterDedicatedPeer(peer, player);
-                Debug.Log("[Dedicated] Roster peer admitted (" + app.ClientIdentities.Count + "/" + job.roster.HumanCount + ").");
+                Debug.Log($"[Dedicated] Admitted match={job.matchId} worker={workerId} peers={app.ClientIdentities.Count}/{job.roster.HumanCount}");
             }
             catch (Exception error)
             {
@@ -148,15 +176,34 @@ namespace PickleVerse.Multiplayer
         object Command() => new { LeaseId = job.leaseId, MatchId = job.matchId };
         async Task Heartbeat(string lease)
         {
-            try
+            const double renewalWindowSeconds = 24;
+            double renewBy = Time.realtimeSinceStartupAsDouble + renewalWindowSeconds;
+            while (!stopping && !fenced && job?.leaseId == lease)
             {
-                while (!stopping && !fenced && job?.leaseId == lease)
+                try
                 {
-                    var reply = await Post<HeartbeatReply>("heartbeat", new { LeaseId = lease, Live = NetworkMatch.Instance?.LiveStatus() });
-                    await HandleOperation(reply); await MarkHealthy(); await Task.Delay(5000);
+                    var reply = await Post<HeartbeatReply>("heartbeat", new { LeaseId = lease, Live = NetworkMatch.Instance?.LiveStatus() }, timeout: 4);
+                    if (job?.leaseId != lease || fenced) return;
+                    renewBy = Time.realtimeSinceStartupAsDouble + renewalWindowSeconds;
+                    await HandleOperation(reply);
+                    await MarkHealthy();
+                    await Task.Delay(5000);
+                }
+                catch (ServerApiFailure error) when (error.IsTransient && Time.realtimeSinceStartupAsDouble < renewBy)
+                {
+                    await Task.Delay(1000);
+                }
+                catch (Exception error)
+                {
+                    if (job?.leaseId == lease)
+                    {
+                        Debug.LogWarning($"[Dedicated] Heartbeat lost match={job.matchId} worker={workerId}: {error.Message}");
+                        fenced = true;
+                        if (session?.Runner) await session.Runner.Shutdown();
+                    }
+                    return;
                 }
             }
-            catch { if (job?.leaseId == lease) { fenced = true; if (session?.Runner) await session.Runner.Shutdown(); } }
         }
         async Task HandleOperation(HeartbeatReply reply)
         {
@@ -166,7 +213,6 @@ namespace PickleVerse.Multiplayer
             await Retry(() => Post<JToken>("operations/ack", new { LeaseId = job.leaseId, OperationId = reply.stopOperationId }));
             Debug.Log("[Dedicated] Stop operation acknowledged: " + reply.stopOperationId);
             await Task.Delay(1500);
-            await Post<JToken>("release", Command());
             fenced = true;
         }
         static Task MarkHealthy() => Task.Run(() =>
@@ -203,16 +249,17 @@ namespace PickleVerse.Multiplayer
                 catch when (attempt < 4 && !fenced) { await Task.Delay(1000 * (attempt + 1)); }
             }
         }
-        async Task<T> Post<T>(string route, object body)
+        async Task<T> Post<T>(string route, object body, int timeout = 15)
         {
             using (var request = new UnityWebRequest(url + "/api/Server/" + route, "POST"))
             {
                 request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(body)));
-                request.downloadHandler = new DownloadHandlerBuffer(); request.timeout = 15;
+                request.downloadHandler = new DownloadHandlerBuffer(); request.timeout = timeout;
                 request.SetRequestHeader("Content-Type", "application/json"); request.SetRequestHeader("X-Game-Server-Key", serviceKey);
                 request.SetRequestHeader("X-Game-Worker", workerId);
+                request.SetRequestHeader("X-Game-Protocol", Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString());
                 var pending = request.SendWebRequest(); while (!pending.isDone) await Task.Yield();
-                if (request.result != UnityWebRequest.Result.Success) throw new IOException("Server API returned HTTP " + request.responseCode);
+                if (request.result != UnityWebRequest.Result.Success) throw new ServerApiFailure(request.responseCode);
                 if (string.IsNullOrWhiteSpace(request.downloadHandler.text)) return default;
                 var envelope = JObject.Parse(request.downloadHandler.text); var data = envelope["data"];
                 return data == null || data.Type == JTokenType.Null ? default : data.ToObject<T>();

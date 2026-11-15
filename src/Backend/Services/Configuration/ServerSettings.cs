@@ -34,6 +34,8 @@ public sealed class ServerSettings
         Dedicated = configuration.GetSection("DedicatedServer").Get<Entities.Configuration.DedicatedServerSettings>() ?? new();
         if (Dedicated.Enabled && (Dedicated.ServiceKey.Length < 32 || Dedicated.LeaseSeconds < 30 || Dedicated.LeaseSeconds > 120))
             throw new InvalidOperationException("DedicatedServer requires a service key of at least 32 characters and a 30–120 second lease.");
+        if (Dedicated.MaxConcurrentMatches is < 1 or > Entities.Configuration.DedicatedServerSettings.MaximumConcurrentMatches)
+            throw new InvalidOperationException("DedicatedServer:MaxConcurrentMatches must be between 1 and 500.");
         int Number(string key, int minimum, int maximum)
         {
             if (!int.TryParse(configuration[key], out int value) || value < minimum || value > maximum)

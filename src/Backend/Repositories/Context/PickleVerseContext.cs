@@ -342,6 +342,7 @@ public partial class PickleVerseContext : DbContext
             entity.Property(e => e.Gamenumber).HasColumnName("gamenumber");
             entity.Property(e => e.Teamascore).HasColumnName("teamascore");
             entity.Property(e => e.Teambscore).HasColumnName("teambscore");
+            entity.Property(e => e.Teamastartside).HasColumnName("teamastartside");
             entity.Property(e => e.Completed).HasColumnName("completed");
             entity.HasOne(e => e.Match).WithMany(e => e.Matchscores).HasForeignKey(e => e.Matchid).HasConstraintName("matchscore_matchid_fkey");
         });

@@ -75,7 +75,7 @@ public sealed partial class OnlineGameService
             throw Conflict("Trận hiện tại đã thay đổi.");
         if (input.kind != result.kind || input.playerId != s.Player.id || !Enum.IsDefined(input.outcome)
             || input.gamesWon < 0 || input.gamesWon > 2 || input.gamesLost < 0 || input.gamesLost > 2
-            || input.scores == null || input.scores.Count > 3 || input.scores.Any(g => g == null || g.own < 0 || g.opponent < 0 || g.own > 100000 || g.opponent > 100000)
+            || input.scores == null || input.scores.Count > 3 || input.scores.Any(g => g == null || g.own < 0 || g.opponent < 0 || g.own > 100000 || g.opponent > 100000 || g.teamAStartSide is not (null or -1 or 1))
             || input.points < 0 || input.points > 300000 || input.validReturns < 0 || input.validReturns > 1000000 || input.validServes < 0 || input.validServes > 1000000)
             throw Bad("Kết quả trận không hợp lệ.");
         if (!input.localForfeit && input.outcome != MatchOutcome.Interrupted)
@@ -121,7 +121,7 @@ public sealed partial class OnlineGameService
             outcome=result.outcome==MatchOutcome.Interrupted?MatchOutcome.Interrupted:result.outcome==MatchOutcome.Won?MatchOutcome.Lost:MatchOutcome.Won,
             gamesWon=result.gamesLost,gamesLost=result.gamesWon,reason=result.reason,
             opponents=[new(){id=result.playerId,name=s.Player.playerName,elo=result.ownElo}],
-            scores=result.scores.Select(g=>new GameScore(g.opponent,g.own,g.completed)).ToList()};
+            scores=result.scores.Select(g=>new GameScore(g.opponent,g.own,g.completed,g.teamAStartSide)).ToList()};
         bot.points=bot.scores.Sum(g=>g.own);
         await FinalizeParticipant(Guid.Parse(bot.playerId),bot);
         await FinalizeMatch(Guid.Parse(result.id));

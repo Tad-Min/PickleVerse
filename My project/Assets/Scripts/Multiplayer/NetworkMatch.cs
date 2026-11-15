@@ -51,15 +51,9 @@ namespace PickleVerse.Multiplayer
         [Networked]
         public int Bounces { get; set; }
         [Networked]
-        public int TimeoutTeam { get; set; } = -1;
-        [Networked]
         public int WinningTeam { get; set; } = -1;
         [Networked]
         public float ServeElapsed { get; set; }
-        [Networked]
-        public float TimeoutRemaining { get; set; }
-        [Networked]
-        public bool TimedOut { get; set; }
         [Networked]
         public bool EndsSwapped { get; set; }
         [Networked]
@@ -104,7 +98,6 @@ namespace PickleVerse.Multiplayer
         bool releasedServe;
         ushort ballMotionEpoch;
         double nextGameDeadline;
-        double timeoutDeadline;
         int countdownSecond = -1;
         public int PlayerEnd(int team) => (team == 0 ? -1 : 1) * (EndsSwapped ? -1 : 1);
         public void RequestNextGame()
@@ -117,6 +110,7 @@ namespace PickleVerse.Multiplayer
             if (!BetweenGames || Finished)
                 return;
             Rules.NextGame();
+            GameStartSide = Rules.ends[0];
             EndsSwapped = Rules.ends[0] > 0;
             ReplayEventRpc("EndChange", "");
             BetweenGames = false;
@@ -272,29 +266,42 @@ namespace PickleVerse.Multiplayer
         }
         IEnumerator ClientCamera()
         {
-            while (NetworkPlayer.All.Count < Roster.Count || NetworkPlayer.All.All(p => !p.IsLocalHuman))
+            NetworkPlayer player;
+            while (NetworkPlayer.All.Count(p => p && p.Runner == Runner) < Roster.Count ||
+                   !(player = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.IsLocalHuman)))
                 yield return null;
-            var player = NetworkPlayer.All.First(p => p.IsLocalHuman);
-            var camera = Camera.main;
-            if (camera)
+            Debug.Log($"[Court] Actors ready match={Roster.matchId} players={Roster.Count}");
+            bool renders = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null;
+            if (renders)
             {
-                var follow = camera.GetComponent<CourtCamera>();
-                if (!follow)
-                    follow = camera.gameObject.AddComponent<CourtCamera>();
-                follow.target = player.transform;
-                follow.SnapToPlayer();
+                var camera = Camera.main;
+                if (camera)
+                {
+                    var follow = camera.GetComponent<CourtCamera>();
+                    if (!follow)
+                        follow = camera.gameObject.AddComponent<CourtCamera>();
+                    follow.target = player.transform;
+                    follow.SnapToPlayer();
+                }
+                if (Environment.GetCommandLineArgs().Contains("-pkvSlowCourt"))
+                    yield return new WaitForSecondsRealtime(3);
+                yield return PickleVerse.Settings.SceneLoading.PrepareNetworkCourt(IsCourtSceneSynchronized);
             }
-            if (Environment.GetCommandLineArgs().Contains("-pkvSlowCourt"))
-                yield return new WaitForSecondsRealtime(3);
-            yield return PickleVerse.Settings.SceneLoading.PrepareNetworkCourt(() => MultiplayerApp.Instance && MultiplayerApp.Instance.CourtSceneSynchronized);
-            if (!IsSpawned || !PickleVerse.Settings.SceneLoading.IsExternal)
+            else
+            {
+                while (IsSpawned && !IsCourtSceneSynchronized())
+                    yield return null;
+                PickleVerse.Settings.SceneLoading.CancelExternal();
+            }
+            if (!IsSpawned || renders && !PickleVerse.Settings.SceneLoading.LocalRenderReady)
                 yield break;
+            Debug.Log($"[Court] Local court ready match={Roster.matchId}");
             CourtReadyRpc();
             while (IsSpawned && !CourtPrepared && !Started)
                 yield return null;
-            if (IsSpawned)
+            if (IsSpawned && renders)
                 PickleVerse.Settings.SceneLoading.CompleteExternal();
-            while (IsSpawned && PickleVerse.Settings.SceneLoading.IsBlocking)
+            while (IsSpawned && renders && PickleVerse.Settings.SceneLoading.IsBlocking)
                 yield return null;
             if (!IsSpawned)
                 yield break;
@@ -304,13 +311,20 @@ namespace PickleVerse.Multiplayer
             if (Finished)
                 ResultChanged(false, true);
         }
+        bool IsCourtSceneSynchronized() =>
+            IsSpawned && Runner && Runner.IsRunning && MultiplayerApp.Instance?.Match?.Runner == Runner &&
+            Runner.SceneManager is PhotonSceneManager sceneManager && !sceneManager.IsBusy &&
+            sceneManager.IsRunnerScene(gameObject.scene) && gameObject.scene.isLoaded;
         void CourtReadyFrom(PlayerRef source)
         {
             if (Started || !MultiplayerApp.Instance.ClientIdentities.ContainsKey((ulong)source.RawEncoded))
                 return;
             courtReady.Add((ulong)source.RawEncoded);
             if (courtReady.Count == Roster.HumanCount)
+            {
                 CourtPrepared = true;
+                Debug.Log($"[Court] Ready from every player match={Roster.matchId} players={courtReady.Count}");
+            }
         }
         void CourtRevealedFrom(PlayerRef source)
         {
@@ -331,7 +345,7 @@ namespace PickleVerse.Multiplayer
         }
         public void TrySwing(NetworkPlayer player, ShotIntent intent)
         {
-            if (!IsServer || !Started || Paused || Finished || BetweenGames || TimedOut || !player.Connected || player.Actor.Swinging)
+            if (!IsServer || !Started || Paused || Finished || BetweenGames || !player.Connected || player.Actor.Swinging)
                 return;
             if (intent.attack && intent.crossCourt)
                 return;
@@ -440,16 +454,10 @@ namespace PickleVerse.Multiplayer
                     brain.Step(this, player, dt, out var move, out var run);
                     player.SetAutomatedInput(move, run);
                 }
-                player.Simulate(dt, !Finished && !BetweenGames && !rallyCommitted && !TimedOut);
+                player.Simulate(dt, !Finished && !BetweenGames && !rallyCommitted);
             }
             if (Finished)
                 return;
-            if (TimedOut)
-            {
-                if (Time.realtimeSinceStartupAsDouble >= timeoutDeadline)
-                    EndTimeout();
-                return;
-            }
             if (BetweenGames)
             {
                 if (Time.realtimeSinceStartupAsDouble >= nextGameDeadline)
@@ -652,10 +660,9 @@ namespace PickleVerse.Multiplayer
             GamesB = Rules.games[1];
             LastHitTeam = Rules.lastHitTeam;
             Bounces = Rules.bounceCount;
-            ServeElapsed = Rules.waitingServe && !TimedOut ? Mathf.Clamp((float)(10 - (serveDeadline - Time.realtimeSinceStartupAsDouble)), 0, 10) : 0;
-            TimeoutRemaining = TimedOut ? Mathf.Max(0, (float)(timeoutDeadline - Time.realtimeSinceStartupAsDouble)) : 0;
+            ServeElapsed = Rules.waitingServe ? Mathf.Clamp((float)(10 - (serveDeadline - Time.realtimeSinceStartupAsDouble)), 0, 10) : 0;
             if (!Finished)
-                Status = TimedOut ? "Tạm dừng • đội " + (TimeoutTeam == 0 ? "A" : "B") + " • tối đa 60 giây" : BetweenGames ? "Hết ván • đổi sân, tự tiếp tục ván kế tiếp." : Rules.live && Time.realtimeSinceStartupAsDouble < shotLabelUntil ? shotLabel : Rules.reason;
+                Status = BetweenGames ? "Hết ván • đổi sân, tự tiếp tục ván kế tiếp." : Rules.live && Time.realtimeSinceStartupAsDouble < shotLabelUntil ? shotLabel : Rules.reason;
         }
         void LateUpdate()
         {
@@ -685,7 +692,7 @@ namespace PickleVerse.Multiplayer
                 p.y = Mathf.Max(Court.BallRadius, p.y);
                 SetBallPosition(p);
             }
-            var server = NetworkPlayer.All.FirstOrDefault(p => p.Team == ServerTeam && p.Index == ServerIndex);
+            var server = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.Team == ServerTeam && p.Index == ServerIndex);
             if (!IsServer && WaitingServe && !frame.released && server && server.Actor)
                 SetBallPosition(server.Actor.HeldBallPosition);
             bool flying = (frame.live || WaitingServe && frame.released) && Body.position.y > Court.BallRadius + .02f && frame.velocity.sqrMagnitude > .04f;
@@ -697,7 +704,7 @@ namespace PickleVerse.Multiplayer
             }
             if (flying && !Paused)
                 Body.transform.Rotate(new Vector3(80, 140, 40) * Time.deltaTime);
-            var local = NetworkPlayer.All.FirstOrDefault(p => p.IsLocalHuman);
+            var local = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.IsLocalHuman);
             if (landingMarker)
             {
                 bool visible = frame.live && local && local.Team != LastHitTeam && !Finished;
@@ -737,32 +744,6 @@ namespace PickleVerse.Multiplayer
             // immediately so a reset/rotation cannot restore a stale Rigidbody pose.
             Body.position = position;
             Body.transform.position = position;
-        }
-        public void RequestTimeout(NetworkPlayer player)
-        {
-            if (!IsServer || !Started || Paused || TimedOut || BetweenGames || BetweenPoints || Finished || !player.Connected || players.Values.Any(p => p.Actor.Swinging) || !Rules.TakeTimeout(player.Team))
-                return;
-            TimedOut = true;
-            TimeoutTeam = player.Team;
-            timeoutDeadline = Time.realtimeSinceStartupAsDouble + 60;
-            foreach (var p in players.Values)
-                p.ResetInput();
-            SfxPlayer.Stop(GameSfx.Countdown);
-            AnnouncementRpc("TẠM DỪNG", "Đội " + (player.Team == 0 ? "A" : "B") + " • tối đa 60 giây • Enter để tiếp tục", (int)AnnouncementTone.Neutral, 1.4f);
-            Publish();
-        }
-        public void ResumeTimeout(NetworkPlayer player)
-        {
-            if (IsServer && TimedOut && !Paused && player.Connected && player.Team == TimeoutTeam)
-                EndTimeout();
-        }
-        void EndTimeout()
-        {
-            TimedOut = false;
-            TimeoutTeam = -1;
-            serveDeadline = Time.realtimeSinceStartupAsDouble + 10;
-            countdownSecond = -1;
-            Publish();
         }
         public void ReserveDisconnected(ulong client)
         {

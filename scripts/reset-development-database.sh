@@ -11,25 +11,28 @@ test "$(docker inspect -f '{{.Config.Image}}' pickleverse_redis)" = redis:7.4-al
 docker inspect pickleverse_api --format '{{range .Config.Env}}{{println .}}{{end}}' |
   awk '/^ConnectionStrings__DefaultConnection=/ {if ($0 ~ /Host=postgres;/ && $0 ~ /Database=pickleverse;/) found=1} /^ASPNETCORE_ENVIRONMENT=Development$/ {dev=1} /^Redis__KeyPrefix=/ && $0 != "Redis__KeyPrefix=pickleverse:" {badPrefix=1} END {exit !(found && dev && !badPrefix)}'
 test "$(docker exec "$project_container" psql -U sa -d "$project_database" -Atqc 'SELECT current_database()')" = "$project_database"
-worker=$(docker ps -aq --filter 'name=^/pickleverse_game_server$')
-if [[ -n $worker ]]; then
-  label='{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}'
-  api_stack=$(docker inspect -f "$label" pickleverse_api)
-  worker_stack=$(docker inspect -f "$label" "$worker")
-  worker_service=$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$worker")
-  if [[ $api_stack == '|' || $worker_stack != "$api_stack" || $worker_service != game-server ]]; then
-    echo 'Dedicated worker không thuộc cùng stack với API. Dừng script reset.' >&2
-    exit 1
-  fi
-fi
+label='{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}'
+api_stack=$(docker inspect -f "$label" pickleverse_api)
+test "$api_stack" != '|'
+test "$(docker inspect -f "$label" "$project_container")" = "$api_stack"
+test "$(docker inspect -f "$label" pickleverse_redis)" = "$api_stack"
+worker_ids=$(docker ps -q --filter "label=com.docker.compose.project=${api_stack%%|*}" --filter 'label=com.docker.compose.service=game-server')
+workers=()
+while IFS= read -r worker; do
+  [[ -n $worker ]] || continue
+  test "$(docker inspect -f "$label" "$worker")" = "$api_stack"
+  workers+=("$worker")
+done <<< "$worker_ids"
 echo 'Đã xác minh container pickleverse_postgres / database pickleverse của development.'
 mkdir -p artifacts/development-backups
 backup="artifacts/development-backups/pickleverse-$(date -u +%Y%m%d-%H%M%S).dump"
-docker exec "$project_container" pg_dump -U sa -Fc "$project_database" > "$backup"
-if [[ -n $worker ]]; then
-  docker stop "$worker"
+if ((${#workers[@]})); then
+  docker stop "${workers[@]}"
 fi
 docker stop pickleverse_api
+docker exec "$project_container" pg_dump -U sa -Fc "$project_database" > "$backup"
+test -s "$backup"
+docker exec -i "$project_container" pg_restore --exit-on-error --file=/dev/null < "$backup"
 docker cp src/Database.sql "$project_container:/tmp/pickleverse-init.sql"
 docker exec "$project_container" psql -U sa -d postgres -v ON_ERROR_STOP=1 -c 'DROP DATABASE pickleverse WITH (FORCE);'
 docker exec "$project_container" psql -U sa -d postgres -v ON_ERROR_STOP=1 -c 'CREATE DATABASE pickleverse OWNER sa;'

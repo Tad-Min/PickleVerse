@@ -1,6 +1,8 @@
 using NUnit.Framework;
+using System.Linq;
 using PickleVerse.Settings;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace PickleVerse.LocalMatch.Tests
 {
@@ -11,9 +13,21 @@ namespace PickleVerse.LocalMatch.Tests
             var d=SettingsData.Defaults();d.version=1;
             d.touchPositions[0]=new Vector2(.08f,.15f);d.touchPositions[1]=new Vector2(.944f,.085f);
             d.touchPositions[2]=new Vector2(.858f,.085f);d.touchPositions[3]=new Vector2(.772f,.085f);
-            d.Validate();Assert.AreEqual(3,d.version);
+            d.Validate();Assert.AreEqual(SettingsData.Defaults().version,d.version);
             for(int i=0;i<4;i++)Assert.AreEqual(SettingsData.Defaults().touchPositions[i],d.touchPositions[i]);
             var positions=(Vector2[])d.touchPositions.Clone();d.Validate();CollectionAssert.AreEqual(positions,d.touchPositions);
+        }
+        [Test] public void LegacyBindingsKeepHelpAndContinueWhenTimeoutIsRemoved()
+        {
+            var data = SettingsData.Defaults();
+            data.version = 3;
+            data.keys = data.keys.Take((int)GameAction.Help).Append((int)Key.T)
+                .Concat(new[] { (int)Key.H, (int)Key.Space, (int)Key.Escape }).ToArray();
+            data.Validate();
+            Assert.AreEqual(Key.H, data.KeyFor(GameAction.Help));
+            Assert.AreEqual(Key.Space, data.KeyFor(GameAction.Continue));
+            Assert.AreEqual(Key.Escape, data.KeyFor(GameAction.Settings));
+            Assert.AreEqual(Key.Backspace, data.KeyFor(GameAction.CancelShot));
         }
         [Test] public void MissingOldPositionsUseNewDefaultsWithoutApplyingOffsetsTwice()
         {

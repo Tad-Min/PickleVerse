@@ -12,6 +12,8 @@ using API.Middlewares;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+// Media playback URLs contain a short-lived grant in the query string.
+builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
@@ -25,6 +27,10 @@ builder.Services.AddSingleton(redisSettings);
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
 
 builder.Services.AddPickleVerseServices(builder.Configuration);
+builder.Services.AddSingleton<ISocialEvents, API.Hubs.SocialEvents>();
+builder.Services.AddSignalR(options => options.MaximumReceiveMessageSize = 8 * 1024)
+    .AddStackExchangeRedis(redisSettings.ConnectionString, options =>
+        options.Configuration.ChannelPrefix = RedisChannel.Literal(redisSettings.KeyPrefix + "social-hub"));
 
 // 1. Add Controllers
 builder.Services.AddControllers(options => options.Filters.Add<ApiResponseFilter>()).AddJsonOptions(options =>
@@ -139,6 +145,7 @@ app.UseMiddleware<RestrictedSessionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<API.Hubs.SocialHub>("/api/Game/social/hub", options => options.CloseOnAuthenticationExpiration = true);
 app.MapGet("/health/ready", async (IReadinessService readiness, CancellationToken ct) =>
     await readiness.Check(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
 

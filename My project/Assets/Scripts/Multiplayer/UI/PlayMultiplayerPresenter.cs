@@ -256,7 +256,7 @@ namespace PickleVerse.Multiplayer.UI
             }
             play.GetComponentInChildren<TMP_Text>(true).text = RoomViewModel.PlayLabel(state);
             play.interactable = !returningToModes && !modal && (state.Searching || (idle && (state.Custom ? RoomViewModel.CanStartCustom(state) : state.IsCaptain)));
-            matchTime.gameObject.SetActive(state.Searching);
+            matchTime.gameObject.SetActive(state.Searching && (MultiplayerApp.Instance == null || MultiplayerApp.Instance.SearchClockVisible));
             matchTime.text = state.Elapsed;
             var members = state.Members();
             if (roomHint)

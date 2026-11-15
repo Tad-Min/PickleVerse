@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Xml.Linq;
+using API.Controllers;
 using API.Filters;
 using API.Middlewares;
 using API.OpenApi;
@@ -41,6 +42,9 @@ static class ApiContractChecks
         Check(!serviceReferences.Any(a => a.Name!.StartsWith("Microsoft.EntityFrameworkCore") || a.Name.StartsWith("Npgsql") || a.Name == "StackExchange.Redis"), "service assembly has no direct EF, PostgreSQL or Redis SDK dependency");
         Check(!typeof(API.Controllers.GameController).Assembly.GetReferencedAssemblies().Any(a => a.Name == "Repositories"), "API assembly does not use repository types");
         Check(new AppException("database failed", new Exception()).StatusCode == HttpStatusCode.InternalServerError, "unexpected service failures retain HTTP 500");
+        var social = typeof(SocialContentController);
+        foreach (var action in new[] { nameof(SocialContentController.Read), nameof(SocialContentController.Delete), nameof(SocialContentController.DeleteComment) })
+            Check(social.GetMethod(action)?.ReturnType == typeof(Task<ApiResponse>), $"Social {action} returns an acknowledgement accepted by Unity");
 
         var builder = WebApplication.CreateBuilder();
         builder.Logging.ClearProviders();

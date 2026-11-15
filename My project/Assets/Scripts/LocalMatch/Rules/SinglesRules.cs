@@ -41,7 +41,7 @@ namespace PickleVerse.Rules
         public bool Live { get; private set; }
         public Fault LastFault { get; private set; }
         public int FaultPlayer { get; private set; } = -1;
-        public readonly int[] Points = new int[2], Games = new int[2], Timeouts = { 2, 2 };
+        public readonly int[] Points = new int[2], Games = new int[2];
         public int GameNumber => Games[0] + Games[1] + (GameFinished ? 0 : 1);
         public int Winner { get; private set; } = -1;
         public bool GameFinished { get; private set; }
@@ -161,18 +161,10 @@ namespace PickleVerse.Rules
             if (!GameFinished || Winner >= 0)
                 return;
             Points[0] = Points[1] = 0;
-            Timeouts[0] = Timeouts[1] = 2;
             gameFirstServer = 1 - gameFirstServer;
             Server = gameFirstServer;
             GameFinished = false;
             PrepareServe(serverEnd);
-        }
-        public bool TakeTimeout(int player)
-        {
-            if (Live || Stroke != 0 || Timeouts[player] <= 0 || Winner >= 0)
-                return false;
-            Timeouts[player]--;
-            return true;
         }
     }
 }

@@ -9,6 +9,8 @@ namespace PickleVerse.Settings
     // No network scene is ever loaded through Unity's local SceneManager here.
     public sealed partial class SceneLoading : MonoBehaviour
     {
+        const double VisualWarmupSeconds = 8;
+        static bool RendersFrames => SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null;
         static SceneLoading instance;
         LoadingScreenView view; AsyncOperation tracked; Coroutine flow;
         bool blocking, external, finishing; string destination; float progress;
@@ -145,6 +147,8 @@ namespace PickleVerse.Settings
         }
         public static void BeginExternal(string scene)
         {
+            if (!RendersFrames)
+                return;
             if (IsBlocking && instance.external && instance.destination == scene)
                 return;
             if (IsBlocking)
@@ -160,6 +164,8 @@ namespace PickleVerse.Settings
         }
         public static IEnumerator PrepareNetworkCourt(Func<bool> synchronized)
         {
+            while (IsBlocking && !IsExternal)
+                yield return null;
             if (!IsExternal)
                 BeginExternal("MultiplayerCourt");
             while (IsExternal && !instance.view)
@@ -170,6 +176,7 @@ namespace PickleVerse.Settings
         IEnumerator Warm(string scene, Func<bool> synchronized)
         {
             var gate = new SceneWarmup();
+            double warmUntil = Time.realtimeSinceStartupAsDouble + VisualWarmupSeconds;
             Set(.82f, "Đang ổn định hình ảnh");
             yield return null;
             // Keep the destination cameras rendering under the opaque overlay.
@@ -180,9 +187,8 @@ namespace PickleVerse.Settings
                 gate.Observe(Time.unscaledDeltaTime);
                 bool networkReady = synchronized == null || synchronized();
                 Set(.82f + .14f * gate.Progress, networkReady ? "Đang ổn định hình ảnh" : "Đang đồng bộ người chơi");
-                if (gate.Ready(GameSettings.Current.fps) && networkReady)
+                if (networkReady && (!RendersFrames || gate.Ready(GameSettings.Current.fps) || Time.realtimeSinceStartupAsDouble >= warmUntil))
                     break;
-                // Re-evaluate a moving window rather than revealing on a timer.
             }
             if (!blocking)
                 yield break;

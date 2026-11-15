@@ -8,6 +8,7 @@
     "Unity.Behavior.SerializableGUID",
     "Unity.Netcode.Runtime",
     "Unity.ugui",
+    "Unity.InputSystem",
     "Unity.TextMeshPro",
     "PickleVerse.Settings"
   ],

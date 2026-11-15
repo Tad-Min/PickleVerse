@@ -30,6 +30,11 @@ if (args.Contains("--check-api-contract"))
 var connection = Environment.GetEnvironmentVariable("PKV_TEST_POSTGRES")
     ?? throw new InvalidOperationException("Set PKV_TEST_POSTGRES to a dev PostgreSQL connection string.");
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../../"));
+if (args.Length == 3 && args[0] == "--provision-photon-fixtures")
+{
+    await UnityFixture.ProvisionPhotonAsync(connection, root, args[1], int.Parse(args[2]));
+    return;
+}
 if (args.Contains("--provision-local-coaching-pilot"))
 {
     await UnityFixture.ProvisionCoachingPilotAsync(connection, root);
@@ -165,6 +170,12 @@ try
     {
         await DedicatedChecks.Run(options, Check);
         Console.WriteLine($"SUCCESS: {checks} dedicated backend/lease checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-social-content"))
+    {
+        await SocialContentChecks.Run(options, Check);
+        Console.WriteLine($"Passed {checks} social content checks.");
         return;
     }
     if (args.Contains("--check-normalized-participants"))
@@ -439,6 +450,32 @@ sealed class TestClock : TimeProvider
 
 static class UnityFixture
 {
+    public static async Task ProvisionPhotonAsync(string connection, string root, string name, int count)
+    {
+        var target = new NpgsqlConnectionStringBuilder(connection);
+        if (target.Host is not ("localhost" or "127.0.0.1") || target.Database != "pickleverse")
+            throw new InvalidOperationException("Photon fixtures require the local PickleVerse development database.");
+        if (string.IsNullOrEmpty(name) || name.Any(character => !char.IsAsciiLetterOrDigit(character) && character != '-')
+            || count < 1)
+            throw new ArgumentException("Provide a fixture directory name and a positive player count.");
+        string directory = Path.Combine(root, "artifacts", name);
+        Directory.CreateDirectory(directory);
+        var options = new DbContextOptionsBuilder<PickleVerseContext>().UseNpgsql(connection).Options;
+        for (int index = 0; index < count; index++)
+        {
+            string path = Path.Combine(directory, $"player-{index}.json");
+            await using var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
+            await using var context = new PickleVerseContext(options);
+            string email = $"unity-smoke-{Guid.NewGuid():N}@example.invalid";
+            var (user, password) = await RegisterVerifiedAsync(context, email);
+            await System.Text.Json.JsonSerializer.SerializeAsync(output, new
+            {
+                email, password, userId = user.Userid, playerName = user.Playerprofile!.Playername
+            });
+        }
+        Console.WriteLine($"Provisioned {count} disposable Photon players in ignored artifacts/{name}.");
+    }
+
     public static async Task CheckDockerSmtpAsync(string connection, string root)
     {
         var settings = File.ReadAllLines(Path.Combine(root, ".env")).Where(l => l.Contains('=') && !l.StartsWith('#'))

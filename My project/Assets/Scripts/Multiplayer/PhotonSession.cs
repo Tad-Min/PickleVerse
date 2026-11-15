@@ -26,7 +26,6 @@ namespace PickleVerse.Multiplayer
         public PlayMode mode;
         public CourtVenue venue;
         public string matchId = "", matchSession = "", phase = "idle", notice = "";
-        public double deadline;
         public int expectedPlayers;
         public MatchRoster assignment;
         public int authority, revision;

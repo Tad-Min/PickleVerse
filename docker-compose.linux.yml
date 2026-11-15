@@ -122,6 +122,7 @@ services:
       DedicatedServer__Enabled: "true"
       DedicatedServer__ServiceKey: ${PKV_GAME_SERVER_KEY:?Set PKV_GAME_SERVER_KEY in the host .env}
       DedicatedServer__LeaseSeconds: "45"
+      DedicatedServer__MaxConcurrentMatches: "${PKV_GAME_REPLICAS:-1}"
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
@@ -133,7 +134,7 @@ services:
 
   game-server:
     image: ${PKV_GAME_SERVER_IMAGE:?Set PKV_GAME_SERVER_IMAGE in .env}
-    container_name: pickleverse_game_server
+    scale: ${PKV_GAME_REPLICAS:-1}
     restart: unless-stopped
     init: true
     stop_grace_period: 20s
@@ -144,12 +145,10 @@ services:
       PKV_GAME_SERVER_KEY: ${PKV_GAME_SERVER_KEY:?Set PKV_GAME_SERVER_KEY in the host .env}
       PKV_GAME_PORT: "3669"
     ports:
-      - "3669:3669/udp"
+      - "${PKV_GAME_UDP_RANGE:-3669-4168}:3669/udp"
     volumes:
-      - type: bind
-        source: ${PKV_DATA_ROOT:?Set PKV_DATA_ROOT in .env}/GameServerData
+      - type: volume
         target: /home/unity/.config/unity3d
-        bind: { create_host_path: false }
     depends_on:
       backend-api: { condition: service_started }
     networks: [pickleverse_network]

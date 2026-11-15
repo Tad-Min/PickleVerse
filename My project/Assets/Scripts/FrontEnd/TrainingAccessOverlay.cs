@@ -110,7 +110,8 @@ namespace PickleVerse.FrontEnd
             newcomer.interactable=experienced.interactable=!busy;
             if (runtime.SyncMessage!=lastMessage) { lastMessage=runtime.SyncMessage;messageUntil=Time.unscaledTime+10; }
             bool visible=playable && runtime.Ready && (runtime.IsOffline || runtime.PendingOperations>0 || runtime.SyncFailures.Count>0 || !string.IsNullOrEmpty(lastMessage)&&Time.unscaledTime<messageUntil);
-            banner.gameObject.SetActive(visible && !SceneLoading.IsBlocking);
+            bool anotherModalIsOpen = FrontEndModalInput.IsOpen && !FrontEndModalInput.IsOwnedBy(this);
+            banner.gameObject.SetActive(visible && !SceneLoading.IsBlocking && !anotherModalIsOpen);
             status.text=runtime.IsOffline?"Đang luyện tập ngoại tuyến · "+runtime.PendingOperations+" mục chờ đồng bộ":runtime.PendingOperations>0?runtime.PendingOperations+" mục chờ xác nhận · XP và sao đang tạm tính":runtime.SyncMessage??"Tiến trình đã đồng bộ.";
             sync.GetComponentInChildren<TMP_Text>().text=AccountRuntime.Ensure().Account.IsSignedIn?"Đồng bộ":"Đăng nhập";
             failures.interactable=runtime.SyncFailures.Count>0 || !string.IsNullOrEmpty(runtime.SyncMessage);

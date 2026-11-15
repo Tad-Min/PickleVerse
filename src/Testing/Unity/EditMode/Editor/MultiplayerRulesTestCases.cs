@@ -147,13 +147,6 @@ namespace PickleVerse.Tests
             var r=new PickleballRules(PlayMode.Singles);Serve(r);r.Bounce(new Vector3(-1.5f,0,4));
             Assert.IsTrue(r.Hit(1,0,new Vector3(-1.5f,0,6.1f),new Vector3(-1.5f,1,6.1f),ShotKind.Dink));
         }
-        [Test] public void TimeoutsAreLimitedAndResetPerGame()
-        {
-            var r=new PickleballRules(PlayMode.Singles);
-            Assert.IsTrue(r.TakeTimeout(0));Assert.IsTrue(r.TakeTimeout(0));Assert.IsFalse(r.TakeTimeout(0));
-            r.live=true;r.waitingServe=false;Assert.IsFalse(r.TakeTimeout(1));
-            r.gameFinished=true;r.games[0]=1;r.NextGame();Assert.AreEqual(2,r.timeouts[0]);Assert.IsTrue(r.TakeTimeout(0));
-        }
         [Test] public void AlternatingFirstServerStartsFromRandomlySelectedTeam()
         {
             var r=new PickleballRules(PlayMode.Singles,1,1,1);Assert.AreEqual(1,r.servingTeam);

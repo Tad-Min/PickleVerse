@@ -6,6 +6,11 @@ using Entities.Models;
 using Repositories.UnitOfWork;
 using Entities.DTOs;
 using Services.Interfaces;
+using Entities.Game;
+using Entities.Exceptions;
+using PickleVerse.Multiplayer;
+using PickleVerse.Progression;
+using Repositories.Game;
 
 namespace Services.Implementations
 {
@@ -53,9 +58,39 @@ namespace Services.Implementations
             var match = await _unitOfWork.Matches.GetMatchByIdAsync(id);
             if (match == null || !match.Gamematchplayers.Any(p => p.Playerid == player && p.Finalizedat != null))
                 throw new Entities.Exceptions.NotFoundException("Không tìm thấy trận đã hoàn tất của bạn.");
-            return match.Gamematchplayers.Where(p => p.Playerid != player && p.Finalizedat != null
-                && !PickleVerse.Multiplayer.RankedBotAccounts.Contains(p.Playerid.ToString("N")))
+            return match.Gamematchplayers.Where(p => CanReport(player, p))
                 .Select(p => new ReportTargetDto { PlayerId = p.Playerid, PlayerName = p.Player.Playername, Team = p.Team }).ToList();
+        }
+
+        static bool CanReport(Guid viewer, Gamematchplayer seat) => seat.Playerid != viewer && seat.Finalizedat != null
+            && !RankedBotAccounts.Contains(seat.Playerid.ToString("N"));
+
+        public async Task<MatchDetail> Detail(Guid player, Guid id)
+        {
+            var match = await _unitOfWork.Game.Match(m => m.Matchid == id && m.Status == Entities.Enums.MatchStatus.Finished
+                && m.Gamematchplayers.Any(seat => seat.Playerid == player && seat.Finalizedat != null))
+                ?? throw new NotFoundException("Không tìm thấy trận đã hoàn tất của bạn.");
+            var analyses = (await _unitOfWork.Game.MatchAnalyses(id)).ToDictionary(row => row.PlayerId);
+            var games = match.Matchscores.OrderBy(score => score.Gamenumber)
+                .Select(score => new MatchDetailGame(score.Gamenumber, score.Teamascore, score.Teambscore,
+                    score.Completed, score.Teamastartside)).ToList();
+            var players = match.Gamematchplayers.OrderBy(seat => seat.Rosterindex).ThenBy(seat => seat.Playerid)
+                .Select(seat =>
+                {
+                    var analysis = analyses.GetValueOrDefault(seat.Playerid);
+                    var byGame = analysis?.Result == null ? [] : GameJson.Read<CoachingAnalysis>(analysis.Result).gameMetrics ?? [];
+                    var tags = byGame.Select(game => new MatchGameTags(game.gameNumber, game.metrics
+                        .Select(metric => new MatchTag(metric.technique, metric.code, metric.errors, metric.opportunities)).ToList())).ToList();
+                    string state = analysis?.Result != null ? (tags.Count > 0 ? "ready" : "missing")
+                        : analysis?.State == "failed" ? "failed" : analysis != null ? "pending" : "missing";
+                    return new MatchDetailPlayer(seat.Playerid, seat.Player.Playername, seat.Team,
+                        CanReport(player, seat), state, tags);
+                }).ToList();
+            var wins = MatchScoreStore.GameWins(match.Matchscores);
+            var own = match.Gamematchplayers.Single(seat => seat.Playerid == player);
+            return new MatchDetail(id, match.Kind, match.Mode, match.Endedat!.Value,
+                match.Ratingledgers.SingleOrDefault(row => row.Playerid == player)?.Delta,
+                wins.teamA, wins.teamB, own.Endreason, games, players);
         }
 
         public async Task<bool> ReportPlayerAsync(Guid reporterId, ReportPlayerRequest request)

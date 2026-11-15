@@ -41,6 +41,7 @@ public sealed class HybridCoachingService : IHybridCoachingService
             bool Vector(float[]? v) => v == null || v.Length == 3 && v.All(float.IsFinite);
             bool Timestamp(double? v) => v == null || double.IsFinite(v.Value) && v.Value >= 0;
             if (shot == null || string.IsNullOrWhiteSpace(shot.shotId) || shot.shotId.Length > 100 || shot.sequence < 0 || shot.rally < 0
+                || shot.gameNumber is < 1 or > 3 || batch.sessionType == "training" && shot.gameNumber.HasValue
                 || !double.IsFinite(shot.time) || shot.time < 0 || shot.kind?.Length is not (> 0 and <= 40) || shot.technique?.Length is not (> 0 and <= 40)
                 || shot.source?.Length is not (> 0 and <= 40) || shot.outcome?.Length is not (> 0 and <= 40)
                 || shot.timingError.HasValue && !float.IsFinite(shot.timingError.Value) || shot.netClearance.HasValue && !float.IsFinite(shot.netClearance.Value)

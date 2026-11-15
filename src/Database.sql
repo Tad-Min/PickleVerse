@@ -228,6 +228,75 @@ CREATE TABLE SanctionAppeals (
     DecisionReason VARCHAR(2000)
 );
 
+CREATE TABLE SocialMedia (
+    MediaId UUID PRIMARY KEY,
+    OwnerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    Bytes BIGINT NOT NULL CHECK (Bytes BETWEEN 1 AND 250000000),
+    CreatedAt TIMESTAMPTZ NOT NULL,
+    Ready BOOLEAN NOT NULL DEFAULT FALSE,
+    Deleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+CREATE INDEX SocialMedia_Cleanup ON SocialMedia (CreatedAt);
+
+CREATE TABLE SocialPosts (
+    PostId BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    AuthorId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    Body VARCHAR(2000) NOT NULL,
+    Audience VARCHAR(20) NOT NULL CHECK (Audience IN ('community','private','friends','friends_except')),
+    MediaId UUID UNIQUE REFERENCES SocialMedia(MediaId) ON DELETE SET NULL,
+    ReplayMatchId UUID REFERENCES GameMatches(MatchId) ON DELETE CASCADE,
+    CreatedAt TIMESTAMPTZ NOT NULL,
+    EditedAt TIMESTAMPTZ,
+    CHECK (length(btrim(Body)) > 0 OR MediaId IS NOT NULL OR ReplayMatchId IS NOT NULL)
+);
+CREATE INDEX SocialPosts_Author ON SocialPosts (AuthorId, PostId DESC);
+
+CREATE TABLE SocialPostExclusions (
+    PostId BIGINT NOT NULL REFERENCES SocialPosts(PostId) ON DELETE CASCADE,
+    PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    PRIMARY KEY (PostId, PlayerId)
+);
+CREATE TABLE SocialPostLikes (
+    PostId BIGINT NOT NULL REFERENCES SocialPosts(PostId) ON DELETE CASCADE,
+    PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    PRIMARY KEY (PostId, PlayerId)
+);
+CREATE TABLE SocialPostComments (
+    CommentId BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    PostId BIGINT NOT NULL REFERENCES SocialPosts(PostId) ON DELETE CASCADE,
+    AuthorId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    Body VARCHAR(1000) NOT NULL CHECK (length(btrim(Body)) > 0),
+    CreatedAt TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX SocialPostComments_Page ON SocialPostComments (PostId, CommentId DESC);
+
+CREATE TABLE SocialConversations (
+    ConversationId UUID PRIMARY KEY,
+    FirstPlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    SecondPlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    UpdatedAt TIMESTAMPTZ NOT NULL,
+    CHECK (FirstPlayerId < SecondPlayerId),
+    UNIQUE (FirstPlayerId, SecondPlayerId)
+);
+CREATE TABLE SocialConversationMembers (
+    ConversationId UUID NOT NULL REFERENCES SocialConversations(ConversationId) ON DELETE CASCADE,
+    PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    ReadThrough BIGINT NOT NULL DEFAULT 0 CHECK (ReadThrough >= 0),
+    PRIMARY KEY (ConversationId, PlayerId)
+);
+CREATE INDEX SocialConversationMembers_Player ON SocialConversationMembers (PlayerId);
+CREATE TABLE SocialMessages (
+    MessageId BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ConversationId UUID NOT NULL REFERENCES SocialConversations(ConversationId) ON DELETE CASCADE,
+    SenderId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    ClientMessageId UUID NOT NULL,
+    Body VARCHAR(1000) NOT NULL CHECK (length(btrim(Body)) > 0),
+    CreatedAt TIMESTAMPTZ NOT NULL,
+    UNIQUE (SenderId, ClientMessageId),
+    FOREIGN KEY (ConversationId, SenderId) REFERENCES SocialConversationMembers(ConversationId, PlayerId) ON DELETE CASCADE
+);
+CREATE INDEX SocialMessages_Page ON SocialMessages (ConversationId, MessageId DESC);
+
 CREATE TABLE MatchHistoryReplay (
     MatchId UUID PRIMARY KEY,
     ObjectKey VARCHAR(500) NOT NULL,
@@ -466,6 +535,7 @@ CREATE TABLE MatchScore (
     TeamAScore INT NOT NULL CHECK (TeamAScore BETWEEN 0 AND 100000),
     TeamBScore INT NOT NULL CHECK (TeamBScore BETWEEN 0 AND 100000),
     Completed BOOLEAN NOT NULL DEFAULT FALSE,
+    TeamAStartSide SMALLINT CHECK (TeamAStartSide IN (-1, 1)),
     PRIMARY KEY (MatchId, GameNumber)
 );
 CREATE TABLE IF NOT EXISTS GameMatchPlayers (

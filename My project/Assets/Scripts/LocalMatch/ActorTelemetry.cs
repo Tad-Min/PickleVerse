@@ -10,6 +10,7 @@ namespace PickleVerse.LocalMatch
         bool prepared;
         ShotTelemetry pending, lastContact, lastVolley;
         int inputStroke = -1, currentStroke, currentRally, currentBounces;
+        int? currentGame;
         public static ActorTelemetry Bind(MatchActor actor, CoachingSession session)
         {
             var recorder = actor.GetComponent<ActorTelemetry>() ?? actor.gameObject.AddComponent<ActorTelemetry>();
@@ -22,7 +23,7 @@ namespace PickleVerse.LocalMatch
             if (prepared) { prepared = false; return; }
             pending = session?.Attempt(intent.kind.ToString(), intent.kind == ShotKind.Serve ? "Serve" : intent.kind.ToString(),
                 "client-observed", Time.unscaledTimeAsDouble);
-            if (pending != null) { pending.rally = currentRally; pending.bounces = currentBounces; }
+            if (pending != null) { pending.rally = currentRally; pending.bounces = currentBounces; pending.gameNumber = currentGame; }
             inputStroke = currentStroke;
         }
         public void Trial(string kind, string technique, string referenceId = null)
@@ -70,15 +71,16 @@ namespace PickleVerse.LocalMatch
         }
         public void Landing(Vector3 point) { if (lastContact != null) lastContact.landing = Vector(point); }
         public void NetClearance(float height) { if (lastContact != null) lastContact.netClearance = height; }
-        public void Context(int stroke, int rally, int bounces)
+        public void Context(int stroke, int rally, int bounces, int? game = null)
         {
             currentStroke=stroke; currentRally=rally; currentBounces=bounces;
+            currentGame = game;
         }
-        public void MissedOpportunity(bool serve, int stroke, int rally)
+        public void MissedOpportunity(bool serve, int stroke, int rally, int game)
         {
             if (pending == null || inputStroke != stroke || pending.rally != rally)
                 pending=session?.Attempt(serve ? "Serve" : "Unknown",serve ? "Serve" : "Unknown","missed-opportunity",Time.unscaledTimeAsDouble);
-            if (pending != null) { pending.rally=rally; pending.outcome=serve ? "LateServe" : "Miss"; }
+            if (pending != null) { pending.rally=rally; pending.gameNumber=game; pending.outcome=serve ? "LateServe" : "Miss"; }
         }
         public void Checkpoint() { if (session != null) CoachingRuntime.Instance?.Checkpoint(session); }
         static float[] Vector(Vector3 v) => new[] { v.x, v.y, v.z };

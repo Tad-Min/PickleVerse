@@ -119,7 +119,7 @@ namespace PickleVerse.Multiplayer
         }
         void LateUpdate()
         {
-            if (PickleVerse.Settings.SceneLoading.IsBlocking)
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null || PickleVerse.Settings.SceneLoading.IsBlocking)
                 return;
             var match = NetworkMatch.Instance;
             if (!match || !match.IsSpawned || !ui)

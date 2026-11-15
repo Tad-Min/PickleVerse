@@ -20,6 +20,8 @@ namespace PickleVerse.Multiplayer
         readonly StrokeProgressTracker progressStrokes = new StrokeProgressTracker();
         readonly HashSet<string> forfeitedPlayers = new HashSet<string>();
         readonly List<GameScore> teamGameScores = new List<GameScore>();
+        [Networked]
+        public int GameStartSide { get; set; } = -1;
         readonly int[] teamPoints = new int[2];
         CoachingSession coachingSession;
         void EnsureCoaching()
@@ -82,7 +84,7 @@ namespace PickleVerse.Multiplayer
         {
             if (teamGameScores.Count < Rules.GameNumber)
             {
-                teamGameScores.Add(new GameScore(Rules.score[0], Rules.score[1], true));
+                teamGameScores.Add(new GameScore(Rules.score[0], Rules.score[1], true, GameStartSide));
                 CompletedGameScores = JsonConvert.SerializeObject(teamGameScores);
             }
         }
@@ -104,9 +106,9 @@ namespace PickleVerse.Multiplayer
                 int index = Roster.members.Where(m => m.team == member.team).ToList().FindIndex(m => m.id == member.id);
                 r.validReturns = progressStrokes.Returns(member.team * 2 + index);
                 r.validServes = progressStrokes.Serves(member.team * 2 + index);
-                r.scores = teamGameScores.Select(s => new GameScore(member.team == 0 ? s.own : s.opponent, member.team == 0 ? s.opponent : s.own, true)).ToList();
+                r.scores = teamGameScores.Select(s => new GameScore(member.team == 0 ? s.own : s.opponent, member.team == 0 ? s.opponent : s.own, true, s.teamAStartSide)).ToList();
                 if (!Rules.gameFinished)
-                    r.scores.Add(new GameScore(Rules.score[member.team], Rules.score[1 - member.team], false));
+                    r.scores.Add(new GameScore(Rules.score[member.team], Rules.score[1 - member.team], false, GameStartSide));
                 completed.Add(new OnlineMatchResult { onlineId = member.id, result = r });
             }
             var envelope = JsonConvert.SerializeObject(completed);
@@ -147,8 +149,8 @@ namespace PickleVerse.Multiplayer
             r.gamesWon = team == 0 ? GamesA : GamesB;
             r.gamesLost = team == 0 ? GamesB : GamesA;
             var completed = JsonConvert.DeserializeObject<List<GameScore>>(CompletedGameScores ?? "[]");
-            r.scores = completed.Select(s => new GameScore(team == 0 ? s.own : s.opponent, team == 0 ? s.opponent : s.own, true)).ToList();
-            r.scores.Add(new GameScore(team == 0 ? ScoreA : ScoreB, team == 0 ? ScoreB : ScoreA, false));
+            r.scores = completed.Select(s => new GameScore(team == 0 ? s.own : s.opponent, team == 0 ? s.opponent : s.own, true, s.teamAStartSide)).ToList();
+            r.scores.Add(new GameScore(team == 0 ? ScoreA : ScoreB, team == 0 ? ScoreB : ScoreA, false, GameStartSide));
             ProgressionRuntime.Instance.Apply(r);
         }
         void SnapshotPendingProgression()
@@ -167,9 +169,9 @@ namespace PickleVerse.Multiplayer
             snapshot.gamesWon = team == 0 ? GamesA : GamesB;
             snapshot.gamesLost = team == 0 ? GamesB : GamesA;
             var completed = JsonConvert.DeserializeObject<List<GameScore>>(CompletedGameScores ?? "[]") ?? new List<GameScore>();
-            snapshot.scores = completed.Select(s => new GameScore(team == 0 ? s.own : s.opponent, team == 0 ? s.opponent : s.own, true)).ToList();
+            snapshot.scores = completed.Select(s => new GameScore(team == 0 ? s.own : s.opponent, team == 0 ? s.opponent : s.own, true, s.teamAStartSide)).ToList();
             if (!BetweenGames)
-                snapshot.scores.Add(new GameScore(team == 0 ? ScoreA : ScoreB, team == 0 ? ScoreB : ScoreA, false));
+                snapshot.scores.Add(new GameScore(team == 0 ? ScoreA : ScoreB, team == 0 ? ScoreB : ScoreA, false, GameStartSide));
             runtime.BeginMatch(snapshot);
         }
         void OnProgressionQuit()
