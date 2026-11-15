@@ -28,7 +28,7 @@ Thêm giá trị trong **Settings → Secrets and variables → Actions**. Dùng
 
 Variables tùy chọn gồm `DOCKERHUB_USERNAME` mặc định `tadminm` và `SSH_USER` mặc định `min`. Tài khoản Docker Hub phải có quyền với repository `tadminm/pickelverse`. Workflow dùng `github.token` tự cấp để đối chiếu HEAD của `main`.
 
-Đặt GitHub Actions variable `PKV_DEPLOY_ROOT` thành thư mục deploy trên Linux, ví dụ `/mnt/data/pickleverse`. Dùng đường dẫn tuyệt đối đã tồn tại và không có khoảng trắng. Workflow cũng chấp nhận tên biến GitHub cũ `PKV_DATA_ROOT` khi chưa đặt `PKV_DEPLOY_ROOT`. Đường dẫn mặc định là `/run/media/min/Data/pickleverse`.
+Thư mục deploy mặc định trên Linux là `/mnt/data/pickleverse`, nơi chứa `.env` và `.deploy`. Nếu dùng thư mục khác, đặt GitHub Actions variable `PKV_DEPLOY_ROOT` thành đường dẫn tuyệt đối đã tồn tại và không có khoảng trắng. Workflow vẫn chấp nhận tên biến GitHub cũ `PKV_DATA_ROOT` cho thư mục deploy. Riêng `PKV_DATA_ROOT` trong `.env` chỉ thư mục dữ liệu Docker, ví dụ `/mnt/data/pickleverse/data`.
 
 Lấy public key qua console đáng tin cậy của Linux, ví dụ `awk '{print $1, $2}' /etc/ssh/ssh_host_ed25519_key.pub`. Giữ đúng kiểu key và hostname/cổng của endpoint. Có thể đối chiếu fingerprint bằng `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. OpenSSH trên runner kiểm tra host key trước khi gửi mật khẩu.
 

@@ -2,10 +2,10 @@
 : "${SSH_HOST:?}" "${SSH_PORT:?}" "${SSH_USER:?}" "${SSHPASS:?}" "${SSH_KNOWN_HOSTS:?}"
 [[ $SSH_HOST =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ && $SSH_USER =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ && $SSH_PORT =~ ^[1-9][0-9]{0,4}$ && $SSH_PORT -le 65535 ]]
 
-root=${PKV_DEPLOY_ROOT:-${PKV_DATA_ROOT:-/run/media/min/Data/pickleverse}}
+root=${PKV_DEPLOY_ROOT:-${PKV_DATA_ROOT:-/mnt/data/pickleverse}}
 root=${root%/}
 if [[ ! $root =~ ^(/[a-zA-Z0-9._-]+)+$ || $root/ == */../* || $root/ == */./* ]]; then
-  echo 'PKV_DEPLOY_ROOT must be an absolute Linux directory path, such as /opt/pickleverse.' >&2
+  echo 'PKV_DEPLOY_ROOT must be an absolute Linux directory path, such as /mnt/data/pickleverse.' >&2
   exit 1
 fi
 
