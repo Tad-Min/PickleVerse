@@ -35,8 +35,12 @@ namespace PickleVerse.LocalMatch
         public static readonly Color GoldenAmbientGround = new Color(.22f, .19f, .16f);
         public static readonly Color GoldenHaze = new Color(.80f, .62f, .50f);
         const float DistrictFarClip = 460f;
+        // Night street lighting is baked (lamp pools in the venue mask, glare sprites, lit windows), so the
+        // district adds no realtime lights. Sodium-warm, slightly brighter than the pools' baked reference.
+        public static readonly Color NightLampColor = new Color(1.0f, .70f, .40f) * 1.9f;
         static readonly int SunMaskId = Shader.PropertyToID("_PV_SunMask"), SunMaskParamsId = Shader.PropertyToID("_PV_SunMaskParams"),
-            SunMaskOnId = Shader.PropertyToID("_PV_SunMaskOn"), NightGlowId = Shader.PropertyToID("_PV_NightGlow"),
+            SunMaskOnId = Shader.PropertyToID("_PV_SunMaskOn"), NightLightsOnId = Shader.PropertyToID("_PV_NightLightsOn"),
+            LampColorId = Shader.PropertyToID("_PV_LampColor"), NightGlowId = Shader.PropertyToID("_PV_NightGlow"),
             SkyZenithId = Shader.PropertyToID("_PV_SkyZenith"), SkyHorizonId = Shader.PropertyToID("_PV_SkyHorizon");
         static Material goldenHourSky;
         /// <summary>Procedural golden-hour sky (Resources/Lighting). Falls back to the authored day sky.</summary>
@@ -102,20 +106,23 @@ namespace PickleVerse.LocalMatch
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = night ? new Color(.025f, .040f, .070f) : GoldenHaze;
             RenderSettings.fogStartDistance = night ? 38 : 55;
-            RenderSettings.fogEndDistance = night ? 90 : 330;
+            // A longer night haze keeps the lit city silhouette visible behind the court.
+            RenderSettings.fogEndDistance = night ? 210 : 330;
             // Shared with PickleVerse/Environment shaders: lamp/window glow, analytic sky reflections and the
             // baked golden-hour ground shadows (only valid while this sun is up).
             Shader.SetGlobalFloat(NightGlowId, night ? 1 : 0);
             Shader.SetGlobalColor(SkyZenithId, night ? new Color(.02f, .03f, .06f) : new Color(.30f, .42f, .66f));
             Shader.SetGlobalColor(SkyHorizonId, night ? new Color(.05f, .06f, .09f) : new Color(.98f, .70f, .50f));
-            bool mask = !night && stadium && stadium.sunShadowMask;
+            bool mask = stadium && stadium.sunShadowMask;
             if (mask)
             {
                 var origin = stadium.transform.position;
                 Shader.SetGlobalTexture(SunMaskId, stadium.sunShadowMask);
                 Shader.SetGlobalVector(SunMaskParamsId, new Vector4(1f / Mathf.Max(1, stadium.sunMaskSpan), origin.y + stadium.sunMaskGroundY, origin.x, origin.z));
             }
-            Shader.SetGlobalFloat(SunMaskOnId, mask ? 1 : 0);
+            Shader.SetGlobalFloat(SunMaskOnId, mask && !night ? 1 : 0);
+            Shader.SetGlobalFloat(NightLightsOnId, mask && night ? 1 : 0);
+            Shader.SetGlobalColor(LampColorId, NightLampColor);
             if (Application.isPlaying)
                 DynamicGI.UpdateEnvironment();
         }

@@ -36,8 +36,8 @@ Shader "PickleVerse/Environment/Sunset Surface"
         // Globals (not material properties): set by MatchEnvironmentLighting / StadiumEnvironment.
         TEXTURE2D(_PV_SunMask); SAMPLER(sampler_PV_SunMask);
         float4 _PV_SunMaskParams;      // x = 1 / span, y = district ground y, zw = mask origin xz
-        float _PV_SunMaskOn, _PV_NightGlow;
-        half4 _PV_SkyZenith, _PV_SkyHorizon;
+        float _PV_SunMaskOn, _PV_NightLightsOn, _PV_NightGlow;
+        half4 _PV_SkyZenith, _PV_SkyHorizon, _PV_LampColor;
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST, _BumpMap_ST, _BaseMap_TexelSize;
             half _BumpScale, _Smoothness, _Metallic, _GlassSmoothness, _Cutoff;
@@ -52,6 +52,14 @@ Shader "PickleVerse/Environment/Sunset Surface"
             half4 color : COLOR;
             UNITY_VERTEX_INPUT_INSTANCE_ID
         };
+
+        // Sin-free hash (Dave Hoskins): stable for integer inputs on every GPU precision.
+        float Hash12(float2 p)
+        {
+            float3 p3 = frac(p.xyx * 0.1031);
+            p3 += dot(p3, p3.yzx + 33.33);
+            return frac((p3.x + p3.y) * p3.z);
+        }
 
         half AlphaCoverage(float2 uv, float4 positionCS)
         {
@@ -171,9 +179,11 @@ Shader "PickleVerse/Environment/Sunset Surface"
 
                 if (_Unlit > 0.5)
                 {
-                    // Distant city backdrop: already hazy in the texture; dims at night, windows glow.
-                    half3 backdrop = albedo * (1 - 0.88 * _PV_NightGlow) + albedo * saturate(tex.r - tex.b) * _PV_NightGlow * 1.5;
-                    return half4(MixFog(backdrop, i.fog), coverage);
+                    // Distant city backdrop: already hazy in the texture; dims at night while its scattered
+                    // window dots glow through the haze.
+                    half3 backdrop = albedo * (1 - 0.9 * _PV_NightGlow);
+                    half3 windows = albedo * saturate(tex.r - tex.b) * (_PV_NightGlow * 2.0);
+                    return half4(MixFog(backdrop, i.fog) + windows * (ComputeFogIntensity(i.fog) * 0.55 + 0.45), coverage);
                 }
 
                 half smooth = _Smoothness;
@@ -188,12 +198,15 @@ Shader "PickleVerse/Environment/Sunset Surface"
                 float4 shadowCoord = TransformWorldToShadowCoord(i.positionWS);
                 Light mainLight = GetMainLight(shadowCoord);
                 half shadow = mainLight.shadowAttenuation;
-                if (_SunMask > 0.5 && _PV_SunMaskOn > 0.5)
+                half pools = 0;
+                if (_SunMask > 0.5 && _PV_SunMaskOn + _PV_NightLightsOn > 0.5)
                 {
+                    // One fetch serves both times of day: R = golden-hour sun visibility, G = sqrt(lamp pools).
                     float2 muv = 0.5 + (i.positionWS.xz - _PV_SunMaskParams.zw) * _PV_SunMaskParams.x;
-                    half baked = SAMPLE_TEXTURE2D(_PV_SunMask, sampler_PV_SunMask, muv).r;
+                    half2 baked = SAMPLE_TEXTURE2D(_PV_SunMask, sampler_PV_SunMask, muv).rg;
                     half w = saturate(1 - (i.positionWS.y - _PV_SunMaskParams.y - 0.55) * 3.3) * saturate((geometric.y - 0.6) * 5);
-                    shadow = min(shadow, lerp(1, baked, w));
+                    shadow = min(shadow, lerp(1, baked.r, w * _PV_SunMaskOn));
+                    pools = baked.g * baked.g * w * _PV_NightLightsOn;
                 }
                 half nl = saturate(dot(n, mainLight.direction));
                 half3 radiance = mainLight.color * (mainLight.distanceAttenuation * shadow * nl);
@@ -219,18 +232,39 @@ Shader "PickleVerse/Environment/Sunset Surface"
                 if (_Water > 0.5) envAmount = 1;
                 color += SkyReflection(reflect(-v, n)) * envFresnel * envAmount;
 
-                // Night: lamp lenses glow; facades light a random set of windows.
-                if (_Glow > 0)
+                // Night street lighting baked as warm pools (no realtime lights): diffuse plus a soft sheen
+                // on smoother paving, asphalt, acrylic and water.
+                color += pools * _PV_LampColor.rgb * (diffuseColor + f0 * (smooth * 2.5));
+
+                // Emission is added after fog with only partial attenuation, so lamps and windows read through
+                // the night haze the way lit cities do in film and AAA games.
+                half3 emission = 0;
+                if (_Glow > 0 && _PV_NightGlow > 0)
                 {
-                    half lit = 1;
+                    half glow = _Glow * _PV_NightGlow;
                     if (_GlassSmoothness > 0)
                     {
-                        float2 cell = floor(i.uv * 8);
-                        lit = step(0.55, frac(sin(dot(cell, float2(12.9898, 78.233))) * 43758.5453)) * tex.a;
+                        // Facade: one window per 3 m bay. Vertex alpha seeds each building, so the lit pattern is
+                        // irregular: about a quarter of the windows, mostly warm, some neutral, a few cool (TV/LED),
+                        // each with its own brightness, a ceiling-to-floor gradient and the odd drawn curtain.
+                        float2 grid = i.uv * 8;
+                        float2 cell = floor(grid), f = frac(grid);
+                        // Quantise the interpolated seed back to its 8-bit integer so every pixel of a window
+                        // hashes the same value (a raw float seed shimmers under interpolation error).
+                        float seed = floor(i.color.a * 255 + 0.5);
+                        half h = Hash12(cell + float2(seed * 17, seed * 31));
+                        half h2 = Hash12(cell.yx + float2(seed * 7 + 101, seed * 3 + 57));
+                        half lit = step(0.75, h) * tex.a;
+                        half3 tint = h2 < 0.6 ? half3(1.0, 0.64, 0.32) : (h2 < 0.88 ? half3(1.0, 0.83, 0.60) : half3(0.60, 0.74, 1.0));
+                        half level = 0.55 + 0.85 * frac(h2 * 3.71);
+                        half interior = lerp(0.7, 1.15, f.y);
+                        half curtain = (h2 > 0.42 && h2 < 0.55) ? lerp(0.35, 1.0, smoothstep(0.3, 0.7, f.x)) : 1;
+                        emission = tint * (lit * level * interior * curtain * glow * 1.35);
                     }
-                    color += albedo * (_Glow * _PV_NightGlow * 2.2 * lit);
+                    else
+                        emission = albedo * (glow * 2.2);      // lamp lenses
                 }
-                return half4(MixFog(color, i.fog), coverage);
+                return half4(MixFog(color, i.fog) + emission * (ComputeFogIntensity(i.fog) * 0.55 + 0.45), coverage);
             }
             ENDHLSL
         }

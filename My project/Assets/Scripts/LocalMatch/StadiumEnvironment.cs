@@ -29,7 +29,10 @@ namespace PickleVerse.LocalMatch
         {
             // The mask belongs to this venue; another venue or scene must not inherit its shadows.
             if (sunShadowMask)
+            {
                 Shader.SetGlobalFloat("_PV_SunMaskOn", 0);
+                Shader.SetGlobalFloat("_PV_NightLightsOn", 0);
+            }
         }
         public Vector3 KeepCameraInside(Vector3 position)
         {
