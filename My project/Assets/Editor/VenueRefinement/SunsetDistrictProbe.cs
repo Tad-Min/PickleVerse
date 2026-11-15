@@ -172,6 +172,50 @@ public static class SunsetDistrictProbe
         }
     }
 
+    // ---------------------------------------------------------------- ModeSelection venue previews (Edit mode)
+    // Same framing, size and import settings as VenueRefinementSceneChecks.UpdateSelectionPreviews (2026-10-25),
+    // re-rendered so the venue picker shows the current golden-hour day and lamp-lit night. Files keep their GUIDs.
+    public static object UpdateSelectionPreviews()
+    {
+        if (EditorApplication.isPlaying || SceneManager.GetActiveScene().isDirty) throw new Exception("Clean Edit mode required");
+        string previous = SceneManager.GetActiveScene().path;
+        var updated = new List<string>();
+        try
+        {
+            foreach (string id in Keys)
+            {
+                EditorSceneManager.OpenScene("Assets/Scenes/BotMatch.unity");
+                var lighting = UnityEngine.Object.FindAnyObjectByType<MatchEnvironmentLighting>();
+                lighting.stadium.gameObject.SetActive(false);
+                lighting.stadium = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Resources/Courts/" + id + ".prefab")).GetComponent<StadiumEnvironment>();
+                var camera = lighting.matchCamera;
+                camera.transform.position = new Vector3(0, 6.5f, -12.5f); camera.transform.LookAt(new Vector3(0, 0, .5f)); camera.fieldOfView = 54;
+                foreach (bool night in new[] { false, true })
+                {
+                    lighting.SelectForMatch(night);
+                    string path = "Assets/FrontEndContent/Artwork/Courts/" + id + (night ? "_Night" : "_Day") + ".png";
+                    camera.Render();      // warm up shader variants (the Editor compiles them asynchronously)
+                    Shot(camera, "preview-warmup.png", 640, 360);
+                    Shot(camera, "preview-" + id + (night ? "-Night" : "-Day") + ".png", 640, 360);
+                    File.Copy(Out("preview-" + id + (night ? "-Night" : "-Day") + ".png"), path, true);
+                    AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+                    var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+                    importer.mipmapEnabled = false; importer.maxTextureSize = 512; importer.wrapMode = TextureWrapMode.Clamp; importer.textureCompression = TextureImporterCompression.CompressedHQ;
+                    importer.SaveAndReimport();
+                    updated.Add(path);
+                }
+            }
+            var dependencies = new HashSet<string>(AssetDatabase.GetDependencies("Assets/Scenes/UI/ModeSelection.unity", true));
+            return new { updated, referencedByModeSelection = updated.All(dependencies.Contains) };
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(previous)) EditorSceneManager.OpenScene(previous);
+            else EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
+            File.Delete(Out("preview-warmup.png"));
+        }
+    }
+
     // ---------------------------------------------------------------- live presentation regression (Play mode)
     // Same scenario as VenueRefinementPresentationChecks (actual Menu + BotMatch scenes, runtime venue switch,
     // entrance cinematic, local rules/ball simulation, outcome cameras, day/night), with end-of-frame screenshots.
@@ -270,6 +314,86 @@ public static class SunsetDistrictProbe
             manual = null; visual = null; liveRecord = false; EditorApplication.update -= LiveTick; Application.logMessageReceived -= Log; SceneManager.sceneLoaded -= BotLoaded;
             JsonUtility.FromJsonOverwrite(saved, GameSettings.Current); SettingsRuntime.Apply(GameSettings.Current);
         }
+    }
+
+    // ---------------------------------------------------------------- day/night consistency across scenes (Play mode)
+    // BotMatch (both venues) -> Menu (its own day/night cycle) -> BotMatch again: the environment shader globals
+    // must follow each scene's own time of day, never what the previous scene left behind.
+    static object Globals() => new
+    {
+        nightGlow = Shader.GetGlobalFloat("_PV_NightGlow"), nightLights = Shader.GetGlobalFloat("_PV_NightLightsOn"),
+        sunMask = Shader.GetGlobalFloat("_PV_SunMaskOn"), mask = Shader.GetGlobalTexture("_PV_SunMask") ? Shader.GetGlobalTexture("_PV_SunMask").name : null
+    };
+    static void Expect(string name, float glow, float lights, float sun)
+    {
+        float g = Shader.GetGlobalFloat("_PV_NightGlow"), l = Shader.GetGlobalFloat("_PV_NightLightsOn"), s = Shader.GetGlobalFloat("_PV_SunMaskOn");
+        checks.Add(new { name, passed = Mathf.Abs(g - glow) < .02f && Mathf.Abs(l - lights) < .02f && Mathf.Abs(s - sun) < .02f, globals = Globals() });
+    }
+    static async Task<T> LoadAndFind<T>(string scene) where T : UnityEngine.Object
+    {
+        SceneManager.LoadScene(scene);
+        for (int i = 0; i < 150; i++)
+        {
+            await Task.Delay(100);
+            if (SceneManager.GetActiveScene().name == scene)
+            {
+                var found = UnityEngine.Object.FindAnyObjectByType<T>();
+                if (found) { await Task.Delay(300); return found; }
+            }
+        }
+        throw new Exception(scene + " did not load");
+    }
+    public static object LightingSync()
+    {
+        if (!Application.isPlaying) throw new Exception("Play mode required");
+        if (task != null && !task.IsCompleted) throw new Exception("Probe already running");
+        checks.Clear(); errors.Clear(); task = RunLightingSync();
+        return new { started = true, path = Out("lighting-sync.json") };
+    }
+    static async Task RunLightingSync()
+    {
+        void Save(string status) => File.WriteAllText(Out("lighting-sync.json"), JsonConvert.SerializeObject(new { status, checks, errors }, Formatting.Indented));
+        Application.logMessageReceived += Log; SceneManager.sceneLoaded += BotLoaded;
+        try
+        {
+            // Signed-out fixture: the sign-in/offline gates are removed from this temporary Play session only.
+            foreach (var component in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (component.GetType().FullName is "PickleVerse.FrontEnd.AccountScreen" or "PickleVerse.FrontEnd.TrainingAccessOverlay" or "PickleVerse.FrontEnd.AuthenticationNavigation")
+                    UnityEngine.Object.Destroy(component.gameObject);
+            var view = EditorWindow.GetWindow(typeof(Editor).Assembly.GetType("UnityEditor.GameView")); view.Show(); view.Focus();
+            await Task.Delay(200);
+            await LoadAndFind<Camera>("Menu"); await Task.Delay(1000);      // same entry path as the game
+            foreach (CourtVenue venue in new[] { CourtVenue.Professional, CourtVenue.LowPoly })
+            {
+                var m = await LoadAndFind<BotMatch>("BotMatch"); m.GetComponent<CourtVenueSelection>().Select(venue);
+                var lighting = m.GetComponent<MatchEnvironmentLighting>();
+                lighting.SelectForMatch(false); await Task.Delay(2500); Expect(venue + " BotMatch day", 0, 0, 1); await LivePicture("Sync-BotMatch-" + venue + "-Day");
+                lighting.SelectForMatch(true); await Task.Delay(3500); Expect(venue + " BotMatch night", 1, 1, 0); await LivePicture("Sync-BotMatch-" + venue + "-Night");
+            }
+            // Arrive in the Menu straight from a night match: its own cycle must decide.
+            await LoadAndFind<Camera>("Menu"); await Task.Delay(1200);
+            Check("Menu loaded", SceneManager.GetActiveScene().name == "Menu");
+            var lobby = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).First(c => c.GetType().Name == "HomeLobbyPresentation");
+            var type = lobby.GetType();
+            float cycle = (float)type.GetField("cycleSeconds").GetValue(lobby);
+            var elapsed = type.GetProperty("CycleElapsed");
+            foreach (var (label, phase, night) in new[] { ("Day", .10f, 0f), ("Dusk", .32f, -1f), ("Night", .57f, 1f) })
+            {
+                float seconds = phase * Mathf.Max(30, cycle);
+                elapsed.SetValue(lobby, seconds); type.GetMethod("EvaluateCycle").Invoke(lobby, new object[] { seconds }); await Task.Delay(500);
+                float w = (float)type.GetProperty("NightWeight").GetValue(lobby);
+                if (night >= 0) Expect("Menu " + label, night, night, 0);
+                else checks.Add(new { name = "Menu Dusk blends with the lobby cycle", passed = Mathf.Abs(Shader.GetGlobalFloat("_PV_NightGlow") - w) < .05f && Mathf.Abs(Shader.GetGlobalFloat("_PV_NightLightsOn") - w) < .05f && w > .05f && w < .95f, globals = Globals(), lobbyNight = w });
+                await LivePicture("Sync-Menu-" + label);
+            }
+            // And back: a day match after the Menu's night must be fully daylit again.
+            var again = await LoadAndFind<BotMatch>("BotMatch"); again.GetComponent<CourtVenueSelection>().Select(CourtVenue.Professional);
+            again.GetComponent<MatchEnvironmentLighting>().SelectForMatch(false); await Task.Delay(400); Expect("BotMatch day after Menu night", 0, 0, 1);
+            Check("No runtime errors", errors.Count == 0);
+            Save(checks.All(c => (bool)c.GetType().GetProperty("passed").GetValue(c)) ? "passed" : "failed");
+        }
+        catch (Exception error) { errors.Add(error.ToString()); Save("failed"); }
+        finally { Application.logMessageReceived -= Log; SceneManager.sceneLoaded -= BotLoaded; }
     }
 
     // ---------------------------------------------------------------- measured frames (Play mode)
