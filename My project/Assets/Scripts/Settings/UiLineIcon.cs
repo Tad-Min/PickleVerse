@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace PickleVerse.Settings
 {
-    public enum ArenaGlyph { Home, Progress, Career, Collection, Shop, Settings, Music, Book, Arrow, Previous, Next, Play, Pause, Close, Star, Orbit, RecordFrame, Run, Copy, Edit, Minimize, Power, Display }
+    public enum ArenaGlyph { Home, Progress, Career, Collection, Shop, Settings, Music, Book, Arrow, Previous, Next, Play, Pause, Close, Star, Orbit, RecordFrame, Run, Copy, Edit, Minimize, Power, Display, Shield, Sync, CloudOff }
 
     /// <summary>Small vector symbols; retain sharp edges at different canvas scales.</summary>
     [RequireComponent(typeof(CanvasRenderer))]
@@ -66,6 +66,16 @@ namespace PickleVerse.Settings
                 case ArenaGlyph.Display:
                     Poly(mesh, new[] { new Vector2(-.86f, -.36f), new Vector2(-.86f, .74f), new Vector2(.86f, .74f), new Vector2(.86f, -.36f) }, true);
                     Line(mesh, 0, -.36f, 0, -.66f); Line(mesh, -.42f, -.7f, .42f, -.7f); break;
+                case ArenaGlyph.Shield:
+                    Poly(mesh, new[] { new Vector2(-.68f, .70f), new Vector2(0, .92f), new Vector2(.68f, .70f), new Vector2(.60f, -.04f), new Vector2(0, -.92f), new Vector2(-.60f, -.04f) }, true);
+                    Line(mesh, -.30f, .02f, -.06f, -.24f); Line(mesh, -.06f, -.24f, .34f, .30f); break;
+                case ArenaGlyph.Sync:
+                    // Two chasing arcs with arrowheads: "synchronise".
+                    Arc(mesh, 0, 0, .70f, 25, 165); Line(mesh, -.68f, .17f, -.80f, .46f); Line(mesh, -.68f, .17f, -.40f, .28f);
+                    Arc(mesh, 0, 0, .70f, 205, 345); Line(mesh, .68f, -.17f, .80f, -.46f); Line(mesh, .68f, -.17f, .40f, -.28f); break;
+                case ArenaGlyph.CloudOff:
+                    Arc(mesh, -.40f, -.12f, .34f, 90, 270); Arc(mesh, .02f, .10f, .46f, 15, 165); Arc(mesh, .44f, -.12f, .32f, -90, 80);
+                    Line(mesh, -.40f, -.46f, .44f, -.44f); Line(mesh, -.82f, .78f, .82f, -.78f); break;
                 case ArenaGlyph.Star: Diamond(mesh, 0, 0, .82f); Line(mesh, -.82f, 0, .82f, 0); Line(mesh, 0, -.82f, 0, .82f); break;
                 case ArenaGlyph.Orbit:
                     Circle(mesh, 0, 0, .94f); Circle(mesh, 0, 0, .80f); for (int i = 0; i < 12; i++)
