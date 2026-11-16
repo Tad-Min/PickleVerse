@@ -58,7 +58,7 @@ namespace PickleVerse.FrontEnd
         {
             if (!safeArea)
                 return;
-            Rect area = Screen.safeArea;
+            Rect area = PickleVerse.Settings.UiSafeArea.Area;
             Vector2 screen = new Vector2(Screen.width, Screen.height);
             if (area == previousSafeArea && screen == previousScreen)
                 return;

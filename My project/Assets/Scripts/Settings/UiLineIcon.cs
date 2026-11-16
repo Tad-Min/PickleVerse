@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace PickleVerse.Settings
 {
-    public enum ArenaGlyph { Home, Progress, Career, Collection, Shop, Settings, Music, Book, Arrow, Previous, Next, Play, Pause, Close, Star, Orbit, RecordFrame, Run, Copy, Edit }
+    public enum ArenaGlyph { Home, Progress, Career, Collection, Shop, Settings, Music, Book, Arrow, Previous, Next, Play, Pause, Close, Star, Orbit, RecordFrame, Run, Copy, Edit, Minimize, Power, Display }
 
     /// <summary>Small vector symbols; retain sharp edges at different canvas scales.</summary>
     [RequireComponent(typeof(CanvasRenderer))]
@@ -61,6 +61,11 @@ namespace PickleVerse.Settings
                 case ArenaGlyph.Play: Triangle(mesh, false); break;
                 case ArenaGlyph.Pause: Line(mesh, -.32f, -.7f, -.32f, .7f); Line(mesh, .32f, -.7f, .32f, .7f); break;
                 case ArenaGlyph.Close: Line(mesh, -.65f, -.65f, .65f, .65f); Line(mesh, -.65f, .65f, .65f, -.65f); break;
+                case ArenaGlyph.Minimize: Line(mesh, -.68f, 0, .68f, 0); break;
+                case ArenaGlyph.Power: Arc(mesh, 0, -.08f, .68f, 125, 415); Line(mesh, 0, .9f, 0, .12f); break;
+                case ArenaGlyph.Display:
+                    Poly(mesh, new[] { new Vector2(-.86f, -.36f), new Vector2(-.86f, .74f), new Vector2(.86f, .74f), new Vector2(.86f, -.36f) }, true);
+                    Line(mesh, 0, -.36f, 0, -.66f); Line(mesh, -.42f, -.7f, .42f, -.7f); break;
                 case ArenaGlyph.Star: Diamond(mesh, 0, 0, .82f); Line(mesh, -.82f, 0, .82f, 0); Line(mesh, 0, -.82f, 0, .82f); break;
                 case ArenaGlyph.Orbit:
                     Circle(mesh, 0, 0, .94f); Circle(mesh, 0, 0, .80f); for (int i = 0; i < 12; i++)

@@ -64,13 +64,13 @@ namespace PickleVerse.FrontEnd
         }
         void LateUpdate()
         {
-            if (lastWidth != Screen.width || lastHeight != Screen.height || lastSafe != Screen.safeArea)
+            if (lastWidth != Screen.width || lastHeight != Screen.height || lastSafe != PickleVerse.Settings.UiSafeArea.Area)
                 RefreshLayout();
         }
         public void RefreshLayout()
         {
             if (!safeArea || !card || Screen.width <= 0 || Screen.height <= 0) return;
-            lastWidth = Screen.width; lastHeight = Screen.height; lastSafe = Screen.safeArea;
+            lastWidth = Screen.width; lastHeight = Screen.height; lastSafe = PickleVerse.Settings.UiSafeArea.Area;
             safeArea.anchorMin = lastSafe.min / new Vector2(Screen.width, Screen.height);
             safeArea.anchorMax = lastSafe.max / new Vector2(Screen.width, Screen.height);
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;

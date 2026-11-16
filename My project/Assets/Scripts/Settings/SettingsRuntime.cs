@@ -52,6 +52,7 @@ namespace PickleVerse.Settings
         static Object presentationOwner;
         static float presentationScale = 1;
         static int presentationMsaa;
+        static bool backgroundThrottle;
         RenderPipelineAsset originalPipeline;
         UniversalRenderPipelineAsset runtimePipeline;
         int originalFps, originalVsync, originalMaximumLOD;
@@ -64,6 +65,7 @@ namespace PickleVerse.Settings
             presentationOwner = null;
             presentationScale = 1;
             presentationMsaa = 0;
+            backgroundThrottle = false;
             AudioLevelsChanged = null;
             GameSettings.Reload();
             EffectsVolume = GameSettings.Current.effects;
@@ -106,9 +108,28 @@ namespace PickleVerse.Settings
             AudioListener.volume = data.master;
             EffectsVolume = data.effects;
             AudioLevelsChanged?.Invoke(data.master, data.music, data.effects);
+            ApplyFrameRate(data);
+            ApplyGraphics(data);
+            DesktopWindow.Apply(data);
+        }
+        public static void ApplyFrameRate(SettingsData data)
+        {
+            if (backgroundThrottle)
+            {
+                // Nothing is visible while minimised: keep the simulation ticking at a low rate instead of full speed.
+                Application.targetFrameRate = 15;
+                QualitySettings.vSyncCount = 0;
+                return;
+            }
             Application.targetFrameRate = MobileRenderPolicy.FrameRate(data.fps);
             QualitySettings.vSyncCount = data.vsync && !Application.isMobilePlatform ? 1 : 0;
-            ApplyGraphics(data);
+        }
+        public static void SetBackgroundThrottle(bool minimized)
+        {
+            if (backgroundThrottle == minimized)
+                return;
+            backgroundThrottle = minimized;
+            ApplyFrameRate(GameSettings.Current);
         }
         static void ApplyGraphics(SettingsData data)
         {

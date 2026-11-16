@@ -286,7 +286,7 @@ namespace PickleVerse.LocalMatch
         {
             if (!configured)
                 return;
-            if (screenWidth != Screen.width || screenHeight != Screen.height || previousSafe != Screen.safeArea || previousRoot != root.rect)
+            if (screenWidth != Screen.width || screenHeight != Screen.height || previousSafe != UiSafeArea.Area || previousRoot != root.rect)
                 dirty = true;
             if (dirty)
                 Layout();
@@ -315,11 +315,11 @@ namespace PickleVerse.LocalMatch
             dirty = false;
             screenWidth = Screen.width;
             screenHeight = Screen.height;
-            previousSafe = Screen.safeArea;
+            previousSafe = UiSafeArea.Area;
             previousRoot = root.rect;
             Camera cam = canvas && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(root, Screen.safeArea.min, cam, out var min);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(root, Screen.safeArea.max, cam, out var max);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(root, UiSafeArea.Area.min, cam, out var min);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(root, UiSafeArea.Area.max, cam, out var max);
             SafeRect = safeOverride ?? UnityEngine.Rect.MinMaxRect(Mathf.Max(root.rect.xMin, min.x), Mathf.Max(root.rect.yMin, min.y), Mathf.Min(root.rect.xMax, max.x), Mathf.Min(root.rect.yMax, max.y));
             var settings = GameSettings.Current;
             var layout = MobileTouchLayout.Calculate(SafeRect, settings.touchScale, settings.leftHanded);

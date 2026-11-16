@@ -13,6 +13,7 @@ namespace PickleVerse.FrontEnd
     public sealed class TrainingAccessOverlay : MonoBehaviour
     {
         GameObject viewRoot;
+        Canvas viewCanvas;
         RectTransform loginEntry, banner, modal;
         TMP_Text status, title, detail;
         UnityEngine.UI.Button newcomer, experienced, previous, next, close, sync, failures;
@@ -50,6 +51,7 @@ namespace PickleVerse.FrontEnd
 
             font = RuntimeForms.Font();
             viewRoot = RuntimeForms.Canvas("Training Access View", 1400);
+            viewCanvas = viewRoot.GetComponent<Canvas>();
             SceneManager.MoveGameObjectToScene(viewRoot, scene);
             Build();
         }
@@ -112,6 +114,8 @@ namespace PickleVerse.FrontEnd
             bool visible=playable && runtime.Ready && (runtime.IsOffline || runtime.PendingOperations>0 || runtime.SyncFailures.Count>0 || !string.IsNullOrEmpty(lastMessage)&&Time.unscaledTime<messageUntil);
             bool anotherModalIsOpen = FrontEndModalInput.IsOpen && !FrontEndModalInput.IsOwnedBy(this);
             banner.gameObject.SetActive(visible && !SceneLoading.IsBlocking && !anotherModalIsOpen);
+            // Stay below the desktop title bar when the PickleVerse window frame is showing.
+            float scale=viewCanvas.scaleFactor;banner.anchoredPosition=new Vector2(0,-90-DesktopWindow.TopInset/Mathf.Max(.01f,scale));
             status.text=runtime.IsOffline?"Đang luyện tập ngoại tuyến · "+runtime.PendingOperations+" mục chờ đồng bộ":runtime.PendingOperations>0?runtime.PendingOperations+" mục chờ xác nhận · XP và sao đang tạm tính":runtime.SyncMessage??"Tiến trình đã đồng bộ.";
             sync.GetComponentInChildren<TMP_Text>().text=AccountRuntime.Ensure().Account.IsSignedIn?"Đồng bộ":"Đăng nhập";
             failures.interactable=runtime.SyncFailures.Count>0 || !string.IsNullOrEmpty(runtime.SyncMessage);

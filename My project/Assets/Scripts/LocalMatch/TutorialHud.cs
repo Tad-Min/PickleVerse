@@ -110,7 +110,7 @@ namespace PickleVerse.LocalMatch
                 tutorial.SetPaused(false);
             }
             var size = new Vector2(Screen.width, Screen.height);
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             if (size != lastResolution || area != lastSafeArea)
             {
                 lastResolution = size;

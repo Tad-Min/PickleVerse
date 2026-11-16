@@ -135,7 +135,7 @@ namespace PickleVerse.LocalMatch
         }
         void Update()
         {
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             var screen = new Vector2(Screen.width, Screen.height);
             if (safeArea && screen.x > 0 && screen.y > 0 && (area != lastSafe || screen != lastScreen))
             {

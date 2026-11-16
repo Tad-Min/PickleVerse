@@ -4,6 +4,8 @@ namespace PickleVerse.Settings
     [RequireComponent(typeof(RectTransform))]
     public sealed class UiSafeArea : MonoBehaviour
     {
+        /// <summary>Screen.safeArea minus the desktop title bar. Use this for every UI layout.</summary>
+        public static Rect Area => DesktopWindow.SafeArea;
         Rect last; Vector2 size; RectTransform target;
         void OnEnable()
         {
@@ -16,7 +18,7 @@ namespace PickleVerse.Settings
         }
         void Apply()
         {
-            var area = Screen.safeArea;
+            var area = Area;
             var current = new Vector2(Screen.width, Screen.height);
             if (current.x < 1 || current.y < 1 || area == last && current == size)
                 return;
