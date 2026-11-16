@@ -9,6 +9,7 @@ using PickleVerse.Services.Api;
 using PickleVerse.Settings;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -17,8 +18,10 @@ namespace PickleVerse.FrontEnd
     public sealed class ModerationOverlay : MonoBehaviour
     {
         static ModerationOverlay instance;
-        GameObject root, cover; TMP_Text heading, details, feedback, selected;
-        TMP_InputField statement; Button submit, refresh, close, previous, next, entry;
+        GameObject root, cover; TMP_Text heading, details, feedback, selected, statementLabel, counter, entryLabel, submitLabel, closeLabel;
+        TMP_InputField statement; Button submit, refresh, close, previous, next, entry, dismiss;
+        ScrollRect detailScroll; UiLineIcon selectedIcon; RectTransform panel;
+        int shownResult = -1, shownRestricted = -1; bool currentHasAppeal; Scene nameScene; string sceneName = "";
         readonly List<SanctionDecision> decisions=new List<SanctionDecision>();readonly List<PlayerAppeal> appeals=new List<PlayerAppeal>();
         readonly List<ReportTarget> targets=new List<ReportTarget>();
         int index, requestVersion, autoSession=-1; bool opened, reporting, busy; string matchId;
@@ -35,24 +38,90 @@ namespace PickleVerse.FrontEnd
         }
         void EnsureView()
         {
-            if (root) return;root=RuntimeForms.Canvas("Quyết định và tố cáo",1600);SceneManager.MoveGameObjectToScene(root,SceneManager.GetActiveScene());
-            entry=RuntimeForms.Button("Moderation",root.transform,"Quyết định & Khiếu nại",()=>OpenDecisions(),new Vector2(.015f,.018f),new Vector2(.21f,.075f));
-            cover=RuntimeForms.Panel("Cover",root.transform,Vector2.zero,Vector2.one,new Color(0,0,0,.9f)).gameObject;
-            var panel=RuntimeForms.Panel("Panel",cover.transform,new Vector2(.19f,.08f),new Vector2(.81f,.92f),new Color(.04f,.08f,.1f,1));
-            heading=RuntimeForms.Text("Title",panel,"",34,new Vector2(.04f,.9f),new Vector2(.96f,.98f));
-            selected=RuntimeForms.Text("Selected",panel,"",24,new Vector2(.04f,.81f),new Vector2(.96f,.9f));
-            details=RuntimeForms.ScrollText(panel,new Vector2(.04f,.41f),new Vector2(.96f,.8f));
-            statement=RuntimeForms.Input(panel,"Nhập nội dung khiếu nại…",new Vector2(.04f,.2f),new Vector2(.96f,.39f),4000);
-            feedback=RuntimeForms.Text("Feedback",panel,"",19,new Vector2(.04f,.13f),new Vector2(.96f,.2f));
-            previous=RuntimeForms.Button("Previous",panel,"Trước",()=>Select(-1),new Vector2(.04f,.04f),new Vector2(.18f,.12f));
-            next=RuntimeForms.Button("Next",panel,"Sau",()=>Select(1),new Vector2(.2f,.04f),new Vector2(.34f,.12f));
-            submit=RuntimeForms.Button("Submit",panel,"Gửi",Send,new Vector2(.36f,.04f),new Vector2(.57f,.12f));
-            refresh=RuntimeForms.Button("Refresh",panel,"Làm mới",()=>Reload(),new Vector2(.59f,.04f),new Vector2(.77f,.12f));
-            close=RuntimeForms.Button("Close",panel,"Đóng",Close,new Vector2(.79f,.04f),new Vector2(.96f,.12f));cover.SetActive(false);
+            if (root) return;
+            root=ArenaForms.Canvas("Quyết định và tố cáo",1600);SceneManager.MoveGameObjectToScene(root,SceneManager.GetActiveScene());
+            shownResult=shownRestricted=-1;
+            entry=ArenaForms.Action("Moderation",root.transform,"Quyết định & Khiếu nại",false,null,ArenaGlyph.Shield,21);
+            ArenaForms.Pin((RectTransform)entry.transform,Vector2.zero,Vector2.zero,new Vector2(28,24),new Vector2(340,60));
+            entryLabel=entry.GetComponentInChildren<TMP_Text>(true);
+
+            cover=ArenaForms.Cover("Cover",root.transform).gameObject;
+            cover.GetComponent<Image>().color=new Color(.01f,.02f,.05f,.84f);
+            panel=ArenaForms.Surface("Panel",cover.transform);
+            ArenaForms.Pin(panel,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(1160,860));
+
+            // Header: shield, gold title, close.
+            var shield=ArenaForms.Icon("Icon",panel,ArenaGlyph.Shield,ScreenUiTheme.Gold);
+            ArenaForms.Pin(shield.rectTransform,new Vector2(0,1),new Vector2(.5f,.5f),new Vector2(66,-58),new Vector2(42,42));
+            heading=ArenaForms.Label("Title",panel,"",ArenaForms.TitleSize,ScreenUiTheme.Gold);
+            ArenaForms.Pin(heading.rectTransform,new Vector2(0,1),new Vector2(0,.5f),new Vector2(104,-58),new Vector2(860,50));
+            dismiss=ArenaForms.IconButton("Dismiss",panel,ArenaGlyph.Close,Close);
+            ArenaForms.Pin((RectTransform)dismiss.transform,new Vector2(1,1),new Vector2(1,1),new Vector2(-26,-30),new Vector2(56,56));
+            var divider=ArenaForms.Rule("Divider",panel,new Color(1,1,1,.08f));
+            divider.rectTransform.anchorMin=new Vector2(0,1);divider.rectTransform.anchorMax=new Vector2(1,1);
+            divider.rectTransform.offsetMin=new Vector2(40,-106);divider.rectTransform.offsetMax=new Vector2(-40,-105);
+            var accent=ArenaForms.Rule("Accent",panel,new Color(ScreenUiTheme.Gold.r,ScreenUiTheme.Gold.g,ScreenUiTheme.Gold.b,.6f));
+            ArenaForms.Pin(accent.rectTransform,new Vector2(0,1),new Vector2(0,.5f),new Vector2(40,-106),new Vector2(120,2));
+            accent.rectTransform.pivot=new Vector2(0,.5f);
+
+            // Item line with its own pager.
+            selectedIcon=ArenaForms.Icon("State",panel,ArenaGlyph.Shield,ScreenUiTheme.Mint,.08f);
+            ArenaForms.Pin(selectedIcon.rectTransform,new Vector2(0,1),new Vector2(.5f,.5f),new Vector2(56,-150),new Vector2(24,24));
+            selected=ArenaForms.Label("Selected",panel,"",ArenaForms.HeadingSize,ScreenUiTheme.Text);
+            ArenaForms.Pin(selected.rectTransform,new Vector2(0,1),new Vector2(0,.5f),new Vector2(82,-150),new Vector2(880,40));
+            previous=ArenaForms.IconButton("Previous",panel,ArenaGlyph.Previous,()=>Select(-1));
+            ArenaForms.Pin((RectTransform)previous.transform,new Vector2(1,1),new Vector2(1,.5f),new Vector2(-104,-150),new Vector2(52,52));
+            next=ArenaForms.IconButton("Next",panel,ArenaGlyph.Next,()=>Select(1));
+            ArenaForms.Pin((RectTransform)next.transform,new Vector2(1,1),new Vector2(1,.5f),new Vector2(-40,-150),new Vector2(52,52));
+
+            // Decision / report text.
+            details=ArenaForms.ScrollText("Evidence",panel,out detailScroll);
+            var evidence=(RectTransform)detailScroll.transform;
+            evidence.anchorMin=new Vector2(0,1);evidence.anchorMax=new Vector2(1,1);
+            evidence.offsetMin=new Vector2(40,-488);evidence.offsetMax=new Vector2(-40,-186);
+
+            // Statement.
+            statementLabel=ArenaForms.Label("Statement Label",panel,"Nội dung khiếu nại",ArenaForms.CaptionSize,ScreenUiTheme.Muted);
+            ArenaForms.Pin(statementLabel.rectTransform,new Vector2(0,1),new Vector2(0,.5f),new Vector2(42,-514),new Vector2(700,28));
+            statement=ArenaForms.Input("Statement",panel,"Nhập nội dung khiếu nại…",4000);
+            var well=(RectTransform)statement.transform;
+            well.anchorMin=new Vector2(0,1);well.anchorMax=new Vector2(1,1);well.offsetMin=new Vector2(40,-694);well.offsetMax=new Vector2(-40,-534);
+            // Counter and feedback sit just above the footer, so they follow the panel when it is compact.
+            counter=ArenaForms.Label("Counter",panel,"0/4000",ArenaForms.HintSize,ScreenUiTheme.Muted,TextAlignmentOptions.Right);
+            ArenaForms.Pin(counter.rectTransform,new Vector2(1,0),new Vector2(1,.5f),new Vector2(-42,146),new Vector2(260,24));
+            statement.onValueChanged.AddListener(_=>UpdateCounter());
+            feedback=ArenaForms.Label("Feedback",panel,"",19,ScreenUiTheme.Muted,TextAlignmentOptions.Left,true);
+            ArenaForms.Pin(feedback.rectTransform,new Vector2(0,0),new Vector2(0,1),new Vector2(42,158),new Vector2(780,40));
+
+            // Footer.
+            refresh=ArenaForms.Action("Refresh",panel,"Làm mới",false,()=>Reload(),ArenaGlyph.Sync,22);
+            ArenaForms.Pin((RectTransform)refresh.transform,new Vector2(0,0),new Vector2(0,0),new Vector2(40,40),new Vector2(200,62));
+            close=ArenaForms.Action("Close",panel,"Đóng",false,Close,null,22);
+            ArenaForms.Pin((RectTransform)close.transform,new Vector2(1,0),new Vector2(1,0),new Vector2(-316,40),new Vector2(190,62));
+            closeLabel=close.GetComponentInChildren<TMP_Text>(true);
+            submit=ArenaForms.Action("Submit",panel,"Gửi",true,Send,null,22);
+            ArenaForms.Pin((RectTransform)submit.transform,new Vector2(1,0),new Vector2(1,0),new Vector2(-40,40),new Vector2(262,62));
+            submitLabel=submit.GetComponentInChildren<TMP_Text>(true);
+            cover.SetActive(false);
+        }
+        void UpdateCounter()
+        {
+            if (!statement) return;
+            ArenaForms.Set(counter,statement.text.Length+"/"+statement.characterLimit);
+        }
+        enum Tone { Info, Success, Problem }
+        void Feedback(string value, Tone tone=Tone.Info)
+        {
+            if (!feedback) return;
+            ArenaForms.Set(feedback,value);
+            feedback.color=tone==Tone.Problem?ArenaForms.Error:tone==Tone.Success?ArenaForms.Success:ScreenUiTheme.Muted;
         }
         void Update()
         {
-            string scene=SceneManager.GetActiveScene().name;var match=NetworkMatch.Instance;
+            // Scene.name allocates a new string on every call; read it once per scene.
+            var activeScene=SceneManager.GetActiveScene();
+            if (activeScene!=nameScene) { nameScene=activeScene;sceneName=activeScene.name; }
+            string scene=sceneName;var match=NetworkMatch.Instance;
             bool result=match && match.Finished && match.Roster!=null;
             bool available=Account.IsSignedIn && (scene=="Login" && Account.IsRestricted || scene=="Menu" || result);
             // In the home menu the entry lives in the bottom navigation as a "!" tile, clear of PLAY.
@@ -60,16 +129,33 @@ namespace PickleVerse.FrontEnd
             ShowMenuTile(menuTile && available && !SceneLoading.IsBlocking);
             if (!available || SceneLoading.IsBlocking)
             { if(root)root.SetActive(false);FrontEndModalInput.Release(this);return; }
-            EnsureView();root.SetActive(true);entry.gameObject.SetActive(!opened && !(menuTile && menuShortcut));
-            entry.GetComponentInChildren<TMP_Text>().text=result?"Tố cáo người chơi":"Quyết định & Khiếu nại";
-            entry.onClick.RemoveAllListeners();entry.onClick.AddListener(()=> { if(result)OpenReport(match.Roster.matchId);else OpenDecisions(); });
+            EnsureView();
+            if (!root.activeSelf) root.SetActive(true);
+            ArenaForms.Show(entry,!opened && !(menuTile && menuShortcut));
+            // Rebind the entry only when its meaning changes (no per-frame closures or listener churn).
+            int resultState=result?1:0;
+            if (shownResult!=resultState)
+            {
+                shownResult=resultState;
+                ArenaForms.Set(entryLabel,result?"Tố cáo người chơi":"Quyết định & Khiếu nại");
+                entry.onClick.RemoveAllListeners();
+                if (result) entry.onClick.AddListener(()=> { var current=NetworkMatch.Instance; if (current && current.Roster!=null) OpenReport(current.Roster.matchId); });
+                else entry.onClick.AddListener(OpenDecisions);
+            }
             if (scene=="Login" && Account.IsRestricted && autoSession!=Account.SessionVersion)
             { autoSession=Account.SessionVersion;OpenDecisions(); }
-            cover.SetActive(opened);
+            if (cover.activeSelf!=opened) cover.SetActive(opened);
             if (opened) FrontEndModalInput.TryAcquire(this);else FrontEndModalInput.Release(this);
-            close.GetComponentInChildren<TMP_Text>().text=Account.IsRestricted?"Đăng xuất":"Đóng";
-            submit.interactable=!busy && (reporting?targets.Count>0:decisions.Count>0 && !appeals.Any(a=>a.SanctionId==decisions[index].SanctionId));
-            refresh.interactable=previous.interactable=next.interactable=!busy;
+            int restricted=Account.IsRestricted?1:0;
+            if (shownRestricted!=restricted) { shownRestricted=restricted;ArenaForms.Set(closeLabel,restricted==1?"Đăng xuất":"Đóng"); }
+            int count=reporting?targets.Count:decisions.Count;
+            submit.interactable=!busy && (reporting?targets.Count>0:decisions.Count>0 && !currentHasAppeal);
+            refresh.interactable=dismiss.interactable=!busy;
+            previous.interactable=!busy && index>0;
+            next.interactable=!busy && index+1<count;
+            // Esc closes the dialog; a restricted account must choose "Đăng xuất" explicitly.
+            if (opened && !busy && restricted==0 && Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame && !(statement && statement.isFocused))
+                Close();
         }
         Button menuShortcut; Scene menuTileScene;
         void ShowMenuTile(bool show)
@@ -124,16 +210,16 @@ namespace PickleVerse.FrontEnd
         {
             EnsureView();
             if (busy) return;
-            opened=true;reporting=true;matchId=id;targetPlayer=player;index=0;statement.text="";statement.characterLimit=254;
+            opened=true;reporting=true;matchId=id;targetPlayer=player;index=0;statement.characterLimit=254;statement.text="";UpdateCounter();
             targets.Clear();
             Render();
             Reload();
         }
-        void OpenDecisions() { EnsureView();opened=true;reporting=false;targetPlayer=null;index=0;statement.text="";statement.characterLimit=4000;Reload(); }
+        void OpenDecisions() { EnsureView();opened=true;reporting=false;targetPlayer=null;index=0;statement.characterLimit=4000;statement.text="";UpdateCounter();Render();Reload(); }
         void Select(int delta) { index=Mathf.Clamp(index+delta,0,Math.Max(0,(reporting?targets.Count:decisions.Count)-1));statement.text="";Render(); }
         async void Reload()
         {
-            if(busy)return;busy=true;int request=++requestVersion,session=Account.SessionVersion;feedback.text="Đang tải…";
+            if(busy)return;busy=true;int request=++requestVersion,session=Account.SessionVersion;Feedback("Đang tải…");
             try
             {
                 if(reporting)
@@ -147,57 +233,74 @@ namespace PickleVerse.FrontEnd
                     var cases=await Account.SendAuthorizedAsync<List<PlayerAppeal>>("GET","api/Moderation/appeals");
                     if(!Current(request,session))return;decisions.Clear();decisions.AddRange(data);appeals.Clear();appeals.AddRange(cases);
                 }
-                feedback.text="";index=Mathf.Clamp(index,0,Math.Max(0,(reporting?targets.Count:decisions.Count)-1));Render();
+                Feedback("");index=Mathf.Clamp(index,0,Math.Max(0,(reporting?targets.Count:decisions.Count)-1));Render();
                 Debug.Log("[Moderation] Loaded "+(reporting?"report targets":"account decisions"));
             }
-            catch(Exception error) { if(Current(request,session)) feedback.text=error.Message; }
+            catch(Exception error) { if(Current(request,session)) Feedback(error.Message,Tone.Problem); }
             finally { if(request==requestVersion)busy=false; }
         }
         bool Current(int request,int session)=>this && root && opened && request==requestVersion && Account.SessionVersion==session;
         void Render()
         {
-            heading.text=reporting?"Tố cáo người chơi":"Quyết định và khiếu nại";
-            previous.gameObject.SetActive(!targetPlayer.HasValue);
-            next.gameObject.SetActive(!targetPlayer.HasValue);
-            submit.interactable = reporting ? targets.Count > 0 : decisions.Count > 0;
+            if (!heading) return;
+            ArenaForms.Set(heading,reporting?"Tố cáo người chơi":"Quyết định và khiếu nại");
+            int count=reporting?targets.Count:decisions.Count;
+            bool pager=!targetPlayer.HasValue && count>1;
+            ArenaForms.Show(previous,pager);ArenaForms.Show(next,pager);
+            bool empty=count==0;
+            currentHasAppeal=false;
             if(reporting)
             {
-                selected.text=targets.Count==0?"Không có người chơi phù hợp để tố cáo":targets[index].PlayerName+" · "+(index+1)+"/"+targets.Count;
-                details.text="Tố cáo chỉ áp dụng với người thật cùng trận đã hoàn tất. Mỗi người chỉ được gửi một đơn cho cùng người chơi trong trận. Ban quản trị sẽ đối chiếu bằng chứng và replay.";
-                statement.placeholder.GetComponent<TMP_Text>().text="Mô tả hành vi vi phạm (3–254 ký tự)…";
-                submit.GetComponentInChildren<TMP_Text>().text="Gửi tố cáo";
+                ArenaForms.Set(selected,empty?"Không có người chơi phù hợp để tố cáo":targets[index].PlayerName+(count>1?"  ·  "+(index+1)+"/"+count:""));
+                ArenaForms.Set(details,"Tố cáo chỉ áp dụng với người thật cùng trận đã hoàn tất. Mỗi người chỉ được gửi một đơn cho cùng người chơi trong trận. Ban quản trị sẽ đối chiếu bằng chứng và replay.");
+                ArenaForms.Set(statementLabel,"Mô tả hành vi vi phạm");
+                ArenaForms.Set(statement.placeholder.GetComponent<TMP_Text>(),"Mô tả hành vi vi phạm (3–254 ký tự)…");
+                ArenaForms.Set(submitLabel,"Gửi tố cáo");
+                selectedIcon.SetGlyph(ArenaGlyph.Shield);selectedIcon.color=empty?ScreenUiTheme.Muted:ArenaForms.Warning;
             }
             else
             {
-                selected.text=decisions.Count==0?"Tài khoản chưa có quyết định xử lý":"Quyết định "+(index+1)+"/"+decisions.Count;
-                if(decisions.Count==0)details.text="Không có quyết định xử lý để khiếu nại.";
+                ArenaForms.Set(selected,empty?"Tài khoản đang hoạt động bình thường":"Quyết định "+(index+1)+"/"+count);
+                selectedIcon.SetGlyph(empty?ArenaGlyph.Shield:ArenaGlyph.Star);selectedIcon.color=empty?ScreenUiTheme.Mint:ArenaForms.Warning;
+                if(empty)ArenaForms.Set(details,"Tài khoản của bạn chưa có quyết định xử lý nào, nên không có gì cần khiếu nại.\n\nNếu sau này tài khoản bị tạm ngưng hoặc khóa, quyết định sẽ hiện tại đây kèm lý do, thời hạn và nơi gửi khiếu nại.");
                 else
                 {
-                    var d=decisions[index];var a=appeals.FirstOrDefault(x=>x.SanctionId==d.SanctionId);
+                    var d=decisions[index];var a=appeals.FirstOrDefault(x=>x.SanctionId==d.SanctionId);currentHasAppeal=a!=null;
                     string state=d.RevokedAt!=null?"Đã thu hồi":d.Active?"Đang hiệu lực":"Đã hết hạn";
-                    details.text=(d.Restriction==UserAccountStatus.Suspended?"Tạm ngưng":"Khóa tài khoản")+" · "+state+"\n"+d.Reason+
+                    ArenaForms.Set(details,(d.Restriction==UserAccountStatus.Suspended?"Tạm ngưng":"Khóa tài khoản")+" · "+state+"\n"+d.Reason+
                         "\nBan hành: "+Time(d.CreatedAt)+"\nThời hạn: "+(d.ExpiresAt.HasValue?Time(d.ExpiresAt.Value):"Không thời hạn")+
-                        (a==null?"\nBạn có thể gửi một khiếu nại cho quyết định này.":"\n\nKhiếu nại: "+Status(a.Status)+"\n"+a.Statement+"\nKết luận: "+(a.DecisionReason??"Đang chờ xem xét"));
+                        (a==null?"\n\nBạn có thể gửi một khiếu nại cho quyết định này.":"\n\nKhiếu nại: "+Status(a.Status)+"\n"+a.Statement+"\nKết luận: "+(a.DecisionReason??"Đang chờ xem xét")));
                 }
-                statement.placeholder.GetComponent<TMP_Text>().text="Trình bày lý do và bằng chứng khiếu nại (10–4000 ký tự)…";
-                submit.GetComponentInChildren<TMP_Text>().text="Gửi khiếu nại";
+                ArenaForms.Set(statementLabel,currentHasAppeal?"Bạn đã gửi khiếu nại cho quyết định này":"Nội dung khiếu nại");
+                ArenaForms.Set(statement.placeholder.GetComponent<TMP_Text>(),"Trình bày lý do và bằng chứng khiếu nại (10–4000 ký tự)…");
+                ArenaForms.Set(submitLabel,"Gửi khiếu nại");
             }
+            // Nothing to appeal or report: hide the form instead of offering a dead control, and close the gap it leaves.
+            bool form=!empty && !(!reporting && currentHasAppeal);
+            ArenaForms.Show(statement,form);ArenaForms.Show(counter,form);ArenaForms.Show(submit,form);ArenaForms.Show(statementLabel,form);
+            var size=new Vector2(1160,form?860:660);
+            if (panel.sizeDelta!=size) panel.sizeDelta=size;
+            var closeRect=(RectTransform)close.transform;var closeAt=new Vector2(form?-316:-40,40);
+            if (closeRect.anchoredPosition!=closeAt) closeRect.anchoredPosition=closeAt;
+            selected.color=empty&&!reporting?ScreenUiTheme.Mint:ScreenUiTheme.Text;
+            if (detailScroll) detailScroll.verticalNormalizedPosition=1;
+            UpdateCounter();
         }
         static string Time(DateTime value)=>value.ToUniversalTime().AddHours(7).ToString("dd/MM/yyyy HH:mm");
         static string Status(AppealReviewStatus status)=>status==AppealReviewStatus.Accepted?"Được chấp nhận":status==AppealReviewStatus.Declined?"Bị từ chối":status==AppealReviewStatus.Checking?"Đang xem xét":"Đang chờ";
         async void Send()
         {
             if (reporting && targets.Count == 0 || !reporting && decisions.Count == 0) return;
-            if(busy)return;string text=statement.text.Trim();if(text.Length<(reporting?3:10)){feedback.text="Vui lòng nhập nội dung đầy đủ.";return;}
+            if(busy)return;string text=statement.text.Trim();if(text.Length<(reporting?3:10)){Feedback(reporting?"Vui lòng mô tả ít nhất 3 ký tự.":"Vui lòng trình bày ít nhất 10 ký tự.",Tone.Problem);return;}
             busy=true;int request=++requestVersion,session=Account.SessionVersion;
             try
             {
                 if(reporting)await Account.SendAuthorizedAsync<ApiMessage>("POST","api/Matches/report",new { MatchId=matchId,ReportedPlayerId=targets[index].PlayerId,Reason=text });
                 else await Account.SendAuthorizedAsync<PlayerAppeal>("POST","api/Moderation/appeals",new { SanctionId=decisions[index].SanctionId,Statement=text });
-                if(!Current(request,session))return;feedback.text=reporting?"Đã gửi tố cáo.":"Đã gửi khiếu nại. Bấm Làm mới để theo dõi quyết định.";statement.text="";
+                if(!Current(request,session))return;Feedback(reporting?"Đã gửi tố cáo. Ban quản trị sẽ xem xét.":"Đã gửi khiếu nại. Bấm Làm mới để theo dõi quyết định.",Tone.Success);statement.text="";
                 if(!reporting){busy=false;Reload();}
             }
-            catch(Exception error){if(Current(request,session))feedback.text=error.Message;}
+            catch(Exception error){if(Current(request,session))Feedback(error.Message,Tone.Problem);}
             finally{if(request==requestVersion)busy=false;}
         }
         async void Close()
