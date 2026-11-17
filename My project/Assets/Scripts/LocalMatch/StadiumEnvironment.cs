@@ -25,13 +25,46 @@ namespace PickleVerse.LocalMatch
         public float sunMaskGroundY;
         [Tooltip("Metres covered by the mask, centred on the court.")]
         public float sunMaskSpan = 224;
+        // Night street lighting is baked (lamp pools in the mask, glare sprites, lit windows): no realtime
+        // lights. Sodium-warm, slightly brighter than the pools' baked reference.
+        public static readonly Color NightLampColor = new Color(1.0f, .70f, .40f) * 1.9f;
+        static readonly int SunMaskId = Shader.PropertyToID("_PV_SunMask"), SunMaskParamsId = Shader.PropertyToID("_PV_SunMaskParams"),
+            SunMaskOnId = Shader.PropertyToID("_PV_SunMaskOn"), NightLightsOnId = Shader.PropertyToID("_PV_NightLightsOn"),
+            LampColorId = Shader.PropertyToID("_PV_LampColor"), NightGlowId = Shader.PropertyToID("_PV_NightGlow"),
+            SkyZenithId = Shader.PropertyToID("_PV_SkyZenith"), SkyHorizonId = Shader.PropertyToID("_PV_SkyHorizon");
+
+        /// <summary>
+        /// Publishes the globals of the PickleVerse/Environment shaders for a night weight (0 day, 1 night,
+        /// blends in between): lamp lenses, glare sprites, lit windows, baked lamp pools and sky reflections.
+        /// Every scene that switches day/night goes through <see cref="ApplyNight"/>, so the Menu cycle,
+        /// bot matches and online matches all light the district the same way. Baked sun shadows are left off:
+        /// MatchEnvironmentLighting enables them under its golden-hour sun.
+        /// </summary>
+        public static void PublishEnvironmentGlobals(StadiumEnvironment stadium, float night)
+        {
+            night = Mathf.Clamp01(night);
+            bool mask = stadium && stadium.sunShadowMask;
+            if (mask)
+            {
+                var origin = stadium.transform.position;
+                Shader.SetGlobalTexture(SunMaskId, stadium.sunShadowMask);
+                Shader.SetGlobalVector(SunMaskParamsId, new Vector4(1f / Mathf.Max(1, stadium.sunMaskSpan), origin.y + stadium.sunMaskGroundY, origin.x, origin.z));
+            }
+            Shader.SetGlobalFloat(NightGlowId, night);
+            Shader.SetGlobalFloat(NightLightsOnId, mask ? night : 0);
+            Shader.SetGlobalFloat(SunMaskOnId, 0);
+            Shader.SetGlobalColor(LampColorId, NightLampColor);
+            Shader.SetGlobalColor(SkyZenithId, Color.Lerp(new Color(.30f, .42f, .66f), new Color(.02f, .03f, .06f), night));
+            Shader.SetGlobalColor(SkyHorizonId, Color.Lerp(new Color(.98f, .70f, .50f), new Color(.05f, .06f, .09f), night));
+        }
+
         void OnDisable()
         {
-            // The mask belongs to this venue; another venue or scene must not inherit its shadows.
+            // The mask belongs to this venue; another venue or scene must not inherit its shadows or pools.
             if (sunShadowMask)
             {
-                Shader.SetGlobalFloat("_PV_SunMaskOn", 0);
-                Shader.SetGlobalFloat("_PV_NightLightsOn", 0);
+                Shader.SetGlobalFloat(SunMaskOnId, 0);
+                Shader.SetGlobalFloat(NightLightsOnId, 0);
             }
         }
         public Vector3 KeepCameraInside(Vector3 position)
@@ -98,6 +131,7 @@ namespace PickleVerse.LocalMatch
             if (force)
                 applied = -1;
             night = Mathf.Clamp01(night);
+            PublishEnvironmentGlobals(this, night);
             minimumCourtIllumination = Mathf.Clamp01(minimumCourtIllumination);
             if (applied >= 0 && Mathf.Abs(applied - night) < .003f && Mathf.Abs(appliedMinimum - minimumCourtIllumination) < .003f)
                 return;

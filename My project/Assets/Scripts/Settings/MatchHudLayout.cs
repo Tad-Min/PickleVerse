@@ -53,7 +53,7 @@ namespace PickleVerse.Settings
         void Apply()
         {
             var screen = new Vector2(Screen.width, Screen.height);
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             if (!canvas)
                 canvas = GetComponent<Canvas>();
             float scale = Mathf.Max(.01f, canvas ? canvas.scaleFactor : 1);

@@ -65,7 +65,7 @@ namespace PickleVerse.Multiplayer
         {
             if (Screen.width <= 0 || Screen.height <= 0)
                 return;
-            var area = Screen.safeArea;
+            var area = PickleVerse.Settings.UiSafeArea.Area;
             safeArea.anchorMin = new Vector2(area.xMin / Screen.width, area.yMin / Screen.height);
             safeArea.anchorMax = new Vector2(area.xMax / Screen.width, area.yMax / Screen.height);
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;

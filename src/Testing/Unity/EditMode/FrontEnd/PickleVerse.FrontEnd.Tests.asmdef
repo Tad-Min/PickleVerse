@@ -5,6 +5,7 @@
     "PickleVerse.Settings",
     "Unity.TextMeshPro",
     "Unity.ugui",
+    "Unity.TextMeshPro",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],

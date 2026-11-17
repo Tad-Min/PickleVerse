@@ -106,6 +106,20 @@ Thời gian GPU chênh ±0,1 ms; các ca ban ngày cũng không đổi. Cột "t
 cùng fixture; FPS trung bình gần trần ~144 của Editor nên chủ yếu xem p95 và GPU ms. Chưa đo trên điện thoại.
 Hình học hai sân vẫn đạt 12/12 sau khi cài lại.
 
+### Đồng bộ đèn giữa Menu và các trận (15/11/2026)
+
+Lỗi: Menu có chu kỳ ngày/đêm riêng nên không tự đặt biến shader của đèn đêm; nó chỉ thừa hưởng giá trị
+còn sót từ trận trước (quầng đèn và cửa sổ đôi khi sáng, vũng sáng dưới đèn thì tắt).
+Sửa: `StadiumEnvironment.ApplyNight()` tự đặt các biến này theo mức đêm của chính scene. Menu, đấu bot và
+trận online đều gọi hàm này nên đèn hiển thị giống nhau; lúc hoàng hôn ở Menu, đèn hòa trộn theo chu kỳ.
+Bóng nắng nướng sẵn chỉ bật dưới mặt trời chiều tà của trận đấu (Menu dùng hướng nắng khác).
+
+Kiểm tra Play mode 10/10: BotMatch hai sân ngày/đêm → Menu ngày, hoàng hôn, đêm → lại BotMatch ngày; giá trị
+không còn sót qua scene, mặt nạ đổi đúng theo sân. MultiplayerCourt cho kết quả giống BotMatch;
+Training/Tutorial/Replay dùng sân cũ không có khu bối cảnh nên không đổi.
+Bốn ảnh xem trước sân ở màn chọn chế độ được chụp lại theo giao diện mới (cùng khung hình, giữ GUID).
+Ảnh: `BlenderWork/SunsetDistrict20261115/night/MenuBotMatch-Sync.jpg`.
+
 ## Kiểm thử
 
 - Hình học: 12/12 đạt — mặt sân/vạch/lưới (từng đỉnh, sai số 0,1 mm), điểm vào sân và điểm kết quả,

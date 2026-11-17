@@ -197,7 +197,7 @@ namespace PickleVerse.FrontEnd
         }
         void ApplySafeArea()
         {
-            var area = Screen.safeArea;
+            var area = PickleVerse.Settings.UiSafeArea.Area;
             if (Screen.width <= 0 || Screen.height <= 0)
                 return;
             var size = new Vector2(Screen.width, Screen.height);

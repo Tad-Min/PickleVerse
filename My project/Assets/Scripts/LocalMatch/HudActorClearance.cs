@@ -77,7 +77,7 @@ namespace PickleVerse.LocalMatch
             if (!panel.Overlaps(person))
                 return 0;
             float left = person.xMin - Margin - panel.xMax, right = person.xMax + Margin - panel.xMin;
-            var area = Screen.safeArea;
+            var area = PickleVerse.Settings.UiSafeArea.Area;
             bool leftFits = panel.xMin + left >= area.xMin + Margin, rightFits = panel.xMax + right <= area.xMax - Margin;
             float chosen = leftFits && rightFits ? (-left < right ? left : right) : leftFits ? left : rightFits ? right : 0;
             return chosen / scale;

@@ -69,6 +69,7 @@ namespace PickleVerse.FrontEnd
                 }
                 if (!view) { Debug.LogError("Authentication scene is missing its AccountPanelView."); return; }
                 BindView();
+                LoginExitButton.Attach(view);
                 loginRetryPending = pendingLoginFailure != null;
                 Show(pendingLoginFailure is ApiException api && (api.Code == "email_not_verified" || api.Code == "email_exists") ? Page.Verify : Page.Login);
                 if (pendingLoginFailure != null)

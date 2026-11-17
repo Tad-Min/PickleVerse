@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 namespace PickleVerse.Settings
 {
     public enum GameAction { Forward, Backward, Left, Right, Run, Drive, Dink, Volley, Power, Cross, CancelShot, Help, Continue, Settings }
+    /// <summary>Desktop presentation. Stored as an int so new modes never break saved preferences.</summary>
+    public enum DisplayMode { Windowed = 0, Fullscreen = 1, Borderless = 2 }
 
     [Serializable]
     public sealed class SettingsData
@@ -17,6 +19,9 @@ namespace PickleVerse.Settings
         public bool shadows = true, vsync;
         public float touchScale = 1, touchOpacity = .85f, deadzone = .08f, sprintThreshold = .88f;
         public bool leftHanded;
+        // Borderless matches the player's original FullScreenWindow start-up. 0×0 picks the largest window that fits.
+        public int displayMode = (int)DisplayMode.Borderless;
+        public int windowWidth, windowHeight;
         public int[] keys;
         public Vector2[] touchPositions;
 
@@ -29,6 +34,7 @@ namespace PickleVerse.Settings
         }
         public SettingsData Copy() => JsonUtility.FromJson<SettingsData>(JsonUtility.ToJson(this));
         public Key KeyFor(GameAction action) => (Key)keys[(int)action];
+        public DisplayMode Display => (DisplayMode)displayMode;
         public void SetPreset(int preset)
         {
             graphics = Mathf.Clamp(preset, 0, 2);
@@ -67,6 +73,10 @@ namespace PickleVerse.Settings
                 msaa = 4;
             if (fps != 30 && fps != 60 && fps != 120)
                 fps = 60;
+            if (displayMode < (int)DisplayMode.Windowed || displayMode > (int)DisplayMode.Borderless)
+                displayMode = (int)DisplayMode.Borderless;
+            if (windowWidth < WindowSizes.MinimumWidth || windowHeight < WindowSizes.MinimumHeight || windowWidth > 7680 || windowHeight > 4320)
+                windowWidth = windowHeight = 0;
             touchScale = Mathf.Clamp(touchScale, .75f, 1.4f);
             touchOpacity = Mathf.Clamp(touchOpacity, .35f, 1);
             deadzone = Mathf.Clamp(deadzone, .02f, .25f);
