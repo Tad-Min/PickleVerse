@@ -60,8 +60,24 @@ static class GameChecks
                 "advanced training prerequisites match the Unity prototype");
         }
         var state = await Call(s => s.Read(id));
-        check(state.player.id == id.ToString("N") && state.player.online && state.revision > 0,
+        check(state.player.id == id.ToString("N") && state.player.level == 1 && state.player.NextLevelXp == 10 && state.revision > 0,
             "online game state initializes and persists for the authenticated player");
+        var legacyPlayer = await new FunctionalFixture(options).Player();
+        await using (var context = new PickleVerseContext(options))
+        {
+            var profile = await context.Playerprofiles.SingleAsync(p => p.Userid == legacyPlayer);
+            profile.Level = 3;
+            profile.Exp = 85;
+            await context.SaveChangesAsync();
+        }
+        var legacyProgress = await Call(s => s.Read(legacyPlayer));
+        check(legacyProgress.player.level == 5 && legacyProgress.player.levelXp == 15 && legacyProgress.player.totalXp == 115,
+            "an existing profile carries all in-level XP through the new thresholds");
+        await using (var context = new PickleVerseContext(options))
+        {
+            var profile = await context.Playerprofiles.AsNoTracking().SingleAsync(p => p.Userid == legacyPlayer);
+            check(profile.Level == 5 && profile.Exp == 15, "normalized XP persists through the existing profile columns");
+        }
         check(state.inventory.owned.SequenceEqual(new[] { "paddle.default" }) && state.player.coins == 0 && state.player.gems == 0,
             "new account owns only its default paddle with no imported local money");
         check(GameJson.Read<GameSnapshot>(GameJson.Write(state)).catalog.lessons.Length == 15,
@@ -172,9 +188,12 @@ static class GameChecks
         var finishedMatch = await Call(s => s.FinishBot(id, finish));
         var replayedMatch = await Call(s => s.FinishBot(id, finish));
         check(finishedMatch.player.coins == beforeMatch.player.coins + 100 && finishedMatch.player.wins == beforeMatch.player.wins + 1
-            && finishedMatch.player.elo == beforeMatch.player.elo && finishedMatch.player.levelXp == beforeMatch.player.levelXp + 10,
-            "finished bot match grants original coins and XP using server rating data");
-        check(replayedMatch.player.coins == finishedMatch.player.coins && replayedMatch.player.wins == finishedMatch.player.wins,
+            && finishedMatch.player.elo == beforeMatch.player.elo,
+            "finished bot match grants coins and a win using server rating data");
+        check(finishedMatch.player.totalXp == beforeMatch.player.totalXp + 10,
+            "a practice win grants the same ten XP with existing training progress");
+        check(replayedMatch.player.coins == finishedMatch.player.coins && replayedMatch.player.wins == finishedMatch.player.wins
+            && replayedMatch.player.totalXp == finishedMatch.player.totalXp,
             "repeated match result never grants duplicate counters or rewards");
         finish.RequestId = Guid.NewGuid().ToString("N");
         var anotherRequest = await Call(s => s.FinishBot(id, finish));

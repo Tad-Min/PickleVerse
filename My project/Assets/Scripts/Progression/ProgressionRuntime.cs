@@ -42,7 +42,7 @@ namespace PickleVerse.Progression
         public static bool DeveloperControls => false;
         public static event Action Changed;
         public static event Action Quitting;
-        static PlayerProfile Empty() => new PlayerProfile { id = "", playerName = "Chưa đăng nhập", online = true };
+        static PlayerProfile Empty() => new PlayerProfile { id = "", playerName = "Chưa đăng nhập" };
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
         {
@@ -134,16 +134,15 @@ namespace PickleVerse.Progression
             if (Ready && state.revision < Snapshot.revision)
                 return;
             IsOffline = false;
+            ProgressionEngine.NormalizeExperience(state.player);
             CacheConfirmed(state);
             if (offlineStore != null && offlineStore.PendingCount > 0) state = offlineStore.Project();
             state = PrepareActiveLesson(state);
             TrainingCurriculum.Configure(state.catalog.lessons);
-            rules.winXp = state.catalog.winXp;
             rules.lossXp = state.catalog.lossXp;
             rules.dailyBonus = state.catalog.dailyBonus;
             rules.weeklyBonus = state.catalog.weeklyBonus;
             rules.definitions = state.catalog.definitions;
-            state.player.online = true;
             player = state.player;
             Snapshot = state;
             loadedSession = account.SessionVersion;

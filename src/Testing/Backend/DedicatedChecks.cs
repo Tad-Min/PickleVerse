@@ -118,6 +118,11 @@ static class DedicatedChecks
         await Task.WhenAll(Complete(job,results),Complete(job,results));
         var winner=await Call((g,_)=>g.Read(owner));
         check(winner.player.pendingMatch==null&&winner.player.coins==150&&winner.player.wins==1,"server completion grants the singles result exactly once");
+        check(winner.player.level == 2 && winner.player.levelXp == 0 && winner.player.totalXp == 10 && winner.player.NextLevelXp == 20,
+            "ten XP from the first ranked win persists level two once even when completion is retried");
+        var loser = await Call((g, _) => g.Read(Guid.Parse(first.Roster.members[1].id)));
+        check(loser.player.level == 1 && loser.player.levelXp == 5 && loser.player.totalXp == 5,
+            "a ranked loss at level one grants the configured loss XP");
         await using(var db=new PickleVerseContext(options))
             check(await db.Ratingledgers.CountAsync(r=>r.Matchid==Guid.Parse(job.MatchId))==2,"dedicated singles commits one rating ledger row per participant");
         await leases.Release(job.LeaseId, worker);

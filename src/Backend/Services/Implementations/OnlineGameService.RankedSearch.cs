@@ -93,57 +93,58 @@ public sealed partial class OnlineGameService
                 && g.All(x => x.entry.party.SequenceEqual(g[0].entry.party))).OrderBy(g => g.Min(x => x.entry.started)).ToList();
         var own = groups.FirstOrDefault(g => g.Any(x => x.entry.playerId == entry.playerId));
         if (own == null)
-            return await QueueTicket(entry);
-        var selected = new List<List<(string raw, QueueEntry entry)>> { own };
+            return await QueueTicket(await matchmaking.Get(id, request.SearchId, false));
+        var seats = new List<(string raw, QueueEntry entry)>(own);
+        var teams = new Dictionary<string, int> { [own[0].entry.group] = 0 };
         int cap = entry.mode;
-        bool Fill(int at, int a, int b)
+        long now = Milliseconds;
+        long fallbackAt = now - settings.Matchmaking.BotFallbackSeconds * 1000L;
+        bool Fill(int at, int a, int b, int target)
         {
-            if (a == cap && b == cap)
+            if (a + b == target)
                 return true;
             for (int i = at; i < groups.Count; i++)
             {
                 var g = groups[i];
-                if (g == own)
+                if (g == own || a + b + g.Count > target)
                     continue;
                 if (cap == 1)
                 {
                     var other = g[0].entry;
-                    if (Milliseconds - entry.started >= settings.Matchmaking.BotFallbackSeconds * 1000L || Milliseconds - other.started >= settings.Matchmaking.BotFallbackSeconds * 1000L)
+                    if (entry.started <= fallbackAt || other.started <= fallbackAt)
                         continue;
-                    if (!EloPolicy.PairingKeys(entry.elo, entry.losses, Milliseconds - entry.started >= 30000)
-                        .Intersect(EloPolicy.PairingKeys(other.elo, other.losses, Milliseconds - other.started >= 30000)).Any())
+                    if (!EloPolicy.PairingKeys(entry.elo, entry.losses, now - entry.started >= 30000)
+                        .Intersect(EloPolicy.PairingKeys(other.elo, other.losses, now - other.started >= 30000)).Any())
                         continue;
                 }
-                selected.Add(g);
-                if (a + g.Count <= cap && Fill(i + 1, a + g.Count, b))
-                    return true;
-                if (b + g.Count <= cap && Fill(i + 1, a, b + g.Count))
-                    return true;
-                selected.RemoveAt(selected.Count - 1);
+                int firstTeam = a > b ? 1 : 0;
+                for (int choice = 0; choice < 2; choice++)
+                {
+                    int team = (firstTeam + choice) % 2;
+                    int nextA = a + (team == 0 ? g.Count : 0);
+                    int nextB = b + (team == 1 ? g.Count : 0);
+                    if (nextA > cap || nextB > cap)
+                        continue;
+                    teams[g[0].entry.group] = team;
+                    seats.AddRange(g);
+                    if (Fill(i + 1, nextA, nextB, target))
+                        return true;
+                    seats.RemoveRange(seats.Count - g.Count, g.Count);
+                    teams.Remove(g[0].entry.group);
+                }
             }
             return false;
         }
-        if (!Fill(0, own.Count, 0))
-            return await QueueTicket(entry);
-        var teams = new Dictionary<string, int>();
-        bool Teams(int at, int a, int b)
+        if (!Fill(0, own.Count, 0, 2 * cap))
         {
-            if (at == selected.Count)
-                return a == cap && b == cap;
-            var g = selected[at];
-            foreach (int team in new[] { 0, 1 })
-            {
-                if ((team == 0 ? a : b) + g.Count > cap)
-                    continue;
-                teams[g[0].entry.group] = team;
-                if (Teams(at + 1, a + (team == 0 ? g.Count : 0), b + (team == 1 ? g.Count : 0)))
-                    return true;
-            }
-            return false;
+            if (entry.mode != (int)PlayMode.Doubles || entry.protocol < RankedSearchRequest.RankedDoublesProtocol
+                || own.Any(x => x.entry.started > fallbackAt))
+                return await QueueTicket(entry);
+            // Search in descending order so any available human seat takes priority over a bot.
+            for (int target = 2 * cap - 1; target >= own.Count; target--)
+                if (Fill(0, own.Count, 0, target))
+                    break;
         }
-        if (!Teams(0, 0, 0))
-            return await QueueTicket(entry);
-        var seats = selected.SelectMany(g => g).ToList();
         var host = seats.OrderBy(x => x.entry.started).ThenBy(x => x.entry.playerId, StringComparer.Ordinal).First().entry.playerId;
         var match = Guid.NewGuid().ToString("N");
         var roster = new MatchRoster
@@ -160,6 +161,22 @@ public sealed partial class OnlineGameService
                 return m;
             }).ToList()
         };
+        int missing = 2 * cap - roster.Count;
+        if (missing > 0)
+        {
+            var bots = await _unitOfWork.Game.BotMembers(RankedBotAccounts.Ids.Select(Guid.Parse).ToArray(), missing);
+            if (bots.Count != missing)
+                return await QueueTicket(entry);
+            int humanElo = (int)Math.Round(seats.Average(x => x.entry.elo));
+            int humanLosses = (int)Math.Round(seats.Average(x => x.entry.losses));
+            int botElo = Math.Max(EloPolicy.Minimum, EloPolicy.BotElo(humanElo, humanLosses));
+            foreach (var bot in bots)
+            {
+                bot.team = roster.members.Count(m => m.team == 0) < cap ? 0 : 1;
+                bot.elo = botElo;
+                roster.members.Add(bot);
+            }
+        }
         foreach (var x in seats)
         {
             x.entry.state = MatchmakingSearchStatus.Matched;

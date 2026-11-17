@@ -36,7 +36,8 @@ public sealed class GameCatalog
     public bool hybridTelemetryEnabled, hybridCoachingEnabled;
     public bool dedicatedServerEnabled;
     public string version = "";
-    public int winXp, lossXp;
+    public int winXp = PlayerProfile.LevelXpStep;
+    public int lossXp;
     public RewardBundle dailyBonus, weeklyBonus;
     public MatchRewards matchRewards = new();
     public RuntimeMatchmakingSettings matchmaking = new();
@@ -44,7 +45,7 @@ public sealed class GameCatalog
     public List<ProgressDefinition> definitions = [];
     public TrainingDrill[] lessons = [];
     public CosmeticOffer[] cosmetics = [];
-    public ProgressionConfig Rules() => new() { winXp = winXp, lossXp = lossXp, dailyBonus = dailyBonus, weeklyBonus = weeklyBonus, definitions = definitions };
+    public ProgressionConfig Rules() => new() { lossXp = lossXp, dailyBonus = dailyBonus, weeklyBonus = weeklyBonus, definitions = definitions };
 }
 public sealed class MatchRewards
 {
@@ -145,6 +146,7 @@ public sealed class AppActivityReceipt
 }
 public sealed class RankedSearchRequest
 {
+    public const int RankedDoublesProtocol = 20;
     public Guid SearchId { get; set; }
     public PickleVerse.Multiplayer.PlayMode Mode { get; set; } = PickleVerse.Multiplayer.PlayMode.Singles;
     public string Region { get; set; } = "asia";

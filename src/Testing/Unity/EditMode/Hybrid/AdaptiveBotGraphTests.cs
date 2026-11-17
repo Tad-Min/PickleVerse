@@ -27,6 +27,7 @@ public sealed class AdaptiveBotGraphTests
         public int Bounces => Stroke<=2?0:1;
         public int Server => 1;
         public int ExpectedHitter => 1;
+        public float RecoveryX => 0;
         public string Phase => Serving?"PreServe":"Rally";
         public float ServeElapsed => 2;
         public Context(int seed, bool productionPrediction=false)

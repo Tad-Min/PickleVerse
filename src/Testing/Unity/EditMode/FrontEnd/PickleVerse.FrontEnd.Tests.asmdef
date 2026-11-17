@@ -3,6 +3,7 @@
   "references": [
     "PickleVerse.FrontEnd",
     "PickleVerse.Settings",
+    "Unity.TextMeshPro",
     "Unity.ugui",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"

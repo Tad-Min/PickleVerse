@@ -104,9 +104,9 @@ namespace PickleVerse.Progression
             if (state?.player == null || state.catalog?.lessons == null || state.catalog.definitions == null)
                 throw new InvalidOperationException("Dữ liệu ngoại tuyến chưa đầy đủ.");
             TrainingCurriculum.Configure(state.catalog.lessons);
-            rules.winXp = state.catalog.winXp; rules.lossXp = state.catalog.lossXp; rules.dailyBonus = state.catalog.dailyBonus;
+            rules.lossXp = state.catalog.lossXp; rules.dailyBonus = state.catalog.dailyBonus;
             rules.weeklyBonus = state.catalog.weeklyBonus; rules.definitions = state.catalog.definitions;
-            state.player.online = false; player = state.player; Snapshot = state;
+            player = state.player; Snapshot = state;
             loadedSession = account.SessionVersion; Error = null; Changed?.Invoke();
         }
         OnlineGameSnapshot PrepareActiveLesson(OnlineGameSnapshot state)

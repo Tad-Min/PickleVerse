@@ -21,18 +21,21 @@ namespace PickleVerse.Multiplayer
                 if (kind == "shot" && a.Count == 6)
                     ShotFrom(a[0].Value<int>(), a[1].Value<bool>(), a[2].Value<bool>(), new Vector2(a[3].Value<float>(), a[4].Value<float>()), a[5].Value<bool>());
             }
-            if (source != Object.StateAuthority)
+            if (HasStateAuthority || source != Object.StateAuthority)
                 return;
             if (kind == "teleport" && a.Count == 5)
                 TeleportEffect(V(a, 0), a[3].Value<uint>(), a[4].Value<int>());
             else if (kind == "swing" && a.Count == 8)
-                SwingEffect(a[0].Value<int>(), a[1].Value<bool>(), a[2].Value<bool>(), V(a, 3), a[6].Value<float>(), a[7].Value<double>());
+                ScheduleSwing(a[0].Value<int>(), a[1].Value<bool>(), a[2].Value<bool>(), V(a, 3), a[6].Value<float>(), a[7].Value<double>());
             else if (kind == "contact" && a.Count == 10)
-                ContactEffect(a[0].Value<bool>(), V(a, 1), a[4].Value<bool>(), V(a, 5), a[8].Value<double>(), a[9].Value<byte>());
+                ScheduleContact(a[0].Value<bool>(), V(a, 1), a[4].Value<bool>(), V(a, 5), a[8].Value<double>(), a[9].Value<byte>());
             else if (kind == "split" && a.Count == 0)
-                SplitStepEffect();
+                poseEvents.Enqueue((double.NegativeInfinity, _ => Actor.SplitStep()));
             else if (kind == "react" && a.Count == 2)
-                ReactEffect(a[0].Value<bool>(), a[1].Value<bool>());
+            {
+                bool won = a[0].Value<bool>(), matchOver = a[1].Value<bool>();
+                poseEvents.Enqueue((double.NegativeInfinity, _ => Actor.Reaction(won, matchOver)));
+            }
         }
         void ShotServerRpc(int kind, bool attack, bool cross, Vector2 axes, bool run) => Send("shot", kind, attack, cross, axes.x, axes.y, run);
         void TeleportClientRpc(Vector3 p, uint sequence, int end) => Broadcast("teleport", p.x, p.y, p.z, sequence, end);

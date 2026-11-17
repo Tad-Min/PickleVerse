@@ -20,9 +20,14 @@ public sealed partial class GameRepository
         .Where(p => p.Playerid == player && p.Finalizedat != null && p.Match.Status == MatchStatus.Finished
             && (p.Outcome == "WIN" || p.Outcome == "LOSE") && !p.Localforfeit && p.Match.Endedat >= enabled)
         .Select(p => p.Match.Endedat!.Value.Date).Distinct().OrderBy(d => d).ToListAsync();
-    public Task<Gamematch?> PendingMatch(Guid player) => MatchQueries.Query(db)
-        .Where(m => m.Status == MatchStatus.Playing && m.Gamematchplayers.Any(p => p.Playerid == player && (m.Kind != "BotPractice" || p.Isreplaywriter)))
-        .OrderByDescending(m => m.Createdat).ThenByDescending(m => m.Matchid).FirstOrDefaultAsync();
+    public Task<Gamematch?> PendingMatch(Guid player)
+    {
+        bool systemBot = SystemBots.Contains(player);
+        return MatchQueries.Query(db)
+            .Where(m => m.Status == MatchStatus.Playing && (!systemBot || m.Kind != "MatchedDoubles")
+                && m.Gamematchplayers.Any(p => p.Playerid == player && (m.Kind != "BotPractice" || p.Isreplaywriter)))
+            .OrderByDescending(m => m.Createdat).ThenByDescending(m => m.Matchid).FirstOrDefaultAsync();
+    }
     public Task<Guid?> PendingOnline(Guid player) => db.Gamematches.AsNoTracking()
         .Where(m => m.Status == MatchStatus.Playing && m.Kind != "BotPractice" && m.Gamematchplayers.Any(p => p.Playerid == player))
         .OrderBy(m => m.Createdat).Select(m => (Guid?)m.Matchid).FirstOrDefaultAsync();
@@ -61,11 +66,18 @@ public sealed partial class GameRepository
         """);
     public Task<Playerprofile?> PracticeBot(Guid[] bots) => db.Playerprofiles.AsNoTracking()
         .Where(p => bots.Contains(p.Userid) && p.User.Status == UserStatus.Active).OrderBy(p => EF.Functions.Random()).FirstOrDefaultAsync();
-    public Task<List<Guid>> AvailableBots(Guid[] bots, DateTime cutoff) => db.Playerprofiles.Where(p => bots.Contains(p.Userid)
-        && !p.Gamematchplayers.Any(gp => gp.Match.Kind != "BotPractice" && (gp.Match.Status == MatchStatus.Playing || gp.Match.Status == MatchStatus.Preparing && gp.Match.Createdat > cutoff)))
+    public Task<List<Guid>> AvailableBots(Guid[] bots, DateTime cutoff) => db.Playerprofiles.Where(p => bots.Contains(p.Userid) && p.User.Status == UserStatus.Active
+        && !p.Gamematchplayers.Any(gp => gp.Match.Kind == "RankedSingles" && (gp.Match.Status == MatchStatus.Playing || gp.Match.Status == MatchStatus.Preparing && gp.Match.Createdat > cutoff)))
         .OrderBy(p => EF.Functions.Random()).Select(p => p.Userid).ToListAsync();
-    public Task<RoomMember?> BotMember(Guid bot) => db.Playerprofiles.Where(p => p.Userid == bot).Select(p => new RoomMember
-        { id = bot.ToString("N"), name = p.Playername, gender = p.Ismale ? "Male" : "Female", bot = true, team = 1, group = bot.ToString("N") }).SingleOrDefaultAsync();
+    static IQueryable<RoomMember> BotRoster(IQueryable<Playerprofile> profiles) => profiles.Select(p => new RoomMember
+    {
+        id = p.Userid.ToString("N"), name = p.Playername, gender = p.Ismale ? "Male" : "Female",
+        bot = true, team = 1, group = p.Userid.ToString("N")
+    });
+    public Task<RoomMember?> BotMember(Guid bot) => BotRoster(db.Playerprofiles.AsNoTracking()
+        .Where(p => p.Userid == bot && p.User.Status == UserStatus.Active)).SingleOrDefaultAsync();
+    public Task<List<RoomMember>> BotMembers(Guid[] bots, int count) => BotRoster(db.Playerprofiles.AsNoTracking()
+        .Where(p => bots.Contains(p.Userid) && p.User.Status == UserStatus.Active).OrderBy(p => EF.Functions.Random()).Take(count)).ToListAsync();
 
     public sealed record ReplayAccess(DateTime started, MatchStatus Status, bool writer);
     public Task<ReplayAccess?> ReplayWriter(Guid player, Guid match) => db.Gamematches.AsNoTracking()

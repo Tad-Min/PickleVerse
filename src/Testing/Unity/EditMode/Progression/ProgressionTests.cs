@@ -79,6 +79,26 @@ namespace PickleVerse.Tests
             ProgressionEngine.Grant(player,new RewardBundle(0,0,75)); Assert.That(player.level,Is.EqualTo(4)); Assert.That(player.levelXp,Is.EqualTo(15)); Assert.That(player.totalXp,Is.EqualTo(75));
             ProgressionEngine.Grant(player,new RewardBundle(0,0,25)); Assert.That(player.level,Is.EqualTo(5)); Assert.That(player.levelXp,Is.Zero);
         }
+        [TestCase(1, 0, 2, 0)]
+        [TestCase(1, 7, 2, 7)]
+        [TestCase(2, 0, 2, 10)]
+        [TestCase(2, 17, 3, 7)]
+        public void EligibleWinGrantsTenXpAtEveryLevel(int startingLevel, int startingXp, int level, int remainder)
+        {
+            player.level = startingLevel;
+            player.levelXp = startingXp;
+            ProgressionEngine.NormalizeExperience(player);
+            long before = player.totalXp;
+            var win = Match();
+
+            Assert.That(engine.Apply(player, win), Is.True);
+            Assert.That(player.level, Is.EqualTo(level));
+            Assert.That(player.levelXp, Is.EqualTo(remainder));
+            Assert.That(player.NextLevelXp, Is.EqualTo(level * 10L));
+            Assert.That(player.totalXp, Is.EqualTo(before + 10));
+            Assert.That(engine.Apply(player, win), Is.False);
+            Assert.That(player.totalXp, Is.EqualTo(before + 10));
+        }
         [Test] public void ResultsAndRewardsAreIdempotentAndSurviveSerialization()
         {
             var result=Match(); player.pendingMatch=result;

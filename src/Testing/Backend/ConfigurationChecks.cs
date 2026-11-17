@@ -11,7 +11,6 @@ using Services.Configuration;
 using Entities.DTOs;
 using Entities.Exceptions;
 using Services.Implementations;
-using static Repositories.Data.PostgresCommands;
 
 static class ConfigurationChecks
 {
@@ -25,7 +24,7 @@ static class ConfigurationChecks
         check(defaults.Matchmaking == new ServerSettings.MatchmakingSettings(360, 120) && defaults.OnlineMatch == new ServerSettings.OnlineMatchSettings(35, 8),
             "appsettings contains 360/120 second matchmaking and 35/8 second online timing");
         var expected = defaults.CreateCatalog();
-        check(expected.winXp == 10 && expected.lossXp == 5 && expected.dailyBonus.coins == 200 && expected.dailyBonus.xp == 20
+        check(expected.lossXp == 5 && expected.dailyBonus.coins == 200 && expected.dailyBonus.xp == 20
             && expected.weeklyBonus.coins == 1000 && expected.weeklyBonus.xp == 50 && expected.matchRewards.botWinReward == 100
             && expected.matchRewards.botLossReward == 50 && expected.matchRewards.onlineWinReward == 150 && expected.matchRewards.onlineLossReward == 75,
             "all requested progression rewards are loaded from appsettings");
@@ -58,7 +57,7 @@ static class ConfigurationChecks
         async Task<T> Game<T>(Func<OnlineGameService, Task<T>> action)
         {
             await using var db = new PickleVerseContext(options);
-            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
+            using var sqlData = new UnitOfWork(db);
             return await action(new OnlineGameService(sqlData, new GameCatalogService(sqlData, settings), clock, settings, TestRedis.State, TestRedis.Leaderboard, new MatchReplayService(sqlData, TestReplayStorage.Shared, Microsoft.Extensions.Logging.Abstractions.NullLogger<MatchReplayService>.Instance)));
         }
         async Task Reject(Func<Task> action, HttpStatusCode status, string name)
@@ -91,10 +90,6 @@ static class ConfigurationChecks
             player = user.Userid;
             var otp = await db.Verificationemails.SingleAsync(v => v.Userid == player);
             check(otp.Expiresat - otp.Createdat == TimeSpan.FromMinutes(2), "OTP expiration follows a non-default configuration");
-            var sql = new PostgresCommands(db);var sqlData = new UnitOfWork(db);
-            check(await sql.One("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'", r => r.GetInt64(0)) == 38
-                && await sql.One("SELECT count(*) FROM information_schema.columns WHERE table_schema='public'", r => r.GetInt64(0)) == 265,
-                "fresh database has 38 tables and 267 columns without duplicated participant data");
         }
         clock.Now = clock.Now.AddSeconds(2);
         await Reject(() => Auth(s => s.ResendOtpAsync(new() { Email = email })), HttpStatusCode.TooManyRequests, "resend uses the configured cooldown");
@@ -118,9 +113,9 @@ static class ConfigurationChecks
             "OTP expires at the configured boundary");
         var state = await Game(s => s.Read(player));
         string json = GameJson.Write(state.catalog);
-        check(state.catalog.winXp == 77 && state.catalog.matchRewards.onlineWinReward == 222 && state.catalog.matchmaking.botFallbackSeconds == 7
+        check(state.catalog.winXp == 10 && state.catalog.matchRewards.onlineWinReward == 222 && state.catalog.matchmaking.botFallbackSeconds == 7
             && state.catalog.matchmaking.readyConfirmationSeconds == 6 && state.catalog.onlineMatch.heartbeatSeconds == 2,
-            "API catalog publishes configured gameplay values without a database settings table");
+            "API catalog publishes fixed win XP alongside configurable gameplay values");
         check(!json.Contains("private-smtp", StringComparison.Ordinal) && !json.Contains("accessTokenHours", StringComparison.Ordinal)
             && !json.Contains("resendCooldownSeconds", StringComparison.Ordinal), "Unity catalog excludes SMTP credentials and private authentication settings");
         async Task<OnlineMatchRequest> Ranked()
@@ -142,9 +137,12 @@ static class ConfigurationChecks
             };
         }
         var request = await Ranked();
-        await Game(s => s.PrepareOnline(player, request));
+        var offer = await Game(s => s.OfferOnline(player, request));
+        check(offer.readyRemainingSeconds == 6 && !offer.allAccepted,
+            "ready confirmation opens with the configured duration");
         clock.Now = clock.Now.AddSeconds(7);
-        await Reject(() => Game(s => s.StartOnline(player, request)), HttpStatusCode.Conflict, "ready confirmation expires using the configured timeout");
+        await Reject(() => Game(s => s.PrepareOnline(player, request)), HttpStatusCode.Conflict,
+            "ready confirmation expires using the configured timeout");
         await Game(s => s.CancelRankedSearch(player, new() { SearchId = Guid.Parse(request.SearchId) }));
         request = await Ranked();
         await Game(s => s.PrepareOnline(player, request));

@@ -86,7 +86,8 @@ namespace PickleVerse.LocalMatch
         float sourceContactPhase;
         Vector3 impactPoint;
         float impactTime;
-        bool contactConfirmed;
+        bool contactConfirmed, preserveSwingTiming;
+        bool HoldContactPose => contactConfirmed && !preserveSwingTiming;
         Vector3 overheadContactOffset;
         bool overheadCalibrated;
         PaddleImpactVfx impactVfx;
@@ -266,7 +267,7 @@ namespace PickleVerse.LocalMatch
             if (Intent.kind == ShotKind.Serve)
                 SfxPlayer.Stop(GameSfx.Countdown);
         }
-        public void ConsumeContact(bool volley, Vector3? position = null, bool successful = true, HitGrade? confirmedGrade = null)
+        public void ConsumeContact(bool volley, Vector3? position = null, bool successful = true, HitGrade? confirmedGrade = null, bool preserveSwingTiming = false)
         {
             if (contactConsumed)
                 return;
@@ -277,8 +278,9 @@ namespace PickleVerse.LocalMatch
                 PaddleContact.Grade(paddleFace ? Vector3.Distance(impactPoint, paddleFace.position) : float.PositiveInfinity, swingTime - ContactDelay)) : HitGrade.None;
             impactTime = swingTime;
             contactConsumed = contactConfirmed = true;
-            // Resolve the visible pose at the same event that reverses the ball, then
-            // retain a short contact pose before continuing the authored follow-through.
+            this.preserveSwingTiming = preserveSwingTiming;
+            // The authority retains a short contact pose. Remote confirmation applies
+            // the same impact IK while the already visible swing keeps its clip phase.
             if (Swinging)
                 Sample(0);
             SfxPlayer.Play(Intent.kind == ShotKind.Serve ? GameSfx.Serve : Intent.power ? GameSfx.HitStrong : GameSfx.HitNormal, impactPoint);
@@ -299,10 +301,12 @@ namespace PickleVerse.LocalMatch
                 balanceTime = 0;
             }
         }
-        public void SynchronizeSwing(float elapsed)
+        public void RenderNetworkSwing(ShotIntent shot, Vector3 predictedBall, float delay, float elapsed)
         {
-            if (!Swinging)
-                return;
+            // The authority already accepted this swing. A replica's previous pose
+            // can still be in its follow-through when the next swing is due.
+            Swinging = false;
+            Swing(shot, predictedBall, delay);
             swingTime = Mathf.Clamp(elapsed, 0, SwingDuration - .001f);
             Sample(0);
             previousSwingTime = swingTime;
@@ -394,7 +398,7 @@ namespace PickleVerse.LocalMatch
             if (Swinging)
             {
                 swingTime += dt;
-                float endTime = contactConfirmed ? impactTime + .035f + Intent.Duration - Intent.ContactDelay : SwingDuration;
+                float endTime = HoldContactPose ? impactTime + .035f + Intent.Duration - Intent.ContactDelay : SwingDuration;
                 if (swingTime >= endTime)
                 {
                     if (!contactConsumed) GetComponent<ActorTelemetry>()?.Outcome("Miss");
@@ -445,8 +449,8 @@ namespace PickleVerse.LocalMatch
             float phase = Mathf.Min(time / Mathf.Max(.01f, duration), 1f);
             if (Swinging && sourceContactPhase > 0)
             {
-                float after = contactConfirmed ? Mathf.Max(0, swingTime - impactTime - .035f) : Mathf.Max(0, swingTime - ContactDelay);
-                phase = !contactConfirmed && swingTime < ContactDelay
+                float after = HoldContactPose ? Mathf.Max(0, swingTime - impactTime - .035f) : Mathf.Max(0, swingTime - ContactDelay);
+                phase = !HoldContactPose && swingTime < ContactDelay
                     ? swingTime / ContactDelay * sourceContactPhase
                     : sourceContactPhase + after / (Intent.Duration - Intent.ContactDelay) * (1 - sourceContactPhase);
                 phase = Mathf.Clamp01(phase);

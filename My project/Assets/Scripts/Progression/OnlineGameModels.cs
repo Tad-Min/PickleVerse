@@ -20,7 +20,7 @@ namespace PickleVerse.Progression
         public string version;
         public RuntimeMatchmakingSettings matchmaking;
         public RuntimeOnlineMatchSettings onlineMatch;
-        public int winXp, lossXp;
+        public int lossXp;
         public RewardBundle dailyBonus, weeklyBonus;
         public List<ProgressDefinition> definitions;
         public TrainingDrill[] lessons;

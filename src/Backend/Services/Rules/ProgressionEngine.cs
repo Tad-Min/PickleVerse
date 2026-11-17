@@ -81,7 +81,15 @@ namespace PickleVerse.Progression
             // ELITE TOKEN is reserved for verified top-ups, including legacy reward configurations.
             long xp = Math.Max(0, reward.xp);
             p.totalXp += xp;
-            long available = p.levelXp + xp;
+            AdvanceLevels(p, p.levelXp + xp);
+        }
+        public static void NormalizeExperience(PlayerProfile p)
+        {
+            p.totalXp = (long)p.level * (p.level - 1) / 2 * PlayerProfile.LevelXpStep + p.levelXp;
+            AdvanceLevels(p, p.levelXp);
+        }
+        static void AdvanceLevels(PlayerProfile p, long available)
+        {
             while (available >= p.NextLevelXp && p.level < int.MaxValue)
             {
                 available -= p.NextLevelXp;
@@ -116,7 +124,7 @@ namespace PickleVerse.Progression
                 if (!result.localForfeit)
                 {
                     UpdateCounters(p.lifetime, result, false);
-                    Grant(p, new RewardBundle(0, 0, won ? Config.winXp : Config.lossXp));
+                    Grant(p, new RewardBundle(0, 0, won ? PlayerProfile.LevelXpStep : Config.lossXp));
                 }
                 UpdateMissionCounters(p, result, ProgressScope.Daily);
                 UpdateMissionCounters(p, result, ProgressScope.Weekly);

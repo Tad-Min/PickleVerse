@@ -151,7 +151,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet build src/Testing/Backend/IntegrationChecks.csproj --configuration Release
-          for check in client-security api-contract schema status-enums content training-sync progress-reset moderation analytics expert-review dedicated social-content hybrid; do
+          for check in client-security api-contract schema status-enums content training-sync progress-reset moderation analytics expert-review room-invitations dedicated ranked-doubles social-content hybrid; do
             dotnet run --project src/Testing/Backend --configuration Release --no-build -- "--check-$check"
           done
 

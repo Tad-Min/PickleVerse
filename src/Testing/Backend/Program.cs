@@ -172,6 +172,12 @@ try
         Console.WriteLine($"SUCCESS: {checks} dedicated backend/lease checks; disposable database removed.");
         return;
     }
+    if (args.Contains("--check-ranked-doubles"))
+    {
+        await RankedDoublesChecks.Run(options, time, Check);
+        Console.WriteLine($"SUCCESS: {checks} ranked doubles checks; disposable database removed.");
+        return;
+    }
     if (args.Contains("--check-social-content"))
     {
         await SocialContentChecks.Run(options, Check);

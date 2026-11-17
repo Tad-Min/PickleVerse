@@ -118,8 +118,7 @@ namespace PickleVerse.Multiplayer
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
             All.Remove(this);
-
-
+            poseEvents.Clear();
         }
         public override void Render()
         {
@@ -146,6 +145,7 @@ namespace PickleVerse.Multiplayer
                 if (Actor)
                     Actor.LocalHitFeedback = IsLocalHuman;
             }
+            RenderClientPose();
         }
         void ApplyPaddleSkin()
         {
@@ -205,13 +205,6 @@ namespace PickleVerse.Multiplayer
                     serverRun = run;
                 }
                 Actor.ObserveMovement(axes, run);
-            }
-            if (!IsServer)
-            {
-                if (!IsOwner)
-                    transform.position = Frame.position;
-                if (match && !match.Paused)
-                    Actor.RenderNetworkPose(Velocity, IsOwner ? LocalRun() : Frame.running, Time.deltaTime, CanMove(), (IsLocalHuman ? LocalAxes() : Frame.movement) * -CourtEnd);
             }
             if (!IsLocalHuman)
                 return;
@@ -435,6 +428,7 @@ namespace PickleVerse.Multiplayer
         }
         void ResetActor(Vector3 position, int end)
         {
+            poseEvents.Clear();
             transform.position = position;
             transform.rotation = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
             if (!Actor)
@@ -472,16 +466,6 @@ namespace PickleVerse.Multiplayer
             SetActiveShotKeys();
             SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall, Actor.ContactDelay, Runner.SimulationTime);
         }
-        void SwingEffect(int kind, bool attack, bool crossCourt, Vector3 predictedBall, float delay, double started)
-        {
-            if (IsServer || !Actor)
-                return;
-            if (Actor.Swing(BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }), predictedBall, delay))
-            {
-                Actor.SynchronizeSwing((float)System.Math.Max(0, Runner.SimulationTime - started));
-                SetActiveShotKeys();
-            }
-        }
         void SetActiveShotKeys()
         {
             var shot = Actor.Intent;
@@ -498,15 +482,6 @@ namespace PickleVerse.Multiplayer
             Actor.ConsumeContact(volley, contact, successful);
             ContactClientRpc(volley, contact, successful, velocity, Runner.SimulationTime, (byte)Actor.LastContactGrade);
         }
-        void ContactEffect(bool volley, Vector3 position, bool successful, Vector3 velocity, double time, byte grade)
-        {
-            if (!IsServer && Actor)
-            {
-                Actor.ConsumeContact(volley, position, successful, (HitGrade)grade);
-                if (successful)
-                    NetworkMatch.Instance?.PresentContact(position, velocity, time);
-            }
-        }
         public void SplitStep()
         {
             if (!IsServer || !Actor)
@@ -514,22 +489,12 @@ namespace PickleVerse.Multiplayer
             Actor.SplitStep();
             SplitStepClientRpc();
         }
-        void SplitStepEffect()
-        {
-            if (!IsServer && Actor)
-                Actor.SplitStep();
-        }
         public void React(bool won, bool matchOver = false)
         {
             if (!IsServer || !Actor)
                 return;
             Actor.Reaction(won, matchOver);
             ReactClientRpc(won, matchOver);
-        }
-        void ReactEffect(bool won, bool matchOver)
-        {
-            if (!IsServer && Actor)
-                Actor.Reaction(won, matchOver);
         }
         void OnApplicationFocus(bool focused)
         {

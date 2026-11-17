@@ -179,7 +179,7 @@ namespace PickleVerse.LocalMatch
         public bool Recover()
         {
             Branch = "Hồi vị";
-            MoveTo(new Vector3(0, 0, Actor.end * (Context.Stroke <= 2 && Context.Server == Actor.playerId ? 6.4f : 3.05f)), false);
+            MoveTo(new Vector3(Context.RecoveryX, 0, Actor.end * (Context.Stroke <= 2 && Context.Server == Actor.playerId ? 6.4f : 3.05f)), false);
             return true;
         }
         void MoveTo(Vector3 target, bool incoming)

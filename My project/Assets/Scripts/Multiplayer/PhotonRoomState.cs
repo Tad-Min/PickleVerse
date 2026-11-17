@@ -35,7 +35,12 @@ namespace PickleVerse.Multiplayer
             transform.SetParent(null, true);
             Runner.MakeDontDestroyOnLoad(gameObject);
             if (HasStateAuthority && initial != null)
+            {
+                if (initial.assignment != null)
+                    foreach (var bot in initial.assignment.members.Where(member => member.bot))
+                        initial.seats.Add(new PhotonSeat { member = bot, decision = ReadyDecision.Accepted });
                 Save(initial);
+            }
             PhotonSession.Bind(this);
         }
         public override void Render()
@@ -132,8 +137,11 @@ namespace PickleVerse.Multiplayer
             Payload = JsonConvert.SerializeObject(data);
             cached = data;
             parsed = Payload;
-            bool full = data.seats.Count >= 2 * (int)data.mode;
-            if (!data.party)
+            if (data.party)
+            {
+                Runner.SessionInfo.IsOpen = data.phase == "idle";
+            }
+            else
             {
                 Runner.SessionInfo.IsVisible = false;
                 Runner.SessionInfo.IsOpen = data.phase == "searching" || data.phase == "playing" && data.seats.Any(s => !s.member.bot && s.peer == 0);
@@ -185,7 +193,7 @@ namespace PickleVerse.Multiplayer
                 Reject(source, "Phòng đã bắt đầu xác nhận trận.");
                 return;
             }
-            int capacity = data.party ? (data.custom ? 2 * (int)data.mode : 2) : data.expectedPlayers > 0 ? data.expectedPlayers : 2 * (int)data.mode;
+            int capacity = Capacity(data);
             if (data.seats.Count + requested.Count > capacity)
             {
                 Reject(source, "Phòng đã đủ người.");
@@ -225,7 +233,7 @@ namespace PickleVerse.Multiplayer
                 member.ready = false;
                 data.seats.Add(new PhotonSeat { member = member, peer = member.id == identity ? source.RawEncoded : 0 });
             }
-            if (!data.party && data.seats.Count == capacity && data.seats.All(s => s.peer != 0))
+            if (CanStartReadyCheck(data, capacity))
                 BeginReady(data);
             Save(data);
         }
@@ -234,12 +242,20 @@ namespace PickleVerse.Multiplayer
             if (!HasStateAuthority)
                 return;
             var data = Data;
-            if (!data.party && data.phase == "searching" && data.seats.Count == (data.expectedPlayers > 0 ? data.expectedPlayers : 2 * (int)data.mode) && data.seats.All(s => s.peer != 0))
+            if (CanStartReadyCheck(data, Capacity(data)))
             {
                 BeginReady(data);
                 Save(data);
             }
         }
+        static int Capacity(PhotonRoomData data)
+        {
+            if (data.party)
+                return data.custom ? 2 * (int)data.mode : 2;
+            return data.assignment?.Count ?? (data.expectedPlayers > 0 ? data.expectedPlayers : 2 * (int)data.mode);
+        }
+        static bool CanStartReadyCheck(PhotonRoomData data, int capacity) => !data.party && data.phase == "searching"
+            && data.seats.Count == capacity && data.seats.All(seat => seat.member.bot || seat.peer != 0);
         void BeginReady(PhotonRoomData data)
         {
             data.phase = "ready";
@@ -290,7 +306,6 @@ namespace PickleVerse.Multiplayer
             if (kind == "search" && data.party)
             {
                 data.phase = "searching";
-                Runner.SessionInfo.IsOpen = false;
             }
             else if (kind == "match" && data.party)
             {
@@ -300,7 +315,6 @@ namespace PickleVerse.Multiplayer
             {
                 data.phase = "idle";
                 data.matchSession = "";
-                Runner.SessionInfo.IsOpen = true;
             }
             else if (kind == "close" && data.party)
             {

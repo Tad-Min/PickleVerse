@@ -10,7 +10,7 @@ public sealed partial class OnlineGameService
         var p=s.Player;var row=s.profile;
         s.revision=row.Revision;
         s.state.tutorial=new TutorialState {completed=row.TutorialCompleted,skipped=row.TutorialSkipped,checkpoint=row.TutorialCheckpoint};
-        p.totalXp=100L*row.Level*(row.Level-1)+row.Exp;
+        ProgressionEngine.NormalizeExperience(p);
         p.rankWinStreak=row.RankWinStreak;p.rankLossStreak=row.RankLossStreak;
         p.createdUtcTicks=(await _unitOfWork.Game.AccountCreated(id)).Ticks;
         p.lifetime=new ProgressCounters {matches=row.LifetimeMatches,wins=row.Wincount,points=row.LifetimePoints,

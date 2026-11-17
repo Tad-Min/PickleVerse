@@ -126,9 +126,14 @@ namespace PickleVerse.Multiplayer
         public MatchActor Actor => player.Actor;
         public Vector3 BallPosition => match.BallPosition;
         public Vector3 BallVelocity => match.BallVelocity;
-        public Vector3 OpponentPosition => NetworkPlayer.All.Where(p => p && p.Team != player.Team).Select(p => p.transform.position).FirstOrDefault();
+        public Vector3 OpponentPosition => NetworkPlayer.All.Where(p => p && p.Runner == player.Runner && p.Team != player.Team)
+            .Select(p => p.transform.position).FirstOrDefault();
+        public float RecoveryX => match.Rules.teamSizes[player.Team] == 2
+            ? (player.Index == match.Rules.courtRight[player.Team] ? 1.45f : -1.45f) * match.Rules.TeamFacing(player.Team)
+            : 0;
         public bool Active => !match.Paused && !match.Finished && !match.BetweenGames && !match.BetweenPoints;
-        public bool Incoming => Active && match.Rules.live && match.Rules.lastHitTeam != player.Team;
+        public bool Incoming => Active && match.Rules.live && match.Rules.lastHitTeam != player.Team
+            && (!match.Rules.awaitingServeReturn || player.Index == match.Rules.receiverIndex);
         public bool Serving => match.Rules.waitingServe;
         public bool IsServer => match.Rules.servingTeam == player.Team && match.Rules.serverIndex == player.Index;
         public int Stroke => match.Rules.strokeCount;

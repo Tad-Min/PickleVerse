@@ -68,7 +68,6 @@ public sealed partial class OnlineGameService : IOnlineGameService, IGameTrainin
             ?? throw new AppException("Không tìm thấy hồ sơ.", HttpStatusCode.NotFound);
         var s = new Session { profile=profile, catalog=catalog };
         var p = s.Player;
-        p.online = true;
         p.id = id.ToString("N");
         p.playerName = profile.Playername;
         p.avatarId = profile.Avatar;

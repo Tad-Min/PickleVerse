@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ed6a30ab9944640b4c7dc34c72166e, type: 3}
   m_Name: Progression Config
   m_EditorClassIdentifier: PickleVerse.Progression::PickleVerse.Progression.ProgressionConfig
-  winXp: 10
   lossXp: 5
   dailyBonus:
     coins: 200

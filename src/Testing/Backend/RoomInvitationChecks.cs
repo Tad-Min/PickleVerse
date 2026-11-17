@@ -79,7 +79,19 @@ static class RoomInvitationChecks
         check((await Guest()).Invitations.Length == 0, "accepted invitations disappear from the recipient inbox");
         check((await Call(s => s.Respond(b, invitation.Id, true))).State == "accepted", "accept can be retried without creating a second decision");
         await Rejected(() => Call(s => s.Respond(b, invitation.Id, false)), HttpStatusCode.Gone, "a processed invitation cannot be changed to declined");
+        host.Members = [a.ToString("N"), b.ToString("N")];
+        guest.RoomCode = host.RoomCode;
+        guest.Region = host.Region;
+        guest.Members = host.Members;
+        await Host();
+        await Guest();
+        check((await Call(s => s.List(a, "", 0))).Players.Single().Status == "in_room", "friend is in the room after accepting");
+        host.Members = [a.ToString("N")];
+        guest.RoomCode = guest.Region = "";
+        guest.Members = [];
         invitation = await Send();
+        check(invitation.Id != accepted.Id && (await Guest()).Invitations.Single().Id == invitation.Id,
+            "a friend who left can receive a new invitation to the same host and room");
         await Call(s => s.Respond(b, invitation.Id, false));
         check((await Guest()).Invitations.Length == 0, "decline removes the notification");
         invitation = await Send();

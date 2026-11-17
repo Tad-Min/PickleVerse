@@ -217,13 +217,15 @@ namespace PickleVerse.FrontEnd
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i];
-                float bottom = .31f - .28f * i;
-                Text("Player" + i, column, player.name, 19, White, new Vector2(.05f,bottom), new Vector2(.8f,bottom+.27f),
+                float top = .58f - .28f * i;
+                // The shorter one-player card can use the space reserved for the second row in doubles.
+                float bottom = players.Length == 1 ? .12f : top - .27f;
+                Text("Player" + i, column, player.name, 19, White, new Vector2(.05f,bottom), new Vector2(.8f,top),
                     Vector2.zero, Vector2.zero).richText = false;
 #if !UNITY_SERVER
                 if (player.canReport)
                     MakeButton("ReportPlayer" + i, column, "!", () => ModerationOverlay.ShowReport(detailMatch.id, player.playerId),
-                        new Vector2(.85f,bottom), new Vector2(.96f,bottom+.27f), Card, Lime, 17);
+                        new Vector2(.85f,bottom), new Vector2(.96f,top), Card, Lime, 17);
 #endif
             }
         }

@@ -124,7 +124,9 @@ namespace PickleVerse.Progression
         public OnlineGameSnapshot Project()
         {
             if (!HasConfirmed) throw new InvalidOperationException("Hãy đăng nhập có mạng ít nhất một lần trước khi luyện tập ngoại tuyến.");
-            var snapshot = Copy(data.confirmed); var training = TrainingEngine.Ensure(snapshot.player);
+            var snapshot = Copy(data.confirmed);
+            ProgressionEngine.NormalizeExperience(snapshot.player);
+            var training = TrainingEngine.Ensure(snapshot.player);
             foreach (var entry in data.pending)
             {
                 var attempt = Copy(entry.attempt);
@@ -139,7 +141,6 @@ namespace PickleVerse.Progression
             }
             // Pending money is never spendable. XP/level and stars are provisional.
             snapshot.player.coins = data.confirmed.player.coins; snapshot.player.gems = data.confirmed.player.gems;
-            snapshot.player.online = false;
             foreach (var command in data.commands)
             {
                 if (command.kind == OfflineCommandKind.TutorialCompleted) snapshot.tutorial.completed = true;

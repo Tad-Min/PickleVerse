@@ -49,7 +49,8 @@ public sealed partial class OnlineGameService
             || !string.IsNullOrEmpty(input.SearchId) && !Guid.TryParse(input.SearchId, out _))
             throw Bad("Đội hình trận online không hợp lệ.");
         MatchId(r.matchId);
-        if (r.RankedBot && (MatchId(input.HostPlayerId) != caller || RankedBotAccounts.Contains(caller.ToString("N")) || !Guid.TryParse(input.SearchId, out _)))
+        if (r.members.Any(m => m.bot) && !Guid.TryParse(input.SearchId, out _)
+            || r.RankedBot && MatchId(input.HostPlayerId) != caller)
             throw Bad("Đối thủ dự phòng phải được cấp từ lượt tìm trận online.");
         // Use the same UUID representation as authenticated Unity profiles.
         foreach (var member in r.members)
@@ -105,6 +106,12 @@ public sealed partial class OnlineGameService
             if (assigned.state != MatchmakingSearchStatus.Matched || assigned.matchId != match.ToString("N") || assigned.session != stored.session || assigned.host != stored.host
                 || assigned.roster == null || RosterKey(assigned.roster) != RosterKey(stored.roster))
                 throw Conflict("Phòng không khớp đội hình API đã ghép.");
+            if (saved == null && stored.roster.mode == PlayMode.Doubles && assigned.protocol >= RankedSearchRequest.RankedDoublesProtocol)
+            {
+                stored.roster = assigned.roster;
+                stored.ratingPolicyVersion = settings.HybridAi.RatingPolicyVersion == EloPolicy.CurrentVersion
+                    ? MatchResult.DoublesStandardRating : MatchResult.DoublesLegacyRating;
+            }
         }
         int botElo = 0;
         if (stored.roster.RankedBot && stored.phase == "PREPARING")
@@ -116,14 +123,19 @@ public sealed partial class OnlineGameService
                 throw Conflict("Lượt tìm trận chưa đủ hạn, đã hủy hoặc đối thủ dự phòng không khớp.");
             botElo = assigned.botElo;
         }
+        // Doubles bot identities are shared across matches. Their match rows retain a
+        // fixed Elo, while the human profiles own progression and pending-match state.
+        var progressionSeats = stored.roster.members.Where(m => !m.bot || stored.roster.mode != PlayMode.Doubles)
+            .OrderBy(m => MatchId(m.id)).ToArray();
         if (saved == null)
-            foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order()) await _unitOfWork.Users.LockUserAsync(id);
+            foreach (var member in progressionSeats) await _unitOfWork.Users.LockUserAsync(MatchId(member.id));
         var players = new Dictionary<Guid, Session>();
         if (saved == null || loadProgression)
         {
             var catalog = await catalogs.Load();
-            foreach (var id in stored.roster.members.Select(m => MatchId(m.id)).Order())
+            foreach (var member in progressionSeats)
             {
+                var id = MatchId(member.id);
                 var s = await Load(id, catalog);
                 players.Add(id, s);
                 if (saved != null) continue;
@@ -131,7 +143,6 @@ public sealed partial class OnlineGameService
                     throw Conflict("Một người chơi vẫn còn trận chưa hoàn tất.");
                 if (await _unitOfWork.Game.AccountStatus(id) != UserStatus.Active)
                     throw Bad("Người chơi không còn hoạt động.");
-                var member = stored.roster.members.Single(m => MatchId(m.id) == id);
                 member.name = s.Player.playerName;
                 member.elo = member.bot ? botElo : s.Player.elo;
                 member.gender = s.profile.Ismale ? "Male" : "Female";
@@ -283,13 +294,13 @@ public sealed partial class OnlineGameService
                 throw Conflict("Một người chơi vẫn còn trận chưa hoàn tất.");
             m.phase = "PLAYING";
             m.startedUtcTicks = Now.Ticks;
-            foreach (var member in m.roster.members)
+            foreach (var (player, s) in players)
             {
-                var s = players[MatchId(member.id)];
+                var member = m.roster.Find(player.ToString("N"));
                 s.Player.pendingMatch = OnlineResult(m, member);
                 DailyStreakEngine.Ensure(s.Player, Now);
                 s.Engine.RefreshPeriods(s.Player, Now);
-                await Persist(s, MatchId(member.id), "online-start:" + m.roster.matchId, "online-start");
+                await Persist(s, player, "online-start:" + m.roster.matchId, "online-start");
             }
             var now=Now;
             await _unitOfWork.Game.TouchParticipants(match, null, now);
@@ -364,10 +375,13 @@ public sealed partial class OnlineGameService
             foreach (var bot in m.roster.members.Where(x => x.bot))
             {
                 var mirror = OnlineResult(m, bot);
-                mirror.outcome = canonical.outcome == MatchOutcome.Won ? MatchOutcome.Lost : MatchOutcome.Won;
-                mirror.gamesWon = canonical.gamesLost;
-                mirror.gamesLost = canonical.gamesWon;
-                mirror.scores = canonical.scores.Select(g => new GameScore(g.opponent, g.own, g.completed, g.teamAStartSide)).ToList();
+                bool teammate = bot.team == team;
+                mirror.outcome = teammate ? canonical.outcome
+                    : canonical.outcome == MatchOutcome.Won ? MatchOutcome.Lost : MatchOutcome.Won;
+                mirror.gamesWon = teammate ? canonical.gamesWon : canonical.gamesLost;
+                mirror.gamesLost = teammate ? canonical.gamesLost : canonical.gamesWon;
+                mirror.scores = teammate ? canonical.scores
+                    : canonical.scores.Select(g => new GameScore(g.opponent, g.own, g.completed, g.teamAStartSide)).ToList();
                 mirror.points = mirror.scores.Sum(g => g.own);
                 var participant = participants.Single(p => p.id == MatchId(bot.id));
                 participant.result = mirror;
@@ -389,23 +403,25 @@ public sealed partial class OnlineGameService
         foreach (var member in m.roster.members)
         {
             var id = MatchId(member.id);
-            var s = players[id];
             var result = m.results[member.id];
             result.endedUtcTicks = Now.Ticks;
-            if (s.Player.pendingMatch?.id != m.roster.matchId)
-                throw Conflict("Tiến trình trận của người chơi đã thay đổi.");
-            if (!s.Engine.Apply(s.Player, result))
-                throw Conflict("Kết quả đã được xử lý.");
-            if (!result.localForfeit && result.outcome != MatchOutcome.Interrupted && result.Eligible)
-                ProgressionEngine.Grant(s.Player, new RewardBundle(result.outcome == MatchOutcome.Won ? s.catalog.matchRewards.onlineWinReward : s.catalog.matchRewards.onlineLossReward, 0, 0));
-            await Persist(s, id, "online-result:" + m.roster.matchId, "online-result");
+            if (players.TryGetValue(id, out var s))
+            {
+                if (s.Player.pendingMatch?.id != m.roster.matchId)
+                    throw Conflict("Tiến trình trận của người chơi đã thay đổi.");
+                if (!s.Engine.Apply(s.Player, result))
+                    throw Conflict("Kết quả đã được xử lý.");
+                if (!result.localForfeit && result.outcome != MatchOutcome.Interrupted && result.Eligible)
+                    ProgressionEngine.Grant(s.Player, new RewardBundle(result.outcome == MatchOutcome.Won ? s.catalog.matchRewards.onlineWinReward : s.catalog.matchRewards.onlineLossReward, 0, 0));
+                await Persist(s, id, "online-result:" + m.roster.matchId, "online-result");
+            }
             await FinalizeParticipant(id,result);
         }
         var a = m.results[m.roster.members.First(x => x.team == 0).id];
         await _unitOfWork.Game.SaveScores(match, authoritativeScores ?? a.scores);
         await FinalizeMatch(match);
-        foreach(var member in m.roster.members)
-            await RecordRating(MatchId(member.id),m.results[member.id]);
+        foreach (var player in players.Keys)
+            await RecordRating(player, m.results[player.ToString("N")]);
         m.phase = "FINISHED";
         await SaveOnline(match, m);
         await replays.PublishAvailable(match);

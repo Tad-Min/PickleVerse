@@ -47,6 +47,28 @@ namespace PickleVerse.Tests
             Assert.AreEqual(0,projected.player.coins);Assert.AreEqual(5,projected.player.levelXp);Assert.AreEqual(3,projected.player.training.active.stars);
             store.Save(attempt,true);Assert.AreEqual(5,store.Project().player.levelXp);Assert.AreEqual(1,store.CompletedCount);
         }
+        [Test]
+        public void CachedAccountCarriesExistingXpThroughTheNewThresholds()
+        {
+            var confirmed = Snapshot(2);
+            confirmed.player.level = 2;
+            confirmed.player.levelXp = 197;
+            confirmed.player.totalXp = 397;
+            store.Confirm(confirmed);
+            var before = store.Project().player;
+            Completed();
+            store.Dispose();
+            store = new OfflineTrainingStore(directory, owner);
+            var projected = store.Project().player;
+
+            Assert.That(before.level, Is.EqualTo(6));
+            Assert.That(before.levelXp, Is.EqualTo(57));
+            Assert.That(before.totalXp, Is.EqualTo(207L));
+            Assert.That(projected.level, Is.EqualTo(7));
+            Assert.That(projected.levelXp, Is.EqualTo(2));
+            Assert.That(projected.NextLevelXp, Is.EqualTo(70L));
+            Assert.That(projected.totalXp, Is.EqualTo(212L));
+        }
         [Test] public void CorruptPrimaryFallsBackToTheLastValidBackup()
         {
             store.Start("serve",false);store.Dispose();File.WriteAllText(Path.Combine(directory,owner+".json"),"{broken");

@@ -12,5 +12,6 @@ dotnet run --project src/Testing/Backend --no-build -- --check-password-recovery
 dotnet run --project src/Testing/Backend --no-build -- --check-online-social
 dotnet run --project src/Testing/Backend --no-build -- --check-room-invitations
 dotnet run --project src/Testing/Backend --no-build -- --check-dedicated
+dotnet run --project src/Testing/Backend --no-build -- --check-ranked-doubles
 dotnet run --project src/Testing/Backend --no-build -- --check-hybrid
 echo 'Các kiểm tra trên sử dụng database kiểm thử tạm; không gửi email thật.'

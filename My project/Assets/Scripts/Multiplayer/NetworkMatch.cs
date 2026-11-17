@@ -673,19 +673,25 @@ namespace PickleVerse.Multiplayer
             if (!Body || !Started)
                 return;
             var frame = Ball;
+            bool presentedRelease = frame.released;
             if (!IsServer && !Paused && !Finished)
             {
                 // A reliable contact may arrive before the next ball snapshot. Never interpolate
                 // backwards through the paddle using a snapshot from before that contact.
                 if (confirmedContact.time > frame.time)
                     frame = confirmedContact;
+                presentedRelease = frame.released;
                 float age = frame.live || frame.released ? (float)Math.Max(0, Math.Min(.08, Runner.SimulationTime - frame.time)) : 0;
                 Vector3 p = frame.position, v = frame.velocity;
                 if (TryGetSnapshotsBuffers(out var fromBuffer, out var toBuffer, out float alpha))
                 {
                     var (from, to) = GetPropertyReader<BallFrame>(nameof(Ball)).Read(fromBuffer, toBuffer);
                     if (confirmedContact.time <= to.time)
-                        p = from.motionEpoch == to.motionEpoch ? Vector3.Lerp(from.position, to.position, alpha) : to.position;
+                    {
+                        bool continuous = from.motionEpoch == to.motionEpoch;
+                        p = continuous ? Vector3.Lerp(from.position, to.position, alpha) : to.position;
+                        presentedRelease = (continuous && alpha < 1f ? from : to).released;
+                    }
                     else BallFlight.Integrate(ref p, ref v, age);
                 }
                 else BallFlight.Integrate(ref p, ref v, age);
@@ -693,7 +699,7 @@ namespace PickleVerse.Multiplayer
                 SetBallPosition(p);
             }
             var server = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.Team == ServerTeam && p.Index == ServerIndex);
-            if (!IsServer && WaitingServe && !frame.released && server && server.Actor)
+            if (!IsServer && WaitingServe && !presentedRelease && server && server.Actor)
                 SetBallPosition(server.Actor.HeldBallPosition);
             bool flying = (frame.live || WaitingServe && frame.released) && Body.position.y > Court.BallRadius + .02f && frame.velocity.sqrMagnitude > .04f;
             if (ballTrail)

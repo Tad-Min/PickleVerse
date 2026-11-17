@@ -202,7 +202,7 @@ namespace PickleVerse.Multiplayer
             session.Changed += RoomChanged;
             session.Stopped += reason =>
             {
-                if (!closing)
+                if (Room == session && !closing)
                     _ = Safe(ClosePartyAsync("Mất kết nối phòng chờ."));
             };
         }
@@ -454,12 +454,6 @@ namespace PickleVerse.Multiplayer
                     if (Mode == PlayMode.Singles && ticket.remainingSeconds <= 0)
                     {
                         await AddRankedOpponentAsync(generation);
-                        return;
-                    }
-                    if (Mode == PlayMode.Doubles && clock.TimedOut(Time.realtimeSinceStartupAsDouble))
-                    {
-                        await CancelSearchAsync();
-                        SetNotice("Hết thời gian tìm trận. Hãy thử lại.");
                         return;
                     }
                 }
