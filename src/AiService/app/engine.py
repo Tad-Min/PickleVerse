@@ -23,6 +23,8 @@ NAMES = {"Early": "Đánh sớm", "Late": "Đánh muộn", "LateServe": "Giao b�
          "Movement": "Chưa hồi vị", "DinkTooHigh": "Bóng ngắn quá cao", "ServeFeet": "Chân giao bóng sai",
          "WrongInput": "Sai tổ hợp kỹ thuật", "Spacing": "Khoảng cách đội hình",
          "Miss": "Đánh hụt", "DoubleBounce": "Không trả bóng trước lần nảy thứ hai"}
+TECHNIQUES = {"Serve": "giao bóng", "Return": "trả giao bóng", "Drive": "đánh bạt", "Dink": "dink", "Volley": "vô lê",
+              "Drop": "bỏ nhỏ", "Smash": "đập bóng", "Reset": "reset", "Lob": "lốp bóng"}
 
 
 def observations(s: Shot, threshold: float | None):
@@ -113,7 +115,9 @@ def analyze(request: AnalyzeRequest, tier_predictor=None):
                 continue
             selected.add(drill.id)
             recommendations.append(dict(id=drill.id, title=drill.title,
-                                        reason=f"{NAMES[code]}: {counts[1]}/{counts[0]} lần quan sát gần đây"))
+                                        # Per technique over the recent sessions, unlike the session-wide summary.
+                                        reason=f"{NAMES[code]} khi {TECHNIQUES.get(technique, technique)}: "
+                                               f"{counts[1]}/{counts[0]} lần quan sát trong các phiên gần đây"))
             if len(recommendations) == 3:
                 break
         if len(recommendations) == 3:
@@ -146,7 +150,7 @@ def session_summary(shots, metrics, findings):
     other_faults = sum(s.outcome in {"Fault", "ServeMotion", "ServeShort", "ServeWrongCourt", "OwnCourt", "TwoBounce",
                                    "DoubleHit", "NetTouch", "BodyHit", "PermanentObject"} for s in shots)
     if errors:
-        lines.append("Cần cải thiện: " + "; ".join(f"{NAMES[code]} {n[1]}/{n[0]} lần quan sát" for code, n in errors[:2]) + ".")
+        lines.append("Cần cải thiện trong phiên này: " + "; ".join(f"{NAMES[code]} {n[1]}/{n[0]} lần quan sát" for code, n in errors[:2]) + ".")
     elif other_faults:
         lines.append(f"Có {other_faults} lượt ghi nhận vi phạm luật ngoài các tiêu chí kỹ thuật đang đo. Hãy xem thông báo trọng tài và luyện lại giao, trả bóng.")
     elif contacts:
