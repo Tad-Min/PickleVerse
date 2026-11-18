@@ -359,7 +359,11 @@ jobs:
   deploy:
     name: Deploy Linux development
     needs: [deployed, publish]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.deploy)
+    # The implicit success() also requires every transitive ancestor to succeed, so a
+    # skipped API, AI or web check used to skip the deployment of a published release.
+    if: >-
+      ${{ !cancelled() && needs.deployed.result == 'success' && needs.publish.result == 'success' &&
+          github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.deploy) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     environment: development

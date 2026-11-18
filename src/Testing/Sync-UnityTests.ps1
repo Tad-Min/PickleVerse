@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $project = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../My project')).Path
 $assets = (Resolve-Path -LiteralPath (Join-Path $project 'Assets')).Path
 $source = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'Unity/EditMode')).Path
