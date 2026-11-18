@@ -2,6 +2,15 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+/** The API origin actually used by this build; a relative base such as "/" resolves against the admin page. */
+export const API_ORIGIN = (() => {
+  try {
+    return new URL(BASE_URL, window.location.href).href.replace(/\/$/, '');
+  } catch {
+    return BASE_URL;
+  }
+})();
+
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {

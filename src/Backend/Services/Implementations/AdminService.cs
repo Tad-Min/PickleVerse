@@ -88,7 +88,7 @@ namespace Services.Implementations
             }
         }
 
-        public Task<bool> ResetPlayerEloAsync(Guid playerId, int defaultElo = 2000) =>
+        public Task<bool> ResetPlayerEloAsync(Guid playerId, int defaultElo = 100) =>
             throw new AppException("Hãy dùng chức năng đặt lại tiến trình có bước xem trước tác động.", System.Net.HttpStatusCode.Gone);
 
         public async Task<bool> ManualVerifyUserEmailAsync(Guid userId)

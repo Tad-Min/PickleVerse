@@ -89,7 +89,7 @@ export const mockAdminApi = {
     return waitForDemo({ message: 'Đã mở khóa trong dữ liệu demo.' });
   },
 
-  resetPlayerElo: async (playerId: string, defaultElo = 2000) => {
+  resetPlayerElo: async (playerId: string, defaultElo = 100) => {
     const user = users.find((item) => item.userId === playerId);
     if (user) user.elo = defaultElo;
     return waitForDemo({ message: `Đã reset Elo demo về ${defaultElo}.` });

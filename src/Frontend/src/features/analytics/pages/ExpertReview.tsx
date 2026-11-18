@@ -68,6 +68,7 @@ const codes: Record<string, string> = {
 };
 const input = 'block w-full border border-border bg-background p-2 rounded';
 const button = 'bg-primary rounded px-4 py-2 text-sm disabled:opacity-40';
+const MSG64 = 'Hãy xác nhận phiên người thật, người đánh giá, bằng chứng và ít nhất một nhãn.';
 const blank = (): Review => ({
   expectedVersion: 0, tier: null, split: null, expertName: '', observation: '',
   confirmedHumanSession: false, shotLabels: [],
@@ -210,7 +211,10 @@ function ExpertReviewForm() {
     onSuccess: digest => setNotice(digest ? `Đã xuất dữ liệu. SHA-256 ${digest}` : 'Đã xuất dữ liệu.'),
     onError: error => setNotice(errorText(error)),
   });
-  const submit = (event: FormEvent) => { event.preventDefault(); save.mutate(); };
+  // MSG64 (SRS FR-33): tell the reviewer what is still missing instead of only disabling the save button.
+  const reviewComplete = review.confirmedHumanSession && review.expertName.trim().length >= 3 && !!review.split
+    && review.observation.trim().length >= 3 && (!!review.tier || review.shotLabels.length > 0);
+  const submit = (event: FormEvent) => { event.preventDefault(); if (reviewComplete) save.mutate(); };
 
   return <div className="space-y-6">
     <p>Chọn phiên đã đồng bộ đầy đủ. Dùng telemetry cùng quan sát của chuyên gia để xác nhận trình độ và từng lỗi. Mọi phiên của một người phải dùng cùng nhóm dữ liệu.</p>
@@ -294,7 +298,8 @@ function ExpertReviewForm() {
           </div>)}
           <label className="flex gap-2"><input type="checkbox" checked={review.confirmedHumanSession}
             onChange={e => setReview({ ...review, confirmedHumanSession: e.target.checked })} />Tôi xác nhận phiên do người thật thực hiện và đã xem căn cứ cho các nhãn này.</label>
-          <button className={button} disabled={save.isPending || !review.confirmedHumanSession || !review.tier && !review.shotLabels.length}>Lưu đánh giá chuyên gia</button>
+          <button className={button} disabled={save.isPending || !reviewComplete}>Lưu đánh giá chuyên gia</button>
+          {!reviewComplete && <p className="text-sm text-red-500" role="alert">{MSG64}</p>}
         </form>}
       </section>
     </div>

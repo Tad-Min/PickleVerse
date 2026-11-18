@@ -68,7 +68,7 @@ export const adminApi = {
     return res.data;
   },
 
-  resetPlayerElo: async (playerId: string, defaultElo: number = 2000): Promise<{ message: string }> => {
+  resetPlayerElo: async (playerId: string, defaultElo: number = 100): Promise<{ message: string }> => {
     if (isMockMode) return mockAdminApi.resetPlayerElo(playerId, defaultElo);
     const res = await apiClient.post<{ message: string }>(
       `/api/Admin/users/${playerId}/reset-elo?defaultElo=${defaultElo}`

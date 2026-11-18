@@ -10,7 +10,7 @@ namespace Services.Interfaces
         // W01 - User Management & RBAC
         Task<List<AdminUserDto>> GetUsersAsync(string? search, UserStatus? status, int page = 1, int pageSize = 20);
         Task<bool> AssignRoleAsync(Guid actor, Guid userId, int roleId);
-        Task<bool> ResetPlayerEloAsync(Guid playerId, int defaultElo = 2000);
+        Task<bool> ResetPlayerEloAsync(Guid playerId, int defaultElo = 100);
         Task<bool> ManualVerifyUserEmailAsync(Guid userId);
 
         // W02 - Content CMS

@@ -10,7 +10,7 @@ interface Preview {
   lessonRecords: number; masteryRecords: number; missionRecords: number; achievementRecords: number; ownedCosmetics: string[];
 }
 const choices: [ProgressResetGroup,string][] = [[ProgressResetGroup.Learning,'Học tập: XP/cấp độ, bài học, mastery và coaching'],
-  [ProgressResetGroup.Ranking,'Xếp hạng: Elo về 2000 và xóa chuỗi xếp hạng'],
+  [ProgressResetGroup.Ranking,'Xếp hạng: Elo về 100 (mức khởi đầu) và xóa chuỗi xếp hạng'],
   [ProgressResetGroup.Missions,'Bộ đếm nhiệm vụ/thành tựu và thống kê tiến trình'],
   [ProgressResetGroup.Economy,'Kinh tế: tiền và vật phẩm về tài khoản mới']];
 export function ProgressResetDialog({ user,onClose,onDone }: { user: AdminUserDto; onClose:()=>void; onDone:(message:string)=>void }) {

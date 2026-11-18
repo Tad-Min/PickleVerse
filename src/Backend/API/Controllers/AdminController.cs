@@ -55,7 +55,7 @@ namespace API.Controllers
         }
 
         [HttpPost("users/{playerId}/reset-elo")]
-        public async Task<IActionResult> ResetPlayerElo(Guid playerId, [FromQuery] int defaultElo = 2000)
+        public async Task<IActionResult> ResetPlayerElo(Guid playerId, [FromQuery] int defaultElo = 100)
         {
             var success = await _adminService.ResetPlayerEloAsync(playerId, defaultElo);
             if (!success)

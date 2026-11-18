@@ -249,7 +249,7 @@ export const Users: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 font-mono font-bold text-accent">{u.elo || 2000}</td>
+                      <td className="py-3 px-4 font-mono font-bold text-accent">{u.elo ?? 100}</td>
 
                       <td className="py-3 px-4 text-muted-foreground font-mono">
                         {(u.timePlayedSeconds / 60).toFixed(0)} phút

@@ -32,7 +32,7 @@ public sealed class ProgressResetService(IUnitOfWork unit, RedisGameState matchm
         foreach (var group in selection.Groups)
             preview.Effects.Add(group switch {
                 ProgressResetGroup.Learning => "XP/cấp độ, kết quả bài học, mastery và hồ sơ coaching về ban đầu. Lượt offline cũ không được phục hồi. Tiền/vật phẩm đã thưởng không được nhận lại.",
-                ProgressResetGroup.Ranking => "Elo về 2000, chuỗi xếp hạng về 0; giữ lịch sử trận và rating ledger.",
+                ProgressResetGroup.Ranking => $"Elo về {PickleVerse.Progression.EloPolicy.Minimum} (mức khởi đầu của người chơi mới), chuỗi xếp hạng về 0; giữ lịch sử trận và rating ledger.",
                 ProgressResetGroup.Missions => "Đặt lại bộ đếm nhiệm vụ/thành tựu, thắng/thua và chuỗi tiến trình; giữ các mốc thưởng đã nhận.",
                 _ => "Số dư về 0, chỉ giữ và trang bị vợt mặc định. Nhật ký giao dịch và thưởng được giữ nguyên." });
         return preview;
@@ -59,7 +59,7 @@ public sealed class ProgressResetService(IUnitOfWork unit, RedisGameState matchm
         if (await Busy(player)) throw new AppException("Người chơi đang tìm trận hoặc có trận chưa hoàn tất.", HttpStatusCode.Conflict);
         if (request.Groups.Contains(ProgressResetGroup.Learning))
         { profile.Level = 1; profile.Exp = 0; profile.LearningEpoch++; profile.LearningResetAt = Now; await unit.Game.ResetLearning(player); }
-        if (request.Groups.Contains(ProgressResetGroup.Ranking)) { profile.Elo = 2000; profile.RankWinStreak = profile.RankLossStreak = 0; }
+        if (request.Groups.Contains(ProgressResetGroup.Ranking)) { profile.Elo = PickleVerse.Progression.EloPolicy.Minimum; profile.RankWinStreak = profile.RankLossStreak = 0; }
         if (request.Groups.Contains(ProgressResetGroup.Missions))
         {
             profile.MissionEpoch++; profile.Wincount = profile.Losecount = profile.Winstreak = profile.BestWinStreak = profile.Daystreak = 0;

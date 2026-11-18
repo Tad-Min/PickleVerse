@@ -67,7 +67,7 @@ static class ProgressResetChecks
             Groups = [ProgressResetGroup.Ranking] })), HttpStatusCode.Conflict, "stale preview cannot execute reset");
         ranking = await Reset(s => s.Preview(player, new ProgressResetSelection { Groups = [ProgressResetGroup.Ranking] }));
         await Reset(s => s.Execute(actor, player, new ExecuteProgressReset { RequestId = Guid.NewGuid().ToString("N"), ExpectedRevision = ranking.Revision, Groups = ranking.Groups }));
-        check((await fixture.Game(s => s.Read(player))).player.elo == 2000, "ranking reset sets agreed baseline Elo");
+        check((await fixture.Game(s => s.Read(player))).player.elo == EloPolicy.Minimum, "ranking reset returns Elo to the new-player baseline (BR-23)");
         using (var db = new PickleVerseContext(options)) { var p = await db.Playerprofiles.SingleAsync(p => p.Userid == player); p.Level = 7; p.Exp = 30; await db.SaveChangesAsync(); }
         var economy = await Reset(s => s.Preview(player, new ProgressResetSelection { Groups = [ProgressResetGroup.Economy] }));
         await Reset(s => s.Execute(actor, player, new ExecuteProgressReset { RequestId = Guid.NewGuid().ToString("N"), ExpectedRevision = economy.Revision, Groups = economy.Groups }));
