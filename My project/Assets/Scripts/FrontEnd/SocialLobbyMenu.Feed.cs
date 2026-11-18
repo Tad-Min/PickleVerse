@@ -199,12 +199,40 @@ namespace PickleVerse.FrontEnd
             }
         }
 
+        bool pickingVideo;
         void PickVideo()
         {
+            if (submitting || pickingVideo) return;
 #if UNITY_EDITOR
-            if (submitting) return;
-            string path = UnityEditor.EditorUtility.OpenFilePanel("Chọn video MP4", "", "mp4");
-            if (string.IsNullOrEmpty(path)) return;
+            UploadPickedVideo(UnityEditor.EditorUtility.OpenFilePanel("Chọn video MP4", "", "mp4"));
+#elif UNITY_STANDALONE_WIN
+            _ = PickWindowsVideo();
+#else
+            feedback.text = "Tải video hiện có trên bản Windows. Bản Android chưa hỗ trợ chọn tệp video.";
+#endif
+        }
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        async Task PickWindowsVideo()
+        {
+            pickingVideo = true;
+            try
+            {
+                string path = await WindowsFilePicker.PickAsync("Chọn video MP4", "Video MP4", "mp4");
+                if (this) UploadPickedVideo(path);
+            }
+            catch (Exception)
+            {
+                if (this) feedback.text = "Không mở được hộp chọn tệp video.";
+            }
+            finally
+            {
+                pickingVideo = false;
+            }
+        }
+#endif
+        void UploadPickedVideo(string path)
+        {
+            if (string.IsNullOrEmpty(path) || submitting) return;
             _ = Run(async token =>
             {
                 if (new FileInfo(path).Length > 250_000_000)
@@ -219,9 +247,6 @@ namespace PickleVerse.FrontEnd
                 mediaId = await SocialTransport.UploadVideo(path, progress, token);
                 mediaLabel.text = name;
             });
-#else
-            feedback.text = "Tải video hiện khả dụng trong Unity Editor.";
-#endif
         }
         async Task SavePost(CancellationToken token)
         {

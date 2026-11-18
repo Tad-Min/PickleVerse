@@ -9339,7 +9339,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0110\u1EA5u \u0111\u01A1n 1v1  \xB7  Th\u1EAFng 2/3 game\n11 \u0111i\u1EC3m, c\xE1ch 2  \xB7  Kh\xF4ng c\u1EA7n k\u1EBFt n\u1ED1i m\u1EA1ng"
+  m_text: "\u0110\u1EA5u \u0111\u01A1n 1v1  \xB7  Th\u1EAFng 2/3 game\n11 \u0111i\u1EC3m, c\xE1ch 2  \xB7  C\u1EA7n \u0111\u0103ng nh\u1EADp"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f0b761371ec749542b1a65b3df4eabd1, type: 2}
   m_sharedMaterial: {fileID: -1325940247101019260, guid: f0b761371ec749542b1a65b3df4eabd1, type: 2}

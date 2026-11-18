@@ -210,6 +210,9 @@ namespace PickleVerse.FrontEnd
         {
             EnsureView();
             if (busy) return;
+            // Match ids reach this overlay as 32-digit history ids or hyphenated API ids. The API
+            // binds MatchId as a Guid, which System.Text.Json reads only in the hyphenated form.
+            if(Guid.TryParse(id,out var parsedMatch)) id=parsedMatch.ToString("D");
             opened=true;reporting=true;matchId=id;targetPlayer=player;index=0;statement.characterLimit=254;statement.text="";UpdateCounter();
             targets.Clear();
             Render();

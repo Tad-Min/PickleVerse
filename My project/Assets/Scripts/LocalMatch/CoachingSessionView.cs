@@ -53,7 +53,10 @@ namespace PickleVerse.LocalMatch
         }
         async Task Poll(int revision, CancellationToken token)
         {
-            if (!Guid.TryParse(session, out var id) || !AccountRuntime.Ensure().Account.IsSignedIn) return;
+            // Offline sessions are analysed only after they are synchronised; never leave a
+            // permanent "analysing" caption when no request can be made.
+            if (!AccountRuntime.Ensure().Account.IsSignedIn) { summary = null; caption.text = "HLV • Đăng nhập để xem phân tích"; return; }
+            if (!Guid.TryParse(session, out var id)) { summary = null; caption.text = "HLV • Xem lại trong Tiến trình"; return; }
             caption.text = "Đang phân tích…";
             try
             {
@@ -88,7 +91,8 @@ namespace PickleVerse.LocalMatch
             foreach (Transform child in detailCard) Destroy(child.gameObject);
             Text(detailCard, "Title", "HUẤN LUYỆN VIÊN", new Vector2(.05f, .86f), new Vector2(.95f, .98f), 26, ScreenUiTheme.Mint);
             var analysis = summary?.status == "ready" ? summary.analysis : null;
-            string body = CoachingAnalysisText.Describe(analysis);
+            string body = AccountRuntime.Ensure().Account.IsSignedIn ? CoachingAnalysisText.Describe(analysis)
+                : "Phân tích của HLV cần kết nối mạng. Kết quả luyện tập ngoại tuyến được phân tích sau khi bạn đăng nhập và đồng bộ.";
             Text(detailCard, "Findings", body, new Vector2(.05f, .57f), new Vector2(.95f, .85f), 18, ScreenUiTheme.Text);
             int row = 0;
             if (analysis?.recommendations != null) foreach (var drill in analysis.recommendations.Take(3))

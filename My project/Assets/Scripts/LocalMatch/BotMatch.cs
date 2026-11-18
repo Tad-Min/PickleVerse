@@ -812,11 +812,13 @@ namespace PickleVerse.LocalMatch
                 case Fault.OwnCourt: return "Bóng không qua lưới";
                 case Fault.TwoBounce: return "Vi phạm hai lần nảy bắt buộc";
                 case Fault.DoubleBounce: return "Bóng nảy hai lần";
+                case Fault.DoubleHit: return "Chạm bóng hai lần";
                 case Fault.KitchenVolley: return "Vô lê trong vùng cấm vô lê";
                 case Fault.KitchenMomentum: return "Đà sau Vô lê chạm vùng cấm vô lê";
                 case Fault.BodyHit: return "Bóng chạm người";
                 case Fault.NetTouch: return "Chạm lưới";
                 case Fault.NetPlane: return "Đánh trước mặt phẳng lưới";
+                case Fault.PermanentObject: return "Bóng chạm vật cố định ngoài sân";
                 default: return fault.ToString();
             }
         }

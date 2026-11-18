@@ -296,18 +296,43 @@ namespace PickleVerse.Multiplayer
             closing = true;
             try
             {
-                CancelLocal();
-                await LeaveMatchAsync();
                 var room = Room;
                 Room = null;
+                // A guest reading the summary of a finished match keeps it until they choose
+                // VỀ PHÒNG CHỜ or VỀ MENU; only the party that the host closed is left now.
+                if (State == FlowState.Results && Match != null)
+                {
+                    if (room != null)
+                        await room.LeaveAsync();
+                    SetNotice(reason);
+                    return;
+                }
+                CancelLocal();
+                bool leftCourt = Match != null || State == FlowState.InMatch || State == FlowState.Reconnecting || State == FlowState.Results;
+                await LeaveMatchAsync();
                 if (room != null)
                     await room.LeaveAsync();
                 SetState(FlowState.WaitingRoom, reason);
+                // Leaving the match unloads the court. Without the room scene the player would stay on
+                // Fusion's empty scene, with no EventSystem and the last court frame still on screen (D-29).
+                if (leftCourt)
+                    await ShowRoomSceneAsync();
             }
             finally
             {
                 closing = false;
             }
+        }
+        async Task ShowRoomSceneAsync()
+        {
+            var scene = SceneManager.GetSceneByName(RoomSceneName);
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                await SceneManager.LoadSceneAsync(RoomSceneName, LoadSceneMode.Additive);
+                scene = SceneManager.GetSceneByName(RoomSceneName);
+            }
+            if (scene.IsValid() && scene.isLoaded)
+                SceneManager.SetActiveScene(scene);
         }
         public Task FindAsync()
         {
@@ -625,8 +650,11 @@ namespace PickleVerse.Multiplayer
             };
             session.Stopped += reason =>
             {
+                // A dedicated server leaves on purpose once the finished result is persisted.
+                // That planned stop is the normal end of the match, not a lost connection.
                 if (Match == session && !closing && !quitting && !reconnecting && stagingRequest == null)
-                    _ = Safe(State == FlowState.InMatch ? ReconnectAsync(session) : ReturnToRoomAsync("Mất kết nối Photon."));
+                    _ = Safe(State == FlowState.InMatch ? ReconnectAsync(session)
+                        : ReturnToRoomAsync(State == FlowState.Results ? "Trận đã kết thúc." : "Mất kết nối Photon."));
             };
             connectingUntil = Time.realtimeSinceStartupAsDouble + 30;
             MatchChanged();
@@ -922,14 +950,7 @@ namespace PickleVerse.Multiplayer
                 if (Room != null && Room.IsHost)
                     Room.Lobby.Command("idle", "");
                 SetState(FlowState.WaitingRoom, message);
-                var scene = SceneManager.GetSceneByName(RoomSceneName);
-                if (!scene.IsValid() || !scene.isLoaded)
-                {
-                    await SceneManager.LoadSceneAsync(RoomSceneName, LoadSceneMode.Additive);
-                    scene = SceneManager.GetSceneByName(RoomSceneName);
-                }
-                if (scene.IsValid() && scene.isLoaded)
-                    SceneManager.SetActiveScene(scene);
+                await ShowRoomSceneAsync();
             }
             finally
             {
