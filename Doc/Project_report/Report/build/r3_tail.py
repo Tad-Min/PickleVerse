@@ -4,7 +4,7 @@ NFR = [
     ("NFR-01", "Usability", "A new player can learn the game without outside help.", "At least 8 of 10 first-time testers complete the 17-step tutorial in 5 minutes or less and then pass the first lesson (serve) within three attempts, without help from the team.", "Moderated usability test with 10 students who have not played PickleVerse (Report 5, TC-N01)"),
     ("NFR-02", "Performance – network", "Online play is responsive for players in Vietnam.", "Round-trip time between the client and the staging game server is at most 100 ms at the 95th percentile over 10 online matches on home broadband in Ho Chi Minh City.", "Fusion RTT statistics logged by the client (TC-N02)"),
     ("NFR-03", "Performance – frame rate", "Matches are smooth on mid-range devices.", "Average frame rate ≥ 60 FPS (1% low ≥ 45 FPS) during a bot match on a reference PC (Intel Core i5 10th generation, GTX 1650, 16 GB RAM, 1920×1080, default quality); average ≥ 30 FPS on a reference Android phone (Snapdragon 7-series, 6 GB RAM).", "Unity Profiler capture of a full bot match on each device (TC-N03)"),
-    ("NFR-04", "Performance – capacity", "The Web API supports the target player population.", "With 2,000 concurrent virtual users performing a read-mostly mix (profile, missions, leaderboard, history, catalogue) the API keeps the 95th-percentile response time ≤ 500 ms and the error rate < 1% for 10 minutes. The release capacity of online matches equals the number of dedicated server slots (one in the staging deployment, LI-07 in Report 1).", "k6 load test against staging (TC-N04)"),
+    ("NFR-04", "Performance – capacity", "The Web API supports the target player population.", "With 2,000 concurrent virtual users performing a read-mostly mix (profile, missions, leaderboard, history, catalogue) the API keeps the 95th-percentile response time ≤ 500 ms and the error rate < 1% for 10 minutes. The release capacity of online matches equals the number of dedicated game-server containers (PKV_GAME_REPLICAS, default 1; LI-07 in Report 1).", "k6 load test against staging (TC-N04)"),
     ("NFR-05", "Performance – AI latency", "Coaching feedback arrives quickly.", "The AI coaching service returns the analysis of one drill or match in ≤ 1 second at the 95th percentile once the telemetry has been received; the coaching popup shows the result within 5 seconds of the end of the drill when online.", "Timing of 50 analysis requests from the worker log (TC-N05)"),
     ("NFR-06", "Accuracy – AI quality", "Coaching findings are trustworthy.", "Each rule-based finding reaches precision ≥ 0.80 and recall ≥ 0.70 on the expert-labelled holdout sessions. The tier model is shown to players only when it is approved: real expert data, at least 10 holdout players per tier, macro-F1 ≥ 0.70 and at least 0.05 above the majority baseline, prediction confidence ≥ 0.65 and at least 20 shot opportunities.", "Calibration and training reports of the AI service (TC-N06)"),
     ("NFR-07", "Reliability – availability", "Online services are available when players want to play.", "The API health endpoint /health/ready is available ≥ 99.5% of the time measured every 5 minutes by an external probe over the 14 days before the final defense (at most 100 minutes of downtime).", "Uptime probe report (TC-N07)"),
@@ -41,19 +41,19 @@ BR = [
     ("BR-20", "Training", "The first pass of a lesson grants 150, 225, 300 or 450 Tokenpad and 5, 7, 10 or 15 XP according to the lesson group; later passes and failed attempts grant no currency and cost nothing."),
     ("BR-21", "Training", "Offline training is allowed only for a profile cached by a previous online sign-in. Each attempt carries a unique request ID and is applied at most once (receipt APPLIED, DUPLICATE or REJECTED)."),
     # Match
-    ("BR-22", "Match", "Match kinds are Bot Practice, Ranked Bot, Ranked Singles, Matched Doubles and Custom. Only Ranked Singles and Ranked Bot change Elo."),
-    ("BR-23", "Match", "A new player starts at 100 Elo, which is also the minimum. After a ranked match Elo changes by round(32 × (S − E)), where S is 1 for a win and 0 for a loss and E = 1 / (1 + 10^((R_opponent − R_own)/400)); the result is never below 100."),
+    ("BR-22", "Match", "Match kinds are Bot Practice, Ranked Bot, Ranked Singles, Matched Doubles and Custom. Ranked Singles, Ranked Bot and Matched Doubles created by clients of protocol 20 or later (rating policy doubles-elo-v2, since 17/11/2026) change Elo; Bot Practice, Custom and earlier Matched Doubles do not."),
+    ("BR-23", "Match", "A new player starts at 100 Elo, which is also the minimum. After a ranked match Elo changes by round(32 × (S − E)), where S is 1 for a win and 0 for a loss and E = 1 / (1 + 10^((R_opponent − R_own)/400)); the result is never below 100. In ranked doubles R_opponent is the average Elo of the opposing team, and only human players receive a rating change."),
     ("BR-24", "Match", "Ranked pairing uses a window of 120 Elo. During the first 30 seconds the window extends only upward (only downward for a player with 5 or more losses); after 30 seconds it extends 120 in both directions."),
     ("BR-25", "Match", "When a match is found, every player must accept within 10 seconds; a decline or a timeout cancels the offer."),
-    ("BR-26", "Match", "Ranked singles only: if no human opponent is found within 180 seconds, a ranked bot is assigned with Elo = own + 120 (own − 100 for a player with 5 or more losses). Quick doubles has no bot fallback; its search ends when the search lease expires."),
+    ("BR-26", "Match", "Ranked singles only: if no human opponent is found within 180 seconds, a ranked bot is assigned with Elo = own + 120 (own − 100 for a player with 5 or more losses). Ranked doubles (protocol 20 or later): when a search has lasted 180 seconds and four humans are not available, the free seats are filled with ranked bots whose Elo is computed with the same rule from the average Elo and average losses of the human players; available humans always take priority and a party of two stays on one team."),
     ("BR-27", "Match", "Rank tiers by Elo: Đồng < 500, Bạc < 1000, Vàng < 2000, Bạch Kim < 3500, Kim Cương < 5000, Cao Thủ < 7000, Huyền Thoại ≥ 7000."),
-    ("BR-28", "Match", "A disconnected client tries to reconnect for 30 seconds, and the dedicated server keeps the player's slot for 30 seconds while the match is paused; a player who does not return is recorded as having forfeited and the match ends as interrupted. Clients send a heartbeat to the API every 8 seconds; in shared-mode matches (local development only) the API interrupts the match when a player has sent no heartbeat for 35 seconds. If the dedicated server stops renewing its lease, the lease monitor ends the match as interrupted."),
+    ("BR-28", "Match", "A disconnected client tries to reconnect for 30 seconds, and the dedicated server keeps the player's slot for 30 seconds while the match is paused; a player who returns in time continues with the server score. A player who leaves the match, or who does not return within the 30 seconds, forfeits: the match ends, the other team wins, and the forfeiting player gets a loss that changes Elo in a ranked match but gives no Tokenpad or XP. A match ends as interrupted, with no Elo change and no reward, only when an administrator stops it or its dedicated server is lost. Clients send a heartbeat to the API every 8 seconds; in shared-mode matches (local development only) the API interrupts the match when a player has sent no heartbeat for 35 seconds. If the dedicated server stops renewing its lease, the lease monitor ends the match as interrupted."),
     ("BR-29", "Match", "A match result is saved exactly once. An interrupted or stopped match gives no Elo and no reward."),
     ("BR-30", "Match", "A singles room holds 2 players and a doubles room up to 4. The host starts a custom match and may start a doubles room before all four slots are filled; custom matches are unrated."),
     ("BR-31", "Match", "Bot levels Easy, Medium and Hard use fixed reaction, accuracy and error settings. The adaptive bot selects its tier from the player's Elo: below 500 beginner, below 2000 intermediate, otherwise advanced."),
     # Economy
-    ("BR-32", "Economy", "Match rewards: bot match win 100 / loss 50 Tokenpad; online match win 150 / loss 75 Tokenpad; every finished match gives 10 XP for a win and 5 XP for a loss."),
-    ("BR-33", "Economy", "Reaching level n+1 requires n × 200 XP at level n; surplus XP carries over."),
+    ("BR-32", "Economy", "Match rewards: bot match win 100 / loss 50 Tokenpad; online matchmaking match win 150 / loss 75 Tokenpad; every finished bot or matchmaking match gives 10 XP for a win and 5 XP for a loss. Custom room matches are unrated and give no Tokenpad or XP, so that a group of friends cannot farm rewards; a player who forfeits receives no Tokenpad or XP (BR-28)."),
+    ("BR-33", "Economy", "Reaching level n+1 requires n × 10 XP at level n; surplus XP carries over. The threshold was n × 200 until 17/11/2026 (b08f5c7); existing profiles keep the XP of their current level."),
     ("BR-34", "Economy", "There are 7 daily and 10 weekly missions. Daily missions renew at 07:00 Vietnam time (UTC+7) and weekly missions at the start of each mission week. Completing all daily missions gives 200 Tokenpad + 20 XP and all weekly missions 1,000 Tokenpad + 50 XP. The daily streak grows by one for each day with at least one finished match; streaks are rewarded by the weekly mission \"3-day streak\" (350 Tokenpad + 20 XP) and the achievement \"5-day streak\" (500 Tokenpad + 30 XP)."),
     ("BR-35", "Economy", "Each mission, mission set and achievement reward can be claimed only once."),
     ("BR-36", "Economy", "A purchase requires enough balance in the chosen currency and is refused if the item is already owned; the debit and the grant are one transaction. Exactly one paddle is equipped at a time. Elite Token has no earning source in release 1.0."),
@@ -61,7 +61,7 @@ BR = [
     # Social
     ("BR-38", "Social", "A player cannot send a friend request to themself, send a duplicate request, or send one to a player who has already sent them a request. Blocking removes the friendship and prevents friend requests and room invitations in both directions."),
     ("BR-39", "Social", "The leaderboard is ordered by Elo descending and is cached for 15 seconds."),
-    ("BR-40", "Social", "A match history and its replay can be read only by the players who took part and by administrators."),
+    ("BR-40", "Social", "A match history, its detail and its replay can be read only by the players who took part and by administrators; a replay attached to a post can also be watched by every player who may see the post (BR-52)."),
     # Moderation
     ("BR-41", "Moderation", "A player can report another participant of their own finished match once per match; self-reporting is not allowed; the reason has at most 254 characters."),
     ("BR-42", "Moderation", "A sanction is SUSPENDED (expiry required and in the future) or BANNED (expiry optional). The reason has 3 to 2,000 characters. An administrator cannot sanction their own account or a system account. An expired suspension ends automatically."),
@@ -76,6 +76,13 @@ BR = [
     # AI
     ("BR-50", "AI coaching", "A coaching finding is reported only when the session contains at least 5 opportunities for that error; at most 3 drills are recommended; the tier estimate is shown only under the approval conditions of NFR-06."),
     ("BR-51", "AI coaching", "Telemetry and replays of dedicated-server matches are submitted only by the dedicated server; a client can submit telemetry only for its own drills and bot matches."),
+    # Social feed and messages (added 17/11/2026)
+    ("BR-52", "Social feed", "A post has at most 2,000 characters of text and needs text, a video or a replay. Its audience is community (every signed-in player), friends, friends except up to 200 chosen players, or private (author only). Visibility is checked on every read, so a later change of friendship, block or audience applies at once; players who blocked each other never see each other's posts. Only the author edits or deletes a post."),
+    ("BR-53", "Social feed", "A post video is an MP4 file with exactly one H.264 video stream and optionally AAC audio, at most 250 MB and 15 minutes, checked with ffprobe before it is stored; at most four uploads run at the same time. A video belongs to one post; a removed video, or one not attached to a post within 24 hours, is deleted. A playback link is valid for 20 minutes and only while the viewer may still see the post."),
+    ("BR-54", "Social feed", "Only a completed replay of a match of the author can be attached to a post."),
+    ("BR-55", "Social feed", "A player who may see a post can like it once and comment on it; a comment has 1 to 1,000 characters and can be deleted by its author or by the author of the post; comments of players who blocked each other are hidden."),
+    ("BR-56", "Messaging", "A direct message has 1 to 1,000 characters and can be sent only to a friend whom neither player has blocked and whose account is active. Each message carries a client message ID; repeating a send with the same ID returns the first message. Each pair of players has at most one conversation; its history is paged by 20 and stays readable to both players after unfriending or blocking."),
+    ("BR-57", "Messaging", "A whisper has 1 to 1,000 characters and can be sent only while both players are in the lobby (presence renewed within 45 seconds) to a verified active player whom neither has blocked; friendship is not required. Whispers are delivered live and are not stored on the server."),
 ]
 
 MSG = [
@@ -114,7 +121,7 @@ MSG = [
     ("MSG33", "Popup", "Match found, ready check", "Đã tìm thấy trận • Xác nhận để tham gia."),
     ("MSG34", "In line", "Search expired", "Hết thời gian tìm trận. Hãy thử lại."),
     ("MSG35", "In line", "Player declined the match", "Bạn đã hủy tham gia. Bấm Tìm trận để tìm lại."),
-    ("MSG36", "In line", "Dedicated server slot is busy", "Máy chủ đang bận • Đang chờ lượt thi đấu…"),
+    ("MSG36", "In line", "Every game-server container is busy", "Máy chủ đang bận • Đang chờ chỗ thi đấu…"),
     ("MSG37", "In line", "Room is full", "Phòng đã đủ người."),
     ("MSG38", "In line", "Room closed or player removed", "Phòng đã đóng hoặc bạn đã được mời ra."),
     ("MSG39", "In line", "Joining a room failed (for example wrong code)", "Không tham gia được phòng. Vui lòng thử lại."),
@@ -144,6 +151,19 @@ MSG = [
     ("MSG63", "Toast message", "Non-admin calls a moderation function (HTTP 403)", "Bạn không có quyền xử lý vi phạm."),
     ("MSG64", "In red, under the form", "Expert review incomplete", "Hãy xác nhận phiên người thật, người đánh giá, bằng chứng và ít nhất một nhãn."),
     ("MSG65", "In red, under the form", "System account sign-in attempt", "Tài khoản hệ thống không được đăng nhập."),
+    ("MSG66", "In line", "Post text, audience or exclusion list invalid", "Kiểm tra nội dung hoặc quyền xem bài đăng."),
+    ("MSG67", "In line", "Video format or length refused", "Video phải là MP4 H.264, âm thanh AAC nếu có, dài tối đa 15 phút."),
+    ("MSG68", "In line", "Video larger than 250 MB", "Chọn MP4 tối đa 250 MB."),
+    ("MSG69", "In line", "Too many uploads at the same time (HTTP 429)", "Đang có nhiều video được tải lên. Vui lòng thử lại."),
+    ("MSG70", "In line", "Video upload in a Windows or Android build (LI-12)", "Tải video hiện khả dụng trong Unity Editor."),
+    ("MSG71", "In line", "Comment, message or whisper length invalid", "Nhập nội dung từ 1 đến 1.000 ký tự."),
+    ("MSG72", "In line", "Direct message to a player who is not an unblocked friend", "Bạn cần kết bạn và có quyền nhắn tin với người chơi này."),
+    ("MSG73", "In line", "Whisper to a blocked or unverified player", "Bạn không thể thì thầm với người chơi này."),
+    ("MSG74", "In line", "Whisper recipient has left the lobby", "Người chơi không còn ở sảnh."),
+    ("MSG75", "In line", "Video cannot be played", "Không phát được video. Bài có thể đã đổi quyền xem."),
+    ("MSG76", "In line", "Post deleted or no longer visible", "Không tìm thấy bài đăng."),
+    ("MSG77", "Dialog", "Quit the game", "Thoát PickleVerse? – Bạn có chắc muốn thoát game không?"),
+    ("MSG78", "In line", "Match detail of a match that is not a finished match of the player", "Không tìm thấy trận đã hoàn tất của bạn."),
 ]
 
 TRACE = [
@@ -166,6 +186,7 @@ TRACE = [
     ("F17", "Match care and reports", "FR-27, FR-28, FR-30, FR-32", "UC-30, UC-45, UC-46, UC-54, UC-55, UC-62 to UC-64", "W04", "Huỳnh Trung Kiên"),
     ("F18", "Admin charts", "FR-32", "UC-65, UC-66", "W04", "Huỳnh Trung Kiên"),
     ("–", "Shop (not in the Review 2 list)", "FR-22", "UC-41, UC-42", "–", "–"),
+    ("–", "Social feed and messages (Review 1 comment, added 17/11/2026)", "FR-24, FR-34, FR-35", "UC-69 to UC-76", "–", "Nguyễn Văn Thành Đạt (implementation)"),
     ("–", "Expert review (addition to the proposal)", "FR-33", "UC-67, UC-68", "–", "–"),
 ]
 
@@ -175,7 +196,7 @@ def write(r):
     r.h3("4.1 External Interfaces")
     r.h4("4.1.1 User Interfaces")
     r.bullets([
-        "The game interface is in Vietnamese with the project's Vietnamese fonts; it scales for 16:9 (1920×1080, 1280×720) and 20:9 phone screens; every screen can be operated with mouse and keyboard on PC and with touch on Android; Esc closes overlays and opens Settings, and Enter confirms.",
+        "The game interface is in Vietnamese with the project's Vietnamese fonts; it scales for 16:9 (1920×1080, 1280×720) and 20:9 phone screens; every screen can be operated with mouse and keyboard on PC and with touch on Android; Esc closes overlays and opens Settings, and Enter confirms. On PC the game runs windowed, fullscreen or borderless; in windowed mode the interface is laid out below the PickleVerse title bar.",
         "In-match information (score, serving side, timers, fault banners) is placed at the screen edges so that it does not cover the court.",
         "The administration web application is a responsive single-page application for desktop browsers with a fixed sidebar, tables with paging and confirmation dialogs for every destructive action.",
     ])
@@ -185,16 +206,18 @@ def write(r):
                "Server: Linux host with Docker; the dedicated game-server container is limited to 2 CPUs and 2 GB RAM by default."])
     r.h4("4.1.3 Software Interfaces")
     r.table(["Interface", "Description"], [
-        ["Web API (REST/JSON)", "129 endpoints under /api (Report 4, §3.9), JSON bodies wrapped in the ApiResponse<T> envelope {success, message, data}; error responses carry {success, message, code, errors}; JWT bearer authentication; Swagger/OpenAPI documentation"],
+        ["Web API (REST/JSON)", "147 endpoints under /api (Report 4, §3.9), JSON bodies wrapped in the ApiResponse<T> envelope {success, message, data}; error responses carry {success, message, code, errors}; JWT bearer authentication; Swagger/OpenAPI documentation"],
         ["AI coaching service", "Internal HTTP API POST /v1/analyze-session protected by the X-AI-Key header; called only by the Web API worker"],
         ["Dedicated server ↔ Web API", "HTTP calls for lease, heartbeat, telemetry, replay and result, authenticated with a service key; match tickets signed with HMAC-SHA256"],
-        ["Photon Fusion 2.1.3", "Real-time session service (protocol version 18) used by clients and the dedicated server"],
+        ["Social hub (SignalR, JSON protocol over WebSocket)", "/api/Game/social/hub, JWT with the game scope; client methods Presence and Whisper; server events WhisperReceived and MessageChanged; messages of at most 8 KB"],
+        ["Photon Fusion 2.1.3", "Real-time session service (protocol version 20 since 17/11/2026) used by clients and the dedicated servers"],
         ["PostgreSQL 16 / Redis 7.4", "Persistent storage through Npgsql Entity Framework Core; Redis for matchmaking queue, leases, presence and caches"],
-        ["S3-compatible storage", "Replay manifests and chunks through the S3 API"],
+        ["S3-compatible storage", "Replay manifests and chunks and the MP4 videos of posts through the S3 API (videos are validated with ffprobe in the API container)"],
     ], widths=[4.0, 12.0], size=9, caption="Software interfaces")
     r.h4("4.1.4 Communication Interfaces")
     r.bullets(["Client and admin web to Web API: HTTP/1.1 with JSON over TLS in production (port 443); the staging environment serves the API and the admin web over HTTPS on port 443 since 13/11/2026 (HTTP on port 8080 until then).",
-               "Game traffic: UDP through Photon Cloud and to the dedicated server on UDP port 3669.",
+               "Lobby whispers and message notifications: WebSocket (wss) to /api/Game/social/hub through the same HTTPS address.",
+               "Game traffic: UDP through Photon Cloud and to the dedicated servers on UDP ports from 3669 (one port per game-server container).",
                "E-mail: SMTP with STARTTLS on port 587 to Gmail.",
                "All timestamps are exchanged in UTC (ISO 8601) and displayed in Vietnam time (UTC+7)."])
 
@@ -243,7 +266,7 @@ def write(r):
         ["BR, FR, NFR, UC, MSG", "Business rule; functional requirement; non-functional requirement; use case; message"],
     ], widths=[3.6, 12.4], size=9, first_col_bold=True, caption="Definitions and acronyms")
     r.h3("5.5 Appendix A – Traceability to the Review 2 Commitment")
-    r.p("The table below links the 18 features committed in the Review 2 form BM04 (07/11/2026) to the use cases and functional requirements of this specification, with the workflow and the member accountable for each feature at the reviews. Report 5 links each requirement to its test cases.")
+    r.p("The table below links the 18 features committed in the Review 2 form BM04 (07/11/2026) to the use cases and functional requirements of this specification, with the workflow and the member accountable for each feature at the reviews. Report 5 links each requirement to its test cases. The social feature asked for at Review 1 is listed in the last rows; the full answer to the Review 1 comments is in Report 1, §6.3.")
     r.table(["Review 2 feature", "Name", "Functional requirements", "Use cases", "Workflow", "Owner (BM04)"], [list(t) for t in TRACE],
             widths=[1.6, 3.4, 3.2, 3.4, 1.6, 2.8], size=8.5, caption="Traceability from Review 2 features to requirements and owners")
     r.h3("5.6 References")

@@ -3,14 +3,14 @@
 skinparam packageStyle folder
 left to right direction
 package "PickleVerse.API" as API {
-  package "Controllers (28 classes)" as Ctl
+  package "Controllers (29 classes)\nand Hubs (SocialHub)" as Ctl
   package "Filters and middleware\n(ApiResponse envelope,\nexception handler, scope)" as Flt
   package "Program (DI, JWT, CORS,\nrate limiter, Redis)" as Prog
 }
 package "PickleVerse.Services" as SVC {
   package "Interfaces" as SI
   package "Implementations" as SImpl
-  package "Workers\n(HybridAiWorker,\nDedicatedLeaseMonitor)" as SW
+  package "Workers\n(HybridAiWorker,\nDedicatedLeaseMonitor,\nSocialMediaCleanup)" as SW
   package "Configuration\n(ServerSettings)" as SCfg
   package "Rules\n(TrainingEngine, Elo)" as SRules
 }

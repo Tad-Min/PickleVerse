@@ -31,6 +31,14 @@ state "Friends and Leaderboard\n[drawer]" as Social <<popup>>
 state "Shop" as Shop
 state "Collection" as Collection
 state "Settings\n[overlay]" as Settings <<popup>>
+state "Quit Confirmation\n[dialog]" as Quit <<popup>>
+state "Match Detail\n[popup]" as Detail <<popup>>
+state "Social Feed\n[overlay]" as Feed <<popup>>
+state "Post Editor" as Editor
+state "Comments" as Comments
+state "Video Player\n[overlay]" as Video <<popup>>
+state "Inbox and Conversation" as Inbox
+state "Whispers" as Whispers
 state "Decisions and Appeals\n[popup]" as Appeals <<popup>>
 
 [*] --> Login
@@ -63,9 +71,21 @@ Result --> Coach
 Menu --> Progress
 Menu --> History
 History --> Replay
+History --> Detail : select a match
 Menu --> Missions
 Menu --> Social
+Social --> Feed : BẢNG TIN
+Social --> Inbox : TIN NHẮN / NHẮN TIN
+Social --> Whispers : THÌ THẦM
+Feed --> Editor : Viết bài / Sửa
+Feed --> Comments
+Feed --> Video
+Feed --> Replay : shared replay
+Feed --> Inbox : Hộp thư
+Inbox --> Whispers
 Menu --> Shop
 Menu --> Collection
 Menu --> Settings
+Login --> Quit : THOÁT GAME
+Settings --> Quit : Thoát game
 @enduml

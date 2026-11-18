@@ -40,7 +40,7 @@ rectangle "PickleVerse System" {
   usecase "P1 Account and Onboarding\n(UC-01 to UC-09)" as P1
   usecase "P2 Learning and Coaching\n(UC-10 to UC-18)" as P2
   usecase "P3 Online Match\n(UC-19 to UC-27)" as P3
-  usecase "P4 Progress, Economy and Social\n(UC-28 to UC-44)" as P4
+  usecase "P4 Progress, Economy and Social\n(UC-28 to UC-44, UC-69 to UC-76)" as P4
   usecase "P5 Account Restriction\n(UC-45 to UC-46)" as P5
   usecase "P6 Admin: Users and Moderation\n(UC-47 to UC-55)" as P6
   usecase "P7 Admin: Content\n(UC-56 to UC-61)" as P7
@@ -156,6 +156,7 @@ rectangle "P4 Progress, Economy and Social (part 1: history, ranking and friends
   usecase "UC-34 Remove Friend" as UC34
   usecase "UC-35 Block Player" as UC35
   usecase "UC-36 Unblock Player" as UC36
+  usecase "UC-76 View Match Detail" as UC76
 }
 Player -- UC28
 Player -- UC31
@@ -166,6 +167,31 @@ Player -- UC35
 Player -- UC36
 UC29 .> UC28 : <<extend>>
 UC30 .> UC28 : <<extend>>
+UC76 .> UC28 : <<extend>>
+UC30 .> UC76 : <<extend>>
+"""
+
+D["r3_uc_p4c_feed"] = r"""
+left to right direction
+actor Player
+rectangle "P4 Progress, Economy and Social (part 3: social feed and messages)" {
+  usecase "UC-69 Browse Social Feed" as UC69
+  usecase "UC-70 Write, Edit or Delete Post" as UC70
+  usecase "UC-71 Like and Comment on Post" as UC71
+  usecase "UC-72 Watch Shared Video or Replay" as UC72
+  usecase "UC-73 Send Direct Message" as UC73
+  usecase "UC-74 Read Inbox and Conversation" as UC74
+  usecase "UC-75 Whisper in the Lobby" as UC75
+  usecase "UC-29 Watch Match Replay" as UC29
+}
+Player -- UC69
+Player -- UC70
+Player -- UC74
+Player -- UC75
+UC71 .> UC69 : <<extend>>
+UC72 .> UC69 : <<extend>>
+UC72 ..> UC29 : <<include>>\n(shared replay)
+UC73 .> UC74 : <<extend>>
 """
 
 D["r3_uc_p4b_economy"] = r"""
@@ -300,6 +326,14 @@ state "Friends and Leaderboard\n[drawer]" as Social <<popup>>
 state "Shop" as Shop
 state "Collection" as Collection
 state "Settings\n[overlay]" as Settings <<popup>>
+state "Quit Confirmation\n[dialog]" as Quit <<popup>>
+state "Match Detail\n[popup]" as Detail <<popup>>
+state "Social Feed\n[overlay]" as Feed <<popup>>
+state "Post Editor" as Editor
+state "Comments" as Comments
+state "Video Player\n[overlay]" as Video <<popup>>
+state "Inbox and Conversation" as Inbox
+state "Whispers" as Whispers
 state "Decisions and Appeals\n[popup]" as Appeals <<popup>>
 
 [*] --> Login
@@ -332,11 +366,23 @@ Result --> Coach
 Menu --> Progress
 Menu --> History
 History --> Replay
+History --> Detail : select a match
 Menu --> Missions
 Menu --> Social
+Social --> Feed : BẢNG TIN
+Social --> Inbox : TIN NHẮN / NHẮN TIN
+Social --> Whispers : THÌ THẦM
+Feed --> Editor : Viết bài / Sửa
+Feed --> Comments
+Feed --> Video
+Feed --> Replay : shared replay
+Feed --> Inbox : Hộp thư
+Inbox --> Whispers
 Menu --> Shop
 Menu --> Collection
 Menu --> Settings
+Login --> Quit : THOÁT GAME
+Settings --> Quit : Thoát game
 """
 
 D["r3_screenflow_admin"] = r"""
@@ -659,6 +705,86 @@ TELEMETRY_SESSION -1- REVIEWS
 REVIEWS -N- EXPERT_REVIEW
 EXPERT_REVIEW -N- REVIEWED_BY
 REVIEWED_BY -1- ADMIN
+@endchen
+"""
+
+D["r3_cerd_feed"] = r"""
+@startchen
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+  PlayerName
+}
+entity POST {
+  PostId <<key>>
+  Body
+  Audience
+  CreatedAt
+  EditedAt
+}
+entity VIDEO {
+  MediaId <<key>>
+  Bytes
+  Ready
+}
+entity COMMENT {
+  CommentId <<key>>
+  Body
+  CreatedAt
+}
+entity MATCH {
+  MatchId <<key>>
+}
+entity CONVERSATION {
+  ConversationId <<key>>
+  UpdatedAt
+}
+entity MESSAGE {
+  MessageId <<key>>
+  ClientMessageId
+  Body
+  CreatedAt
+}
+relationship WRITES {
+}
+relationship ATTACHES {
+}
+relationship SHARES_REPLAY {
+}
+relationship LIKES {
+}
+relationship EXCLUDES {
+}
+relationship ON_POST {
+}
+relationship COMMENTS {
+}
+relationship MEMBER_OF {
+  ReadThrough
+}
+relationship CONTAINS {
+}
+relationship SENDS {
+}
+PLAYER_PROFILE -1- WRITES
+WRITES -N- POST
+POST -1- ATTACHES
+ATTACHES -1- VIDEO
+POST -N- SHARES_REPLAY
+SHARES_REPLAY -1- MATCH
+PLAYER_PROFILE -M- LIKES
+LIKES -N- POST
+POST -M- EXCLUDES
+EXCLUDES -N- PLAYER_PROFILE
+POST -1- ON_POST
+ON_POST -N- COMMENT
+PLAYER_PROFILE -1- COMMENTS
+COMMENTS -N- COMMENT
+PLAYER_PROFILE -M- MEMBER_OF
+MEMBER_OF -N- CONVERSATION
+CONVERSATION -1- CONTAINS
+CONTAINS -N- MESSAGE
+PLAYER_PROFILE -1- SENDS
+SENDS -N- MESSAGE
 @endchen
 """
 

@@ -13,9 +13,9 @@ node "Admin workstation" as AdminPC {
 node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
   node "Caddy reverse proxy (host)\n:80 redirect, :443 TLS" as HostNginx
   node "web container\nnginx + React build\n127.0.0.1:3000" as WebC
-  node "backend-api container\nASP.NET Core 10\n127.0.0.1:8080" as ApiC
+  node "backend-api container\nASP.NET Core 10, SignalR, ffprobe\n127.0.0.1:8080" as ApiC
   node "ai-service container\nPython 3.12 FastAPI\n:8000 (internal)" as AiC
-  node "game-server container\nUnity Linux Dedicated Server\n:3669/udp" as GameC
+  node "game-server containers (× PKV_GAME_REPLICAS)\nUnity Linux Dedicated Server\nUDP 3669–4168 → :3669" as GameC
   node "postgres container\nPostgreSQL 16\n:5432 (internal)" as PgC
   node "redis container\nRedis 7.4\n:6379 (internal)" as RdC
   node "s3-storage container\nS3-compatible\n:9000 (internal)" as S3C
@@ -29,12 +29,12 @@ node "Docker Hub\ntadminm/pickelverse" as Hub
 Browser --> HostNginx : HTTPS
 WinClient --> HostNginx : HTTPS JSON
 Apk --> HostNginx : HTTPS JSON
-HostNginx --> ApiC : /api, /health/ready
+HostNginx --> ApiC : /api (incl. WebSocket hub),\n/health/ready
 HostNginx --> WebC : other paths
 WinClient --> Photon : UDP
 Apk --> Photon : UDP
-WinClient --> GameC : UDP 3669
-Apk --> GameC : UDP 3669
+WinClient --> GameC : UDP
+Apk --> GameC : UDP
 GameC --> ApiC : HTTP (service key)
 GameC --> Photon : UDP
 ApiC --> PgC : TCP 5432

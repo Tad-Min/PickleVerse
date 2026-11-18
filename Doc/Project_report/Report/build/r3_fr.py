@@ -1,4 +1,4 @@
-"""Report 3 §3.2–3.11: functional requirements FR-01 to FR-33."""
+"""Report 3 §3.2–3.11: functional requirements FR-01 to FR-35."""
 import os
 from report_lib import SCREENS
 
@@ -120,14 +120,20 @@ def write(r):
 
     fr(r, "FR-05", "Configure Game Settings", "UC-09 Configure Game Settings",
        "Menu → **Cài đặt**, or Esc during a match or drill.",
-       "The player adjusts audio (music and effects volume), graphics (the quality options of the Graphics tab) and controls (keyboard bindings for PC and the touch layout for phones). Changes are previewed and stored on the device when the player selects **Áp dụng và lưu**.",
-       shots=[("24_settings.png", "Settings – Overview tab"), ("25_settings_controls.png", "Settings – Controls tab with key bindings")],
+       "The player adjusts audio (music and effects volume), graphics (the quality options of the Graphics tab) and controls (keyboard bindings for PC and the touch layout for phones). On PC the tab **Khung hình** offers **Cửa sổ** (windowed), **Toàn màn hình** (exclusive fullscreen) and **Không viền** (borderless, the default) and the three largest 16:9 window sizes that fit the monitor; in windowed mode the game draws its own frame with a title bar that can be dragged, a – button that minimises the window, a × button that asks before quitting, and a rounded blue border, and the interface moves below the title bar. **Thoát game** on the Overview tab and on the Login screen quits after a confirmation (MSG77). Changes are previewed and stored on the device when the player selects **Áp dụng và lưu**.",
+       shots=[("24_settings.png", "Settings – Overview tab"), ("25_settings_controls.png", "Settings – Controls tab with key bindings"),
+              ("36_settings_display.png", "Settings – Khung hình tab in a 1600 × 900 window with the PickleVerse frame (Windows build of 16/11/2026)"),
+              ("37_quit_prompt.png", "Quit confirmation opened by the × button of the window frame")],
        fields=[["Music / effects volume", "Slider 0–100", "No", "Default from the build"],
                ["Graphics options", "Choice", "No", "Applied after Apply and save"],
+               ["Display mode (PC)", "Choice", "No", "Cửa sổ, Toàn màn hình or Không viền; default Không viền; applied at once and kept after Apply and save"],
+               ["Window size (PC)", "Choice", "No", "One of the three largest 16:9 sizes that fit the monitor (for example 1280 × 720, 1366 × 768, 1600 × 900 on a 1920 × 1080 screen); choosing a size switches to Cửa sổ"],
                ["Key binding", "Key", "No", "One key per action; Restore defaults resets all (defaults: W/A/S/D move, Left Shift run, J drive and serve, K dink, L volley, U power, I cross)"]],
        rules="BR-17.",
        normal=["The player changes values; **Áp dụng và lưu** becomes active.", "The player saves; settings apply immediately and persist on the device."],
-       exceptions=["A1 – **Hoàn tác** restores the last saved values; **Khôi phục mặc định** restores factory values."])
+       exceptions=["A1 – **Hoàn tác** restores the last saved values, including the display mode; **Khôi phục mặc định** restores factory values.",
+                   "A2 – A window size saved on a larger monitor does not fit: the largest size that fits is used.",
+                   "A3 – The player starts the game with the Unity command-line options -screen-fullscreen or -window-mode: the command line wins at start-up."])
 
     # ============================================================ FE-02
     r.h3("3.3 Tutorial and Technique Training (FE-02)")
@@ -225,22 +231,22 @@ def write(r):
     # ============================================================ FE-04
     r.h3("3.5 Online Matches (FE-04)")
     fr(r, "FR-14", "Find an Online Match", "UC-19 Find Online Match, UC-20 Confirm Match Readiness",
-       "Mode Selection → **Đấu online** → Online Lobby → **Đấu đơn 1v1** (ranked singles) or **Đấu đôi 2v2** (quick doubles) → **Tìm trận**.",
-       "**Ranked singles:** the player joins the ranked queue; the matchmaking worker pairs two searching players whose Elo is within the pairing window, and if no human opponent is found within 180 seconds a ranked bot opponent is assigned. **Quick doubles:** a player searches alone or the captain of a party of two (formed by room code or invitation) searches for both; the API fills two teams of two from solo players and parties in the same region, without Elo pairing and without a bot; the match is unrated. In both modes every player must accept within 10 seconds. When all players accept, the API allocates the dedicated server and issues signed tickets, and the clients load the multiplayer court.",
+       "Mode Selection → **Đấu online** → Online Lobby → **Đấu đơn 1v1** (ranked singles) or **Đấu đôi 2v2** (ranked doubles) → **Tìm trận**.",
+       "**Ranked singles:** the player joins the ranked queue; the matchmaking worker pairs two searching players whose Elo is within the pairing window, and if no human opponent is found within 180 seconds a ranked bot opponent is assigned. **Ranked doubles:** a player searches alone or the captain of a party of two (formed by room code or invitation) searches for both; the API fills two teams of two from solo players and parties in the same region and protocol version, and a party always stays on one team. When a search has lasted 180 seconds and four humans are not available, the free seats are filled with ranked bots whose Elo is derived from the average rating of the humans; available humans always take priority. The match is rated (BR-22, BR-23). Clients older than protocol 20 keep the former unrated search without bots. In both modes every player must accept within 10 seconds. When all players accept, the API allocates the dedicated server and issues signed tickets, and the clients load the multiplayer court.",
        shots=[("28_searching.png", "Searching for a singles opponent with the elapsed time (layout preview rendered in the Unity Editor)")],
        rules="BR-22 to BR-27.",
        normal=["The player selects **Tìm trận**; MSG32 and a timer are shown.", "A pair (or two full teams for doubles) is found; the Ready Check shows MSG33 with a 10-second countdown.",
                "All players accept; the server allocates the match and the court loads (FR-16)."],
        exceptions=["A1 – Ranked singles only: no opponent within 180 seconds: a ranked bot is assigned and the match starts on the dedicated server.",
-                   "A2 – Quick doubles: no two full teams are found before the search lease ends: MSG34; there is no bot fallback.",
+                   "A2 – Ranked doubles: four humans are not found within 180 seconds: ranked bots fill the free seats, and every human still has to accept the ready check.",
                    "A3 – The player selects **Hủy** while searching: the ticket is cancelled.",
                    "E1 – A player declines or the countdown ends: the offer closes; the decliner sees MSG35 and the other player returns to the queue.",
-                   "E2 – The dedicated server is busy: MSG36 and the request waits for the slot.",
+                   "E2 – Every game-server container is busy: MSG36; the ready check waits (phase WAITING_CAPACITY) until a container is reserved for the match.",
                    "E3 – The player already has a search or an unfinished match: MSG41.", "E4 – Search expired: MSG34."])
 
     fr(r, "FR-15", "Private Rooms and Invitations", "UC-21 Create Private Room, UC-22 Join Room by Code, UC-23 Invite Friend to Room, UC-24 Respond to Room Invitation",
        "Mode Selection → **Tạo phòng**; Online Lobby → **Mã phòng** + **Tham gia bằng mã**; friend list → invite.",
-       "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The collapsible friends column of the lobby lists the friends who can be invited; only friends who are in the lobby receive invitations. The host can change teams, remove a guest and start the match. Custom matches are unrated and give no Elo. A doubles room of two players can also be used as a party for quick doubles (FR-14).",
+       "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The collapsible friends column of the lobby lists the friends who can be invited; only friends who are in the lobby receive invitations. The host can change teams, remove a guest and start the match. Custom matches are unrated and give no Elo. A doubles room of two players can also be used as a party for ranked doubles (FR-14).",
        shots=[("27_online_lobby.png", "Online lobby – doubles room with the room code and the friends column (layout preview rendered in the Unity Editor with sample friend data)")],
        fields=[["Room code", "Text", "Yes (to join)", "Code of an open room on Photon; wrong code → MSG39"], ["Mode", "Choice", "Yes", "Singles 1v1 or Doubles 2v2"]],
        rules="BR-22, BR-30, BR-38.",
@@ -258,7 +264,7 @@ def write(r):
 
     fr(r, "FR-17", "Reconnect to or Leave a Match", "UC-26 Reconnect to Match, UC-27 Leave Match",
        "Connection loss during an online match; pause menu → leave.",
-       "If a player's connection drops, the client shows a reconnecting overlay and retries for up to 30 seconds with the same identity. The dedicated server pauses the match and keeps the player's slot for 30 seconds. A player who reconnects in time continues with the server score. A player who leaves, or who does not return within 30 seconds, is recorded as having forfeited and the server ends the match as interrupted; interrupted matches change no Elo and give no reward. If the dedicated server itself is lost, its lease expires and the API ends the match as interrupted (BR-28).",
+       "If a player's connection drops, the client shows a reconnecting overlay and retries for up to 30 seconds with the same identity. The dedicated server pauses the match and keeps the player's slot for 30 seconds. A player who reconnects in time continues with the server score. A player who leaves, or who does not return within 30 seconds, forfeits: the server ends the match with a win for the other team, and the forfeiting player gets a loss (Elo changes in a ranked match; no Tokenpad or XP). If the dedicated server itself is lost, its lease expires and the API ends the match as interrupted, which changes no Elo and gives no reward (BR-28).",
        layout=[["Reconnecting overlay", "Status text and countdown; the court stays visible in the background"], ["Leave dialog", "Warning about the consequence and Confirm / Cancel buttons"]],
        rules="BR-28, BR-29.",
        normal=["The client detects the loss and starts reconnecting.", "The player rejoins with the same ticket identity and control is restored."],
@@ -266,7 +272,7 @@ def write(r):
 
     fr(r, "FR-18", "Record the Match Result and Update Elo", "UC-16, UC-25 (non-screen settlement)",
        "End of a bot match (reported by the client) or of an online match (reported by the dedicated server).",
-       "The API settles each match exactly once in a single transaction: it stores the game scores, marks the match FINISHED, applies Elo for ranked matches, grants Tokenpad and XP, and updates missions, achievements and streaks. The result popup and the history (FR-24) show the outcome.",
+       "The API settles each match exactly once in a single transaction: it stores the game scores, marks the match FINISHED, applies Elo for ranked matches (ranked singles, ranked bot and ranked doubles; in doubles each human is rated against the average Elo of the opposing team, and bots receive no rating row), grants Tokenpad and XP, and updates missions, achievements and streaks. The result popup and the history (FR-24) show the outcome.",
        refs=("20_botmatch_victory.png",),
        rules="BR-22, BR-23, BR-29, BR-32 to BR-35.",
        normal=["The API receives the result with the match identifier.", "It validates that the match is still PLAYING and that the reporter is allowed to report it.", "It saves scores, Elo, rewards and progress, then returns the summary to the clients."],
@@ -290,7 +296,7 @@ def write(r):
        "Players earn XP from matches, lessons and missions. Reaching the XP threshold raises the level, which is shown in the name tag and history card. Two items are granted automatically once: the THOT paddle after 10 passed lessons and the GEMSTONE paddle at level 25.",
        refs=("11_menu_online.png",),
        rules="BR-20, BR-32, BR-33, BR-37.",
-       normal=["XP is added by the settlement.", "If XP reaches level × 200, the level increases and the remaining XP carries over.", "Progression grants are checked and recorded in the reward log so that each is given once."])
+       normal=["XP is added by the settlement.", "If XP reaches level × 10, the level increases and the remaining XP carries over (the threshold was level × 200 until 17/11/2026; existing profiles keep the XP of their current level).", "Progression grants are checked and recorded in the reward log so that each is given once."])
 
     fr(r, "FR-21", "Missions, Streak and Achievements", "UC-37 to UC-40",
        "Menu → **Nhiệm vụ**; Progress → **Nhiệm vụ ngày / tuần**.",
@@ -318,17 +324,21 @@ def write(r):
 
     # ============================================================ FE-07
     r.h3("3.8 Social, History and Ranking (FE-07)")
-    fr(r, "FR-24", "View Match History and Watch Replay", "UC-28 View Match History, UC-29 Watch Match Replay",
-       "Menu → **Lịch sử**; history entry → replay button.",
-       "The history popup lists the player's last 20 matches in Vietnam time with opponent, mode, result (win, loss or interrupted), game score and Elo change, plus the level card. A match with a stored replay can be watched in the Replay Viewer with pause, seek and speeds from 0.5× to 2×. Only participants can open a replay.",
+    fr(r, "FR-24", "View Match History, Match Detail and Replay", "UC-28 View Match History, UC-29 Watch Match Replay, UC-76 View Match Detail",
+       "Menu → **Lịch sử**; history entry (\"Bấm để xem tỷ số từng ván\") → Match Detail; history entry → replay button.",
+       "The history popup lists the player's last 20 matches in Vietnam time with opponent, mode, result (win, loss or interrupted), game score and Elo change, plus the level card. Selecting a finished match opens **Match Detail**: the tab **Tỉ số** shows the score of each game for team A and team B and which side each team started on, and the tab **Thông số** shows, for every player of the match, the errors per technique and game found by the AI analysis (errors / opportunities, or \"Đang phân tích…\" while the analysis runs); the detail also offers the report button for each other human player. A match with a stored replay can be watched in the Replay Viewer with pause, seek and speeds from 0.5× to 2×. Only participants can open the detail and the replay, except a replay shared in a visible post (FR-34).",
        shots=[("12_history.png", "Match history with interrupted ranked matches")],
-       rules="BR-29, BR-40.",
-       normal=["The player opens History; the list loads from the API.", "The player selects a replay; the manifest and chunks are downloaded and played."],
-       exceptions=["A1 – No replay stored: the entry shows \"Chưa có replay\".", "E1 – A player who did not take part requests the replay: HTTP 403."])
+       layout=[["Match Detail header", "‹ Quay lại, kind and mode, series score, metadata (time, end reason) and Elo change"],
+               ["Tabs", "Tỉ số (games with team A and team B score, \"Chưa hoàn tất\" or \"Chưa ghi phía sân\" notes) and Thông số (per player and game: technique · error code, errors/opportunities and rate)"],
+               ["Actions", "Làm mới; report button for each other human player (FR-27)"]],
+       rules="BR-29, BR-40, BR-41.",
+       normal=["The player opens History; the list loads from the API.", "The player selects a finished match; GET /api/Matches/{id} returns the games and the per-player statistics.", "The player selects a replay; the manifest and chunks are downloaded and played."],
+       exceptions=["A1 – No replay stored: the entry shows \"Chưa có replay\".", "A2 – The match has no score per game: \"Trận này chưa ghi tỷ số từng ván.\"", "A3 – The analysis of a game is missing: \"Chưa có thống kê cho ván này\".",
+                   "E1 – A player who did not take part requests the replay: HTTP 403.", "E2 – The match is not finished or not the player's: MSG78."])
 
     fr(r, "FR-25", "Manage Friends and Blocked Players", "UC-32 to UC-36",
        "Menu → friend drawer → **Bạn bè**.",
-       "The player searches other players by name or ID, sends friend requests, accepts or declines received requests, removes friends and blocks or unblocks players. Online friends can be invited to a room (FR-15).",
+       "The player searches other players by name or ID, sends friend requests, accepts or declines received requests, removes friends and blocks or unblocks players. Online friends can be invited to a room (FR-15). Each friend row has **NHẮN TIN** and each other player **THÌ THẦM** (FR-35); the drawer also opens the feed (**BẢNG TIN**) and the inbox (**TIN NHẮN**).",
        shots=[("13_social.png", "Friends drawer")],
        rules="BR-38.",
        normal=["The player searches by name or ID and sends a request.", "The receiver accepts or declines it under the requests list.", "The player can remove a friend or block a player from the list."],
@@ -340,6 +350,42 @@ def write(r):
        shots=[("14_leaderboard.png", "Elo leaderboard")],
        rules="BR-27, BR-39.",
        normal=["The player opens the leaderboard; the cached list is loaded.", "The player searches by name or jumps to the own position."])
+
+    r.p("FR-34 and FR-35 were added on 17/11/2026 for the social feature that the Review 1 committee asked for (Report 1, §6.3); they are numbered after FR-33 so that the earlier numbers stay unchanged. No screenshot is shown because the screens need a signed-in account; the layout is read from SocialLobbyMenu and will be captured in test Round 2.")
+    fr(r, "FR-34", "Social Feed and Posts", "UC-69 Browse Social Feed, UC-70 Write, Edit or Delete Post, UC-71 Like and Comment on Post, UC-72 Watch Shared Video or Replay",
+       "Menu → friend drawer → **BẢNG TIN**; Social Feed → **Viết bài**.",
+       "The feed shows, newest first and 20 at a time (**Xem thêm**), the posts the player may see: the player's own posts, community posts, and posts that friends share with friends unless the player is excluded; posts of a player who blocked the player, or whom the player blocked, are never shown. A post has a text of up to 2,000 characters and may attach one MP4 video and one completed replay of a match of the author. The author chooses the audience **Cộng đồng** (all signed-in players), **Bạn bè**, **Bạn bè ngoại trừ** (friends except up to 200 chosen players) or **Chỉ mình tôi**, and can edit or delete the post at any time. Players who can see a post like it (**Thích** / **Đã thích**), read and write comments, play its video in the built-in player and open its replay in the Replay Viewer. A video is uploaded before the post is saved and accepted only as MP4 with one H.264 video stream and optional AAC audio, at most 250 MB and 15 minutes. In release 1.0 the video picker exists only when the game runs in the Unity Editor; the Windows and Android builds show MSG70 (Report 1, LI-12).",
+       layout=[["Header", "Title; Bảng tin, Hộp thư, Bạn bè and × buttons; feedback line at the bottom"],
+               ["Feed", "Post cards: author, time, audience, text, Video and Replay buttons, Thích with the count, Bình luận with the count, Sửa and Xóa on own posts; Viết bài, Làm mới; Xem thêm for older posts; \"Bảng tin chưa có bài đăng.\" when empty"],
+               ["Post editor", "Nội dung bài đăng (2,000 characters); Ai có thể xem selector; Chọn người ngoại trừ (only for Bạn bè ngoại trừ); Chọn MP4 / Bỏ video with \"MP4 tối đa 250 MB · 15 phút\" and upload progress; Chọn replay / Bỏ replay; Đăng bài (Lưu bài when editing) and Quay lại"],
+               ["Comments", "Comments with author and Xóa (own comment or a comment on an own post); Viết bình luận field and Gửi"],
+               ["Video player", "Video surface with Phát / Dừng and Đóng video"]],
+       fields=[["Post text", "Text", "No*", "At most 2,000 characters; *a post needs text, a video or a replay"],
+               ["Audience", "Choice", "Yes", "community, friends, friends_except or private"],
+               ["Excluded players", "List of friends", "No", "Only for friends_except; at most 200; must be existing players"],
+               ["Video", "MP4 file", "No", "H.264 video and optional AAC audio, ≤ 250 MB, ≤ 15 minutes; owned by the author and not used by another post"],
+               ["Replay", "Own match", "No", "A completed replay of a match of the author"],
+               ["Comment", "Text", "Yes", "1 to 1,000 characters"]],
+       rules="BR-38, BR-40, BR-52 to BR-55.",
+       normal=["The player opens BẢNG TIN; the first 20 visible posts are loaded.", "The player selects Viết bài, writes the text, chooses the audience and optionally attaches a replay (and, in the Editor, a video).",
+               "The player selects Đăng bài; the post appears at the top of the feed of the players in its audience.", "Another player likes the post, writes a comment, plays the video or opens the replay."],
+       exceptions=["E1 – Empty post, text too long or an invalid audience or exclusion list: MSG66.", "E2 – The video is not MP4 H.264/AAC or longer than 15 minutes: MSG67; larger than 250 MB: MSG68; four uploads are already running: MSG69.",
+                   "E3 – Video upload in a Windows or Android build: MSG70.", "E4 – The post was deleted or is no longer visible to the player: MSG76; a video that is playing stops with MSG75.",
+                   "E5 – The attached replay is not complete yet: \"Replay đang được hoàn thiện.\"", "E6 – A comment is empty or longer than 1,000 characters: MSG71."])
+
+    fr(r, "FR-35", "Direct Messages and Whispers", "UC-73 Send Direct Message, UC-74 Read Inbox and Conversation, UC-75 Whisper in the Lobby",
+       "Menu → friend drawer → **TIN NHẮN**; a friend row → **NHẮN TIN**; another player's row → **THÌ THẦM**.",
+       "**Hộp thư** lists the player's conversations, the most recent first, with the other player's name, the last message and the number of unread messages. A conversation shows its history 20 messages at a time and marks the messages as read when it is opened. Direct messages can be sent only to a friend whom neither player has blocked and whose account is active; they are stored and delivered also when the friend is offline, and an online recipient's inbox refreshes when the SignalR hub announces the message. A message has 1 to 1,000 characters and a client message ID, so a retried send never creates a second message. After unfriending or blocking, the history stays readable but cannot be continued (\"Bạn có thể đọc lại hội thoại này.\"). **Thì thầm** sends a short live message to any verified player who is in the lobby at the same time, friend or not, unless one of the two blocked the other. Whispers are not stored on the server; the client keeps the last 50 whispers of the lobby session under **Thì thầm** and opens an incoming whisper at once when no other window is open.",
+       layout=[["Inbox", "Conversation rows with name, last message and \"Mở · n chưa đọc\"; Làm mới; Thì thầm · n; \"Chưa có tin nhắn bạn bè.\" when empty"],
+               ["Conversation", "Messages with the sender (Bạn or the friend's name); Xem thêm for older messages; Nhắn tin cho … field (1,000 characters) and Gửi, or the read-only note; Quay lại"],
+               ["Whispers", "Latest whisper of each sender with Mở; whisper thread with the Thì thầm trong sảnh field and Gửi"]],
+       fields=[["Message", "Text", "Yes", "1 to 1,000 characters"],
+               ["Recipient", "Player", "Yes", "Direct message: a friend, not blocked, active account. Whisper: a verified active player who is in the lobby and not blocked"]],
+       rules="BR-38, BR-56, BR-57.",
+       normal=["The player opens TIN NHẮN; the inbox loads with unread counts.", "The player opens a conversation; the latest messages load and are marked read.", "The player types a message and selects Gửi; the message is stored and the friend's inbox shows it.",
+               "In the lobby the player selects THÌ THẦM on another player's row, types and sends; the other player sees the whisper at once."],
+       exceptions=["E1 – The recipient is not a friend, is blocked or is not active: MSG72.", "E2 – Empty message or longer than 1,000 characters: MSG71.", "E3 – Whisper to a blocked or unverified player: MSG73.",
+                   "E4 – The whisper recipient has left the lobby: MSG74.", "E5 – The lobby connection is not ready: \"Đang kết nối dịch vụ thì thầm.\""])
 
     # ============================================================ FE-08
     r.h3("3.9 Reports, Restrictions and Appeals (FE-08)")

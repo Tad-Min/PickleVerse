@@ -17,10 +17,10 @@ node "Browser" {
 cloud "Photon Cloud" as Photon
 node "Linux host (Docker Compose)" {
   [HTTPS reverse proxy\n(Caddy)] as Nginx
-  [Web API\nASP.NET Core 10] as API
-  [Background workers\nHybridAiWorker, DedicatedLeaseMonitor] as Workers
+  [Web API\nASP.NET Core 10\n+ SocialHub (SignalR)] as API
+  [Background workers\nHybridAiWorker, DedicatedLeaseMonitor,\nSocialMediaCleanup] as Workers
   [AI Coaching Service\nPython FastAPI] as AI
-  [Dedicated Game Server\nUnity Linux headless] as DS
+  [Dedicated Game Servers\nUnity Linux headless,\none container per match] as DS
   database "PostgreSQL 16" as PG
   database "Redis 7.4" as RD
   database "S3-compatible storage" as S3
@@ -30,14 +30,14 @@ Player --> Client
 Admin --> Web
 Web --> Nginx : HTTPS
 Nginx --> API : /api (JSON, JWT)
-Client --> Nginx : HTTPS REST JSON, JWT
+Client --> Nginx : HTTPS REST JSON, JWT;\nWebSocket (SignalR) for whispers
 Client --> Photon : Fusion Shared lobby (UDP)
-Client --> DS : Fusion client, signed ticket (UDP 3669)
+Client --> DS : Fusion client, signed ticket (UDP 3669+)
 DS --> Photon : session registration
 DS --> API : lease, heartbeat, result\n(service key)
 API --> PG : Npgsql EF Core
-API --> RD : queue, leases, presence, cache
-API --> S3 : replay manifest and chunks
+API --> RD : queue, server pool, presence,\nvideo grants, cache
+API --> S3 : replays and post videos
 API --> SMTP : OTP email (STARTTLS)
 Workers --> AI : POST /v1/analyze-session\n(X-AI-Key)
 Workers ..> PG
@@ -58,9 +58,9 @@ node "Admin workstation" as AdminPC {
 node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
   node "Caddy reverse proxy (host)\n:80 redirect, :443 TLS" as HostNginx
   node "web container\nnginx + React build\n127.0.0.1:3000" as WebC
-  node "backend-api container\nASP.NET Core 10\n127.0.0.1:8080" as ApiC
+  node "backend-api container\nASP.NET Core 10, SignalR, ffprobe\n127.0.0.1:8080" as ApiC
   node "ai-service container\nPython 3.12 FastAPI\n:8000 (internal)" as AiC
-  node "game-server container\nUnity Linux Dedicated Server\n:3669/udp" as GameC
+  node "game-server containers (× PKV_GAME_REPLICAS)\nUnity Linux Dedicated Server\nUDP 3669–4168 → :3669" as GameC
   node "postgres container\nPostgreSQL 16\n:5432 (internal)" as PgC
   node "redis container\nRedis 7.4\n:6379 (internal)" as RdC
   node "s3-storage container\nS3-compatible\n:9000 (internal)" as S3C
@@ -74,12 +74,12 @@ node "Docker Hub\ntadminm/pickelverse" as Hub
 Browser --> HostNginx : HTTPS
 WinClient --> HostNginx : HTTPS JSON
 Apk --> HostNginx : HTTPS JSON
-HostNginx --> ApiC : /api, /health/ready
+HostNginx --> ApiC : /api (incl. WebSocket hub),\n/health/ready
 HostNginx --> WebC : other paths
 WinClient --> Photon : UDP
 Apk --> Photon : UDP
-WinClient --> GameC : UDP 3669
-Apk --> GameC : UDP 3669
+WinClient --> GameC : UDP
+Apk --> GameC : UDP
 GameC --> ApiC : HTTP (service key)
 GameC --> Photon : UDP
 ApiC --> PgC : TCP 5432
@@ -97,14 +97,14 @@ D["r4_pkg_backend"] = r"""
 skinparam packageStyle folder
 left to right direction
 package "PickleVerse.API" as API {
-  package "Controllers (28 classes)" as Ctl
+  package "Controllers (29 classes)\nand Hubs (SocialHub)" as Ctl
   package "Filters and middleware\n(ApiResponse envelope,\nexception handler, scope)" as Flt
   package "Program (DI, JWT, CORS,\nrate limiter, Redis)" as Prog
 }
 package "PickleVerse.Services" as SVC {
   package "Interfaces" as SI
   package "Implementations" as SImpl
-  package "Workers\n(HybridAiWorker,\nDedicatedLeaseMonitor)" as SW
+  package "Workers\n(HybridAiWorker,\nDedicatedLeaseMonitor,\nSocialMediaCleanup)" as SW
   package "Configuration\n(ServerSettings)" as SCfg
   package "Rules\n(TrainingEngine, Elo)" as SRules
 }
@@ -220,6 +220,7 @@ GROUPS = {
     "r4_erd_match": (["GameMatches", "GameMatchPlayers", "MatchScore", "ratingledger", "MatchHistoryReplay", "MatchmakingSearches", "DedicatedOperations"], ["PlayerProfiles"]),
     "r4_erd_economy": (["Currencies", "PlayerCurrencies", "CurrencyTransactions", "Cosmetics", "CosmeticPrices", "PlayerCosmetics", "Missions", "PlayerMissions", "Achievements", "PlayerAchievements", "ProgressRewardGrants"], ["PlayerProfiles"]),
     "r4_erd_moderation": (["ReportPlayerInMatch", "UserSanctions", "SanctionAppeals", "AdminAudits"], ["Users", "PlayerProfiles", "GameMatches"]),
+    "r4_erd_feed": (["SocialMedia", "SocialPosts", "SocialPostExclusions", "SocialPostLikes", "SocialPostComments", "SocialConversations", "SocialConversationMembers", "SocialMessages"], ["PlayerProfiles", "GameMatches"]),
     "r4_erd_coaching": (["aitelemetrysessions", "aitelemetryparts", "aianalysisjobs", "aicoachingsessions", "aicoachingprofiles", "ExpertReviews", "CoachingDemoSessions"], ["PlayerProfiles", "Users"]),
 }
 

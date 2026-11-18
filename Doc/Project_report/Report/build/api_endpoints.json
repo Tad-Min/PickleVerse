@@ -754,6 +754,14 @@
  {
   "controller": "Matches",
   "method": "GET",
+  "route": "/api/Matches/{id:guid}",
+  "action": "Detail",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Matches",
+  "method": "GET",
   "route": "/api/Matches/{id:guid}/report-targets",
   "action": "ReportTargets",
   "access": "Player",
@@ -1012,6 +1020,142 @@
   "method": "POST",
   "route": "/api/Game/lobby/invitations/{id}/respond",
   "action": "Respond",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/posts",
+  "action": "Feed",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "POST",
+  "route": "/api/Game/social/posts",
+  "action": "Create",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "PUT",
+  "route": "/api/Game/social/posts/{post:long}",
+  "action": "Edit",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "DELETE",
+  "route": "/api/Game/social/posts/{post:long}",
+  "action": "Delete",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "PUT",
+  "route": "/api/Game/social/posts/{post:long}/like",
+  "action": "Like",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/posts/{post:long}/comments",
+  "action": "Comments",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "POST",
+  "route": "/api/Game/social/posts/{post:long}/comments",
+  "action": "Comment",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "DELETE",
+  "route": "/api/Game/social/posts/{post:long}/comments/{comment:long}",
+  "action": "DeleteComment",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/posts/{post:long}/replay",
+  "action": "Replay",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/posts/{post:long}/replay/chunks/{index:int}",
+  "action": "Chunk",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "POST",
+  "route": "/api/Game/social/video",
+  "action": "Upload",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "POST",
+  "route": "/api/Game/social/posts/{post:long}/video-playback",
+  "action": "Playback",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/conversations",
+  "action": "Inbox",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/conversation",
+  "action": "Conversation",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "GET",
+  "route": "/api/Game/social/conversations/{conversation:guid}/messages",
+  "action": "Messages",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "PUT",
+  "route": "/api/Game/social/conversations/{conversation:guid}/read",
+  "action": "Read",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "SocialContent",
+  "method": "POST",
+  "route": "/api/Game/social/messages",
+  "action": "Send",
   "access": "Player",
   "usedBy": "Game client"
  },

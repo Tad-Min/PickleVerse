@@ -123,6 +123,19 @@ def literal_usage(route, files):
 def dynamic_usage(route, method, files):
     """Client helpers that build paths from a prefix: CommandAsync("x") and the dedicated worker's Post("x")."""
     rest = None
+    if route.startswith("/api/Game/social/"):
+        # SocialLobbyMenu sends paths relative to its constant Base = "api/Game/social/".
+        regex = ""
+        for part in route[len("/api/Game/social/"):].split("/"):
+            regex += ("/" if regex else "") + (PARAM if part.startswith("{") else re.escape(part))
+        pattern = re.compile(r'"' + method + r'",\s*\$?"' + regex + r'(?:["?]|"\s*\+)|(?:Get|Send)<[^(]*>\(\s*(?:"' + method + r'",\s*)?\$?"' + regex + r'(?:["?]|"\s*\+)')
+        based = [text for path, (_, text) in files.items() if os.path.basename(path).startswith("SocialLobbyMenu")]  # partial class files
+        if method == "POST" and route.endswith("/posts"):
+            based = [t for t in based if '"POST" : "PUT", selected == null ? "posts"' in t]
+            return {"Game client"} if based else set()
+        if method == "PUT" and route.endswith("/posts/{post:long}"):
+            return {"Game client"} if any('"posts/" + selected.postId' in t for t in based) else set()
+        return {"Game client"} if any(pattern.search(t) for t in based) else set()
     if route.startswith("/api/Game/") and not route.startswith("/api/Game/replays"):
         rest = route[len("/api/Game/"):].split("/{")[0]
         pattern = re.compile(r'CommandAsync\("' + re.escape(rest) + '"')
@@ -155,6 +168,9 @@ OVERRIDES = {
     ("GET", "/api/AiCoaching/summary"): "Game client",                     # coachingApi.ts exists but is never imported
     ("POST", "/api/Game/training/checkpoint"): "Game client",              # ProgressionRuntime.Offline.cs: completed ? ... : ...
     ("POST", "/api/Game/training/complete"): "Game client",
+    ("GET", "/api/Game/social/posts/{post:long}/replay/chunks/{index:int}"): "Game client",  # OnlineReplayRepository: Route(..) + "/chunks/" + index
+    ("POST", "/api/Game/match/online/offer"): "Game client",                # MultiplayerApp.Online.cs: "api/Game/match/online/" + (accept ? "prepare" : "offer")
+    ("POST", "/api/Game/match/online/prepare"): "Game client",
 }
 
 

@@ -16,6 +16,7 @@ CHANGES = [
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Activity diagrams: workflow owners aligned with BM04."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: API table regenerated from the controllers (129 endpoints, access and Used by); dedicated-server controllers corrected; time-out removed from the gameplay class diagram and SM-05; FlowState Delay, camera framing, lobby classes and quick doubles added; netcode design table; table descriptions of Users, PlayerProfiles and GameMatchPlayers corrected; delivery pipeline status and data-at-rest deviation recorded; workflow names aligned with BM04."),
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Deployment updated after the fixes of 12–13/11/2026 (main @ d9200cc): delivery pipeline described as it runs (plan, checks, build, publish by digest, deploy with a verified dump) with the history of the 35 runs; Caddy HTTPS reverse proxy and the ports of staging; transport, secrets and data-protection rows of the security table."),
+    ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 96ff8e9: social feed and messaging (class diagram, two sequence diagrams, SM-15, logical ERD of the 8 new tables, security row); dedicated-server pool with WAITING_CAPACITY (architecture, deployment, SM-09, decision 8); ranked doubles with bot fill in the ranked sequence, W03 and SM-06; protocol 20; time-out removed from the gameplay class diagram and SM-05; 59 tables, 147 endpoints; delivery status with the skipped deploy job."),
 ]
 
 DESIGN_SRC = os.path.join(REPORT_DIR, "diagrams", "gen_r4_design.py")
@@ -96,7 +97,7 @@ for i, (name, t) in enumerate(tables.items(), 1):
     fk = ["%s → %s" % (", ".join(c), ref) for c, ref in t["fks"]]
     desc = T.TABLE_DESC.get(name, "")
     rows.append([("%02d" % i), name, desc + "\n- Primary keys: " + ", ".join(t["pk"]) + "\n- Foreign keys: " + ("; ".join(fk) if fk else "none")])
-r.table(["No", "Table", "Description"], rows, widths=[1.0, 3.8, 11.2], size=8, caption="Table descriptions (51 tables)")
+r.table(["No", "Table", "Description"], rows, widths=[1.0, 3.8, 11.2], size=8, caption="Table descriptions (%d tables)" % len(tables))
 r.h3("2.1 Data Dictionary of the Core Tables")
 r.p("The core tables of the account, match, training and moderation domains are listed column by column. Types are PostgreSQL types; * marks NOT NULL.")
 for name in T.DICT_TABLES:

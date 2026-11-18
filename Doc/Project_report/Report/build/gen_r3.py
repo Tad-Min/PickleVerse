@@ -11,6 +11,8 @@ CHANGES = [
     ("11/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Appendix A: workflow and BM04 owner added for each Review 2 feature."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: time-outs removed (FR-12, BR-15, Bot Match screen); quick doubles added to UC-19, FR-14 and the non-screen functions; reconnection rule BR-28 and FR-17 aligned with the code; accuracy history, streak rewards and phone controls described; Menu, Online Lobby and Bot Match screens and their screenshots updated; screenshot references clarified."),
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Communication interfaces: the staging environment serves the Web API and the admin web over HTTPS since 13/11/2026."),
+    ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 96ff8e9 and the Review 1 comments: use cases UC-69 to UC-76 and the use case diagram P4 part 3; FR-34 Social Feed and Posts and FR-35 Direct Messages and Whispers; match detail in FR-24; display modes and quit in FR-05; ranked doubles with bot fill in UC-19, FR-14, FR-18, BR-22, BR-23 and BR-26; XP curve n × 10 in FR-20 and BR-33; business rules BR-52 to BR-57; messages MSG66 to MSG78; social screens, authorisation, non-screen functions and conceptual ERD; 59 tables and 147 endpoints."),
+    ("18/11/2026", "M", "Nguyễn Gia Huy", "v1.5 – Rules aligned with the implemented behaviour after the defect review (Report 5, D-28 and D-30): BR-28 and FR-17 – a player who leaves or does not return within the 30-second reconnection window forfeits (loss, no Tokenpad or XP), and only an administrator stop or a lost dedicated server ends a match as interrupted; BR-32 – custom room matches give no XP or Tokenpad."),
 ]
 
 r = Report("Report3_Software Requirement Specification.docx", "Report 3 – Software Requirement Specification", CHANGES)
@@ -18,15 +20,15 @@ r.h1("II. Software Requirement Specification")
 
 # ------------------------------------------------------------------ 1. Product overview
 r.h2("1. Product Overview")
-r.p("PickleVerse is a new 3D pickleball game that teaches beginners the rules and core techniques of pickleball and lets them practise against bots and other players online. Release 1.0 consists of five deployable parts that together form the system under specification: the Unity game client for Windows and Android, the Unity dedicated game server that runs online matches with server authority, the ASP.NET Core Web API with its PostgreSQL database and Redis cache, the Python AI coaching service, and the React administration web application. The Web API hosts the background workers for matchmaking, dedicated-server leases, AI analysis and moderation expiry.")
-r.p("Figure 1 shows the context of release 1.0. The system exchanges data with two human actors and three external systems. Photon Cloud provides the real-time session and relay service used by the game client and the dedicated server; Gmail SMTP delivers one-time passwords; S3-compatible object storage keeps match replays. Real-money payment, social login and push notifications are outside the boundary of this release.")
+r.p("PickleVerse is a new 3D pickleball game that teaches beginners the rules and core techniques of pickleball and lets them practise against bots and other players online. Release 1.0 consists of five deployable parts that together form the system under specification: the Unity game client for Windows and Android, the Unity dedicated game server that runs online matches with server authority, the ASP.NET Core Web API with its PostgreSQL database and Redis cache, the Python AI coaching service, and the React administration web application. The Web API hosts the background workers for matchmaking, dedicated-server leases, AI analysis, moderation expiry and the clean-up of unused social videos, and a SignalR hub that carries lobby whispers and new-message notifications.")
+r.p("Figure 1 shows the context of release 1.0. The system exchanges data with two human actors and three external systems. Photon Cloud provides the real-time session and relay service used by the game client and the dedicated server; Gmail SMTP delivers one-time passwords; S3-compatible object storage keeps match replays and the videos of social posts. Real-money payment, social login and push notifications are outside the boundary of this release.")
 r.figure("r3_context.png", "Context diagram of PickleVerse release 1.0", width_cm=16)
 r.table(["External entity", "Type", "Data exchanged with PickleVerse"], [
     ["Player", "Human (Windows PC or Android phone)", "Sends account data, game input, training attempts, reports and appeals; receives game state, rewards, rankings, coaching tips and replays"],
     ["Administrator", "Human (web browser)", "Sends user, content, match and moderation commands; receives dashboards, live match status, reports, appeals and analytics"],
     ["Photon Cloud", "External real-time service", "Receives session registration and input/state packets from the client and the dedicated server; returns relayed packets and connection events"],
     ["Gmail SMTP", "External e-mail service", "Receives verification and password-reset messages to deliver to the player's mailbox"],
-    ["S3-compatible object storage", "Storage service", "Stores replay manifests and compressed replay chunks; returns them for the replay viewer and moderation"],
+    ["S3-compatible object storage", "Storage service", "Stores replay manifests, compressed replay chunks and the MP4 videos of social posts; returns them for the replay viewer, the video player and moderation"],
 ], widths=[3.4, 3.6, 9.0], size=9.5, first_col_bold=True, caption="External entities of the context diagram")
 
 # ------------------------------------------------------------------ 2. User requirements
@@ -43,7 +45,7 @@ r.table(["#", "Actor", "Description"], [
 
 r.h3("2.2 Use Cases")
 r.h4("2.2.1 Diagram(s)")
-r.p("The 68 use cases are grouped into eight packages. Figure 2 gives the package overview; Figures 3 to 11 show each package with its actors and the «include» and «extend» relationships (package P4 is drawn in two parts for readability). Player and Restricted Player are specialisations of Visitor, so they inherit the visitor use cases.")
+r.p("The 76 use cases are grouped into eight packages. Figure 2 gives the package overview; Figures 3 to 12 show each package with its actors and the «include» and «extend» relationships (package P4 is drawn in three parts for readability). Player and Restricted Player are specialisations of Visitor, so they inherit the visitor use cases.")
 r.figure("r3_uc_overview.png", "Use case overview by package", width_cm=15.5)
 for f, cap in [
     ("r3_uc_p1_account.png", "Use case diagram P1 – Account and Onboarding"),
@@ -51,6 +53,7 @@ for f, cap in [
     ("r3_uc_p3_online.png", "Use case diagram P3 – Online Match"),
     ("r3_uc_p4a_social.png", "Use case diagram P4 (part 1) – History, Ranking and Friends"),
     ("r3_uc_p4b_economy.png", "Use case diagram P4 (part 2) – Missions, Achievements and Shop"),
+    ("r3_uc_p4c_feed.png", "Use case diagram P4 (part 3) – Social Feed and Messages"),
     ("r3_uc_p5_restricted.png", "Use case diagram P5 – Account Restriction"),
     ("r3_uc_p6_admin_users.png", "Use case diagram P6 – Admin: Users and Moderation"),
     ("r3_uc_p7_admin_content.png", "Use case diagram P7 – Admin: Content"),
@@ -78,7 +81,7 @@ UC = [
     ("16", "Play Bot Match", "Player", "The player configures and plays a singles match against a computer opponent.", "FR-11, FR-12, FR-13"),
     ("17", "View Coaching Summary", "Player", "After a drill or match the player reads the analysis of their shots and the main errors.", "FR-19"),
     ("18", "View Drill Recommendation", "Player", "The player opens a recommended drill that targets a detected weakness.", "FR-19"),
-    ("19", "Find Online Match", "Player", "The player searches a ranked singles match (opponent of similar Elo, or a bot after 180 seconds) or a quick doubles match (unrated 2v2, alone or with a party of two, human players only).", "FR-14"),
+    ("19", "Find Online Match", "Player", "The player searches a ranked singles match (opponent of similar Elo, or a bot after 180 seconds) or a ranked doubles match (2v2, alone or with a party of two; free seats are filled with ranked bots after 180 seconds).", "FR-14"),
     ("20", "Confirm Match Readiness", "Player", "Each paired player accepts the match within 10 seconds before it starts.", "FR-14"),
     ("21", "Create Private Room", "Player, Photon Cloud", "The player creates a singles or doubles room identified by a room code.", "FR-15"),
     ("22", "Join Room by Code", "Player", "The player joins a friend's room by typing its code.", "FR-15"),
@@ -128,6 +131,14 @@ UC = [
     ("66", "View Analytics Report", "Administrator", "The administrator views active users, retention, lesson pass rates, technique errors and matchmaking health for a date range.", "FR-32"),
     ("67", "Review Coaching Session", "Administrator", "Acting as expert, the administrator inspects shot evidence of a training session and labels the player level and errors.", "FR-33"),
     ("68", "Export Labelled Dataset", "Administrator", "The administrator exports the labelled sessions used to evaluate the AI coaching quality.", "FR-33"),
+    ("69", "Browse Social Feed", "Player", "The player reads the posts that he or she may see, newest first.", "FR-34"),
+    ("70", "Write, Edit or Delete Post", "Player", "The player writes a post with text, a replay of an own match or an MP4 video, chooses its audience, and later edits or deletes it.", "FR-34"),
+    ("71", "Like and Comment on Post", "Player", "The player likes a visible post and reads, writes or deletes comments.", "FR-34"),
+    ("72", "Watch Shared Video or Replay", "Player", "The player plays the video of a post or opens its shared replay.", "FR-34"),
+    ("73", "Send Direct Message", "Player", "The player sends a message to a friend, also when the friend is offline.", "FR-35"),
+    ("74", "Read Inbox and Conversation", "Player", "The player reads the conversations with unread counters and the history of one conversation.", "FR-35"),
+    ("75", "Whisper in the Lobby", "Player", "The player sends a short live message to another player who is in the lobby.", "FR-35"),
+    ("76", "View Match Detail", "Player", "The player opens a finished match from the history and reads the score of each game and the error statistics of each player.", "FR-24"),
 ]
 r.table(["ID", "Use Case", "Actors", "Use Case Description", "FR"],
         [["UC-" + a, b, c, d, e] for a, b, c, d, e in UC],
@@ -143,14 +154,16 @@ r.figure("r3_screenflow_admin.png", "Screen flow of the administration web appli
 
 r.h4("3.1.2 Screen Descriptions")
 SCREENS = [
-    ("FE-01", "Login", "E-mail and password fields with a show/hide control, the Sign in button, links to e-mail verification, password recovery and registration, and an Offline training button when a profile is cached on the device."),
+    ("FE-01", "Login", "E-mail and password fields with a show/hide control, the Sign in button, links to e-mail verification, password recovery and registration, an Offline training button when a profile is cached on the device, and the THOÁT GAME button in the top-right corner."),
+    ("FE-01", "Quit Confirmation [dialog]", "\"Thoát PickleVerse?\" with Ở lại and Thoát game; opened from the Login screen and from the × button of the window frame (PC)."),
+    ("FE-01", "Window Frame (PC, windowed mode)", "Title bar with the PICKLEVERSE wordmark, drag area, – (minimise) and × (quit) buttons, and a rounded blue border; the interface below moves under the title bar."),
     ("FE-01", "Register", "E-mail, password and password confirmation fields with inline validation and the Create account button."),
     ("FE-01", "Email Verification (OTP)", "Six-digit code field, Verify and Resend code buttons, and a link back to sign-in."),
     ("FE-01", "Forgot / Reset Password", "Step 1 asks for the e-mail address; step 2 asks for the reset code, the new password and its confirmation."),
     ("FE-01", "Loading", "Animated artwork while the profile, wallet, content catalogue and settings are loaded."),
     ("FE-01", "Experience Choice [popup]", "Asked once at the first sign-in: \"Bạn đã quen với pickleball chưa?\" with Beginner and Experienced options."),
-    ("FE-01", "Menu (Lobby)", "3D court with the player's character; name tag with level, rank and Elo; Tokenpad and Elite Token balances; male/female selector; day/night toggle; music player; Play button (Enter); one row of seven tiles – Progress, Decisions and Appeals (\"!\"), History, Missions, Collection, Shop and Settings; friend drawer on the left edge."),
-    ("FE-01", "Settings [overlay]", "Tabs Overview (with Sign out), Audio, Graphics and Controls (key binding and touch layout); Restore defaults, Undo and Apply and save buttons."),
+    ("FE-01", "Menu (Lobby)", "3D court with the player's character; name tag with level, rank and Elo; Tokenpad and Elite Token balances; male/female selector; day/night toggle; music player; Play button (Enter); one row of seven tiles – Progress, Decisions and Appeals (\"!\"), History, Missions, Collection, Shop and Settings; friend drawer on the left edge with the BẢNG TIN (feed) and TIN NHẮN (messages) buttons."),
+    ("FE-01", "Settings [overlay]", "Tabs Overview (with Sign out and Thoát game), Audio, Graphics, Controls (key binding and touch layout) and, on PC, Khung hình (Cửa sổ, Toàn màn hình, Không viền and three window sizes); Restore defaults, Undo and Apply and save buttons."),
     ("FE-02", "Tutorial", "Seventeen steps on the court; each step has a title, an explanation and a demonstration, with Continue, Replay and Later buttons."),
     ("FE-02", "Mode Selection", "Four cards – Bot match, Online match, Training and Create room – and a Tutorial strip."),
     ("FE-02", "Training Academy", "Lesson catalogue with group tabs (All, Basic, Control, Advanced, Doubles); lesson briefing with target, reward and star rules; practice HUD with shot counter, timing feedback and key hints."),
@@ -163,10 +176,17 @@ SCREENS = [
     ("FE-04", "Online Lobby", "Singles 1v1 and Doubles 2v2 tabs, room code with Copy, Join by code, roster slots with Invite buttons, a collapsible friends column listing online friends who can be invited, and the Find match / Cancel button with an elapsed-time counter."),
     ("FE-04", "Ready Check [popup]", "Match found message with Accept and Decline buttons and a 10-second countdown."),
     ("FE-04", "Multiplayer Court", "Online match on the dedicated server with score, connection state, reconnecting overlay and leave control."),
-    ("FE-07", "Match History [popup]", "Level card and the last 20 matches with opponent, mode, Vietnam time, result, game score, Elo change, and Report and Replay buttons."),
+    ("FE-07", "Match History [popup]", "Level card and the last 20 matches with opponent, mode, Vietnam time, result, game score, Elo change, and Report and Replay buttons; selecting a match opens Match Detail."),
+    ("FE-07", "Match Detail [popup]", "Kind, mode, series score, Elo change and end time; tab Tỉ số with the score of each game for team A and team B; tab Thông số with the errors per technique and game of each player; Làm mới and Quay lại."),
     ("FE-07", "Replay Viewer", "Playback of a recorded match with play/pause, a seek bar and speeds from 0.5× to 2×."),
     ("FE-06", "Missions [popup]", "Daily and weekly tabs, mission list with progress and reward, set bonus, daily streak, reset countdown, and Claim buttons."),
-    ("FE-07", "Friends and Leaderboard [drawer]", "Friends tab with search by name or ID and sub-tabs Friends, Find friends and Blocked; Leaderboard tab with own position."),
+    ("FE-07", "Friends and Leaderboard [drawer]", "Friends tab with search by name or ID and sub-tabs Friends, Find friends and Blocked, NHẮN TIN (friend) or THÌ THẦM (other player) on each row; BẢNG TIN and TIN NHẮN buttons; Leaderboard tab with own position."),
+    ("FE-07", "Social Feed [overlay]", "Header with Bảng tin, Hộp thư, Bạn bè and ×; posts with author, time, audience, text, Video and Replay buttons, Thích and Bình luận counters, Sửa and Xóa on own posts; Viết bài, Làm mới and Xem thêm."),
+    ("FE-07", "Post Editor", "Nội dung bài đăng (2,000 characters), Ai có thể xem (Cộng đồng, Chỉ mình tôi, Bạn bè, Bạn bè ngoại trừ) with Chọn người ngoại trừ, Chọn MP4 / Bỏ video, Chọn replay / Bỏ replay, Đăng bài (Lưu bài) and Quay lại."),
+    ("FE-07", "Comments", "Comments of one post with author and Xóa; Viết bình luận field and Gửi."),
+    ("FE-07", "Inbox and Conversation", "Conversations with name, last message and unread count; message history with Xem thêm; Nhắn tin cho … field and Gửi; read-only note after unfriending or blocking."),
+    ("FE-07", "Whispers", "Latest whisper of each sender with Mở; whisper thread with the Thì thầm trong sảnh field and Gửi."),
+    ("FE-07", "Video Player [overlay]", "Video of a post with Phát / Dừng and Đóng video."),
     ("FE-06", "Shop", "Featured and all items, item preview, price in Tokenpad and/or Elite Token, wallet balances and the Buy button."),
     ("FE-06", "Collection", "Owned paddles with preview and the Equip button."),
     ("FE-08", "Decisions and Appeals [popup]", "List of sanctions on the account with type, reason and expiry; appeal form and appeal status."),
@@ -188,6 +208,7 @@ r.h4("3.1.3 Screen Authorization")
 r.p("X means that the role may open the screen or perform the activity. Visitor is a user who has not signed in; Restricted Player is a signed-in player with a suspended or banned account. The Web API enforces the same rules: a missing or expired token returns HTTP 401, and a valid token without the required role or scope returns HTTP 403.")
 AUTH = [
     ("Login, Register, Email Verification, Forgot Password", "X", "", "", ""),
+    ("    Quit the game (Login, Settings, window frame)", "X", "X", "X", ""),
     ("    Start offline training from a cached profile", "X", "X", "", ""),
     ("Menu, Settings, Mode Selection, Tutorial", "", "X", "", ""),
     ("    Update name, select character, sign out", "", "X", "", ""),
@@ -195,12 +216,16 @@ AUTH = [
     ("Bot Match Setup, Bot Match, Match Result, Coaching Summary", "", "X", "", ""),
     ("Online Lobby, Ready Check, Multiplayer Court", "", "X", "", ""),
     ("    Create room, invite friend, start a custom match (host only)", "", "X", "", ""),
-    ("Match History, Replay Viewer", "", "X", "", ""),
+    ("Match History, Match Detail, Replay Viewer", "", "X", "", ""),
     ("    Query own matches and replays only", "", "X", "", ""),
     ("    Report a player of an own finished match", "", "X", "", ""),
     ("Missions, Shop, Collection", "", "X", "", ""),
     ("    Claim rewards, purchase and equip own items", "", "X", "", ""),
     ("Friends and Leaderboard", "", "X", "", ""),
+    ("Social Feed, Post Editor, Comments, Video Player", "", "X", "", ""),
+    ("    See only posts allowed by the audience; edit and delete own posts", "", "X", "", ""),
+    ("Inbox, Conversation, Whispers", "", "X", "", ""),
+    ("    Message friends only; whisper only to players in the lobby", "", "X", "", ""),
     ("Decisions and Appeals", "", "X", "X", ""),
     ("    Submit an appeal for an own sanction", "", "", "X", ""),
     ("Admin Login", "", "", "", "X"),
@@ -227,8 +252,8 @@ NSF = [
     ("FE-01", "Refresh access token", "Exchanges a valid refresh token for a new access token (2 hours) and a rotated refresh token (14 days); revoked or reused tokens are rejected."),
     ("FE-01", "Record activity days", "Records each player's login day and active day (Vietnam time) and online presence in Redis for analytics and streaks."),
     ("FE-02", "Apply training results", "Validates each training attempt from its telemetry, applies stars and first-pass rewards, and returns a receipt APPLIED, DUPLICATE or REJECTED for each request ID."),
-    ("FE-04", "Matchmaking", "Keeps search tickets in a Redis queue. Ranked singles: pairs tickets within the Elo window and assigns a ranked bot after 180 seconds. Quick doubles: fills two teams of two from solo players and parties of two in the same region and protocol version, without Elo or bot fallback. Both create the ready check."),
-    ("FE-04", "Dedicated server allocation", "Issues HMAC-signed match tickets, leases the dedicated server slot, receives heartbeats every 8 seconds and releases expired leases (DedicatedLeaseMonitor)."),
+    ("FE-04", "Matchmaking", "Keeps search tickets in a Redis queue. Ranked singles: pairs tickets within the Elo window and assigns a ranked bot after 180 seconds. Ranked doubles: fills two teams of two from solo players and parties of two in the same region and protocol version; after 180 seconds the free seats are filled with ranked bots. Both create the ready check."),
+    ("FE-04", "Dedicated server allocation", "Reserves a free game-server container for a confirmed match in a Redis queue (at most DedicatedServer:MaxConcurrentMatches), issues HMAC-signed match tickets, receives heartbeats every 8 seconds and releases expired leases (DedicatedLeaseMonitor)."),
     ("FE-04", "Settle match result", "Saves the game scores once, applies Elo for ranked matches, grants rewards and updates missions and achievements in one transaction."),
     ("FE-04", "Store replay", "Uploads the replay manifest and compressed chunks to object storage and links them to the match."),
     ("FE-05", "Ingest telemetry", "Receives shot telemetry parts from the client (or the dedicated server for online matches), stores them and creates an analysis job."),
@@ -236,6 +261,9 @@ NSF = [
     ("FE-05", "AI coaching service", "POST /v1/analyze-session: rule-based findings, summary, at most three drill recommendations and, when the gated model is approved, a tier estimate."),
     ("FE-06", "Mission cycle", "Opens new daily missions at 07:00 Vietnam time each day and new weekly missions each week, and updates the daily streak."),
     ("FE-07", "Leaderboard cache", "Caches the Elo leaderboard in Redis for 15 seconds."),
+    ("FE-07", "Lobby presence and live delivery", "SocialHub (SignalR over WebSocket) records which players are in the lobby (Redis, 45-second presence), delivers whispers and notifies both players of a new direct message."),
+    ("FE-07", "Video validation and storage", "Spools an uploaded MP4 to disk, checks it with ffprobe (H.264 video, optional AAC audio, at most 15 minutes), stores it in object storage and grants 20-minute playback links."),
+    ("FE-07", "Social video clean-up", "Every 10 minutes deletes videos that were removed or never attached to a post within 24 hours, and stale upload spools (SocialMediaCleanup)."),
     ("FE-08", "Sanction expiry", "Restores suspended accounts whose sanction has expired (ModerationExpiryWorker)."),
     ("FE-09", "Analytics projection", "Aggregates daily active players, retention cohorts, lesson statistics and matchmaking events (AnalyticsProjectionWorker)."),
     ("FE-09", "Admin audit", "Writes an audit record for every administrative change with actor, action, target and time."),
@@ -244,7 +272,7 @@ r.table(["#", "Feature", "System Function", "Description"], [[str(i + 1), a, b, 
         widths=[0.8, 1.5, 3.8, 9.9], size=8.5, caption="Non-screen functions")
 
 r.h4("3.1.5 Entity Relationship Diagram")
-r.p("The conceptual ERD is drawn in Chen notation and split into six subject areas so that every diagram stays readable. Entities are business concepts rather than database tables: junction tables appear as relationships with their own attributes (for example PARTICIPATES carries Team and Outcome), and purely technical tables such as refresh tokens and telemetry parts are omitted. The logical design of all 51 tables is given in Report 4, §2.")
+r.p("The conceptual ERD is drawn in Chen notation and split into seven subject areas so that every diagram stays readable. Entities are business concepts rather than database tables: junction tables appear as relationships with their own attributes (for example PARTICIPATES carries Team and Outcome), and purely technical tables such as refresh tokens and telemetry parts are omitted. The logical design of all 59 tables is given in Report 4, §2.")
 for f, cap in [
     ("r3_cerd_account.png", "Conceptual ERD – accounts, profiles and social relations"),
     ("r3_cerd_training.png", "Conceptual ERD – techniques, lessons and training"),
@@ -252,6 +280,7 @@ for f, cap in [
     ("r3_cerd_economy.png", "Conceptual ERD – currencies, cosmetics, missions and achievements"),
     ("r3_cerd_moderation.png", "Conceptual ERD – reports, sanctions and appeals"),
     ("r3_cerd_coaching.png", "Conceptual ERD – telemetry, coaching and expert review"),
+    ("r3_cerd_feed.png", "Conceptual ERD – posts, videos and messages"),
 ]:
     r.figure(f, cap, width_cm=15, max_height_cm=17)
 r.p("**Entities Description**", bold=True)
@@ -279,6 +308,11 @@ ENT = [
     ("COACHING_RESULT", "The AI analysis of a telemetry session: findings, summary, recommendations and optional tier."),
     ("EXPERT_REVIEW", "An expert's labels for a telemetry session (level, errors, data group) used to evaluate the AI."),
     ("ADMIN", "An account with the Admin role, shown as a separate box in the coaching diagram for readability."),
+    ("POST", "A message of a player in the social feed with text, audience and optional video and shared match replay."),
+    ("VIDEO", "An uploaded MP4 file of a player; it is attached to at most one post."),
+    ("COMMENT", "A comment of a player on a post."),
+    ("CONVERSATION", "The direct-message thread between two players; each pair has at most one."),
+    ("MESSAGE", "A direct message in a conversation, with the sender and the client message ID used for retries."),
 ]
 r.table(["#", "Entity", "Description"], [[str(i + 1), a, b] for i, (a, b) in enumerate(ENT)],
         widths=[0.8, 3.6, 11.6], size=9, caption="Entities description")

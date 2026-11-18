@@ -1,10 +1,13 @@
 """Report 6 - Release Package & User Guides."""
 from report_lib import Report
+import r5_cases as R5
 
 CHANGES = [
     ("11/11/2026", "A", "Nguyễn Gia Huy", "v1.0 – First release package description, installation guides (player, server, development) and user manual organised by the four review workflows, with real screenshots of the game and the admin web."),
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.1 – Revised after the second internal review: Android controls corrected; time-outs removed; quick doubles and the lobby friends column added; workflow names as in BM04; deployment section states that the pipeline has not yet passed and staging is released manually; package counts and screenshots updated; Android build marked as not yet tested on a device."),
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Updated after the fixes of 12–13/11/2026 (main @ d9200cc): the deployment section describes the pipeline as it runs and the new deployment script with its database dump; HTTPS address of the staging API and admin web with the Caddy reverse proxy; Android APK of 12/11/2026 with its limitation; package counts for the documents of 13/11/2026."),
+    ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Updated to main @ 96ff8e9: social feed, messages, whispers and match detail in the user manual; ranked doubles with bot fill in W03; PC display modes, window frame and quit; game-server pool settings (PKV_GAME_REPLICAS, PKV_GAME_UDP_RANGE) and ports; pipeline status with the skipped deploy job; package counts for the documents of 17/11/2026."),
+    ("18/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 329810f: video upload from the Windows build, the forfeit rule of BR-28 v1.5, leaving the summary after a room match and the new admin texts (Elo reset to 100, API origin, MSG64)."),
 ]
 
 r = Report("Report6_Software User Guides.docx", "Report 6 – Software User Guides", CHANGES)
@@ -12,19 +15,19 @@ r.h1("II. Release Package & User Guides")
 
 # ================================================================== 1
 r.h2("1. Deliverable Package")
-r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ d9200cc (13/11/2026) for the software and to the documents of 13/11/2026 (Reports 1–5 v1.3, Report 6 v1.2 and Report 7 assembled from them). Since main @ 5963501 (11/11/2026) the commits repaired the delivery pipeline, moved the client and the server to HTTPS and removed the credentials from the settings file; the gameplay code is unchanged. The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
+r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ 96ff8e9 (17/11/2026) for the software and to the documents of 17/11/2026 (Reports 1–5 v1.4, Report 6 v1.3 and Report 7 assembled from them). Since main @ d9200cc (13/11/2026) the commits added the social feed, direct messages and whispers asked for at Review 1, the match detail, the dedicated-server pool, ranked doubles with bot fill, the golden-hour stadium district, the PC display modes with the PickleVerse window frame and a new XP curve. The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
 r.table(["No.", "Deliverable Item", "Description"], [
-    ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: 82 tasks, 4 resources, 61 assignments, % complete as of 13/11/2026) and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
-    ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 21 product and iteration backlog items for Iterations 4 to 6 with priority, owner, estimate and status"],
+    ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: 82 tasks, 4 resources, 61 assignments, % complete as of 17/11/2026) and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
+    ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 26 product and iteration backlog items for Iterations 4 to 6 with priority, owner, estimate and status, including the membership subscription CR-01 (PB-22)"],
     ["3", "Source Codes", "Unity client and dedicated server: My project/ (Unity 6000.6.2f1, 13 runtime assemblies); Web API: src/Backend (ASP.NET Core .NET 10, 4 projects); AI coaching service: src/AiService (Python 3.12, FastAPI); admin web: src/Frontend (React 18, TypeScript, Vite); tests: src/Testing; deployment: deploy/, docker-compose*.yml, .github/workflows/dockerhub.yml"],
-    ["4", "Database Script(s)", "src/Database.sql – single script with the schema (51 tables, 71 foreign keys) and seed data (roles, currencies, 15 lessons, 12 techniques, 3 paddles, 17 missions, 10 achievements, 10 ranked bot accounts) executed in one transaction"],
+    ["4", "Database Script(s)", "src/Database.sql – single script with the schema (59 tables, 88 foreign keys) and seed data (roles, currencies, 15 lessons, 12 techniques, 3 paddles, 17 missions, 10 achievements, 10 ranked bot accounts) executed in one transaction"],
     ["5", "Final Report Document", "Report7_Final Project Report.docx, which consolidates Reports 1–6; the individual Reports 1–6 (.docx) and their PDF exports in Doc/Project_report/Report/pdf"],
-    ["6", "Test Cases Document", "Report5_Test Documentation.docx, Report5_Test Report.xlsx (118 cases with the results of Round 1 and of the CI run of 13/11/2026) and Report5_Unit Test.xlsx (10 functions, 66 decision-table cases); evidence files in Doc/Project_report/Report/evidence"],
-    ["7", "Defects List", "Sheet Defects of the tracking workbook (21 defects with severity, owner and status: 7 fixed and awaiting retest, 1 accepted as designed and 13 open, one of them partly fixed); also listed in the Test Report workbook"],
-    ["8", "Issues List", "Sheet Issues of the tracking workbook (15 issues with priority, owner, open and close dates; 4 closed)"],
+    ["6", "Test Cases Document", "Report5_Test Documentation.docx, Report5_Test Report.xlsx (%d cases with the results of Round 1, of the checks of 13–17/11/2026 and of the end-to-end runs of 17–18/11/2026) and Report5_Unit Test.xlsx (10 functions, %d decision-table cases); evidence files in Doc/Project_report/Report/evidence" % (len(R5.CASES), sum(len(u["cases"]) for u in R5.UNIT))],
+    ["7", "Defects List", "Sheet Defects of the tracking workbook (%d defects with severity, owner and status: %d closed after retest, %d fixed and awaiting retest and %d open, one of them partly fixed); also listed in the Test Report workbook" % (len(R5.DEFECTS), sum(1 for x in R5.DEFECTS if R5.defect_status(x[0]) == "Closed"), sum(1 for x in R5.DEFECTS if R5.defect_status(x[0]) == "Fixed"), sum(1 for x in R5.DEFECTS if R5.defect_open(x[0])))],
+    ["8", "Issues List", "Sheet Issues of the tracking workbook (17 issues with priority, owner, open and close dates; 5 closed)"],
     ["9", "Slide", "Defense presentation – prepared for milestone M10 (Week 15, 14–20/12/2026)"],
     ["10", "Server images", "Docker Hub repository tadminm/pickelverse with four images per release: api-, ai-, server- (Unity Linux dedicated server) and web-<release>. Since 13/11/2026 the pipeline builds the images that a push changes, publishes them with the tag <commit>-<run>-<attempt> and deploys all four by digest; the four earlier staging releases (08–10/11/2026) were built by hand and tagged <component>-manual-<yyyymmdd-hhmmss>"],
-    ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings. An Android APK was built on 12/11/2026 from main @ 5963501 (190.5 MB, signed with the debug key); it predates the HTTPS switch and has not been tested on a physical device, so the release APK has to be built again from main @ d9200cc (Report 1, LI-11; Report 5, D-21)"],
+    ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings. Android APKs were built on 12/11/2026 (main @ 5963501) and 14/11/2026 (22690ad), signed with the debug key and never tested on a physical device; a Windows build of 16/11/2026 (source of 1b64424) was used for the display-mode test (Report 5, EV-13), and a Windows build of main @ 96ff8e9 (protocol 20) made on 17/11/2026 and rebuilt on 18/11/2026 for the end-to-end runs (Report 5, EV-15 and EV-16), and Windows builds with the defect fixes of 18/11/2026 (game code of main @ 329810f) for the retest (Report 5, EV-17). The APKs use an older online protocol (18) than the servers (20 since 17/11/2026), so the Android release build has to be made again from main @ 96ff8e9 (Report 1, LI-11)"],
     ["12", "Design sources", "PlantUML sources and rendered diagrams (Doc/Project_report/Report/diagrams), the editable draw.io file PickleVerse_UseCase_ConceptualERD.drawio and the report build scripts (Doc/Project_report/Report/build)"],
 ], widths=[1.0, 3.6, 11.4], size=8.5, first_col_bold=False, caption="Deliverable package of PickleVerse 1.0")
 
@@ -35,7 +38,7 @@ r.table(["Component", "Requirement"], [
     ["Player PC", "Windows 10 or 11, 64-bit; DirectX 11 graphics card; recommended Intel Core i5 (10th generation) or equivalent, GTX 1650 or equivalent, 16 GB RAM (reference device of NFR-03); keyboard and mouse; broadband Internet for online features; outbound UDP allowed for Photon and port 3669"],
     ["Player phone", "Android 8.0 (API level 26) or later, ARM64 processor; touch screen; Wi-Fi or 4G connection for online features"],
     ["Administrator", "Latest Google Chrome or Microsoft Edge on a desktop screen of at least 1366 × 768; an account with the Admin role"],
-    ["Server host", "Linux amd64 (Ubuntu 24.04 used for staging) with Docker Engine and Docker Compose v2 that supports `up --wait-timeout`; recommended 4 vCPU and 8 GB RAM; the game-server container is limited to 2 CPUs and 2 GB RAM by default; open ports 80/tcp (admin web), 8080/tcp (Web API) and 3669/udp (dedicated game server)"],
+    ["Server host", "Linux amd64 (Ubuntu 24.04 used for staging) with Docker Engine and Docker Compose v2 that supports `up --wait-timeout`; recommended 4 vCPU and 8 GB RAM; each game-server container is limited to 2 CPUs and 2 GB RAM by default, so the host size limits PKV_GAME_REPLICAS; open ports 80/tcp and 443/tcp (Caddy: admin web and Web API) and one UDP port per game-server container from 3669 (PKV_GAME_UDP_RANGE)"],
     ["External services", "Photon Cloud application for Fusion 2.1.3 (App ID in the Fusion settings of the Unity project); a Gmail account with an app password for SMTP (STARTTLS, port 587)"],
     ["Developer PC", "Unity Hub with Unity 6000.6.2f1 (Windows, Linux Dedicated Server and Android build support); .NET 10 SDK; Python 3.12; Node.js 22 with npm; Docker Desktop; Git; Java 17 only for rendering the report diagrams"],
 ], widths=[3.2, 12.8], size=8.5, first_col_bold=True, caption="System requirements")
@@ -46,20 +49,22 @@ r.numbered([
     "Copy the Windows release folder (PickleVerse_Windows) to the PC, for example to C:\\Games\\PickleVerse. The folder contains PickleVerse.exe, PickleVerse_Data and the Unity runtime files; keep them together.",
     "Run PickleVerse.exe. When Windows Defender Firewall asks, allow the game on private networks so that UDP traffic to Photon and to the game server is possible.",
     "The Login screen opens (Figure %d). The first sign-in needs an Internet connection; afterwards training can also be started offline from the same PC." % (r.fig_no + 1),
+    "The game starts borderless on the whole screen. To play in a window, open Cài đặt → Khung hình and choose Cửa sổ and a window size, or Toàn màn hình for exclusive fullscreen (Figure %d). In a window the PickleVerse title bar moves the window, – minimises it and × asks before quitting; THOÁT GAME on the Login screen and Thoát game in the settings quit as well." % (r.fig_no + 2),
 ])
 r.figure("01_login.png", "First screen after installation – Login", width_cm=13)
+r.figure("35_login_window_frame.png", "Login in a 1366 × 768 window with the PickleVerse frame (Windows build of 16/11/2026)", width_cm=13)
 r.h4("2.2.2 Install the game on Android")
 r.numbered([
     "Copy PickleVerse.apk to the phone or download it from the release location shared by the team.",
     "In Settings → Security (or Apps → Special access), allow installing apps from the file manager or browser used to open the APK.",
     "Open the APK and select Install. Start PickleVerse from the app drawer; the game runs in landscape mode with touch controls (joystick and shot buttons).",
 ])
-r.p("Note: on 13/11/2026 the Android build has not yet been installed and tested on a physical phone; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10). The APK built on 12/11/2026 still contains the former http:// address and forbids cleartext HTTP, so it cannot sign in; use an APK built from main @ d9200cc or later, which calls https://tad-min.io.vn (Report 5, D-21). The offline training mode does not need the server.")
+r.p("Note: on 13/11/2026 the Android build has not yet been installed and tested on a physical phone; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10). The APK built on 12/11/2026 still contains the former http:// address and cannot sign in (Report 5, D-21), and the APKs of 12/11 and 14/11/2026 use online protocol 18 while the servers use protocol 20 since 17/11/2026; use an APK built from main @ 96ff8e9 or later. The offline training mode does not need the server.")
 r.h4("2.2.3 Deploy the server (CI/CD pipeline and manual release)")
-r.p("The deployment is automatic: every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml) with the stages below. **Current status:** the pipeline passes since 13/11/2026 (runs 27, 28, 30, 33 and 34), and run 34 deployed the staging release that is running now. The 30 other runs did not pass: configuration failures on 05/11/2026, the billing lock of the GitHub account from 06/11 to 11/11, failures of the dedicated-server build on 11–12/11, one failed FastAPI test, two failed deployment steps and one cancelled manual run. A push that changes only documents builds and deploys nothing, and a commit whose message contains [skip ci] does not start the workflow at all. If the pipeline is unavailable, the four images can still be built on a developer PC, pushed to Docker Hub with the tag <component>-manual-<yyyymmdd-hhmmss> and started on the host by hand with the same .env file, as was done on 08–10/11/2026.")
+r.p("The deployment is automatic: every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml) with the stages below. **Current status:** the pipeline passes since 13/11/2026; 17 of its 53 runs had passed by 17/11/2026, run 52 deployed main @ 96ff8e9, and the runs of 18/11/2026 deployed the defect fixes (main @ 9557581). Earlier failures came from configuration errors on 05/11/2026, the billing lock of the GitHub account from 06/11 to 11/11, the dedicated-server build on 11–12/11 and deployment steps on 13/11. **Fixed problem:** until 18/11/2026 the deploy job ran only when the FastAPI and admin web checks also ran, so nine passing runs of 13–16/11/2026 did not deploy (Report 5, D-23); since 291542a it depends only on the deployed and publish jobs. After a push, still compare the release on staging with the pushed commit. A push that changes only documents builds and deploys nothing, and a commit whose message contains [skip ci] does not start the workflow at all. If the pipeline is unavailable, the four images can still be built on a developer PC, pushed to Docker Hub with the tag <component>-manual-<yyyymmdd-hhmmss> and started on the host by hand with the same .env file, as was done on 08–10/11/2026.")
 r.numbered([
     "**Plan** – reads the release that is deployed on the host and compares it with the pushed commit to select the checks and the images that the changed files need (deploy/ci/plan-release.py).",
-    "**Checks** – as selected by the plan: the twelve IntegrationChecks groups against PostgreSQL 16 and Redis 7.4 service containers, the FastAPI tests and the type check of the admin web. The job \"Validate\" passes only when every selected check passed.",
+    "**Checks** – as selected by the plan: the fifteen IntegrationChecks groups against PostgreSQL 16 and Redis 7.4 service containers, the FastAPI tests and the type check of the admin web. The job \"Validate\" passes only when every selected check passed.",
     "**Build Unity Linux Dedicated Server** – builds the dedicated server with GameCI (unity-builder) using the Unity licence stored in the repository secrets.",
     "**Publish** – removes the credentials from the API settings files, builds and pushes the changed images among api, ai, server and web to Docker Hub tadminm/pickelverse with the tag <component>-<commit>-<run>-<attempt>, then starts the four image digests with Docker Compose on the runner and checks the health endpoints (smoke test).",
     "**Deploy** – over SSH (deploy/ci/ssh-deploy.sh): locks the release on the host, takes a PostgreSQL dump into .deploy/backups and checks it with pg_restore, copies docker-compose.linux.yml and src/Database.sql to the deployment root, writes the four image digests into the host .env file, runs `docker compose up -d --wait` and records the deployed release.",
@@ -67,7 +72,8 @@ r.numbered([
 r.p("Before the first deployment the administrator of the host prepares the deployment root and creates the host `.env` file from deploy/linux/runtime.env.example and installs Caddy with deploy/linux/Caddyfile, which serves the public HTTPS address, forwards /api and /health/ready to the API and every other path to the admin web. The variables are listed in Table %d; secret values are never committed to the repository. The workflow itself needs the repository secrets SSH_HOST, SSH_PORT, SSH_PASSWORD, SSH_KNOWN_HOSTS, DOCKERHUB_TOKEN, UNITY_EMAIL, UNITY_PASSWORD and UNITY_LICENSE (or UNITY_SERIAL), and the variables PKV_DEPLOY_ROOT (or PKV_DATA_ROOT), SSH_USER and DOCKERHUB_USERNAME of the GitHub environment \"development\"." % (r.tbl_no + 1))
 r.table(["Variable", "Purpose"], [
     ["PKV_API_IMAGE, PKV_AI_IMAGE, PKV_WEB_IMAGE, PKV_GAME_SERVER_IMAGE", "Image references by digest; the deploy job writes them"],
-    ["PKV_DATA_ROOT", "Absolute path of the host data directories (PostgresData, RedisData, S3Data, AiService/models, GameServerData)"],
+    ["PKV_DATA_ROOT", "Absolute path of the host data directories (PostgresData, RedisData, S3Data, AiService/models); the game servers use a named Docker volume"],
+    ["PKV_GAME_REPLICAS, PKV_GAME_UDP_RANGE", "Number of dedicated game-server containers (default 1; also sets DedicatedServer__MaxConcurrentMatches of the API) and the host UDP ports given to them (default 3669-4168)"],
     ["POSTGRES_USER, POSTGRES_PASSWORD", "User name and password of the PostgreSQL database"],
     ["JWT_KEY", "Signing key of the access tokens (at least 32 random characters)"],
     ["SMTP_USERNAME, SMTP_APP_PASSWORD, SMTP_FROM_EMAIL", "Gmail account, app password and sender address for OTP e-mails"],
@@ -82,7 +88,7 @@ r.table(["Variable", "Purpose"], [
 ], widths=[6.0, 10.0], size=8.5, caption="Server environment variables (host .env)")
 r.h4("2.2.4 Initialise the database and create the first administrator")
 r.numbered([
-    "On first start, the PostgreSQL container runs src/Database.sql on the empty data volume. It creates all 51 tables and the seed data in one transaction. An existing volume is never re-initialised; use a new volume name to start from an empty database in development.",
+    "On first start, the PostgreSQL container runs src/Database.sql on the empty data volume. It creates all 59 tables and the seed data in one transaction. An existing volume is never re-initialised; use a new volume name to start from an empty database in development.",
     "To use an existing PostgreSQL server instead, create an empty database and run `psql -v ON_ERROR_STOP=1 -d <database> -f src/Database.sql` once.",
     "The script creates no administrator account. Register a normal account in the game, verify its e-mail, then grant it the Admin role once with SQL: `UPDATE Users SET RoleId = (SELECT RoleId FROM Roles WHERE RoleName = 'Admin') WHERE Email = '<e-mail>';`. Further administrators are assigned from the Users page of the admin web (FR-29).",
     "Check the deployment: `GET https://<host>/health/ready` must return HTTP 200 with the status ready, and https://<host>/ must open the admin web and accept the administrator account. Ports 8080 and 3000 are bound to 127.0.0.1 and must not answer from another computer.",
@@ -104,7 +110,7 @@ r.figure("r3_screenflow_game.png", "Screens of the game client and the navigatio
 r.table(["Workflow", "Purpose", "Main screens", "Owner (BM04)"], [
     ["W01 – Learn and sync a drill", "Create an account, learn the rules and practise a drill online or offline", "Login, Register, Tutorial, Training Academy, Drill Result", "Trần Nguyễn Hiếu Thuận"],
     ["W02 – Play a bot and get a tip", "Play a singles match against a bot and read the AI coaching", "Mode Selection, Bot Match Setup, Bot Match, Match Result, Coaching", "Nguyễn Gia Huy"],
-    ["W03 – Play online and save the result", "Play ranked singles, quick doubles or a private room with friends on the dedicated server; the result is saved once", "Online Lobby, Ready Check, Multiplayer Court, History", "Nguyễn Văn Thành Đạt"],
+    ["W03 – Play online and save the result", "Play ranked singles, ranked doubles or a private room with friends on the dedicated servers; the result is saved once", "Online Lobby, Ready Check, Multiplayer Court, History", "Nguyễn Văn Thành Đạt"],
     ["W04 – Review a report and publish a lesson (administrator)", "Handle reports and appeals and publish lessons; also manage users, matches and analytics", "Admin web: Dashboard, Users, Moderation, CMS, Matches, Analytics", "Huỳnh Trung Kiên"],
 ], widths=[4.0, 5.2, 4.4, 2.4], size=8.5, caption="Workflows of the user manual")
 r.p("**Controls.** Table %d summarises the default controls. Keys can be changed in Settings → Controls; the size, opacity, left-handed mode and position of the touch controls are set in the same tab. During a match the shot cue under the player shows the keys of the shot being prepared, and the camera keeps the player above the cue (PC) or the touch controls (phone)." % (r.tbl_no + 1))
@@ -193,18 +199,18 @@ r.figure("12_history.png", "Match history", width_cm=13)
 
 # ---------------------------------------------------------------- W03
 r.h3("3.4 Workflow W03 – Play Online and Save the Result")
-r.p("**Purpose.** The player plays against other people: a ranked singles match that changes Elo, an unrated quick doubles match, or a private singles or doubles room with friends. Online matches run on the dedicated server, which decides the score, and the result is saved once. Figure %d shows the flow." % (r.fig_no + 1))
+r.p("**Purpose.** The player plays against other people: a ranked singles or ranked doubles match that changes Elo, or a private singles or doubles room with friends. Online matches run on the dedicated server, which decides the score, and the result is saved once. Figure %d shows the flow." % (r.fig_no + 1))
 r.figure("r4_act_w03.png", "Workflow W03 – Play online and save the result", width_cm=14, max_height_cm=17)
 r.h4("Step 1 – Find a ranked match")
 r.numbered([
     "Select **CHƠI NGAY** → **Đấu online** → **ĐẤU ĐƠN 1v1**, then **Tìm trận**. The lobby shows \"Đang tìm đối thủ trực tuyến…\" and the waiting time; **Hủy** stops the search.",
     "When an opponent with a similar Elo is found, accept within 10 seconds. If nobody is found within 180 seconds, a ranked bot is offered instead.",
-    "If the dedicated server is busy, the lobby shows \"Máy chủ đang bận • Đang chờ lượt thi đấu…\" and continues automatically when the server is free.",
+    "If every game server is busy, the lobby shows \"Máy chủ đang bận • Đang chờ chỗ thi đấu…\" and continues automatically when a server is free.",
 ])
 r.figure("28_searching.png", "Searching for a singles opponent (layout preview rendered in the Unity Editor)", width_cm=13)
-r.h4("Step 2 – Play quick doubles or with friends in a private room")
+r.h4("Step 2 – Play ranked doubles or with friends in a private room")
 r.numbered([
-    "Quick doubles: select **ĐẤU ĐÔI 2v2** in the online lobby and **Tìm trận**, alone or after a friend has joined your party. The game fills two teams of two with other searching players; there is no bot, and the match does not change Elo. If no teams are found, the search ends with \"Hết thời gian tìm trận. Hãy thử lại.\"",
+    "Ranked doubles: select **ĐẤU ĐÔI 2v2** in the online lobby and **Tìm trận**, alone or after a friend has joined your party. The game fills two teams of two with other searching players; a party always plays on the same team. If four players are not found within 180 seconds, ranked bots take the free seats. The match changes Elo against the average rating of the other team.",
     "Private room: select **Tạo phòng** in Mode Selection and choose 1v1 or 2v2. Share the room code with **SAO CHÉP**, or open the friends column on the right of the lobby and invite a friend who is in the lobby.",
     "Friends type the code in **Mã phòng** and select **THAM GIA BẰNG MÃ**, or accept the invitation. The host starts the match. Private matches do not change Elo.",
 ])
@@ -213,7 +219,7 @@ r.figure("13_social.png", "Friends drawer used to find and invite friends", widt
 r.h4("Step 3 – Play, reconnect and see the result")
 r.numbered([
     "Play as in a bot match. If the connection drops, the game reconnects automatically for up to 30 seconds and you continue with the server score.",
-    "If you leave or cannot reconnect in time, the match ends as interrupted and gives no Elo or reward.",
+    "If you leave or cannot reconnect within 30 seconds, you forfeit: the match is recorded as a loss (\"Thua · Bỏ trận\" in the history), a ranked match changes your Elo as a loss, and you receive no Tokenpad or XP (Report 3, BR-28). A match ends as interrupted only when an administrator stops it or the match server is lost.",
     "At the end the result shows the Elo change for ranked matches. The match appears in **LỊCH SỬ**; from there you can watch the replay or report a player (**Tố cáo**).",
 ])
 r.figure("10_multiplayercourt_editmode.png", "Multiplayer court", width_cm=13)
@@ -269,12 +275,15 @@ r.table(["Function", "How to use"], [
     ["Shop", "Menu → CỬA HÀNG: preview a paddle and buy it with Tokenpad or Elite Token (if a price exists in that currency)."],
     ["Collection", "Menu → BỘ SƯU TẬP: owned paddles; select TRANG BỊ to use a paddle in matches."],
     ["Friends and leaderboard", "Friend drawer on the left of the Menu: search by name or ID, send or answer requests, remove or block players; the Bảng xếp hạng tab ranks players by Elo."],
-    ["Replay", "LỊCH SỬ → replay button of a match: pause, seek and change speed from 0.5× to 2×. Only players of the match can watch it."],
+    ["Social feed", "Friend drawer → BẢNG TIN. Read the posts you may see, Thích, Bình luận, play a video or open a shared replay. Viết bài: write up to 2,000 characters, choose Ai có thể xem (Cộng đồng, Bạn bè, Bạn bè ngoại trừ with Chọn người ngoại trừ, Chỉ mình tôi), attach a replay of one of your matches (Chọn replay) and select Đăng bài; Sửa and Xóa change your own posts. Chọn MP4 opens the Windows \"Chọn video MP4\" dialog (H.264, up to 250 MB and 15 minutes); the upload progress is shown and the file name appears when it is done. The Android build cannot upload videos in this version."],
+    ["Messages and whispers", "Friend drawer → TIN NHẮN, or NHẮN TIN on a friend: messages to friends are kept and reach them also offline; the inbox shows the unread count. THÌ THẦM on any player's row sends a live message to a player who is in the lobby now; whispers are not saved and appear under Thì thầm until you leave the lobby."],
+    ["Match detail", "LỊCH SỬ → select a match: Tỉ số shows the score of each game for both teams, Thông số the errors per technique of every player in each game."],
+    ["Replay", "LỊCH SỬ → replay button of a match: pause, seek and change speed from 0.5× to 2×. Only players of the match can watch it, or players who can see a post that shares it."],
     ["Report a player", "LỊCH SỬ → Tố cáo on a finished match: choose the player and enter the reason (up to 254 characters)."],
     ["Decisions and appeals", "Menu → \"!\" KHIẾU NẠI tile next to TIẾN TRÌNH: shows sanctions on the account; a restricted player can send one appeal (at least 10 characters) per sanction."],
-    ["Settings", "Menu → CÀI ĐẶT: Tổng quan (sign out), Âm thanh, Đồ họa, Điều khiển (key binding and touch layout). Select ÁP DỤNG VÀ LƯU to keep the changes."],
+    ["Settings", "Menu → CÀI ĐẶT: Tổng quan (sign out, Thoát game), Âm thanh, Đồ họa, Điều khiển (key binding and touch layout) and, on PC, Khung hình (Cửa sổ, Toàn màn hình, Không viền and window sizes). Select ÁP DỤNG VÀ LƯU to keep the changes."],
 ], widths=[3.6, 12.4], size=8.5, first_col_bold=True, caption="Other player functions")
-for f, cap in [("15_missions.png", "Missions and daily streak"), ("22_shop.png", "Shop"), ("23_collection.png", "Collection"), ("24_settings.png", "Settings"), ("25_settings_controls.png", "Settings – key binding")]:
+for f, cap in [("15_missions.png", "Missions and daily streak"), ("22_shop.png", "Shop"), ("23_collection.png", "Collection"), ("24_settings.png", "Settings"), ("25_settings_controls.png", "Settings – key binding"), ("36_settings_display.png", "Settings – Khung hình in a window")]:
     r.figure(f, cap, width_cm=12.5)
 
 r.h3("3.7 Troubleshooting")
@@ -284,7 +293,10 @@ r.table(["Message or symptom", "Cause", "What to do"], [
     ["\"Email hoặc mật khẩu không chính xác.\"", "Wrong e-mail or password", "Check the input or use Quên mật khẩu"],
     ["\"Tài khoản đang bị hạn chế…\"", "The account is suspended or banned", "Read the decision and send an appeal from Quyết định & Khiếu nại"],
     ["\"Không kết nối được Photon…\"", "No Internet or UDP blocked by a firewall", "Check the connection and allow the game in the firewall"],
-    ["\"Máy chủ đang bận • Đang chờ lượt thi đấu…\"", "The dedicated server is running another match", "Wait in the lobby; the match starts when the server is free"],
+    ["\"Máy chủ đang bận • Đang chờ chỗ thi đấu…\"", "Every game server is running another match", "Wait in the lobby; the match starts when a server is free"],
+    ["\"Tải video hiện có trên bản Windows. Bản Android chưa hỗ trợ chọn tệp video.\"", "Video upload is not available in the Android build of this version", "Post the video from the Windows build, or share a replay or a text post"],
+    ["\"Người chơi không còn ở sảnh.\"", "The player you whispered to has left the lobby", "Send a direct message if you are friends"],
+    ["\"Bạn cần kết bạn và có quyền nhắn tin với người chơi này.\"", "Messages are only for friends who have not blocked each other", "Send a friend request first, or use THÌ THẦM while both are in the lobby"],
     ["Offline results not synchronised", "The device has not signed in since training offline", "Select Đăng nhập on the offline banner; check Chi tiết for rejected items"],
     ["\"Số dư tiền tệ không đủ…\"", "Not enough Tokenpad or Elite Token", "Earn Tokenpad by playing matches, lessons and missions"],
 ], widths=[4.8, 4.6, 6.6], size=8.5, caption="Troubleshooting")

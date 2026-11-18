@@ -1,0 +1,23 @@
+@startuml r3_uc_p4c_feed
+!include _style.iuml
+left to right direction
+actor Player
+rectangle "P4 Progress, Economy and Social (part 3: social feed and messages)" {
+  usecase "UC-69 Browse Social Feed" as UC69
+  usecase "UC-70 Write, Edit or Delete Post" as UC70
+  usecase "UC-71 Like and Comment on Post" as UC71
+  usecase "UC-72 Watch Shared Video or Replay" as UC72
+  usecase "UC-73 Send Direct Message" as UC73
+  usecase "UC-74 Read Inbox and Conversation" as UC74
+  usecase "UC-75 Whisper in the Lobby" as UC75
+  usecase "UC-29 Watch Match Replay" as UC29
+}
+Player -- UC69
+Player -- UC70
+Player -- UC74
+Player -- UC75
+UC71 .> UC69 : <<extend>>
+UC72 .> UC69 : <<extend>>
+UC72 ..> UC29 : <<include>>\n(shared replay)
+UC73 .> UC74 : <<extend>>
+@enduml

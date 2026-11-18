@@ -4,14 +4,13 @@
 start
 if (Private room?) then (yes)
   :Create room and invite friend;
-elseif (Quick doubles?) then (yes)
+elseif (Ranked doubles?) then (yes)
   :Search alone or with a party of two;
   |Web API|
-  if (Two sides of two filled?) then (yes)
-    :Build unrated 2v2 roster;
+  if (Two sides of two humans within 180 s?) then (yes)
+    :Build ranked 2v2 roster;
   else (no)
-    :Search times out;
-    stop
+    :Fill free seats with ranked bots;
   endif
 else (ranked singles)
   |Player|
@@ -28,7 +27,7 @@ endif
 |Web API|
 if (All required humans accepted?) then (yes)
   :Create match record (PLAYING);
-  :Reserve dedicated slot and issue ticket;
+  :Reserve a free game-server container\nand issue tickets;
 else (no)
   :Close offer;
   stop

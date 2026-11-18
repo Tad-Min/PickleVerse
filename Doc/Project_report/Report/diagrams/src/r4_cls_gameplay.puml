@@ -37,7 +37,6 @@ class SinglesRules {
   + Bounce(point) : Fault
   + CommitRally() : void
   + NextGame() : void
-  + TakeTimeout(player) : bool
 }
 class ShotInput {
   + Selection : string
@@ -86,10 +85,8 @@ enum MatchPhase {
   Settling
   BetweenPoints
   BetweenGames
-  Timeout
   MatchOver
 }
-note right of MatchPhase : Timeout and SinglesRules.TakeTimeout are kept\nfor protocol compatibility; since 09fd35c no HUD\ncontrol or key binding requests a time-out.
 BotMatch "1" *-- "2" MatchActor
 BotMatch "1" *-- "1" SinglesRules
 BotMatch "1" *-- "1" ShotInput

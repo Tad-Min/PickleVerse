@@ -25,13 +25,18 @@ else Singles: no opponent within 180 s
   C -> S : AssignRankedBot
   S --> App : BOT (virtual ranked account)
 else Doubles: parties and solo players fill 2 + 2 seats
-  S --> App : MATCHED (unrated 2v2 roster)
-else Doubles: nobody found
-  App --> Player : search times out (no bot fallback)
+  S --> App : MATCHED (ranked 2v2 roster)
+else Doubles: no full roster after 180 s (protocol >= 20)
+  S -> R : fill the free seats with ranked bots\n(Elo from the average of the humans)
+  S --> App : MATCHED (2v2 roster with bots)
 end
 App -> P : start or join Photon match session
 App -> C : POST /api/Game/match/online/offer
-C --> App : ticket with ready deadline (10 s)
+alt every game-server container busy
+  C --> App : phase WAITING_CAPACITY (offer repeated)
+else container reserved
+  C --> App : ticket with ready deadline (10 s)
+end
 Player -> App : Accept
 alt all required humans accept
   App -> C : POST /api/Game/match/online/start

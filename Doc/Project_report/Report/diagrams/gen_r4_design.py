@@ -204,7 +204,6 @@ class SinglesRules {
   + Bounce(point) : Fault
   + CommitRally() : void
   + NextGame() : void
-  + TakeTimeout(player) : bool
 }
 class ShotInput {
   + Selection : string
@@ -253,10 +252,8 @@ enum MatchPhase {
   Settling
   BetweenPoints
   BetweenGames
-  Timeout
   MatchOver
 }
-note right of MatchPhase : Timeout and SinglesRules.TakeTimeout are kept\nfor protocol compatibility; since 09fd35c no HUD\ncontrol or key binding requests a time-out.
 BotMatch "1" *-- "2" MatchActor
 BotMatch "1" *-- "1" SinglesRules
 BotMatch "1" *-- "1" ShotInput
@@ -919,13 +916,18 @@ else Singles: no opponent within 180 s
   C -> S : AssignRankedBot
   S --> App : BOT (virtual ranked account)
 else Doubles: parties and solo players fill 2 + 2 seats
-  S --> App : MATCHED (unrated 2v2 roster)
-else Doubles: nobody found
-  App --> Player : search times out (no bot fallback)
+  S --> App : MATCHED (ranked 2v2 roster)
+else Doubles: no full roster after 180 s (protocol >= 20)
+  S -> R : fill the free seats with ranked bots\n(Elo from the average of the humans)
+  S --> App : MATCHED (2v2 roster with bots)
 end
 App -> P : start or join Photon match session
 App -> C : POST /api/Game/match/online/offer
-C --> App : ticket with ready deadline (10 s)
+alt every game-server container busy
+  C --> App : phase WAITING_CAPACITY (offer repeated)
+else container reserved
+  C --> App : ticket with ready deadline (10 s)
+end
 Player -> App : Accept
 alt all required humans accept
   App -> C : POST /api/Game/match/online/start
@@ -1234,14 +1236,13 @@ D["r4_act_w03"] = r"""
 start
 if (Private room?) then (yes)
   :Create room and invite friend;
-elseif (Quick doubles?) then (yes)
+elseif (Ranked doubles?) then (yes)
   :Search alone or with a party of two;
   |Web API|
-  if (Two sides of two filled?) then (yes)
-    :Build unrated 2v2 roster;
+  if (Two sides of two humans within 180 s?) then (yes)
+    :Build ranked 2v2 roster;
   else (no)
-    :Search times out;
-    stop
+    :Fill free seats with ranked bots;
   endif
 else (ranked singles)
   |Player|
@@ -1258,7 +1259,7 @@ endif
 |Web API|
 if (All required humans accepted?) then (yes)
   :Create match record (PLAYING);
-  :Reserve dedicated slot and issue ticket;
+  :Reserve a free game-server container\nand issue tickets;
 else (no)
   :Close offer;
   stop
@@ -1407,7 +1408,8 @@ MatchOver --> [*] : leave to Mode Selection
 D["r4_sm_search"] = r"""
 [*] --> SEARCHING : search started
 SEARCHING --> MATCHED : compatible player found
-SEARCHING --> BOT : no player within 180 s
+SEARCHING --> BOT : singles: no player within 180 s
+SEARCHING --> MATCHED : doubles: free seats filled\nwith bots after 180 s
 SEARCHING --> CANCELLED : player cancels
 SEARCHING --> TIMEOUT : ticket expired
 MATCHED --> [*]
@@ -1446,9 +1448,13 @@ CANCELLED --> [*]
 """
 
 D["r4_sm_lease"] = r"""
-[*] --> queued : ticket requested [slot free]
-[*] --> busy : ticket requested [slot taken]
-busy --> queued : slot released
+state "waiting (WAITING_CAPACITY)" as waiting
+[*] --> reserved : offer [idle container and below MaxConcurrentMatches]
+[*] --> waiting : offer [all containers busy]
+waiting --> reserved : container free [first in the waiting queue]
+waiting --> [*] : waiting entry expires (15 s)
+reserved --> queued : all humans accepted (StartOnline)
+reserved --> Released : offer cancelled or worker lost
 queued --> starting : worker claims job
 starting --> ready : worker heartbeat ready
 starting --> Released : lease expired
@@ -1507,6 +1513,173 @@ PENDING --> ACCEPTED : receiver accepts
 PENDING --> DECLINED : receiver declines
 ACCEPTED --> [*] : friendship created
 DECLINED --> [*]
+"""
+
+D["r4_cls_social"] = r"""
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class SocialLobbyMenu <<MonoBehaviour>> {
+    + OpenFeed() : void
+    + OpenInbox() : void
+    + OpenDirect(player, name, friend) : void
+    - Compose(post) : void
+    - SavePost(token) : Task
+    - SendDirect() : Task
+    - PlayVideo(post, token) : Task
+  }
+  class SocialLobbyConnection {
+    + Ready : bool
+    + Run() : Task
+    + Invoke(method, args) : Task
+  }
+  class SocialTransport <<static>> {
+    + UploadVideo(file, progress, token) : Task<Guid>
+    + ConnectLobby(token) : Task<ClientWebSocket>
+  }
+}
+package "Web API" {
+  class SocialContentController <<ApiController>> {
+    + Feed(before) : SocialPage<SocialPostItem>
+    + Create(input) / Edit(post, input) / Delete(post)
+    + Like(post, input) / Comment(post, input)
+    + Upload() : SocialMediaReceipt
+    + Playback(post) / Video(post, playback)
+    + Inbox(offset) / Messages(conversation, before)
+    + Read(conversation, input) / Send(input)
+  }
+  class SocialHub <<SignalR Hub>> {
+    + Presence() : Task
+    + Whisper(recipient, body) : Task
+  }
+  interface ISocialContentService
+  interface ISocialDirectService
+  interface ISocialMediaService
+  interface ISocialSessionService
+  class SocialContentService
+  class SocialDirectService
+  class SocialMediaService {
+    + MaxVideoBytes = 250000000
+    + Upload(actor, stream, length, token)
+    + Open(viewer, post, range, token)
+    + Cleanup(token)
+  }
+  class SocialSessionService
+  class SocialPresenceRepository <<Redis>>
+  class SocialMediaCleanup <<BackgroundService>>
+  interface IUnitOfWork
+  class GameRepository
+}
+SocialLobbyMenu --> SocialLobbyConnection
+SocialLobbyMenu --> SocialTransport
+SocialLobbyMenu ..> SocialContentController : HTTPS JSON
+SocialTransport ..> SocialContentController : MP4 upload
+SocialLobbyConnection ..> SocialHub : WebSocket (SignalR JSON)
+SocialContentController --> ISocialContentService
+SocialContentController --> ISocialDirectService
+SocialContentController --> ISocialMediaService
+SocialContentController --> ISocialSessionService
+SocialHub --> ISocialDirectService
+SocialHub --> ISocialSessionService
+SocialContentService ..|> ISocialContentService
+SocialDirectService ..|> ISocialDirectService
+SocialMediaService ..|> ISocialMediaService
+SocialSessionService ..|> ISocialSessionService
+SocialSessionService --> SocialPresenceRepository
+SocialMediaCleanup --> ISocialMediaService
+SocialContentService --> IUnitOfWork
+SocialDirectService --> IUnitOfWork
+SocialMediaService --> IUnitOfWork
+IUnitOfWork --> GameRepository
+"""
+
+D["r4_seq_social_post"] = SEQ_HEAD + r"""
+actor Player
+participant "SocialLobbyMenu" as UI
+participant "SocialContentController" as C
+participant "SocialMediaService" as M
+participant "SocialContentService" as S
+database "PostgreSQL" as DB
+database "Object storage" as S3
+opt video attached (Unity Editor only in release 1.0)
+  UI -> C : POST /api/Game/social/video (MP4 body)
+  C -> M : Upload
+  alt too large or four uploads running
+    M --> UI : 413 / 429 (MSG68, MSG69)
+  else accepted
+    M -> M : spool to disk, ffprobe check
+    alt not MP4 H.264/AAC or over 15 min
+      M --> UI : 400 (MSG67)
+    else valid
+      M -> DB : SocialMedia draft (Ready = false)
+      M -> S3 : put social/video/<id>.mp4
+      M -> DB : Ready = true
+      M --> UI : mediaId
+    end
+  end
+end
+Player -> UI : text, audience, replay; Đăng bài
+UI -> C : POST /api/Game/social/posts
+C -> S : Save
+S -> DB : lock post and media; check audience, exclusions,\nreplay complete, media owned and unused
+alt invalid
+  S --> UI : 400 (MSG66)
+else valid
+  S -> DB : insert post and exclusions (one transaction)
+  S --> UI : SocialPostItem
+end
+"""
+
+D["r4_seq_message"] = SEQ_HEAD + r"""
+actor "Player A" as A
+participant "SocialLobbyMenu (A)" as UI
+participant "SocialContentController" as C
+participant "SocialDirectService" as S
+database "PostgreSQL" as DB
+participant "SocialHub" as H
+database "Redis" as R
+actor "Player B" as B
+group Direct message
+  UI -> C : POST /api/Game/social/messages\n(recipient, clientMessageId, body)
+  C -> S : Send
+  S -> DB : lock both players; look up clientMessageId
+  alt same clientMessageId already stored
+    S --> UI : the first message (no duplicate)
+  else not friends, blocked or recipient inactive
+    S --> UI : 403 (MSG72)
+  else allowed
+    S -> DB : conversation (create once) and message
+    S -> H : MessageChanged to A and B
+    H --> B : inbox refreshed (if online)
+    S --> UI : SocialMessageItem
+  end
+end
+group Whisper (both players in the lobby)
+  UI -> H : Whisper(recipient, body)
+  H -> R : sender connection registered (Presence)?
+  H -> S : Whisper
+  alt blocked or recipient not verified
+    S --> UI : HubException (MSG73)
+  else recipient has no live connection
+    S --> UI : HubException (MSG74)
+  else
+    H --> B : WhisperReceived (not stored)
+  end
+end
+"""
+
+D["r4_sm_media"] = r"""
+state "Draft (Ready = false)" as Draft
+state "Ready" as Ready
+state "Attached to a post" as Attached
+state "Deleted" as Deleted
+[*] --> Draft : upload accepted by ffprobe
+Draft --> Ready : stored in object storage
+Draft --> Deleted : storage write failed
+Ready --> Attached : post saved with the video
+Ready --> Removed : not attached within 24 h\n(SocialMediaCleanup)
+Attached --> Deleted : post deleted or video replaced
+Deleted --> Removed : object deleted (cleanup)
+Removed --> [*]
 """
 
 if __name__ == "__main__":

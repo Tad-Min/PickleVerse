@@ -1,0 +1,15 @@
+@startuml r4_sm_media
+!include _style.iuml
+state "Draft (Ready = false)" as Draft
+state "Ready" as Ready
+state "Attached to a post" as Attached
+state "Deleted" as Deleted
+[*] --> Draft : upload accepted by ffprobe
+Draft --> Ready : stored in object storage
+Draft --> Deleted : storage write failed
+Ready --> Attached : post saved with the video
+Ready --> Removed : not attached within 24 h\n(SocialMediaCleanup)
+Attached --> Deleted : post deleted or video replaced
+Deleted --> Removed : object deleted (cleanup)
+Removed --> [*]
+@enduml

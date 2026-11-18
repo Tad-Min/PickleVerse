@@ -12,6 +12,7 @@ rectangle "P4 Progress, Economy and Social (part 1: history, ranking and friends
   usecase "UC-34 Remove Friend" as UC34
   usecase "UC-35 Block Player" as UC35
   usecase "UC-36 Unblock Player" as UC36
+  usecase "UC-76 View Match Detail" as UC76
 }
 Player -- UC28
 Player -- UC31
@@ -22,4 +23,6 @@ Player -- UC35
 Player -- UC36
 UC29 .> UC28 : <<extend>>
 UC30 .> UC28 : <<extend>>
+UC76 .> UC28 : <<extend>>
+UC30 .> UC76 : <<extend>>
 @enduml

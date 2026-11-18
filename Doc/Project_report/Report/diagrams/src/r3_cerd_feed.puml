@@ -1,0 +1,78 @@
+@startchen r3_cerd_feed
+!include _style.iuml
+entity PLAYER_PROFILE {
+  PlayerId <<key>>
+  PlayerName
+}
+entity POST {
+  PostId <<key>>
+  Body
+  Audience
+  CreatedAt
+  EditedAt
+}
+entity VIDEO {
+  MediaId <<key>>
+  Bytes
+  Ready
+}
+entity COMMENT {
+  CommentId <<key>>
+  Body
+  CreatedAt
+}
+entity MATCH {
+  MatchId <<key>>
+}
+entity CONVERSATION {
+  ConversationId <<key>>
+  UpdatedAt
+}
+entity MESSAGE {
+  MessageId <<key>>
+  ClientMessageId
+  Body
+  CreatedAt
+}
+relationship WRITES {
+}
+relationship ATTACHES {
+}
+relationship SHARES_REPLAY {
+}
+relationship LIKES {
+}
+relationship EXCLUDES {
+}
+relationship ON_POST {
+}
+relationship COMMENTS {
+}
+relationship MEMBER_OF {
+  ReadThrough
+}
+relationship CONTAINS {
+}
+relationship SENDS {
+}
+PLAYER_PROFILE -1- WRITES
+WRITES -N- POST
+POST -1- ATTACHES
+ATTACHES -1- VIDEO
+POST -N- SHARES_REPLAY
+SHARES_REPLAY -1- MATCH
+PLAYER_PROFILE -M- LIKES
+LIKES -N- POST
+POST -M- EXCLUDES
+EXCLUDES -N- PLAYER_PROFILE
+POST -1- ON_POST
+ON_POST -N- COMMENT
+PLAYER_PROFILE -1- COMMENTS
+COMMENTS -N- COMMENT
+PLAYER_PROFILE -M- MEMBER_OF
+MEMBER_OF -N- CONVERSATION
+CONVERSATION -1- CONTAINS
+CONTAINS -N- MESSAGE
+PLAYER_PROFILE -1- SENDS
+SENDS -N- MESSAGE
+@endchen

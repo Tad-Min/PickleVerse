@@ -17,8 +17,8 @@ PROJECT = "PickleVerse – Multiplayer Pickleball Skill-Training and Match Game 
 WRAP = Alignment(wrap_text=True, vertical="top")
 GROUP_FILL = PatternFill("solid", fgColor="DDEBF7")
 STATUS_FILL = {"Passed": "C6EFCE", "Failed": "FFC7CE", "Pending": "FFEB9C"}
-ISSUE = datetime.date(2026, 11, 12)      # Unit Test workbook v1.1 (unchanged)
-ISSUE_TR = datetime.date(2026, 11, 13)   # Test Report workbook v1.2
+ISSUE = datetime.date(2026, 11, 17)      # Unit Test workbook v1.2
+ISSUE_TR = datetime.date(2026, 11, 18)   # Test Report workbook v1.4
 
 
 def d(text):
@@ -49,16 +49,20 @@ def build_test_report():
         (d("11/11/2026"), "1.0", "All sheets", "M", "Rewritten: 114 cases with concrete steps and data, mapped to FR-01–FR-33, real results of 09–11/11/2026, automated test names", "Report 3 v1.0, Report 4 v1.0"),
         (d("12/11/2026"), "1.1", "All sheets", "M", "%d cases: quick doubles case TC-F07-04 added; workflow names as in BM04; Defects sheet with D-19, D-20 and the fix commits of D-03, D-04, D-05, D-07 and D-19" % len(R.CASES), "Report 5 v1.2"),
         (d("13/11/2026"), "1.2", "FE04 Online, FE06 Progress, FE08-09 Admin, FE10 Expert, States, NFR, Defects, Test Statistics", "M", "Results of the CI run EV-08: %d cases passed by the IntegrationChecks of the validate job, %d cases annotated as partly covered; TC-N09 executed and failed (EV-09); defect D-21 added; D-18 and D-21 fixed, D-17 partly fixed, D-20 accepted" % (len(R.CI_PASSED), len(R.CI_PARTLY)), "Report 5 v1.3"),
-    ], version="1.2", issue=ISSUE_TR)
+        (d("17/11/2026"), "1.3", "FE01 Account, FE04 Online, FE07 Social, States, NFR, Defects, Test Statistics", "M", "%d cases: TC-F01-07, TC-F01-08, TC-F11-04 and TC-F19-01 to TC-F19-06 added; TC-F07-04 rewritten for ranked doubles and passed by the CI check ranked-doubles (EV-11); time-out transition replaced; D-20 fixed (b08f5c7); D-22 and D-23 added" % len(R.CASES), "Report 5 v1.4"),
+        (d("18/11/2026"), "1.4", "FE01 Account, FE04 Online, FE07 Social, FE08-09 Admin, FE10 Expert, Workflows, States, NFR, Defects, Test Statistics", "M", "Results of the end-to-end run EV-15 (17–18/11/2026, Windows build of main @ 96ff8e9 and admin web): 19 cases passed, 6 failed; D-04, D-09, D-15, D-19 and D-20 closed after retest; D-24 to D-28 added; expected result of TC-F18-02 corrected", "Report 5 v1.5"),
+        (d("18/11/2026"), "1.5", "FE04 Online, FE07 Social, Defects, Test Statistics", "M", "Retest of b08f5c7 on a rebuilt Windows player (EV-16): TC-F08-04 (2v2 room, failed) and TC-F11-05 (replay, passed) added; TC-F07-04 note with the ranked doubles run in the client; D-29 and D-30 added", "Report 5 v1.6"),
+        (d("18/11/2026"), "1.6", "FE01 to FE10, Workflows, States, Defects, Test Statistics", "M", "Retest of the defect fixes of 18/11/2026 (EV-17): 10 cases passed (TC-F06-03, TC-F08-04, TC-F09-03, TC-F17-01, TC-F19-05, TC-X01-02, TC-W04, TC-S07-02, TC-S11-01, TC-S11-02); TC-F09-03 and TC-S07-02 follow BR-28 v1.5; 18 defects closed; D-31 and D-32 added", "Report 5 v1.7"),
+    ], version="1.6", issue=ISSUE_TR)
     base = wb["Feature 1"]
     # ---------------- Test Cases sheet
     tc = wb["Test Cases"]
     tc["D3"] = PROJECT
     tc["D4"] = "PKV"
     tc["D5"] = ("Staging tad-min.io.vn (Ubuntu 24.04, Docker, Caddy): Web API and admin web on https://tad-min.io.vn since 13/11/2026 (in Round 1 the API was on "
-                "http://tad-min.io.vn:8080 and the admin web on http://tad-min.io.vn), dedicated server UDP 3669. Client: Windows 11 PC, Unity 6000.6.2f1 Editor and Windows build of "
-                "main @ 7f8ee32 (Round 1) and main @ 5963501 (fix checks). Unit: Unity Test Framework EditMode through the Unity CLI. Integration: IntegrationChecks in the GitHub Actions "
-                "pipeline on main @ d9200cc (PostgreSQL 16, Redis 7.4). Android APK built on 12/11/2026 from main @ 5963501, no Android device yet.")
+                "http://tad-min.io.vn:8080 and the admin web on http://tad-min.io.vn), dedicated servers on UDP from port 3669. Client: Windows 11 PC, Unity 6000.6.2f1 Editor and Windows builds of "
+                "main @ 7f8ee32 (Round 1), main @ 5963501 (fix checks), 1b64424 (display modes, EV-13) and main @ 96ff8e9 (end-to-end run with three player windows, EV-15). Unit: Unity Test Framework EditMode through the Unity CLI. Integration: IntegrationChecks in the GitHub Actions "
+                "pipeline on main @ d9200cc and main @ 96ff8e9 (PostgreSQL 16, Redis 7.4). Android APKs built on 12/11 and 14/11/2026, no Android device yet.")
     for r in range(9, tc.max_row + 1):
         for c in range(2, 7):
             tc.cell(row=r, column=c).value = None
@@ -126,10 +130,10 @@ def build_test_report():
     st["C4"] = "PKV"
     st["H3"] = R.HUY
     st["H4"] = "Huỳnh Trung Kiên"
-    st["C5"] = "PKV_TestReport_v1.2"
+    st["C5"] = "PKV_TestReport_v1.6"
     st["H5"] = ISSUE_TR
     st["H5"].number_format = "dd/mm/yyyy"
-    st["C6"] = "Round 1 (09–11/11/2026) on main @ 7f8ee32; fixed defects checked on main @ 5963501; IntegrationChecks of the CI run of 13/11/2026 on main @ d9200cc (EV-08). Modules: FE-01 to FE-10, workflows, state transitions and NFRs."
+    st["C6"] = "Round 1 (09–11/11/2026) on main @ 7f8ee32; fixed defects checked on main @ 5963501; IntegrationChecks of the CI runs of 13/11/2026 on main @ d9200cc (EV-08) and 17/11/2026 on main @ 96ff8e9 (EV-11); Windows window test of 16/11/2026 (EV-13); end-to-end runs of 17–18/11/2026 on the Windows build of main @ 96ff8e9 and the admin web (EV-15, EV-16) and the defect retest on the Windows builds with the fixes and on staging (EV-17). Modules: FE-01 to FE-10, workflows, state transitions and NFRs."
     for r in range(9, 30):
         for c in range(2, 9):
             st.cell(row=r, column=c).value = None
@@ -170,7 +174,8 @@ def build_test_report():
         c.fill = PatternFill("solid", fgColor="D9E2F3")
     for i, dft in enumerate(R.DEFECTS):
         state = R.DEFECT_STATE.get(dft[0])
-        vals = list(dft) + [R.defect_status(dft[0]), R.DEFECT_FIX.get(dft[0], ""), "%s: %s" % (state[1], state[2]) if state else (R.DEFECT_CHECK.get(dft[0], "Fix checked in Play Mode (EV-07)") + "; retest in Round 2" if dft[0] in R.DEFECT_FIX else "")]
+        closed = R.DEFECT_CLOSED.get(dft[0])
+        vals = list(dft) + [R.defect_status(dft[0]), R.DEFECT_FIX.get(dft[0], ""), "Closed on %s: %s" % closed if closed else ("%s: %s" % (state[1], state[2]) if state else (R.DEFECT_CHECK.get(dft[0], "Fix checked in Play Mode (EV-07)") + "; retest in Round 2" if dft[0] in R.DEFECT_FIX else ""))]
         vals[5] = d(vals[5])
         for j, v in enumerate(vals):
             c = ws.cell(row=2 + i, column=1 + j, value=v)
@@ -194,10 +199,11 @@ def build_unit():
         (d("06/11/2026"), "0.1", "Unit test list", "A", "36 selected unit checks (24 passed, 12 not run)", "Report 5 v0.2"),
         (d("11/11/2026"), "1.0", "All sheets", "M", "Rebuilt on the template: 10 core functions as decision tables mapped to NUnit tests; EditMode run of 11/11/2026 (515/515 passed)", "EV-01"),
         (d("12/11/2026"), "1.1", "Functions, Statistics", "M", "Latest EditMode run on main @ 5963501: 516/516 passed (camera framing test added)", "EV-06"),
-    ])
+        (d("17/11/2026"), "1.2", "UT-06, Functions, Statistics", "M", "Time-out condition and case removed from UT-06 (rule removed on 15/11/2026); EditMode run of 16/11/2026: 522/522 passed", "EV-12"),
+    ], version="1.2")
     fl = wb["Functions"]
     fl["E6"] = 100
-    fl["E7"] = "Unity 6000.6.2f1 Editor (Windows 11), Unity Test Framework EditMode, run through the Unity CLI Pipeline on main @ 7f8ee32 (11/11/2026, 515 tests, 6.19 s) and again on main @ 5963501 (11/11/2026, 516 tests, 5.96 s)."
+    fl["E7"] = "Unity 6000.6.2f1 Editor (Windows 11), Unity Test Framework EditMode, run through the Unity CLI Pipeline on main @ 7f8ee32 (11/11/2026, 515 tests, 6.19 s) again on main @ 5963501 (11/11/2026, 516 tests, 5.96 s) and on the source of 1b64424 (16/11/2026, 522 tests, 19.05 s)."
     for r in range(11, 24):
         for c in range(1, 9):
             fl.cell(row=r, column=c).value = None
@@ -282,8 +288,8 @@ def build_unit():
     st["F5"] = "Trần Nguyễn Hiếu Thuận"
     st["F6"] = ISSUE
     st["F6"].number_format = "dd/mm/yyyy"
-    st["B6"] = "PKV_UnitTest_v1.0"
-    st["B7"] = "Core rule, rating, input, matchmaking, economy and offline-sync functions of the Unity client (10 functions, %d test cases)" % sum(len(f["cases"]) for f in R.UNIT) + ". The full EditMode suite passed on 11/11/2026 (515 tests on main @ 7f8ee32; 516 tests on main @ 5963501)."
+    st["B6"] = "PKV_UnitTest_v1.2"
+    st["B7"] = "Core rule, rating, input, matchmaking, economy and offline-sync functions of the Unity client (10 functions, %d test cases)" % sum(len(f["cases"]) for f in R.UNIT) + ". The full EditMode suite passed on 11/11/2026 (515 tests on main @ 7f8ee32; 516 tests on main @ 5963501) and on 16/11/2026 (522 tests, EV-12)."
     for r in range(12, 30):
         for c in range(1, 10):
             st.cell(row=r, column=c).value = None

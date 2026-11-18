@@ -13,7 +13,7 @@ rectangle "PickleVerse System" {
   usecase "P1 Account and Onboarding\n(UC-01 to UC-09)" as P1
   usecase "P2 Learning and Coaching\n(UC-10 to UC-18)" as P2
   usecase "P3 Online Match\n(UC-19 to UC-27)" as P3
-  usecase "P4 Progress, Economy and Social\n(UC-28 to UC-44)" as P4
+  usecase "P4 Progress, Economy and Social\n(UC-28 to UC-44, UC-69 to UC-76)" as P4
   usecase "P5 Account Restriction\n(UC-45 to UC-46)" as P5
   usecase "P6 Admin: Users and Moderation\n(UC-47 to UC-55)" as P6
   usecase "P7 Admin: Content\n(UC-56 to UC-61)" as P7

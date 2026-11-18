@@ -49,6 +49,7 @@ entity "MatchScore" as MatchScore {
   * TeamAScore : INT
   * TeamBScore : INT
   * Completed : BOOLEAN
+  TeamAStartSide : SMALLINT
 }
 entity "ratingledger" as ratingledger {
   * playerid : UUID <<PK, FK>>
