@@ -83,8 +83,14 @@ namespace PickleVerse.LocalMatch
                 bool newlyVisible = results && !resultActions.activeSelf;
                 resultActions.SetActive(results);
                 if (newlyVisible && !string.IsNullOrEmpty(match.CoachingMatchId))
-                    // A third button on the CHƠI LẠI / CHỌN CHẾ ĐỘ row, so it never covers the court or the outcome title (D-10).
-                    CoachingSessionView.Attach((RectTransform)resultActions.transform, match.CoachingMatchId, "match", new Vector2(1.03f, 0f), new Vector2(1.40f, .57f));
+                {
+                    // A third button on the CHƠI LẠI / CHỌN CHẾ ĐỘ row, the same height as those buttons, so it never
+                    // covers the court or the outcome title (D-10). The row is read from the scene's own layout.
+                    var choose = resultActions.transform.Find("ChooseMode") as RectTransform;
+                    float bottom = choose ? choose.anchorMin.y : .01f, top = choose ? choose.anchorMax.y : .25f;
+                    float left = (choose ? choose.anchorMax.x : .945f) + .02f, width = choose ? (choose.anchorMax.x - choose.anchorMin.x) * .8f : .34f;
+                    CoachingSessionView.Attach((RectTransform)resultActions.transform, match.CoachingMatchId, "match", new Vector2(left, bottom), new Vector2(left + width, top));
+                }
                 if (newlyVisible && UnityEngine.EventSystems.EventSystem.current)
                     UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(resultActions.GetComponentInChildren<UnityEngine.UI.Button>().gameObject);
             }
