@@ -2,37 +2,60 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Player
-participant "TrainingDirector" as TD
-participant "ProgressionRuntime" as PR
-participant "GameTrainingController" as C
-participant "OnlineGameService" as S
-database "PostgreSQL" as DB
-Player -> TD : choose lesson and press Start
-TD -> PR : StartTrainingAsync(lesson)
-PR -> C : POST /api/Game/training/start
+boundary ":TrainingDirector" as TD
+control ":ProgressionRuntime" as PR
+control ":GameTrainingController" as C
+control ":OnlineGameService" as S
+entity ":GameRepository" as G
+Player -> TD : StartLesson(false)
+activate TD
+TD -> PR : StartTrainingAsync(id, retry)
+activate PR
+PR -> C : Start(request)
+activate C
 C -> S : StartTraining(player, request)
-S -> DB : check published lesson, prerequisites, level
-alt locked or unpublished
-  S --> C : 400 lesson not available
-  C --> TD : show error
-else allowed
-  S -> DB : insert TrainingSessions (IsCurrent = true)
-  S --> C : GameSnapshot with active attempt
-  C --> TD : attempt
-  loop each trial
-    Player -> TD : shot input
-    TD -> TD : contact, rule and target check
-    TD -> PR : SaveTrainingAsync(attempt, false)
-    PR -> C : POST /api/Game/training/checkpoint
-  end
-  TD -> PR : SaveTrainingAsync(attempt, true)
-  PR -> C : POST /api/Game/training/complete
-  C -> S : UpdateTraining(completed)
-  S -> S : recompute stars (BR-11), ignore client rewards
-  S -> DB : update PlayerLessonDrills, grant first-pass reward once
-  S --> C : GameSnapshot
-  C --> TD : result (stars, reward)
+activate S
+S -> G : CatalogSnapshot()
+alt lesson locked or not published
+  S --> C : error lesson_not_available
+else else
+  S -> G : StartTraining(player, attempt)
+  S --> C : GameSnapshot with the active attempt
 end
+deactivate S
+C --> PR : ApiResponse
+deactivate C
+PR --> TD : attempt
+deactivate PR
+loop trial < number of trials
+  Player -> TD : Advance(dt, mask, movement, run, tap)
+  TD -> TD : SaveActive(false)
+  TD -> PR : SaveTrainingAsync(attempt, false)
+  activate PR
+  PR -> C : Checkpoint(request)
+  PR --> TD : snapshot
+  deactivate PR
+end
+TD -> PR : SaveTrainingAsync(attempt, true)
+activate PR
+PR -> C : Complete(request)
+activate C
+C -> S : UpdateTraining(player, request, true)
+activate S
+S -> G : TrainingAttempt(player, id)
+S -> G : UpdateTraining(attempt)
+S -> G : RecordLesson(player, lesson, stars)
+S -> G : GrantOnce(player, firstPassReward)
+S --> C : GameSnapshot (stars recomputed, BR-11)
+deactivate S
+C --> PR : ApiResponse
+deactivate C
+PR --> TD : stars and reward
+deactivate PR
+TD --> Player : result screen
+deactivate TD
 @enduml

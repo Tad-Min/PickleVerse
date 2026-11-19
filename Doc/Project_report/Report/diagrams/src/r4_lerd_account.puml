@@ -1,0 +1,111 @@
+@startuml r4_lerd_account
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "Roles" as Roles {
+  * RoleId <<PK>>
+  --
+  * RoleName
+  * Description
+}
+entity "Users" as Users {
+  * UserId <<PK>>
+  --
+  * Email
+  * PasswordHash
+  * AuthVersion
+  * RoleId <<FK>>
+  * Status
+  * CreatedAt
+}
+entity "RefreshTokens" as RefreshTokens {
+  * TokenId <<PK>>
+  --
+  * UserId <<FK>>
+  * TokenHash
+  * ExpiresAt
+  * IsRevoked
+  * CreatedAt
+}
+entity "VerificationEmail" as VerificationEmail {
+  * VerificationEmailId <<PK>>
+  --
+  * UserId <<FK>>
+  * Email
+  * Token
+  * FailedAttempts
+  * CreatedAt
+  * ExpiresAt
+  * IsVerified
+}
+entity "PasswordResetChallenges" as PasswordResetChallenges {
+  * UserId <<PK, FK>>
+  --
+  * ChallengeId
+  * TokenHash
+  * CreatedAt
+  * ExpiresAt
+  * FailedAttempts
+  * Consumed
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+  * Avatar
+  * PlayerName
+  * Elo
+  * IsMale
+  * TimePlayedSeconds
+  * Level
+  * Exp
+  * WinStreak
+  * DayStreak
+  * WinCount
+  * LoseCount
+  * Revision
+  * LearningEpoch
+  LearningResetAt
+  * MissionEpoch
+  * EconomyEpoch
+  ExperienceChoice
+  * TutorialCompleted
+  * TutorialSkipped
+  * TutorialCheckpoint
+  DailyStreakEnabledAt
+  * RankWinStreak
+  * RankLossStreak
+  * BestWinStreak
+  * LifetimeMatches
+  * LifetimePoints
+  * LifetimeReturns
+  * LifetimeServes
+  * LifetimeBotMatches
+  * LifetimeHumanMatches
+  * LifetimeHumanWins
+  * LifetimeRankedWins
+  * LifetimeDoublesWins
+  * LifetimeHigherRatedWins
+}
+entity "PlayerLoginDays" as PlayerLoginDays {
+  * PlayerId <<PK, FK>>
+  * Day <<PK>>
+  --
+  * FirstAt
+  * LastAt
+}
+entity "PlayerActivityDays" as PlayerActivityDays {
+  * PlayerId <<PK, FK>>
+  * Day <<PK>>
+  --
+  * Seconds
+}
+Roles ||--o{ Users : "RoleId"
+Users ||--o{ RefreshTokens : "UserId"
+Users ||--o{ VerificationEmail : "UserId"
+Users ||--o| PasswordResetChallenges : "UserId"
+Users ||--o| PlayerProfiles : "UserId"
+Users ||--o{ PlayerLoginDays : "PlayerId"
+PlayerProfiles ||--o{ PlayerActivityDays : "PlayerId"
+@enduml

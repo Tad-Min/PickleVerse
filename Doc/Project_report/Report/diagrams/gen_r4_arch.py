@@ -1,4 +1,4 @@
-"""PlantUML sources for Report 4: architecture, deployment, packages and logical ERDs."""
+"""PlantUML sources for Report 4: architecture (UML component diagram), deployment, packages, logical and physical ERDs."""
 from diagram_lib import write_all
 import schema_lib
 
@@ -6,42 +6,52 @@ D = {}
 
 D["r4_architecture"] = r"""
 skinparam componentStyle uml2
-actor Player
-actor Administrator as Admin
-node "Player device" {
-  [Unity Game Client] as Client
-}
-node "Browser" {
-  [Admin Web (React SPA)] as Web
-}
-cloud "Photon Cloud" as Photon
-node "Linux host (Docker Compose)" {
-  [HTTPS reverse proxy\n(Caddy)] as Nginx
-  [Web API\nASP.NET Core 10\n+ SocialHub (SignalR)] as API
-  [Background workers\nHybridAiWorker, DedicatedLeaseMonitor,\nSocialMediaCleanup] as Workers
-  [AI Coaching Service\nPython FastAPI] as AI
-  [Dedicated Game Servers\nUnity Linux headless,\none container per match] as DS
-  database "PostgreSQL 16" as PG
-  database "Redis 7.4" as RD
-  database "S3-compatible storage" as S3
-}
-cloud "Gmail SMTP" as SMTP
-Player --> Client
-Admin --> Web
-Web --> Nginx : HTTPS
-Nginx --> API : /api (JSON, JWT)
-Client --> Nginx : HTTPS REST JSON, JWT;\nWebSocket (SignalR) for whispers
-Client --> Photon : Fusion Shared lobby (UDP)
-Client --> DS : Fusion client, signed ticket (UDP 3669+)
-DS --> Photon : session registration
-DS --> API : lease, heartbeat, result\n(service key)
-API --> PG : Npgsql EF Core
-API --> RD : queue, server pool, presence,\nvideo grants, cache
-API --> S3 : replays and post videos
-API --> SMTP : OTP email (STARTTLS)
-Workers --> AI : POST /v1/analyze-session\n(X-AI-Key)
-Workers ..> PG
-API ..> Workers : hosted in API process
+component "Unity Game Client\n(Windows, Android)" as Client
+component "Admin Web\n(React SPA)" as Web
+component "HTTPS Reverse Proxy\n(Caddy)" as Proxy
+component "Web API\n(ASP.NET Core 10, SocialHub)" as API
+component "Background Workers\n(hosted in the Web API process)" as Workers
+component "AI Coaching Service\n(Python FastAPI)" as AI
+component "Dedicated Game Server\n(Unity Linux headless,\none container per match)" as DS
+component "PostgreSQL 16" as PG <<database>>
+component "Redis 7.4" as RD <<database>>
+component "S3-compatible Storage" as S3 <<external>>
+component "Photon Cloud" as Photon <<external>>
+component "Gmail SMTP" as SMTP <<external>>
+interface "HTTPS\n(REST JSON, SignalR)" as IHttps
+interface "Web API\n/api (JWT)" as IApi
+interface "Server API\n(service key)" as ISrv
+interface "Fusion match session\n(UDP 3669+, signed ticket)" as IGame
+interface "Fusion lobby\nand relay" as IPhoton
+interface "Analyze API\n(X-AI-Key)" as IAI
+interface "SQL\n(Npgsql EF Core)" as ISql
+interface "Redis\nprotocol" as IRedis
+interface "S3 API" as IS3
+interface "SMTP\n(STARTTLS)" as ISmtp
+Proxy -up- IHttps
+Client -down-( IHttps
+Web -down-( IHttps
+API -up- IApi
+Proxy -down-( IApi
+API -right- ISrv
+DS -left-( ISrv
+DS -up- IGame
+Client -down-( IGame
+Photon -down- IPhoton
+Client -( IPhoton
+DS -up-( IPhoton
+AI -up- IAI
+Workers -down-( IAI
+PG -up- ISql
+API -down-( ISql
+Workers -down-( ISql
+RD -up- IRedis
+API -down-( IRedis
+S3 -up- IS3
+API -down-( IS3
+SMTP -up- ISmtp
+API -down-( ISmtp
+Workers .up.> API : <<hosted in>>
 """
 
 D["r4_deployment"] = r"""
@@ -227,6 +237,7 @@ GROUPS = {
 covered = set()
 for key, (focus, refs) in GROUPS.items():
     D[key] = schema_lib.erd(T, focus, refs)
+    D[key.replace("r4_erd_", "r4_lerd_")] = schema_lib.erd(T, focus, refs, physical=False)
     covered.update(focus)
 missing = sorted(set(T) - covered)
 assert not missing, "Tables missing from ERDs: %s" % missing

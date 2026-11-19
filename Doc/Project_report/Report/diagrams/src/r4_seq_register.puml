@@ -2,38 +2,65 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Visitor
-participant "AccountScreen" as UI
-participant "AuthController" as C
-participant "AuthService" as S
-database "PostgreSQL" as DB
-participant "SmtpEmailSender" as M
-Visitor -> UI : enter email, password, confirmation
-UI -> C : POST /api/Auth/register
+boundary ":AccountScreen" as UI
+control ":AccountService" as AS
+control ":AuthController" as C
+control ":AuthService" as S
+entity ":IUserRepository" as UR
+entity ":IPlayerProfileRepository" as PR
+entity ":IUnitOfWork" as U
+control ":SmtpEmailSender" as M
+Visitor -> UI : Register()
+activate UI
+UI -> AS : RegisterAsync(email, password, confirm)
+activate AS
+AS -> C : Register(request)
+activate C
 C -> S : RegisterAsync(request)
-S -> S : validate password (6-128) and confirmation
-alt confirmation mismatch
-  S --> C : 400 password_confirmation_mismatch
+activate S
+S -> UR : GetByEmailAsync(email)
+alt confirmation differs from the password
+  S --> C : error password_confirmation_mismatch
 else email already registered
-  S -> DB : find user by email
-  S --> C : 400 email_exists
-else valid
-  S -> DB : insert Users (Status=ACTIVE) and PlayerProfiles
-  S -> DB : insert VerificationEmail (HMAC code, expires in 10 min)
-  S -> M : send 6-digit code
+  S --> C : error email_exists
+else else
+  S -> U : BeginTransactionAsync()
+  S -> UR : PrepareCreate(user)
+  S -> PR : AddProfileAsync(profile)
+  S -> UR : AddVerificationEmailAsync(verification)
+  S -> U : CommitTransactionAsync()
+  S -> M : SendVerificationCodeAsync(email, code)
   S --> C : AuthResponse (verification required)
 end
-C --> UI : ApiResponse
-UI --> Visitor : show Email Code screen
-Visitor -> UI : enter code
-UI -> C : POST /api/Auth/verify-email
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : registered
+deactivate AS
+UI --> Visitor : Email Code screen
+Visitor -> UI : VerifyCode()
+UI -> AS : VerifyEmailAsync(email, code)
+activate AS
+AS -> C : VerifyEmail(request)
+activate C
 C -> S : VerifyEmailAsync(request)
-alt code valid and attempts < 5
-  S -> DB : mark verified
+activate S
+S -> UR : LockUserAsync(email)
+S -> UR : GetLatestVerificationEmailAsync(user)
+alt code valid, not expired and fewer than 5 failed attempts
+  S -> U : SaveChangesAsync()
   S --> C : true
-else invalid or expired
-  S --> C : 400 invalid code
+else else
+  S --> C : error invalid_code
 end
-C --> UI : result
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : result
+deactivate AS
+deactivate UI
 @enduml

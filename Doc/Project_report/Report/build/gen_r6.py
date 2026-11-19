@@ -8,16 +8,37 @@ CHANGES = [
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Updated after the fixes of 12–13/11/2026 (main @ d9200cc): the deployment section describes the pipeline as it runs and the new deployment script with its database dump; HTTPS address of the staging API and admin web with the Caddy reverse proxy; Android APK of 12/11/2026 with its limitation; package counts for the documents of 13/11/2026."),
     ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Updated to main @ 96ff8e9: social feed, messages, whispers and match detail in the user manual; ranked doubles with bot fill in W03; PC display modes, window frame and quit; game-server pool settings (PKV_GAME_REPLICAS, PKV_GAME_UDP_RANGE) and ports; pipeline status with the skipped deploy job; package counts for the documents of 17/11/2026."),
     ("18/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 329810f: video upload from the Windows build, the forfeit rule of BR-28 v1.5, leaving the summary after a room match and the new admin texts (Elo reset to 100, API origin, MSG64)."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.6 – Join button of the online lobby corrected to THAM GIA; match summary of online matches described (THOÁT TRẬN, VỀ PHÒNG CHỜ, VỀ TRANG CHỦ); Vietnamese interface labels explained in English (§3.1)."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.7 – Release package aligned with main @ 329810f and the current document versions; schedule figures read from the schedule file; Android note states that no usable APK exists yet."),
 ]
+
+
+def _doc_version(n):
+    """Latest version in the change log of Report n, read from its generator."""
+    import os as _os
+    import re as _re
+    src = open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "gen_r%d.py" % n), encoding="utf-8").read()
+    return _re.findall(r'"(v\d+\.\d+) –', src.split("\n]\n")[0])[-1]
+
+
+def _schedule_counts():
+    import os as _os
+    import re as _re
+    x = open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "PickleVerse_Project_Schedule.xml"), encoding="utf-8").read()
+    return len(_re.findall(r"<Task>", x)), len(_re.findall(r"<Resource>", x)), len(_re.findall(r"<Assignment>", x))
+
+
+DOC_VERSIONS = ", ".join("Report %d %s" % (n, _doc_version(n)) for n in range(1, 7))
+SCHEDULE_COUNTS = _schedule_counts()
 
 r = Report("Report6_Software User Guides.docx", "Report 6 – Software User Guides", CHANGES)
 r.h1("II. Release Package & User Guides")
 
 # ================================================================== 1
 r.h2("1. Deliverable Package")
-r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ 96ff8e9 (17/11/2026) for the software and to the documents of 17/11/2026 (Reports 1–5 v1.4, Report 6 v1.3 and Report 7 assembled from them). Since main @ d9200cc (13/11/2026) the commits added the social feed, direct messages and whispers asked for at Review 1, the match detail, the dedicated-server pool, ranked doubles with bot fill, the golden-hour stadium district, the PC display modes with the PickleVerse window frame and a new XP curve. The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1))
+r.p("Table %d lists the items of the release package of PickleVerse 1.0. Source code and documents are versioned in the Git repository https://github.com/Tad-Min/PickleVerse; this package corresponds to the commit main @ 329810f (18/11/2026) for the software and to the documents of 19/11/2026 (%s and Report 7 assembled from them). Since main @ d9200cc (13/11/2026) the commits added the social feed, direct messages and whispers asked for at Review 1, the match detail, the dedicated-server pool, ranked doubles with bot fill, the golden-hour stadium district, the PC display modes with the PickleVerse window frame, a new XP curve and the defect fixes of 18/11/2026 (Report 5, EV-17). The final release will be tagged v1.0 at milestone M08." % (r.tbl_no + 1, DOC_VERSIONS))
 r.table(["No.", "Deliverable Item", "Description"], [
-    ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: 82 tasks, 4 resources, 61 assignments, % complete as of 17/11/2026) and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
+    ["1", "Project Schedule / Tracking", "Doc/Project_report/Report/PickleVerse_Project_Schedule.xml (MS Project XML: %d tasks, %d resources, %d assignments, %% complete as of 17/11/2026)" % SCHEDULE_COUNTS + " and PickleVerse_Project_Tracking.xlsx (sheets WBS, Backlog, Issues, Defects, Q&A)"],
     ["2", "Project Backlog", "Sheet Backlog of the tracking workbook: 26 product and iteration backlog items for Iterations 4 to 6 with priority, owner, estimate and status, including the membership subscription CR-01 (PB-22)"],
     ["3", "Source Codes", "Unity client and dedicated server: My project/ (Unity 6000.6.2f1, 13 runtime assemblies); Web API: src/Backend (ASP.NET Core .NET 10, 4 projects); AI coaching service: src/AiService (Python 3.12, FastAPI); admin web: src/Frontend (React 18, TypeScript, Vite); tests: src/Testing; deployment: deploy/, docker-compose*.yml, .github/workflows/dockerhub.yml"],
     ["4", "Database Script(s)", "src/Database.sql – single script with the schema (59 tables, 88 foreign keys) and seed data (roles, currencies, 15 lessons, 12 techniques, 3 paddles, 17 missions, 10 achievements, 10 ranked bot accounts) executed in one transaction"],
@@ -28,7 +49,7 @@ r.table(["No.", "Deliverable Item", "Description"], [
     ["9", "Slide", "Defense presentation – prepared for milestone M10 (Week 15, 14–20/12/2026)"],
     ["10", "Server images", "Docker Hub repository tadminm/pickelverse with four images per release: api-, ai-, server- (Unity Linux dedicated server) and web-<release>. Since 13/11/2026 the pipeline builds the images that a push changes, publishes them with the tag <commit>-<run>-<attempt> and deploys all four by digest; the four earlier staging releases (08–10/11/2026) were built by hand and tagged <component>-manual-<yyyymmdd-hhmmss>"],
     ["11", "Game client builds", "Windows 64-bit build (PickleVerse.exe, Mono) and Android build (PickleVerse.apk, IL2CPP, ARM64) produced from the Unity project for the release; the scene list and settings are defined in My project/ProjectSettings. Android APKs were built on 12/11/2026 (main @ 5963501) and 14/11/2026 (22690ad), signed with the debug key and never tested on a physical device; a Windows build of 16/11/2026 (source of 1b64424) was used for the display-mode test (Report 5, EV-13), and a Windows build of main @ 96ff8e9 (protocol 20) made on 17/11/2026 and rebuilt on 18/11/2026 for the end-to-end runs (Report 5, EV-15 and EV-16), and Windows builds with the defect fixes of 18/11/2026 (game code of main @ 329810f) for the retest (Report 5, EV-17). The APKs use an older online protocol (18) than the servers (20 since 17/11/2026), so the Android release build has to be made again from main @ 96ff8e9 (Report 1, LI-11)"],
-    ["12", "Design sources", "PlantUML sources and rendered diagrams (Doc/Project_report/Report/diagrams), the editable draw.io file PickleVerse_UseCase_ConceptualERD.drawio and the report build scripts (Doc/Project_report/Report/build)"],
+    ["12", "Design sources", "PlantUML sources and rendered diagrams (Doc/Project_report/Report/diagrams) and the report build scripts (Doc/Project_report/Report/build)"],
 ], widths=[1.0, 3.6, 11.4], size=8.5, first_col_bold=False, caption="Deliverable package of PickleVerse 1.0")
 
 # ================================================================== 2
@@ -59,7 +80,7 @@ r.numbered([
     "In Settings → Security (or Apps → Special access), allow installing apps from the file manager or browser used to open the APK.",
     "Open the APK and select Install. Start PickleVerse from the app drawer; the game runs in landscape mode with touch controls (joystick and shot buttons).",
 ])
-r.p("Note: on 13/11/2026 the Android build has not yet been installed and tested on a physical phone; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10). The APK built on 12/11/2026 still contains the former http:// address and cannot sign in (Report 5, D-21), and the APKs of 12/11 and 14/11/2026 use online protocol 18 while the servers use protocol 20 since 17/11/2026; use an APK built from main @ 96ff8e9 or later. The offline training mode does not need the server.")
+r.p("Note: on 19/11/2026 no Android build has been installed or tested on a physical phone yet; these steps are the standard Android procedure and will be confirmed in test Round 2 (TC-N10). The APKs built on 12/11 and 14/11/2026 must not be distributed: the first still contains the former http:// address and cannot sign in (Report 5, D-21), and both use online protocol 18 while the servers use protocol 20 since 17/11/2026. A new APK has to be built from main @ 329810f or later before the Android version is released. The offline training mode does not need the server.")
 r.h4("2.2.3 Deploy the server (CI/CD pipeline and manual release)")
 r.p("The deployment is automatic: every push to the main branch runs the GitHub Actions workflow \"Build, publish and deploy PickleVerse\" (.github/workflows/dockerhub.yml) with the stages below. **Current status:** the pipeline passes since 13/11/2026; 17 of its 53 runs had passed by 17/11/2026, run 52 deployed main @ 96ff8e9, and the runs of 18/11/2026 deployed the defect fixes (main @ 9557581). Earlier failures came from configuration errors on 05/11/2026, the billing lock of the GitHub account from 06/11 to 11/11, the dedicated-server build on 11–12/11 and deployment steps on 13/11. **Fixed problem:** until 18/11/2026 the deploy job ran only when the FastAPI and admin web checks also ran, so nine passing runs of 13–16/11/2026 did not deploy (Report 5, D-23); since 291542a it depends only on the deployed and publish jobs. After a push, still compare the release on staging with the pushed commit. A push that changes only documents builds and deploys nothing, and a commit whose message contains [skip ci] does not start the workflow at all. If the pipeline is unavailable, the four images can still be built on a developer PC, pushed to Docker Hub with the tag <component>-manual-<yyyymmdd-hhmmss> and started on the host by hand with the same .env file, as was done on 08–10/11/2026.")
 r.numbered([
@@ -113,6 +134,8 @@ r.table(["Workflow", "Purpose", "Main screens", "Owner (BM04)"], [
     ["W03 – Play online and save the result", "Play ranked singles, ranked doubles or a private room with friends on the dedicated servers; the result is saved once", "Online Lobby, Ready Check, Multiplayer Court, History", "Nguyễn Văn Thành Đạt"],
     ["W04 – Review a report and publish a lesson (administrator)", "Handle reports and appeals and publish lessons; also manage users, matches and analytics", "Admin web: Dashboard, Users, Moderation, CMS, Matches, Analytics", "Huỳnh Trung Kiên"],
 ], widths=[4.0, 5.2, 4.4, 2.4], size=8.5, caption="Workflows of the user manual")
+r.p("**Interface language.** The game and the admin web are in Vietnamese only. This guide quotes the labels exactly as they appear on the screen and gives their English meaning in brackets the first time; Table %d lists the interface labels quoted in the reports." % (r.tbl_no + 1))
+r.ui_glossary("Vietnamese interface labels used in this guide")
 r.p("**Controls.** Table %d summarises the default controls. Keys can be changed in Settings → Controls; the size, opacity, left-handed mode and position of the touch controls are set in the same tab. During a match the shot cue under the player shows the keys of the shot being prepared, and the camera keeps the player above the cue (PC) or the touch controls (phone)." % (r.tbl_no + 1))
 r.table(["Action", "PC (keyboard)", "Android (touch)"], [
     ["Move / run", "W, A, S, D / hold Left Shift", "Drag the joystick on the left / hold the CHẠY button on the right"],
@@ -141,7 +164,7 @@ r.figure("32_register_validation.png", "Validation message on the Register scree
 r.figure("30_verify_email.png", "E-mail verification with the six-digit code", width_cm=12)
 r.h4("Step 2 – Sign in and choose the experience level")
 r.numbered([
-    "Enter the e-mail and password and select **ĐĂNG NHẬP**. Forgotten passwords are reset with **Quên mật khẩu** (Figure %d): enter the e-mail, then the code received and a new password." % (r.fig_no + 1),
+    "Enter the e-mail and password and select **ĐĂNG NHẬP**. Forgotten passwords are reset with **Quên mật khẩu**, shown in Figure %d: enter the e-mail, then the code received and a new password." % (r.fig_no + 1),
     "At the first sign-in the game asks \"Bạn đã quen với pickleball chưa?\". Choose **Người mới** to start the tutorial or **Đã thành thạo** to go to the Menu. The choice cannot be changed later.",
 ])
 r.figure("31_forgot_password.png", "Forgot password screen", width_cm=12)
@@ -212,7 +235,7 @@ r.h4("Step 2 – Play ranked doubles or with friends in a private room")
 r.numbered([
     "Ranked doubles: select **ĐẤU ĐÔI 2v2** in the online lobby and **Tìm trận**, alone or after a friend has joined your party. The game fills two teams of two with other searching players; a party always plays on the same team. If four players are not found within 180 seconds, ranked bots take the free seats. The match changes Elo against the average rating of the other team.",
     "Private room: select **Tạo phòng** in Mode Selection and choose 1v1 or 2v2. Share the room code with **SAO CHÉP**, or open the friends column on the right of the lobby and invite a friend who is in the lobby.",
-    "Friends type the code in **Mã phòng** and select **THAM GIA BẰNG MÃ**, or accept the invitation. The host starts the match. Private matches do not change Elo.",
+    "Friends type the code in **Mã phòng** and select **THAM GIA**, or accept the invitation. The host starts the match. Private matches do not change Elo.",
 ])
 r.figure("27_online_lobby.png", "Online lobby – doubles room with the room code and the friends column (layout preview rendered in the Unity Editor with sample friend data)", width_cm=13)
 r.figure("13_social.png", "Friends drawer used to find and invite friends", width_cm=13)
@@ -220,6 +243,7 @@ r.h4("Step 3 – Play, reconnect and see the result")
 r.numbered([
     "Play as in a bot match. If the connection drops, the game reconnects automatically for up to 30 seconds and you continue with the server score.",
     "If you leave or cannot reconnect within 30 seconds, you forfeit: the match is recorded as a loss (\"Thua · Bỏ trận\" in the history), a ranked match changes your Elo as a loss, and you receive no Tokenpad or XP (Report 3, BR-28). A match ends as interrupted only when an administrator stops it or the match server is lost.",
+    "After an online match the outcome is shown with **THOÁT TRẬN** (leave the match); it opens the match summary \"PICKLEVERSE / TỔNG KẾT TRẬN ĐẤU\" with the result, the players, the Elo change with the rating before and after, the current rank, the game scores and the XP. **VỀ PHÒNG CHỜ** returns to the room (private rooms) or the online lobby, and **VỀ TRANG CHỦ** returns to the menu.",
     "At the end the result shows the Elo change for ranked matches. The match appears in **LỊCH SỬ**; from there you can watch the replay or report a player (**Tố cáo**).",
 ])
 r.figure("10_multiplayercourt_editmode.png", "Multiplayer court", width_cm=13)

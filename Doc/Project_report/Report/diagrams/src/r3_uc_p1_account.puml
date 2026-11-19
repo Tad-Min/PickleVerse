@@ -3,7 +3,7 @@
 left to right direction
 actor Visitor
 actor Player
-actor "Email Service" as ES
+rectangle "Email Service\n(Gmail SMTP)" as ES <<actor>>
 Player -up-|> Visitor
 rectangle "P1 Account and Onboarding" {
   usecase "UC-01 Register Account" as UC01

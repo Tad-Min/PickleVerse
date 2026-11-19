@@ -245,7 +245,7 @@ def write(r):
                    "E3 – The player already has a search or an unfinished match: MSG41.", "E4 – Search expired: MSG34."])
 
     fr(r, "FR-15", "Private Rooms and Invitations", "UC-21 Create Private Room, UC-22 Join Room by Code, UC-23 Invite Friend to Room, UC-24 Respond to Room Invitation",
-       "Mode Selection → **Tạo phòng**; Online Lobby → **Mã phòng** + **Tham gia bằng mã**; friend list → invite.",
+       "Mode Selection → **Tạo phòng**; Online Lobby → **Mã phòng** + **Tham gia**; friend list → invite.",
        "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The collapsible friends column of the lobby lists the friends who can be invited; only friends who are in the lobby receive invitations. The host can change teams, remove a guest and start the match. Custom matches are unrated and give no Elo. A doubles room of two players can also be used as a party for ranked doubles (FR-14).",
        shots=[("27_online_lobby.png", "Online lobby – doubles room with the room code and the friends column (layout preview rendered in the Unity Editor with sample friend data)")],
        fields=[["Room code", "Text", "Yes (to join)", "Code of an open room on Photon; wrong code → MSG39"], ["Mode", "Choice", "Yes", "Singles 1v1 or Doubles 2v2"]],
@@ -367,7 +367,7 @@ def write(r):
                ["Replay", "Own match", "No", "A completed replay of a match of the author"],
                ["Comment", "Text", "Yes", "1 to 1,000 characters"]],
        rules="BR-38, BR-40, BR-52 to BR-55.",
-       normal=["The player opens BẢNG TIN; the first 20 visible posts are loaded.", "The player selects Viết bài, writes the text, chooses the audience and optionally attaches a replay (and, in the Editor, a video).",
+       normal=["The player opens BẢNG TIN; the first 20 visible posts are loaded.", "The player selects Viết bài, writes the text, chooses the audience and optionally attaches a replay or, in the Windows build, an MP4 video.",
                "The player selects Đăng bài; the post appears at the top of the feed of the players in its audience.", "Another player likes the post, writes a comment, plays the video or opens the replay."],
        exceptions=["E1 – Empty post, text too long or an invalid audience or exclusion list: MSG66.", "E2 – The video is not MP4 H.264/AAC or longer than 15 minutes: MSG67; larger than 250 MB: MSG68; four uploads are already running: MSG69.",
                    "E3 – Video upload in a Windows or Android build: MSG70.", "E4 – The post was deleted or is no longer visible to the player: MSG76; a video that is playing stops with MSG75.",

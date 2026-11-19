@@ -1,0 +1,38 @@
+@startuml r4_lerd_social
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "FriendRequests" as FriendRequests {
+  * RequestId <<PK>>
+  --
+  * SenderId <<FK>>
+  * ReceiverId <<FK>>
+  * Status
+  * CreatedAt
+  RespondedAt
+}
+entity "Friendships" as Friendships {
+  * UserId1 <<PK, FK>>
+  * UserId2 <<PK, FK>>
+  --
+  * CreatedAt
+}
+entity "BlockedUsers" as BlockedUsers {
+  * UserId <<PK, FK>>
+  * BlockedUserId <<PK, FK>>
+  --
+  * CreatedAt
+}
+entity "Users" as Users {
+  * UserId <<PK>>
+  --
+}
+Users ||--o{ FriendRequests : "SenderId"
+Users ||--o{ FriendRequests : "ReceiverId"
+Users ||--o{ Friendships : "UserId1"
+Users ||--o{ Friendships : "UserId2"
+Users ||--o{ BlockedUsers : "UserId"
+Users ||--o{ BlockedUsers : "BlockedUserId"
+@enduml

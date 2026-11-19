@@ -1,8 +1,8 @@
 """Report 7 - Final Project Report.
 
 Fills the cover, acknowledgement and acronym table of the official template, then assembles Parts I–VI by running
-the generators of Reports 1–6 against this document. Figures and tables are numbered within each part, so the
-cross-references written in each report stay correct.
+the generators of Reports 1–6 against this document. Figures and tables are numbered by part (Figure 3.12 is the
+twelfth figure of Part III); the references written in each report are renumbered the same way.
 """
 import os
 import re
@@ -11,7 +11,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Pt
 
-from report_lib import Report, PROJECT_NAME, add_runs, _set_cell_width
+from report_lib import Report, PROJECT_NAME, AI_USAGE, add_runs, _set_cell_width, prefix_references
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.environ.setdefault("PKV_EDITMODE_RESULTS", os.path.abspath(os.path.join(HERE, "..", "evidence", "editmode_results_20261116_1b64424.json")))
@@ -20,7 +20,7 @@ PARTS = [
     ("gen_r1.py", "I. Project Introduction"),
     ("gen_r2.py", "II. Project Management Plan"),
     ("gen_r3.py", "III. Software Requirement Specification"),
-    ("gen_r4.py", "IV. Software Design Description"),
+    ("gen_r4.py", "IV. Software Design Document"),
     ("gen_r5.py", "V. Software Testing Documentation"),
     ("gen_r6.py", "VI. Release Package & User Guides"),
 ]
@@ -36,7 +36,7 @@ ACRONYMS = [
     ("JWT", "JSON Web Token"), ("Kitchen / NVZ", "Non-volley zone, the area within 2.13 m of the net where volleys are not allowed"),
     ("LI", "Limitation or exclusion (Report 1, §6.2)"), ("NFR", "Non-Functional Requirement (NFR-01 to NFR-12)"), ("OTP", "One-Time Password"),
     ("PB", "Product backlog item"), ("RACI", "Responsibility matrix: Do, Review, Support, Inform"), ("RTT", "Round-Trip Time"),
-    ("S3", "Amazon Simple Storage Service API, used for replays and post videos"), ("SignalR", "ASP.NET Core library for real-time messages over WebSocket, used for lobby whispers"), ("SDD", "Software Design Description"),
+    ("S3", "Amazon Simple Storage Service API, used for replays and post videos"), ("SignalR", "ASP.NET Core library for real-time messages over WebSocket, used for lobby whispers"), ("SDD", "Software Design Document"),
     ("SPMP", "Software Project Management Plan"), ("SRS", "Software Requirement Specification"), ("TC", "Test Case"),
     ("Tokenpad", "In-game currency earned by playing"), ("UAT", "User Acceptance Test"), ("UC", "Use Case (UC-01 to UC-76)"),
     ("UI", "User Interface"), ("W01–W04", "End-to-end review workflows committed in the Review 2 form BM04"),
@@ -45,8 +45,8 @@ ACRONYMS = [
 
 ACK = [
     "We would like to express our sincere gratitude to our supervisor, Mr. Lại Đức Hùng, for his guidance throughout the capstone project. His questions about scope, requirements and evidence shaped the way we planned the work, designed the system and reported our results.",
-    "We thank FPT University and the lecturers of the Software Engineering programme for the knowledge and the learning environment that made this project possible, and the members of the review committees for their comments at each review, which helped us improve both the product and the documents.",
-    "We also acknowledge the open-source communities and tool vendors whose work we built on, in particular Unity, Photon, the .NET, PostgreSQL, Redis, FastAPI and React communities, and the authors of PlantUML and draw.io used for our diagrams.",
+    "We thank FPT University and the lecturers of the Software Engineering programme for the knowledge and the learning environment that made this project possible, and the members of the review committees for their comments at Review 1, which helped us improve both the product and the documents.",
+    "We also acknowledge the open-source communities and tool vendors whose work we built on, in particular Unity, Photon, the .NET, PostgreSQL, Redis, FastAPI and React communities, and the authors of PlantUML, used for all our diagrams.",
     "Finally, we thank our families and friends for their patience and support during the many evenings of development and testing.",
 ]
 
@@ -112,7 +112,7 @@ for row in info.rows:
     elif label == "Ext Supervisor":
         set_cell(row.cells[-1], "None", center=False)
     elif label == "Capstone Project code":
-        set_cell(row.cells[-1], "PKV", center=False)
+        set_cell(row.cells[-1], "GFA26SE111 (abbreviation PKV)", center=False)
 for p in doc.paragraphs[:20]:
     if "Hanoi" in p.text:
         for run in p.runs[1:]:
@@ -161,18 +161,29 @@ for el in children[start:]:
     if el is not sect:
         body.remove(el)
 
-note = r.p("**About this document.** This final report consolidates the six capstone reports of the project in their latest versions: Part I – Project Introduction (Report 1), Part II – Project Management Plan (Report 2), Part III – Software Requirement Specification (Report 3), Part IV – Software Design Description (Report 4), Part V – Software Testing Documentation (Report 5) and Part VI – Release Package & User Guides (Report 6). A reference of the form \"Report n\" points to Part n of this document. Figures and tables are numbered separately within each part. The test workbooks, the project tracking workbook and the schedule are delivered as separate files (Part VI, §1).")
+note = r.p("**About this document.** This final report consolidates the six capstone reports of the project in their latest versions: Part I – Project Introduction (Report 1), Part II – Project Management Plan (Report 2), Part III – Software Requirement Specification (Report 3), Part IV – Software Design Document (Report 4), Part V – Software Testing Documentation (Report 5) and Part VI – Release Package & User Guides (Report 6). A reference of the form \"Report n\" points to Part n of this document. Figures and tables are numbered by part: Figure 3.12 is the twelfth figure of Part III, and Table 5.4 the fourth table of Part V. The test workbooks, the project tracking workbook and the schedule are delivered as separate files (Part VI, §1).")
 acr._tbl.addnext(note._element)  # keep the note on the acronym page, before the template's page break
 
 # ---------------------------------------------------------------- parts
-for script, title in PARTS:
+for part_no, (script, title) in enumerate(PARTS, 1):
     r.fig_no = 0
     r.tbl_no = 0
+    r.num_prefix = "%d." % part_no
+    before = len(body)
     src = open(os.path.join(HERE, script), encoding="utf-8").read()
     src, n = re.subn(r"^r = Report\(.*\)\s*$", "r = PART", src, count=1, flags=re.M)
     assert n == 1, script
     namespace = {"__name__": "report7_part", "__file__": os.path.join(HERE, script), "PART": Part(r, title)}
     exec(compile(src, script, "exec"), namespace)
+    prefix_references(list(body)[before - 1:-1], part_no)
+
+# ---------------------------------------------------------------- appendix
+r.page_break()
+r.h1("Appendix – AI Usage Declaration")
+r.num_prefix, r.tbl_no, r.fig_no = "A.", 0, 0
+r.p("As required by the capstone guideline, the AI tools used in the project are declared below; the same declaration is given in Part II, §6.3. Every output was reviewed by the member who used the tool before it was committed, generated code had to pass the automated tests, and the figures quoted in this report were taken from real runs (Part V, §5.1).")
+r.table(["Tool · version", "Purpose", "Scope", "Member", "How the output was checked"],
+        [list(row) for row in AI_USAGE], widths=[2.8, 3.6, 4.0, 1.8, 3.8], size=8.5, caption="AI Usage Declaration")
 
 out = r.save("Report7_Final Project Report.docx", "Report 7 – Final Project Report")
 print(out, "sections", len(r.doc.sections))

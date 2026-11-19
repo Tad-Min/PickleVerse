@@ -2,33 +2,57 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Host
 actor Friend
-participant "MultiplayerApp" as App
-participant "RoomInvitationsController" as C
-participant "RoomInvitationService" as S
-database "Redis" as R
-Host -> App : create private room
-App -> C : POST /api/Game/lobby/presence (room)
-Host -> App : open invite list
-App -> C : GET /api/Game/lobby/friends
-C -> S : List(friends, presence)
-S -> R : read presence leases (20 s)
+boundary ":MultiplayerApp" as App
+control ":RoomInvitationsController" as C
+control ":RoomInvitationService" as S
+entity ":LobbyRepository" as R
+entity ":GameRepository" as G
+Host -> App : CreateCustomAsync()
+activate App
+App -> C : Presence(request)
+activate C
+C -> S : Touch(player, presence)
+S -> R : RegisterRoom(presence, now, ttl)
+deactivate C
+App -> C : Friends()
+activate C
+C -> S : List(player)
+S -> G : InvitableFriends(player)
+C --> App : friends in the lobby
+deactivate C
 Host -> App : invite friend
-App -> C : POST /api/Game/lobby/invitations
+App -> C : Send(request)
+activate C
 C -> S : Send(host, friend, room)
-alt friend not in lobby, blocked or room full
-  S --> C : 400 / 409 with reason
-else valid
-  S -> R : store invitation (TTL 60 s)
+activate S
+S -> G : CanInvite(host, friend)
+alt friend not in the lobby, blocked or room full
+  S --> C : error with reason
+else else
+  S -> R : StoreInvitation(host, friend, stored, now, 60 s)
+  S --> C : invitation id
 end
-loop every ~3 s
-  Friend -> C : POST /api/Game/lobby/presence
+deactivate S
+C --> App : ApiResponse
+deactivate C
+deactivate App
+loop every 3 s while in the lobby
+  Friend -> C : Presence(request)
+  activate C
+  C -> S : Touch(friend, presence)
+  S -> R : InvitationIds(friend, now)
   C --> Friend : pending invitation
+  deactivate C
 end
-Friend -> C : POST /lobby/invitations/{id}/respond (accept)
-C -> S : Respond(accept)
-S --> Friend : room session and region
-Friend -> App : join Photon room
+Friend -> C : Respond(id, accept)
+activate C
+C -> S : Respond(friend, id, accept)
+S -> R : Respond(friend, id, "ACCEPTED", now)
+C --> Friend : room session and region
+deactivate C
 @enduml

@@ -11,12 +11,12 @@ repeat
   |Game client|
   :Bot decides movement and shot;
   :Apply singles rules to the rally;
-  if (Fault?) then (yes)
+  if () then ([fault])
     :Show quick rule tip;
+  else ([else])
   endif
   :Commit point;
-repeat while (Match won by a player?) is (no)
-->yes;
+repeat while () is ([no player has won two games]) not ([else])
 |Web API|
 :Save bot result and rewards;
 |Game client|

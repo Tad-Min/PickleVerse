@@ -2,36 +2,58 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
-participant "Unity client" as Cl
-participant "Web API\n(DedicatedServerService)" as API
-database "Redis\n(lease slot)" as R
-participant "DedicatedWorker\n(game server)" as W
-database "PostgreSQL" as DB
-W -> API : POST /api/Server/poll (wait for a job)
-Cl -> API : POST /api/Game/dedicated/ticket
-API -> R : reserve slot for match
-alt slot busy
-  API --> Cl : busy (ranked waits, custom fails)
-else slot reserved
-  API --> Cl : starting
+boundary ":MultiplayerApp" as Cl
+control ":DedicatedController" as DC
+control ":DedicatedWorkerController" as WC
+control ":DedicatedServerService" as S
+entity ":DedicatedLeaseRepository" as L
+control ":DedicatedWorker" as W
+control ":OnlineGameService" as G
+W -> WC : Poll(request)
+activate WC
+WC -> S : Poll(worker)
+activate S
+S -> L : Poll(worker, seconds)
+S --> WC : DedicatedAllocation (match, roster, lease)
+deactivate S
+WC --> W : allocation
+deactivate WC
+activate W
+W -> W : StartDedicatedAsync(session, region, roster, port, admission)
+W -> WC : Ready(request)
+loop allocation not ready
+  Cl -> DC : Ticket(matchId)
+  activate DC
+  DC -> S : Ticket(player, match)
+  DC --> Cl : starting
+  deactivate DC
 end
-API --> W : allocation (match, roster, lease)
-W -> W : StartDedicatedAsync (Fusion Server)
-W -> API : POST /api/Server/ready
-loop every 500 ms until ready
-  Cl -> API : ticket
+Cl -> DC : Ticket(matchId)
+activate DC
+DC --> Cl : ready + HMAC connection token
+deactivate DC
+Cl -> W : JoinDedicatedAsync(session, region, player, token, roster)
+W -> WC : AuthorizeAdmission(request)
+loop match running
+  W -> WC : Heartbeat(request)
+  activate WC
+  WC -> S : Renew(lease)
+  WC --> W : HeartbeatReply (pending stop command, if any)
+  deactivate WC
 end
-API --> Cl : ready + HMAC connection token
-Cl -> W : join session with token (UDP 3669)
-W -> W : DedicatedAdmission.Verify(token)
-W -> API : POST /api/Server/admission
-loop during play
-  W -> API : POST /api/Server/heartbeat (score, connections)
-  API --> W : pending stop command, if any
-end
-W -> API : POST /api/Server/{lease}/telemetry and /replay
-W -> API : POST /api/Server/complete (result)
-API -> DB : save GameMatches, MatchScore, ratingledger, rewards (one transaction)
-API -> R : release lease
+W -> WC : Telemetry(lease, batch)
+W -> WC : Complete(request)
+activate WC
+WC -> S : Complete(lease, result)
+activate S
+S -> G : CompleteDedicated(match, result)
+S -> L : Release(lease, worker)
+S --> WC : saved once
+deactivate S
+WC --> W : ok
+deactivate WC
+deactivate W
 @enduml

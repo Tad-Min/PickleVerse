@@ -2,30 +2,55 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Visitor
-participant "AccountScreen" as UI
-participant "AuthController" as C
-participant "AuthService" as S
-database "PostgreSQL" as DB
-participant "PasswordRecoveryMailQueue" as Q
-participant "Gmail SMTP" as M
-Visitor -> UI : request password reset (email)
-UI -> C : POST /api/Auth/forgot-password
+boundary ":AccountScreen" as UI
+control ":AccountService" as AS
+control ":AuthController" as C
+control ":AuthService" as S
+entity ":IUserRepository" as UR
+control ":PasswordRecoveryMailQueue" as Q
+control ":SmtpEmailSender" as M
+Visitor -> UI : RequestPasswordReset()
+activate UI
+UI -> AS : ForgotPasswordAsync(email)
+activate AS
+AS -> C : ForgotPassword(request)
+activate C
 C -> S : ForgotPasswordAsync(request)
-S -> DB : upsert PasswordResetChallenges (HMAC code, 10 min)
-S -> Q : enqueue reset email
-S --> C : same reply for known and unknown email
-Q -> M : send code
-Visitor -> UI : code and new password
-UI -> C : POST /api/Auth/reset-password
-C -> S : ResetPasswordAsync(request)
-alt valid code, < 5 failed attempts
-  S -> DB : update password hash (BCrypt)
-  S -> DB : revoke refresh tokens, AuthVersion + 1
-  S --> C : success
-else invalid or expired code
-  S --> C : 400 invalid reset code
+activate S
+S -> UR : GetByEmailAsync(email)
+opt account exists
+  S -> UR : SavePasswordResetAsync(challenge)
+  S -> Q : TryEnqueue(email, code)
 end
-C --> UI : result
+S --> C : same reply for known and unknown email
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : code sent
+deactivate AS
+Q ->> M : SendPasswordResetCodeAsync(email, code)
+Visitor -> UI : RequestPasswordReset()
+UI -> AS : ResetPasswordAsync(email, code, password)
+activate AS
+AS -> C : ResetPassword(request)
+activate C
+C -> S : ResetPasswordAsync(request)
+activate S
+S -> UR : GetPasswordResetAsync(user)
+alt code valid and fewer than 5 failed attempts
+  S -> UR : RevokeAllRefreshTokensAsync(user)
+  S --> C : success (new BCrypt hash, AuthVersion + 1)
+else else
+  S --> C : error invalid_reset_code
+end
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : result
+deactivate AS
+deactivate UI
 @enduml

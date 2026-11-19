@@ -2,23 +2,40 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Administrator as Admin
-participant "Matches page" as W
-participant "AdminModerationController" as C
-participant "ModerationService" as S
-database "PostgreSQL" as DB
-participant "DedicatedWorker" as DW
-Admin -> W : Stop match with reason
-W -> C : POST /api/Admin/matches/{id}/stop
+boundary ":MatchesPage" as W
+control ":AdminModerationController" as C
+control ":ModerationService" as S
+entity ":GameRepository" as G
+control ":DedicatedWorkerController" as WC
+control ":DedicatedWorker" as DW
+Admin -> W : stop match with a reason
+activate W
+W -> C : Stop(match, request)
+activate C
 C -> S : StopMatch(actor, match, reason)
-S -> DB : insert DedicatedOperations (durable command)
-S --> C : operation (not acknowledged)
-DW -> C : heartbeat
-C --> DW : stop command
-DW -> DW : end match, outcome INTERRUPTED
-DW -> C : POST /dedicated/operations/ack (lease)
-C -> DB : AcknowledgedAt = now, no Elo entry
-W -> C : GET /api/Admin/matches/{id}/stop
-C --> W : acknowledged
+activate S
+S -> G : RequestStop(match, reason)
+S --> C : DedicatedOperationRecord (not acknowledged)
+deactivate S
+deactivate C
+DW -> WC : Heartbeat(request)
+activate WC
+WC --> DW : stop command
+deactivate WC
+activate DW
+DW -> DW : end match as INTERRUPTED
+DW -> WC : Acknowledge(request)
+activate WC
+WC -> G : AcknowledgeOperation(operation)
+deactivate WC
+deactivate DW
+W -> C : StopOperation(match)
+activate C
+C --> W : acknowledged (no Elo change)
+deactivate C
+deactivate W
 @enduml

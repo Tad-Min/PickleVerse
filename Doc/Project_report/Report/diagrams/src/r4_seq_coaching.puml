@@ -2,28 +2,44 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
-participant "Unity client or\nDedicatedWorker" as Src
-participant "AiCoachingController" as C
-participant "HybridCoachingService" as S
-database "PostgreSQL" as DB
-participant "HybridAiWorker" as W
-participant "AI Coaching Service\n(FastAPI)" as AI
-Src -> C : POST /api/AiCoaching/telemetry (batch, parts)
+boundary ":ProgressionRuntime" as Src
+control ":AiCoachingController" as C
+control ":HybridCoachingService" as S
+entity ":GameRepository" as G
+control ":HybridAiWorker" as W
+control ":AI coaching service\n(FastAPI)" as AI
+Src -> C : Telemetry(batch)
+activate C
 C -> S : Ingest(player, batch)
-S -> DB : store parts (idempotent by batch and part)
-S -> DB : create aianalysisjobs (pending) when all parts arrive
-C --> Src : ACK
-W -> DB : claim job (lease 60 s)
-W -> S : BuildRequest(job)
-W -> AI : POST /v1/analyze-session (X-AI-Key)
-AI -> AI : rule findings, summary, recommendations, gated tier
-AI --> W : analysis result
-alt success
-  W -> DB : save aicoachingsessions, job completed
-else failure
-  W -> DB : retry with backoff (max 10 attempts)
+activate S
+S -> G : CreateTelemetry(session)
+S -> G : AddTelemetryPart(batch, part)
+opt all parts of the session received
+  S -> G : QueueAnalysis(session)
 end
-Src -> C : GET /api/AiCoaching/summary?sessionId=...
-C --> Src : summary and drill recommendation
+S --> C : TelemetryReceipt
+deactivate S
+C --> Src : ACK
+deactivate C
+W -> G : ClaimAnalysis(worker, 60 s)
+activate W
+W -> S : BuildRequest(job)
+W -> AI : analyze_session(request)
+activate AI
+AI --> W : findings, summary, recommendations, gated tier
+deactivate AI
+alt analysis returned
+  W -> G : CompleteAnalysis(job, result)
+else else
+  W -> G : RetryAnalysis(job, backoff)
+end
+deactivate W
+Src -> C : Summary(sessionId)
+activate C
+C -> S : Summary(player, session)
+C --> Src : summary and recommended drill
+deactivate C
 @enduml

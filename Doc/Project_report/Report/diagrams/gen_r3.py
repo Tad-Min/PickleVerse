@@ -11,9 +11,9 @@ skinparam rectangle {
 actor "Player\n(PC / Android)" as Player
 actor "Administrator" as Admin
 rectangle "<b>PickleVerse System</b>\n\nUnity game client, Web API,\nadmin web, AI coaching service,\ndedicated game server,\nPostgreSQL and Redis" as SYS #F5F9FC
-rectangle "Photon Cloud\n(Fusion session and relay)" as PH
-rectangle "Gmail SMTP\n(email delivery)" as SMTP
-rectangle "S3-compatible\nobject storage" as S3
+rectangle "Photon Cloud\n(Fusion session and relay)" as PH <<external system>>
+rectangle "Gmail SMTP\n(email delivery)" as SMTP <<external system>>
+rectangle "S3-compatible\nobject storage" as S3 <<external system>>
 
 Player --> SYS : account data, game input,\ntraining runs, reports, appeals
 SYS --> Player : game state, rewards, rankings,\ncoaching tips, replays
@@ -32,37 +32,71 @@ actor Visitor
 actor Player
 actor "Restricted Player" as RP
 actor Administrator as Admin
-actor "Email Service" as ES
-actor "Photon Cloud" as PC
+rectangle "Email Service\n(Gmail SMTP)" as ES <<actor>>
+rectangle "Photon Cloud" as PC <<actor>>
 Player -up-|> Visitor
 RP -up-|> Visitor
 rectangle "PickleVerse System" {
-  usecase "P1 Account and Onboarding\n(UC-01 to UC-09)" as P1
-  usecase "P2 Learning and Coaching\n(UC-10 to UC-18)" as P2
-  usecase "P3 Online Match\n(UC-19 to UC-27)" as P3
-  usecase "P4 Progress, Economy and Social\n(UC-28 to UC-44, UC-69 to UC-76)" as P4
-  usecase "P5 Account Restriction\n(UC-45 to UC-46)" as P5
-  usecase "P6 Admin: Users and Moderation\n(UC-47 to UC-55)" as P6
-  usecase "P7 Admin: Content\n(UC-56 to UC-61)" as P7
-  usecase "P8 Admin: Monitoring and Analytics\n(UC-62 to UC-68)" as P8
+  package "P1 Account and Onboarding (UC-01 to UC-09)" {
+    usecase "UC-01 Register Account" as U01
+    usecase "UC-03 Sign In" as U03
+  }
+  package "P2 Learning and Coaching (UC-10 to UC-18)" {
+    usecase "UC-12 Practise Drill" as U12
+    usecase "UC-16 Play Bot Match" as U16
+    usecase "UC-17 View Coaching Summary" as U17
+  }
+  package "P3 Online Match (UC-19 to UC-27)" {
+    usecase "UC-19 Find Online Match" as U19
+    usecase "UC-21 Create Private Room" as U21
+    usecase "UC-25 Play Online Match" as U25
+  }
+  package "P4 Progress, Economy and Social (UC-28 to UC-44, UC-69 to UC-76)" {
+    usecase "UC-28 View Match History" as U28
+    usecase "UC-42 Purchase Cosmetic" as U42
+    usecase "UC-69 Browse Social Feed" as U69
+  }
+  package "P5 Account Restriction (UC-45, UC-46)" {
+    usecase "UC-46 Submit Appeal" as U46
+  }
+  package "P6 Admin: Users and Moderation (UC-47 to UC-55)" {
+    usecase "UC-51 Apply Sanction" as U51
+    usecase "UC-54 Review Player Report" as U54
+  }
+  package "P7 Admin: Content (UC-56 to UC-61)" {
+    usecase "UC-57 Publish Lesson" as U57
+  }
+  package "P8 Admin: Monitoring and Analytics (UC-62 to UC-68)" {
+    usecase "UC-62 Monitor Live Matches" as U62
+    usecase "UC-66 View Analytics Report" as U66
+  }
 }
-Visitor -- P1
-Player -- P2
-Player -- P3
-Player -- P4
-RP -- P5
-Admin -- P6
-Admin -- P7
-Admin -- P8
-P1 -- ES
-P3 -- PC
+Visitor -- U01
+Visitor -- U03
+Player -- U12
+Player -- U16
+Player -- U17
+Player -- U19
+Player -- U21
+Player -- U25
+Player -- U28
+Player -- U42
+Player -- U69
+RP -- U46
+Admin -- U51
+Admin -- U54
+Admin -- U57
+Admin -- U62
+Admin -- U66
+U01 -- ES
+U25 -- PC
 """
 
 D["r3_uc_p1_account"] = r"""
 left to right direction
 actor Visitor
 actor Player
-actor "Email Service" as ES
+rectangle "Email Service\n(Gmail SMTP)" as ES <<actor>>
 Player -up-|> Visitor
 rectangle "P1 Account and Onboarding" {
   usecase "UC-01 Register Account" as UC01
@@ -118,7 +152,7 @@ UC18 .> UC17 : <<extend>>
 D["r3_uc_p3_online"] = r"""
 left to right direction
 actor Player
-actor "Photon Cloud" as PC
+rectangle "Photon Cloud" as PC <<actor>>
 rectangle "P3 Online Match" {
   usecase "UC-19 Find Online Match" as UC19
   usecase "UC-20 Confirm Match Readiness" as UC20
@@ -787,6 +821,11 @@ PLAYER_PROFILE -1- SENDS
 SENDS -N- MESSAGE
 @endchen
 """
+
+from erd_notation import chen_to_crowsfoot  # noqa: E402
+
+for _k in [k for k in D if k.startswith("r3_cerd_")]:
+    D[_k] = chen_to_crowsfoot(D[_k])
 
 if __name__ == "__main__":
     print(write_all(D))

@@ -1,47 +1,37 @@
-@startchen r3_cerd_match
+@startuml r3_cerd_match
 !include _style.iuml
-entity PLAYER_PROFILE {
-  PlayerId <<key>>
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
 }
-entity MATCH {
-  MatchId <<key>>
+entity "MATCH" as MATCH {
+  * MatchId
+  --
   Mode
   Status
   AuthorityMode
 }
-entity MATCH_GAME {
-  GameNumber <<key>>
+entity "MATCH_GAME" as MATCH_GAME {
+  * GameNumber
+  --
   TeamAScore
   TeamBScore
 }
-entity RATING_CHANGE {
+entity "RATING_CHANGE" as RATING_CHANGE {
+  --
   BeforeElo
   AfterElo
   Delta
 }
-entity REPLAY {
+entity "REPLAY" as REPLAY {
+  --
   ObjectKey
 }
-relationship PARTICIPATES {
-  Team
-  Outcome
-}
-relationship CONSISTS_OF {
-}
-relationship CHANGES_RATING {
-}
-relationship RECORDED_AS {
-}
-relationship RECEIVES {
-}
-PLAYER_PROFILE -M- PARTICIPATES
-PARTICIPATES -N- MATCH
-MATCH -1- CONSISTS_OF
-CONSISTS_OF -N- MATCH_GAME
-MATCH -1- CHANGES_RATING
-CHANGES_RATING -N- RATING_CHANGE
-PLAYER_PROFILE -1- RECEIVES
-RECEIVES -N- RATING_CHANGE
-MATCH -1- RECORDED_AS
-RECORDED_AS -1- REPLAY
-@endchen
+PLAYER_PROFILE }o--o{ MATCH : "participates (Team, Outcome)"
+MATCH ||--o{ MATCH_GAME : "consists of"
+MATCH ||--o{ RATING_CHANGE : "changes rating"
+PLAYER_PROFILE ||--o{ RATING_CHANGE : "receives"
+MATCH ||--|| REPLAY : "recorded as"
+@enduml

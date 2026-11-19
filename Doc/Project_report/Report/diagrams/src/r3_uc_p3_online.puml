@@ -2,7 +2,7 @@
 !include _style.iuml
 left to right direction
 actor Player
-actor "Photon Cloud" as PC
+rectangle "Photon Cloud" as PC <<actor>>
 rectangle "P3 Online Match" {
   usecase "UC-19 Find Online Match" as UC19
   usecase "UC-20 Confirm Match Readiness" as UC20

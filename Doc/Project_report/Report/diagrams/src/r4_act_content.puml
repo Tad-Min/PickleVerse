@@ -5,9 +5,9 @@ start
 :Open lesson in CMS;
 :Edit draft (config, reward, prerequisites);
 |Web API|
-if (Expected version matches?) then (yes)
+if () then ([expected version matches])
   :Save draft and audit;
-else (no)
+else ([else])
   :Return 409 conflict;
   |Administrator|
   :Reload draft;
@@ -16,9 +16,9 @@ endif
 |Administrator|
 :Publish lesson;
 |Web API|
-if (Prerequisites published?) then (yes)
+if () then ([all prerequisites published])
   :Create new catalog snapshot;
-else (no)
+else ([else])
   :Reject publish;
   stop
 endif

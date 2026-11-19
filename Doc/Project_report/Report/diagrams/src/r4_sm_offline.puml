@@ -1,14 +1,14 @@
 @startuml r4_sm_offline
 !include _style.iuml
-[*] --> SavedOnDevice : finish drill offline
-SavedOnDevice --> Uploading : network available
-Uploading --> APPLIED : first valid sync
-Uploading --> DUPLICATE : same attempt already applied
-Uploading --> REJECTED : stale epoch or invalid data
-Uploading --> SavedOnDevice : request failed (retry)
-APPLIED --> Cleared : receipt accepted
-DUPLICATE --> Cleared : receipt accepted
-REJECTED --> KeptWithReason : shown in sync details
+[*] --> SavedOnDevice : save [drill finished offline]
+SavedOnDevice --> Uploading : syncOffline [network available]
+Uploading --> APPLIED : syncResult [first valid attempt] / applyOnce()
+Uploading --> DUPLICATE : syncResult [attempt already applied]
+Uploading --> REJECTED : syncResult [stale epoch or invalid data]
+Uploading --> SavedOnDevice : syncFailed / retryLater()
+APPLIED --> Cleared : accept(result)
+DUPLICATE --> Cleared : accept(result)
+REJECTED --> KeptWithReason : accept(result) / showReason()
 Cleared --> [*]
 KeptWithReason --> [*]
 @enduml

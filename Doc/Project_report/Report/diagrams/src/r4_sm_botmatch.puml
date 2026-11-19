@@ -1,16 +1,18 @@
 @startuml r4_sm_botmatch
 !include _style.iuml
 [*] --> Intro
-Intro --> Cinematic : scene loaded
-Cinematic --> PreServe : intro ends or skipped
-PreServe --> Rally : legal serve
-PreServe --> Settling : serve fault or 10 s timeout
-Rally --> Settling : fault, out or double bounce
-Settling --> BetweenPoints : point committed
-Settling --> BetweenGames : game won
-Settling --> MatchOver : second game won
-BetweenPoints --> PreServe
-BetweenGames --> PreServe : ends changed
-MatchOver --> Cinematic : play again
-MatchOver --> [*] : leave to Mode Selection
+Intro --> Cinematic : sceneLoaded
+Cinematic --> PreServe : introEnded
+Cinematic --> PreServe : skip
+PreServe --> Rally : serve [legal serve]
+PreServe --> Settling : serve [service fault]
+PreServe --> Settling : serveTimer [10 s passed]
+Rally --> Settling : ballDead [fault, out or double bounce]
+Settling --> BetweenPoints : commitRally [game not won]
+Settling --> BetweenGames : commitRally [game won and match not won]
+Settling --> MatchOver : commitRally [second game won] / saveResult()
+BetweenPoints --> PreServe : nextPoint
+BetweenGames --> PreServe : nextGame / changeEnds()
+MatchOver --> Cinematic : playAgain
+MatchOver --> [*] : leave
 @enduml

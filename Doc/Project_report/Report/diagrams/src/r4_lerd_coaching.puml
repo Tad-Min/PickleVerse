@@ -1,0 +1,86 @@
+@startuml r4_lerd_coaching
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "aitelemetrysessions" as aitelemetrysessions {
+  * batchid <<PK>>
+  --
+  * playerid <<FK>>
+  * sessionid
+  * sessiontype
+  * partcount
+  * metadata
+  * createdat
+}
+entity "aitelemetryparts" as aitelemetryparts {
+  * batchid <<PK, FK>>
+  * partindex <<PK>>
+  --
+  * fingerprint
+  * shots
+}
+entity "aianalysisjobs" as aianalysisjobs {
+  * batchid <<PK, FK>>
+  --
+  * state
+  * attempts
+  * availableat
+  leasetoken
+  leaseuntil
+  request
+  * ruleversion
+  lasterror
+  * updatedat
+}
+entity "aicoachingsessions" as aicoachingsessions {
+  * batchid <<PK>>
+  --
+  * playerid <<FK>>
+  * sessionid
+  * sessiontype
+  * result
+  * createdat
+}
+entity "aicoachingprofiles" as aicoachingprofiles {
+  * playerid <<PK, FK>>
+  --
+  * batchid
+  * result
+  * updatedat
+}
+entity "ExpertReviews" as ExpertReviews {
+  * ReviewId <<PK>>
+  --
+  * BatchId <<FK>>
+  * ReviewerId <<FK>>
+  * Version
+  * Data
+  * CreatedAt
+}
+entity "CoachingDemoSessions" as CoachingDemoSessions {
+  * SessionId <<PK>>
+  --
+  * PlayerCode
+  * Tier
+  * Split
+  * GameVersion
+  * Shots
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+}
+entity "Users" as Users {
+  * UserId <<PK>>
+  --
+}
+PlayerProfiles ||--o{ aitelemetrysessions : "playerid"
+aitelemetrysessions ||--o{ aitelemetryparts : "batchid"
+aitelemetrysessions ||--o| aianalysisjobs : "batchid"
+PlayerProfiles ||--o{ aicoachingsessions : "playerid"
+PlayerProfiles ||--o| aicoachingprofiles : "playerid"
+aitelemetrysessions ||--o{ ExpertReviews : "BatchId"
+Users ||--o{ ExpertReviews : "ReviewerId"
+@enduml

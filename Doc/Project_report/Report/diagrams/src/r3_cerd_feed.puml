@@ -1,78 +1,56 @@
-@startchen r3_cerd_feed
+@startuml r3_cerd_feed
 !include _style.iuml
-entity PLAYER_PROFILE {
-  PlayerId <<key>>
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+  --
   PlayerName
 }
-entity POST {
-  PostId <<key>>
+entity "POST" as POST {
+  * PostId
+  --
   Body
   Audience
   CreatedAt
   EditedAt
 }
-entity VIDEO {
-  MediaId <<key>>
+entity "VIDEO" as VIDEO {
+  * MediaId
+  --
   Bytes
   Ready
 }
-entity COMMENT {
-  CommentId <<key>>
+entity "COMMENT" as COMMENT {
+  * CommentId
+  --
   Body
   CreatedAt
 }
-entity MATCH {
-  MatchId <<key>>
+entity "MATCH" as MATCH {
+  * MatchId
 }
-entity CONVERSATION {
-  ConversationId <<key>>
+entity "CONVERSATION" as CONVERSATION {
+  * ConversationId
+  --
   UpdatedAt
 }
-entity MESSAGE {
-  MessageId <<key>>
+entity "MESSAGE" as MESSAGE {
+  * MessageId
+  --
   ClientMessageId
   Body
   CreatedAt
 }
-relationship WRITES {
-}
-relationship ATTACHES {
-}
-relationship SHARES_REPLAY {
-}
-relationship LIKES {
-}
-relationship EXCLUDES {
-}
-relationship ON_POST {
-}
-relationship COMMENTS {
-}
-relationship MEMBER_OF {
-  ReadThrough
-}
-relationship CONTAINS {
-}
-relationship SENDS {
-}
-PLAYER_PROFILE -1- WRITES
-WRITES -N- POST
-POST -1- ATTACHES
-ATTACHES -1- VIDEO
-POST -N- SHARES_REPLAY
-SHARES_REPLAY -1- MATCH
-PLAYER_PROFILE -M- LIKES
-LIKES -N- POST
-POST -M- EXCLUDES
-EXCLUDES -N- PLAYER_PROFILE
-POST -1- ON_POST
-ON_POST -N- COMMENT
-PLAYER_PROFILE -1- COMMENTS
-COMMENTS -N- COMMENT
-PLAYER_PROFILE -M- MEMBER_OF
-MEMBER_OF -N- CONVERSATION
-CONVERSATION -1- CONTAINS
-CONTAINS -N- MESSAGE
-PLAYER_PROFILE -1- SENDS
-SENDS -N- MESSAGE
-@endchen
+PLAYER_PROFILE ||--o{ POST : "writes"
+POST ||--|| VIDEO : "attaches"
+POST }o--|| MATCH : "shares replay"
+PLAYER_PROFILE }o--o{ POST : "likes"
+POST }o--o{ PLAYER_PROFILE : "excludes"
+POST ||--o{ COMMENT : "on post"
+PLAYER_PROFILE ||--o{ COMMENT : "comments"
+PLAYER_PROFILE }o--o{ CONVERSATION : "member of (ReadThrough)"
+CONVERSATION ||--o{ MESSAGE : "contains"
+PLAYER_PROFILE ||--o{ MESSAGE : "sends"
+@enduml

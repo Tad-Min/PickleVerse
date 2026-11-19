@@ -1,54 +1,38 @@
-@startchen r3_cerd_moderation
+@startuml r3_cerd_moderation
 !include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
 skinparam ranksep 18
 skinparam nodesep 22
-entity ACCOUNT {
-  AccountId <<key>>
+entity "ACCOUNT" as ACCOUNT {
+  * AccountId
 }
-entity MATCH {
-  MatchId <<key>>
+entity "MATCH" as MATCH {
+  * MatchId
 }
-entity PLAYER_REPORT {
+entity "PLAYER_REPORT" as PLAYER_REPORT {
+  --
   Reason
   Status
 }
-entity SANCTION {
-  SanctionId <<key>>
+entity "SANCTION" as SANCTION {
+  * SanctionId
+  --
   Restriction
   ExpiresAt
 }
-entity APPEAL {
-  AppealId <<key>>
+entity "APPEAL" as APPEAL {
+  * AppealId
+  --
   Statement
   Status
 }
-relationship FILES {
-}
-relationship CONCERNS {
-}
-relationship OCCURS_IN {
-}
-relationship RESTRICTS {
-}
-relationship CONTESTS {
-}
-relationship REVIEWS {
-  DecisionReason
-}
-relationship ISSUES {
-}
-ACCOUNT -1- FILES
-FILES -N- PLAYER_REPORT
-PLAYER_REPORT -N- CONCERNS
-CONCERNS -1- ACCOUNT
-PLAYER_REPORT -N- OCCURS_IN
-OCCURS_IN -1- MATCH
-SANCTION -N- RESTRICTS
-RESTRICTS -1- ACCOUNT
-APPEAL -1- CONTESTS
-CONTESTS -1- SANCTION
-ACCOUNT -1- REVIEWS
-REVIEWS -N- PLAYER_REPORT
-ACCOUNT -1- ISSUES
-ISSUES -N- SANCTION
-@endchen
+ACCOUNT ||--o{ PLAYER_REPORT : "files"
+PLAYER_REPORT }o--|| ACCOUNT : "concerns"
+PLAYER_REPORT }o--|| MATCH : "occurs in"
+SANCTION }o--|| ACCOUNT : "restricts"
+APPEAL ||--|| SANCTION : "contests"
+ACCOUNT ||--o{ PLAYER_REPORT : "reviews (DecisionReason)"
+ACCOUNT ||--o{ SANCTION : "issues"
+@enduml

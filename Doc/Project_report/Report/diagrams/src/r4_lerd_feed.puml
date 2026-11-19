@@ -1,0 +1,92 @@
+@startuml r4_lerd_feed
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "SocialMedia" as SocialMedia {
+  * MediaId <<PK>>
+  --
+  * OwnerId <<FK>>
+  * Bytes
+  * CreatedAt
+  * Ready
+  * Deleted
+}
+entity "SocialPosts" as SocialPosts {
+  * PostId <<PK>>
+  --
+  * AuthorId <<FK>>
+  * Body
+  * Audience
+  MediaId <<FK>>
+  ReplayMatchId <<FK>>
+  * CreatedAt
+  EditedAt
+}
+entity "SocialPostExclusions" as SocialPostExclusions {
+  * PostId <<PK, FK>>
+  * PlayerId <<PK, FK>>
+  --
+}
+entity "SocialPostLikes" as SocialPostLikes {
+  * PostId <<PK, FK>>
+  * PlayerId <<PK, FK>>
+  --
+}
+entity "SocialPostComments" as SocialPostComments {
+  * CommentId <<PK>>
+  --
+  * PostId <<FK>>
+  * AuthorId <<FK>>
+  * Body
+  * CreatedAt
+}
+entity "SocialConversations" as SocialConversations {
+  * ConversationId <<PK>>
+  --
+  * FirstPlayerId <<FK>>
+  * SecondPlayerId <<FK>>
+  * UpdatedAt
+}
+entity "SocialConversationMembers" as SocialConversationMembers {
+  * ConversationId <<PK, FK>>
+  * PlayerId <<PK, FK>>
+  --
+  * ReadThrough
+}
+entity "SocialMessages" as SocialMessages {
+  * MessageId <<PK>>
+  --
+  * ConversationId <<FK>>
+  * SenderId <<FK>>
+  * ClientMessageId
+  * Body
+  * CreatedAt
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+}
+entity "GameMatches" as GameMatches {
+  * MatchId <<PK>>
+  --
+}
+PlayerProfiles ||--o{ SocialMedia : "OwnerId"
+PlayerProfiles ||--o{ SocialPosts : "AuthorId"
+SocialMedia |o--o{ SocialPosts : "MediaId"
+GameMatches |o--o{ SocialPosts : "ReplayMatchId"
+SocialPosts ||--o{ SocialPostExclusions : "PostId"
+PlayerProfiles ||--o{ SocialPostExclusions : "PlayerId"
+SocialPosts ||--o{ SocialPostLikes : "PostId"
+PlayerProfiles ||--o{ SocialPostLikes : "PlayerId"
+SocialPosts ||--o{ SocialPostComments : "PostId"
+PlayerProfiles ||--o{ SocialPostComments : "AuthorId"
+PlayerProfiles ||--o{ SocialConversations : "FirstPlayerId"
+PlayerProfiles ||--o{ SocialConversations : "SecondPlayerId"
+SocialConversations ||--o{ SocialConversationMembers : "ConversationId"
+PlayerProfiles ||--o{ SocialConversationMembers : "PlayerId"
+SocialConversations ||--o{ SocialMessages : "ConversationId"
+PlayerProfiles ||--o{ SocialMessages : "SenderId"
+SocialConversationMembers ||--o{ SocialMessages : "ConversationId, SenderId"
+@enduml

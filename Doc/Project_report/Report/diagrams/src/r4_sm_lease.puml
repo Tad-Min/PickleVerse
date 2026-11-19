@@ -1,17 +1,19 @@
 @startuml r4_sm_lease
 !include _style.iuml
 state "waiting (WAITING_CAPACITY)" as waiting
-[*] --> reserved : offer [idle container and below MaxConcurrentMatches]
-[*] --> waiting : offer [all containers busy]
-waiting --> reserved : container free [first in the waiting queue]
-waiting --> [*] : waiting entry expires (15 s)
-reserved --> queued : all humans accepted (StartOnline)
-reserved --> Released : offer cancelled or worker lost
-queued --> starting : worker claims job
-starting --> ready : worker heartbeat ready
-starting --> Released : lease expired
-ready --> finishing : final result received
-ready --> Released : lease expired or stop acknowledged
-finishing --> Released : result saved
+[*] --> reserved : offerOnline [idle container and below MaxConcurrentMatches]
+[*] --> waiting : offerOnline [all containers busy]
+waiting --> reserved : containerFreed [first in the waiting queue]
+waiting --> [*] : waitExpired [15 s passed]
+reserved --> queued : startOnline [all humans accepted]
+reserved --> Released : cancelOffer
+reserved --> Released : workerLost
+queued --> starting : poll / claimJob()
+starting --> ready : ready
+starting --> Released : leaseExpired
+ready --> finishing : complete(result)
+ready --> Released : leaseExpired
+ready --> Released : acknowledgeStop
+finishing --> Released : resultSaved / release()
 Released --> [*]
 @enduml

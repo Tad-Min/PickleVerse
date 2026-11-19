@@ -63,8 +63,9 @@ def parse(path=SQL_PATH):
     return tables
 
 
-def erd(tables, focus, refs, title=None):
-    """Crow's-foot logical ERD. focus: tables with full columns; refs: tables shown with keys only."""
+def erd(tables, focus, refs, title=None, physical=True):
+    """Crow's-foot ERD. focus: tables with full columns; refs: tables shown with keys only.
+    physical=True gives the physical model (PostgreSQL types); False gives the logical model (no DBMS types)."""
     lines = ["hide circle", "hide empty members", "skinparam linetype ortho", "left to right direction"]
     shown = list(focus) + [r for r in refs if r not in focus]
     for name in shown:
@@ -75,7 +76,7 @@ def erd(tables, focus, refs, title=None):
         for c in t["columns"]:
             if c["name"].lower() in pkset:
                 tag = " <<PK, FK>>" if c["name"].lower() in fkcols else " <<PK>>"
-                lines.append("  * %s : %s%s" % (c["name"], c["type"], tag))
+                lines.append(("  * %s : %s%s" % (c["name"], c["type"], tag)) if physical else ("  * %s%s" % (c["name"], tag)))
         lines.append("  --")
         if name in focus:
             for c in t["columns"]:
@@ -83,7 +84,7 @@ def erd(tables, focus, refs, title=None):
                     continue
                 tag = " <<FK>>" if c["name"].lower() in fkcols else ""
                 star = "* " if c["notnull"] else ""
-                lines.append("  %s%s : %s%s" % (star, c["name"], c["type"], tag))
+                lines.append(("  %s%s : %s%s" % (star, c["name"], c["type"], tag)) if physical else ("  %s%s%s" % (star, c["name"], tag)))
         lines.append("}")
     seen = set()
     for name in shown:

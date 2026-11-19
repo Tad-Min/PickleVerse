@@ -1,9 +1,12 @@
 @startuml r4_sm_account
 !include _style.iuml
-[*] --> ACTIVE : account created
-ACTIVE --> SUSPENDED : Admin applies suspension\n[expiry date set]
-ACTIVE --> BANNED : Admin applies ban
-SUSPENDED --> BANNED : Admin applies ban
-SUSPENDED --> ACTIVE : expiry reached /\nsanction revoked /\nappeal accepted
-BANNED --> ACTIVE : sanction revoked /\nappeal accepted
+[*] --> ACTIVE : register
+ACTIVE --> SUSPENDED : applySanction [type = suspension] / revokeSessions()
+ACTIVE --> BANNED : applySanction [type = ban] / revokeSessions()
+SUSPENDED --> BANNED : applySanction [type = ban]
+SUSPENDED --> ACTIVE : expire [suspension end reached]
+SUSPENDED --> ACTIVE : revokeSanction
+SUSPENDED --> ACTIVE : reviewAppeal [accepted]
+BANNED --> ACTIVE : revokeSanction
+BANNED --> ACTIVE : reviewAppeal [accepted]
 @enduml

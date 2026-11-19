@@ -631,22 +631,76 @@ GameRepository --> PickleVerseContext
 D["r4_cls_admin"] = r"""
 skinparam classAttributeIconSize 0
 package "Admin Web (React)" {
-  class AuthContext
-  class "CMS page" as CmsPage
-  class "Users page" as UsersPage
-  class "Moderation page" as ModPage
-  class "Matches page" as MatchesPage
-  class "Analytics page" as AnalyticsPage
+  class AuthContext {
+    + login(email, password) : Promise
+    + logout() : void
+  }
+  class CmsPage <<page>> {
+    + saveDraft(id, draft, version) : Promise
+    + publish(id) : Promise
+    + unpublish(id) : Promise
+  }
+  class UsersPage <<page>> {
+    + search(query) : Promise
+    + previewReset(player, groups) : Promise
+    + resetProgress(player, request) : Promise
+  }
+  class ModerationPage <<page>> {
+    + reviewReport(request) : Promise
+    + reviewAppeal(id, request) : Promise
+  }
+  class MatchesPage <<page>> {
+    + stopMatch(match, reason) : Promise
+    + stopStatus(match) : Promise
+  }
+  class AnalyticsPage <<page>> {
+    + load() : Promise
+  }
   class "Axios client\n(ApiResponse unwrap)" as Axios
 }
 package "Web API" {
-  class ContentController <<ApiController>>
-  class ProgressResetController <<ApiController>>
-  class AdminController <<ApiController>>
-  class AdminModerationController <<ApiController>>
-  class LiveMatchesController <<ApiController>>
-  class AnalyticsController <<ApiController>>
-  class ExpertReviewController <<ApiController>>
+  class ContentController <<ApiController>> {
+    + List() : IActionResult
+    + Get(id) : IActionResult
+    + Save(id, draft) : IActionResult
+    + Publish(id) : IActionResult
+    + Unpublish(id) : IActionResult
+  }
+  class ProgressResetController <<ApiController>> {
+    + Preview(player, request) : IActionResult
+    + Reset(player, request) : IActionResult
+  }
+  class AdminController <<ApiController>> {
+    + GetUsers(query) : IActionResult
+    + AssignRole(request) : IActionResult
+    + BanUser(request) : IActionResult
+    + UnbanUser(request) : IActionResult
+    + ManualVerifyUserEmail(user) : IActionResult
+    + GetReports(query) : IActionResult
+    + ReviewReport(request) : IActionResult
+  }
+  class AdminModerationController <<ApiController>> {
+    + Sanctions(player) : IActionResult
+    + Appeals(query) : IActionResult
+    + Review(id, request) : IActionResult
+    + Stop(match, request) : IActionResult
+    + StopOperation(match) : IActionResult
+  }
+  class LiveMatchesController <<ApiController>> {
+    + Live() : IActionResult
+  }
+  class AnalyticsController <<ApiController>> {
+    + Summary() : IActionResult
+    + Errors() : IActionResult
+    + Report(from, to) : IActionResult
+  }
+  class ExpertReviewController <<ApiController>> {
+    + Sessions(query) : IActionResult
+    + Evidence(session) : IActionResult
+    + Review(batch, request) : IActionResult
+    + TierDataset() : IActionResult
+    + CoachingDataset() : IActionResult
+  }
   interface IContentService {
     + Lessons() : Task<List<LessonSummary>>
     + Get(id) : Task<LessonDraft>
@@ -679,7 +733,7 @@ package "Web API" {
 }
 CmsPage --> Axios
 UsersPage --> Axios
-ModPage --> Axios
+ModerationPage --> Axios
 MatchesPage --> Axios
 AnalyticsPage --> Axios
 AuthContext --> Axios
@@ -699,822 +753,9 @@ ExpertReviewController --> IExpertReviewService
 """
 
 # ---------------------------------------------------------------- sequence diagrams
-SEQ_HEAD = "autonumber\nskinparam responseMessageBelowArrow true\n"
-
-D["r4_seq_register"] = SEQ_HEAD + r"""
-actor Visitor
-participant "AccountScreen" as UI
-participant "AuthController" as C
-participant "AuthService" as S
-database "PostgreSQL" as DB
-participant "SmtpEmailSender" as M
-Visitor -> UI : enter email, password, confirmation
-UI -> C : POST /api/Auth/register
-C -> S : RegisterAsync(request)
-S -> S : validate password (6-128) and confirmation
-alt confirmation mismatch
-  S --> C : 400 password_confirmation_mismatch
-else email already registered
-  S -> DB : find user by email
-  S --> C : 400 email_exists
-else valid
-  S -> DB : insert Users (Status=ACTIVE) and PlayerProfiles
-  S -> DB : insert VerificationEmail (HMAC code, expires in 10 min)
-  S -> M : send 6-digit code
-  S --> C : AuthResponse (verification required)
-end
-C --> UI : ApiResponse
-UI --> Visitor : show Email Code screen
-Visitor -> UI : enter code
-UI -> C : POST /api/Auth/verify-email
-C -> S : VerifyEmailAsync(request)
-alt code valid and attempts < 5
-  S -> DB : mark verified
-  S --> C : true
-else invalid or expired
-  S --> C : 400 invalid code
-end
-C --> UI : result
-"""
-
-D["r4_seq_login"] = SEQ_HEAD + r"""
-actor Visitor
-participant "AccountScreen" as UI
-participant "SceneLoading" as SL
-participant "AuthController" as C
-participant "AuthService" as S
-database "PostgreSQL" as DB
-participant "GameController" as G
-Visitor -> UI : email and password
-UI -> SL : LoadPrepared(Menu)
-SL -> C : POST /api/Auth/login
-C -> S : LoginAsync(request)
-S -> DB : read user, role, verification
-alt wrong email or password
-  S --> C : 401 invalid_credentials
-  C --> UI : error, stay on Login
-else email not verified
-  S --> C : 401 email_not_verified
-  C --> UI : open Email Code screen
-else account restricted
-  S -> DB : store refresh token (SHA-256)
-  S --> C : tokens, scope = appeals
-  C --> UI : open Decisions and Appeals
-else active account
-  S -> DB : store refresh token (SHA-256)
-  S --> C : access token (2 h), refresh token (14 d), scope = game
-  C --> SL : AuthResponse
-  SL -> G : GET /api/Game/state
-  G --> SL : GameSnapshot (profile, catalog, inventory)
-  SL --> Visitor : reveal Menu after warm-up
-end
-"""
-
-D["r4_seq_reset_pwd"] = SEQ_HEAD + r"""
-actor Visitor
-participant "AccountScreen" as UI
-participant "AuthController" as C
-participant "AuthService" as S
-database "PostgreSQL" as DB
-participant "PasswordRecoveryMailQueue" as Q
-participant "Gmail SMTP" as M
-Visitor -> UI : request password reset (email)
-UI -> C : POST /api/Auth/forgot-password
-C -> S : ForgotPasswordAsync(request)
-S -> DB : upsert PasswordResetChallenges (HMAC code, 10 min)
-S -> Q : enqueue reset email
-S --> C : same reply for known and unknown email
-Q -> M : send code
-Visitor -> UI : code and new password
-UI -> C : POST /api/Auth/reset-password
-C -> S : ResetPasswordAsync(request)
-alt valid code, < 5 failed attempts
-  S -> DB : update password hash (BCrypt)
-  S -> DB : revoke refresh tokens, AuthVersion + 1
-  S --> C : success
-else invalid or expired code
-  S --> C : 400 invalid reset code
-end
-C --> UI : result
-"""
-
-D["r4_seq_training_online"] = SEQ_HEAD + r"""
-actor Player
-participant "TrainingDirector" as TD
-participant "ProgressionRuntime" as PR
-participant "GameTrainingController" as C
-participant "OnlineGameService" as S
-database "PostgreSQL" as DB
-Player -> TD : choose lesson and press Start
-TD -> PR : StartTrainingAsync(lesson)
-PR -> C : POST /api/Game/training/start
-C -> S : StartTraining(player, request)
-S -> DB : check published lesson, prerequisites, level
-alt locked or unpublished
-  S --> C : 400 lesson not available
-  C --> TD : show error
-else allowed
-  S -> DB : insert TrainingSessions (IsCurrent = true)
-  S --> C : GameSnapshot with active attempt
-  C --> TD : attempt
-  loop each trial
-    Player -> TD : shot input
-    TD -> TD : contact, rule and target check
-    TD -> PR : SaveTrainingAsync(attempt, false)
-    PR -> C : POST /api/Game/training/checkpoint
-  end
-  TD -> PR : SaveTrainingAsync(attempt, true)
-  PR -> C : POST /api/Game/training/complete
-  C -> S : UpdateTraining(completed)
-  S -> S : recompute stars (BR-11), ignore client rewards
-  S -> DB : update PlayerLessonDrills, grant first-pass reward once
-  S --> C : GameSnapshot
-  C --> TD : result (stars, reward)
-end
-"""
-
-D["r4_seq_offline_sync"] = SEQ_HEAD + r"""
-actor Player
-participant "TrainingDirector" as TD
-participant "ProgressionRuntime" as PR
-participant "OfflineTrainingStore" as OS
-participant "GameTrainingController" as C
-participant "OnlineGameService" as S
-database "PostgreSQL" as DB
-Player -> PR : Train offline (cached profile)
-PR -> OS : Project() confirmed snapshot
-Player -> TD : play cached drill
-TD -> OS : Save(attempt, completed = true)
-OS -> OS : persist JSON on device (atomic replace)
-... later, network available ...
-PR -> OS : UploadBatch() (max 50)
-PR -> C : POST /api/Game/training/sync
-C -> S : SyncTraining(player, request)
-loop each attempt
-  S -> DB : check owner, attempt id, catalog version, progress epoch
-  alt new and valid
-    S -> DB : apply result and reward once
-    S --> C : receipt APPLIED
-  else already applied
-    S --> C : receipt DUPLICATE
-  else stale epoch or invalid
-    S --> C : receipt REJECTED (reason)
-  end
-end
-C --> PR : TrainingSyncResult
-PR -> OS : Accept(result) clears APPLIED and DUPLICATE items
-"""
-
-D["r4_seq_bot_match"] = SEQ_HEAD + r"""
-actor Player
-participant "ModeSelectionMenu" as MS
-participant "BotMatch" as BM
-participant "BhTreeBot / LocalBot" as Bot
-participant "SinglesRules" as R
-participant "ProgressionRuntime" as PR
-participant "GameMatchesController" as C
-Player -> MS : choose difficulty, time of day, venue
-MS -> BM : load BotMatch scene
-BM -> PR : StartBotAsync()
-PR -> C : POST /api/Game/match/bot/start
-C --> PR : match id
-BM -> BM : intro cinematic (skippable)
-loop each rally until a player wins 2 games
-  Player -> BM : movement and shot keys
-  BM -> Bot : Step(dt)
-  Bot --> BM : movement and shot request
-  BM -> R : Serve / Hit / Bounce
-  R --> BM : Fault or continue
-  BM -> R : CommitRally()
-end
-BM -> PR : FinishBotAsync(result)
-PR -> C : POST /api/Game/match/bot/complete
-C --> PR : snapshot with rewards
-BM --> Player : result screen and coaching button
-"""
-
-D["r4_seq_ranked"] = SEQ_HEAD + r"""
-actor Player
-participant "MultiplayerApp" as App
-participant "GameMatchesController" as C
-participant "OnlineGameService\n(RankedSearch)" as S
-database "Redis" as R
-participant "Photon Cloud" as P
-Player -> App : Find match (1v1, or 2v2 with the party)
-App -> C : POST /api/Game/ranked/search (Mode, Members)
-C -> S : BeginRankedSearch
-S -> R : enqueue ticket (party, region, protocol, Elo)
-loop poll every few seconds
-  App -> C : POST /api/Game/ranked/poll
-  C -> S : PollRankedSearch
-  S -> R : try to fill two sides with compatible tickets
-end
-alt Singles: opponent inside the Elo window
-  S --> App : MATCHED (session, region, roster)
-else Singles: no opponent within 180 s
-  App -> C : POST /api/Game/ranked/bot
-  C -> S : AssignRankedBot
-  S --> App : BOT (virtual ranked account)
-else Doubles: parties and solo players fill 2 + 2 seats
-  S --> App : MATCHED (ranked 2v2 roster)
-else Doubles: no full roster after 180 s (protocol >= 20)
-  S -> R : fill the free seats with ranked bots\n(Elo from the average of the humans)
-  S --> App : MATCHED (2v2 roster with bots)
-end
-App -> P : start or join Photon match session
-App -> C : POST /api/Game/match/online/offer
-alt every game-server container busy
-  C --> App : phase WAITING_CAPACITY (offer repeated)
-else container reserved
-  C --> App : ticket with ready deadline (10 s)
-end
-Player -> App : Accept
-alt all required humans accept
-  App -> C : POST /api/Game/match/online/start
-  C --> App : authorityMode = dedicated
-else someone declines or deadline passes
-  App --> Player : offer closed, search again
-end
-"""
-
-D["r4_seq_dedicated"] = SEQ_HEAD + r"""
-participant "Unity client" as Cl
-participant "Web API\n(DedicatedServerService)" as API
-database "Redis\n(lease slot)" as R
-participant "DedicatedWorker\n(game server)" as W
-database "PostgreSQL" as DB
-W -> API : POST /api/Server/poll (wait for a job)
-Cl -> API : POST /api/Game/dedicated/ticket
-API -> R : reserve slot for match
-alt slot busy
-  API --> Cl : busy (ranked waits, custom fails)
-else slot reserved
-  API --> Cl : starting
-end
-API --> W : allocation (match, roster, lease)
-W -> W : StartDedicatedAsync (Fusion Server)
-W -> API : POST /api/Server/ready
-loop every 500 ms until ready
-  Cl -> API : ticket
-end
-API --> Cl : ready + HMAC connection token
-Cl -> W : join session with token (UDP 3669)
-W -> W : DedicatedAdmission.Verify(token)
-W -> API : POST /api/Server/admission
-loop during play
-  W -> API : POST /api/Server/heartbeat (score, connections)
-  API --> W : pending stop command, if any
-end
-W -> API : POST /api/Server/{lease}/telemetry and /replay
-W -> API : POST /api/Server/complete (result)
-API -> DB : save GameMatches, MatchScore, ratingledger, rewards (one transaction)
-API -> R : release lease
-"""
-
-D["r4_seq_coaching"] = SEQ_HEAD + r"""
-participant "Unity client or\nDedicatedWorker" as Src
-participant "AiCoachingController" as C
-participant "HybridCoachingService" as S
-database "PostgreSQL" as DB
-participant "HybridAiWorker" as W
-participant "AI Coaching Service\n(FastAPI)" as AI
-Src -> C : POST /api/AiCoaching/telemetry (batch, parts)
-C -> S : Ingest(player, batch)
-S -> DB : store parts (idempotent by batch and part)
-S -> DB : create aianalysisjobs (pending) when all parts arrive
-C --> Src : ACK
-W -> DB : claim job (lease 60 s)
-W -> S : BuildRequest(job)
-W -> AI : POST /v1/analyze-session (X-AI-Key)
-AI -> AI : rule findings, summary, recommendations, gated tier
-AI --> W : analysis result
-alt success
-  W -> DB : save aicoachingsessions, job completed
-else failure
-  W -> DB : retry with backoff (max 10 attempts)
-end
-Src -> C : GET /api/AiCoaching/summary?sessionId=...
-C --> Src : summary and drill recommendation
-"""
-
-D["r4_seq_purchase"] = SEQ_HEAD + r"""
-actor Player
-participant "ShopScreen" as UI
-participant "ProgressionRuntime" as PR
-participant "GameController" as C
-participant "OnlineGameService" as S
-database "PostgreSQL" as DB
-Player -> UI : select item and currency
-UI -> PR : CommandAsync("purchase")
-PR -> C : POST /api/Game/purchase (requestId)
-C -> S : Purchase(player, request)
-S -> DB : check GameCommands for requestId
-alt request already processed
-  S --> C : saved snapshot
-else new request
-  S -> DB : lock PlayerCurrencies
-  alt already owned
-    S --> C : 400 already owned
-  else balance too low
-    S --> C : 400 insufficient TOKENPAD / ELITE TOKEN
-  else valid
-    S -> DB : debit balance, insert CurrencyTransactions
-    S -> DB : insert PlayerCosmetics, save GameCommands
-    S --> C : updated snapshot
-  end
-end
-C --> UI : new balance and inventory
-"""
-
-D["r4_seq_invite"] = SEQ_HEAD + r"""
-actor Host
-actor Friend
-participant "MultiplayerApp" as App
-participant "RoomInvitationsController" as C
-participant "RoomInvitationService" as S
-database "Redis" as R
-Host -> App : create private room
-App -> C : POST /api/Game/lobby/presence (room)
-Host -> App : open invite list
-App -> C : GET /api/Game/lobby/friends
-C -> S : List(friends, presence)
-S -> R : read presence leases (20 s)
-Host -> App : invite friend
-App -> C : POST /api/Game/lobby/invitations
-C -> S : Send(host, friend, room)
-alt friend not in lobby, blocked or room full
-  S --> C : 400 / 409 with reason
-else valid
-  S -> R : store invitation (TTL 60 s)
-end
-loop every ~3 s
-  Friend -> C : POST /api/Game/lobby/presence
-  C --> Friend : pending invitation
-end
-Friend -> C : POST /lobby/invitations/{id}/respond (accept)
-C -> S : Respond(accept)
-S --> Friend : room session and region
-Friend -> App : join Photon room
-"""
-
-D["r4_seq_publish"] = SEQ_HEAD + r"""
-actor Administrator as Admin
-participant "CMS page" as W
-participant "ContentController" as C
-participant "ContentService" as S
-database "PostgreSQL" as DB
-participant "GameCatalogService" as G
-Admin -> W : edit lesson draft
-W -> C : PUT /api/Admin/cms/lessons/{id} (draft, expectedVersion)
-C -> S : Save(actor, id, draft, version)
-alt version changed
-  S --> C : 409 reload before saving
-else valid
-  S -> DB : update DraftConfig, ContentVersion + 1, AdminAudits
-  S --> C : saved draft
-end
-Admin -> W : Publish
-W -> C : POST /api/Admin/cms/lessons/{id}/publish
-C -> S : Publish(actor, id, true)
-S -> DB : check prerequisites published
-S -> DB : PublishStatus = PUBLISHED, insert ContentCatalogs snapshot
-S --> C : published lesson
-note over G : Next GET /api/Game/catalog returns\nthe new catalog version to game clients
-"""
-
-D["r4_seq_moderation"] = SEQ_HEAD + r"""
-actor Player
-actor "Restricted Player" as RP
-actor Administrator as Admin
-participant "Web API" as API
-participant "ModerationService" as S
-database "PostgreSQL" as DB
-Player -> API : POST /api/Matches/report (match, target, reason)
-API -> DB : insert ReportPlayerInMatch (PENDING)
-Admin -> API : POST /api/Admin/reports/review (ACCEPTED, sanction)
-API -> S : ReviewReport(actor, request)
-S -> DB : update report, insert UserSanctions, AdminAudits (one transaction)
-S -> DB : Users.Status = SUSPENDED or BANNED, revoke sessions
-RP -> API : POST /api/Auth/login
-API --> RP : session with scope = appeals
-RP -> API : GET /api/Moderation/decisions
-RP -> API : POST /api/Moderation/appeals (statement)
-API -> DB : insert SanctionAppeals (PENDING)
-Admin -> API : POST /api/Admin/appeals/{id}/review (ACCEPTED or DECLINED)
-API -> S : ReviewAppeal(actor, id, request)
-alt accepted
-  S -> DB : revoke sanction, Users.Status = ACTIVE
-else declined
-  S -> DB : keep sanction, store decision reason
-end
-"""
-
-D["r4_seq_stop"] = SEQ_HEAD + r"""
-actor Administrator as Admin
-participant "Matches page" as W
-participant "AdminModerationController" as C
-participant "ModerationService" as S
-database "PostgreSQL" as DB
-participant "DedicatedWorker" as DW
-Admin -> W : Stop match with reason
-W -> C : POST /api/Admin/matches/{id}/stop
-C -> S : StopMatch(actor, match, reason)
-S -> DB : insert DedicatedOperations (durable command)
-S --> C : operation (not acknowledged)
-DW -> C : heartbeat
-C --> DW : stop command
-DW -> DW : end match, outcome INTERRUPTED
-DW -> C : POST /dedicated/operations/ack (lease)
-C -> DB : AcknowledgedAt = now, no Elo entry
-W -> C : GET /api/Admin/matches/{id}/stop
-C --> W : acknowledged
-"""
-
-D["r4_seq_reset"] = SEQ_HEAD + r"""
-actor Administrator as Admin
-participant "Progress Reset dialog" as W
-participant "ProgressResetController" as C
-participant "ProgressResetService" as S
-database "PostgreSQL" as DB
-Admin -> W : choose groups (LEARNING, RANKING, MISSIONS, ECONOMY)
-W -> C : POST .../progress-reset/preview
-C -> S : Preview(player, groups)
-S -> DB : read current values and profile Revision
-S --> W : impact preview + revision
-Admin -> W : confirm with reason
-W -> C : POST .../progress-reset (requestId, revision)
-C -> S : Execute(actor, player, request)
-alt revision changed
-  S --> C : 409 preview again
-else valid
-  S -> DB : reset selected groups, bump epochs, AdminAudits
-  S --> C : receipt (same receipt on retry)
-end
-"""
 
 # ---------------------------------------------------------------- activity diagrams
-D["r4_act_w01"] = r"""
-|Player|
-start
-:Register and verify email;
-:Sign in;
-|Game client|
-if (First sign-in?) then (yes)
-  :Show experience choice;
-  |Player|
-  if (Beginner?) then (yes)
-    |Game client|
-    :Open Tutorial;
-    |Player|
-    :Complete tutorial steps;
-  else (no)
-  endif
-else (no)
-endif
-|Player|
-:Select unlocked drill;
-|Game client|
-if (Network available?) then (yes)
-  |Web API|
-  :Check lesson is published and unlocked;
-  :Create training attempt;
-else (no)
-  |Game client|
-  :Start attempt from cached catalog;
-endif
-|Player|
-:Play all trials;
-|Game client|
-:Evaluate contact, rules and target;
-if (Online?) then (yes)
-  |Web API|
-  :Recompute stars and grant reward once;
-else (no)
-  |Game client|
-  :Save completed run on device;
-  :Upload run after reconnect;
-  |Web API|
-  :Validate epoch and apply once;
-endif
-|Game client|
-:Show stars, reward and tips;
-stop
-"""
-
-D["r4_act_w02"] = r"""
-|Player|
-start
-:Choose difficulty, time of day and venue;
-|Game client|
-:Load Bot Match and play intro;
-repeat
-  |Player|
-  :Move and select shot;
-  |Game client|
-  :Bot decides movement and shot;
-  :Apply singles rules to the rally;
-  if (Fault?) then (yes)
-    :Show quick rule tip;
-  endif
-  :Commit point;
-repeat while (Match won by a player?) is (no)
-->yes;
-|Web API|
-:Save bot result and rewards;
-|Game client|
-:Upload session telemetry;
-|AI coaching service|
-:Analyse session with rules;
-:Return summary and drill recommendation;
-|Player|
-:Read coaching summary;
-stop
-"""
-
-D["r4_act_w03"] = r"""
-|Player|
-start
-if (Private room?) then (yes)
-  :Create room and invite friend;
-elseif (Ranked doubles?) then (yes)
-  :Search alone or with a party of two;
-  |Web API|
-  if (Two sides of two humans within 180 s?) then (yes)
-    :Build ranked 2v2 roster;
-  else (no)
-    :Fill free seats with ranked bots;
-  endif
-else (ranked singles)
-  |Player|
-  :Find ranked match;
-  |Web API|
-  if (Opponent found within 180 s?) then (yes)
-    :Pair players by Elo;
-  else (no)
-    :Assign ranked bot;
-  endif
-endif
-|Player|
-:Accept ready check (10 s);
-|Web API|
-if (All required humans accepted?) then (yes)
-  :Create match record (PLAYING);
-  :Reserve a free game-server container\nand issue tickets;
-else (no)
-  :Close offer;
-  stop
-endif
-|Dedicated server|
-:Verify ticket and admit players;
-:Simulate rallies authoritatively;
-if (Stopped or lease lost?) then (yes)
-  :End match as INTERRUPTED;
-else (no)
-  :Send final result;
-endif
-|Web API|
-:Save scores, Elo and rewards once;
-|Player|
-:View result and history;
-stop
-"""
-
-D["r4_act_w04"] = r"""
-|Player|
-start
-:Report a player from match history;
-|Web API|
-:Validate reporter and target;
-:Store report as PENDING;
-|Administrator|
-:Review evidence and replay;
-if (Report accepted?) then (yes)
-  :Apply ban or suspension with reason;
-  |Web API|
-  :Restrict account and revoke sessions;
-  |Restricted Player|
-  :Sign in and read decision;
-  if (Submit appeal?) then (yes)
-    :Write appeal statement;
-    |Administrator|
-    :Review appeal;
-    if (Appeal accepted?) then (yes)
-      |Web API|
-      :Revoke sanction;
-    else (no)
-      |Web API|
-      :Keep sanction and record reason;
-    endif
-  else (no)
-  endif
-else (no)
-  |Web API|
-  :Close report as DECLINED;
-endif
-stop
-"""
-
-D["r4_act_content"] = r"""
-|Administrator|
-start
-:Open lesson in CMS;
-:Edit draft (config, reward, prerequisites);
-|Web API|
-if (Expected version matches?) then (yes)
-  :Save draft and audit;
-else (no)
-  :Return 409 conflict;
-  |Administrator|
-  :Reload draft;
-  stop
-endif
-|Administrator|
-:Publish lesson;
-|Web API|
-if (Prerequisites published?) then (yes)
-  :Create new catalog snapshot;
-else (no)
-  :Reject publish;
-  stop
-endif
-|Game client|
-:Load new catalog version;
-:Show lesson to eligible players;
-stop
-"""
-
 # ---------------------------------------------------------------- state machines
-D["r4_sm_email"] = r"""
-[*] --> Unverified : register
-Unverified --> Unverified : invalid code [attempts < 5]
-Unverified --> Unverified : resend code [cooldown 60 s passed]
-Unverified --> Verified : valid code [not expired]
-Unverified --> Verified : Admin verifies manually
-Verified --> [*]
-"""
-
-D["r4_sm_account"] = r"""
-[*] --> ACTIVE : account created
-ACTIVE --> SUSPENDED : Admin applies suspension\n[expiry date set]
-ACTIVE --> BANNED : Admin applies ban
-SUSPENDED --> BANNED : Admin applies ban
-SUSPENDED --> ACTIVE : expiry reached /\nsanction revoked /\nappeal accepted
-BANNED --> ACTIVE : sanction revoked /\nappeal accepted
-"""
-
-D["r4_sm_training"] = r"""
-[*] --> Active : start [lesson unlocked and published]
-Active --> Active : checkpoint after trial
-Active --> Abandoned : new attempt started
-Active --> Completed : last trial played
-state Completed {
-  [*] --> Passed : successes >= required
-  [*] --> Failed : successes < required
-}
-Completed --> [*]
-Abandoned --> [*]
-"""
-
-D["r4_sm_offline"] = r"""
-[*] --> SavedOnDevice : finish drill offline
-SavedOnDevice --> Uploading : network available
-Uploading --> APPLIED : first valid sync
-Uploading --> DUPLICATE : same attempt already applied
-Uploading --> REJECTED : stale epoch or invalid data
-Uploading --> SavedOnDevice : request failed (retry)
-APPLIED --> Cleared : receipt accepted
-DUPLICATE --> Cleared : receipt accepted
-REJECTED --> KeptWithReason : shown in sync details
-Cleared --> [*]
-KeptWithReason --> [*]
-"""
-
-D["r4_sm_botmatch"] = r"""
-[*] --> Intro
-Intro --> Cinematic : scene loaded
-Cinematic --> PreServe : intro ends or skipped
-PreServe --> Rally : legal serve
-PreServe --> Settling : serve fault or 10 s timeout
-Rally --> Settling : fault, out or double bounce
-Settling --> BetweenPoints : point committed
-Settling --> BetweenGames : game won
-Settling --> MatchOver : second game won
-BetweenPoints --> PreServe
-BetweenGames --> PreServe : ends changed
-MatchOver --> Cinematic : play again
-MatchOver --> [*] : leave to Mode Selection
-"""
-
-D["r4_sm_search"] = r"""
-[*] --> SEARCHING : search started
-SEARCHING --> MATCHED : compatible player found
-SEARCHING --> BOT : singles: no player within 180 s
-SEARCHING --> MATCHED : doubles: free seats filled\nwith bots after 180 s
-SEARCHING --> CANCELLED : player cancels
-SEARCHING --> TIMEOUT : ticket expired
-MATCHED --> [*]
-BOT --> [*]
-CANCELLED --> [*]
-TIMEOUT --> [*]
-"""
-
-D["r4_sm_room"] = r"""
-state "assigning-bot" as assigning_bot
-[*] --> searching : match session created
-searching --> assigning_bot : bot fallback started
-assigning_bot --> searching : bot assignment failed
-assigning_bot --> ready : bot seat filled
-searching --> ready : all seats connected
-ready --> loading : all humans accepted
-ready --> rejected : decline or deadline passed
-loading --> playing : court loaded
-loading --> rejected : player left
-playing --> interrupted : authority lost
-playing --> closed : match finished
-rejected --> [*]
-interrupted --> [*]
-closed --> [*]
-"""
-
-D["r4_sm_match"] = r"""
-[*] --> PREPARING : offer created
-PREPARING --> PLAYING : all required players accepted
-PREPARING --> CANCELLED : declined or start failed
-PLAYING --> FINISHED : trusted result saved\n(outcome WIN / LOSE)
-PLAYING --> FINISHED : stop command or lease lost\n(outcome INTERRUPTED, no Elo)
-FINISHED --> FINISHED : repeated result ignored
-FINISHED --> [*]
-CANCELLED --> [*]
-"""
-
-D["r4_sm_lease"] = r"""
-state "waiting (WAITING_CAPACITY)" as waiting
-[*] --> reserved : offer [idle container and below MaxConcurrentMatches]
-[*] --> waiting : offer [all containers busy]
-waiting --> reserved : container free [first in the waiting queue]
-waiting --> [*] : waiting entry expires (15 s)
-reserved --> queued : all humans accepted (StartOnline)
-reserved --> Released : offer cancelled or worker lost
-queued --> starting : worker claims job
-starting --> ready : worker heartbeat ready
-starting --> Released : lease expired
-ready --> finishing : final result received
-ready --> Released : lease expired or stop acknowledged
-finishing --> Released : result saved
-Released --> [*]
-"""
-
-D["r4_sm_lesson"] = r"""
-[*] --> DRAFT : lesson created
-DRAFT --> DRAFT : save draft [version matches]
-DRAFT --> PUBLISHED : publish [prerequisites published]
-PUBLISHED --> UNPUBLISHED : unpublish [no published dependants]
-UNPUBLISHED --> PUBLISHED : publish again
-PUBLISHED --> PUBLISHED : save draft (live copy unchanged)
-"""
-
-D["r4_sm_report"] = r"""
-[*] --> PENDING : participant reports player
-PENDING --> CHECKING : Admin starts review
-PENDING --> ACCEPTED : Admin accepts directly
-PENDING --> DECLINED : Admin declines directly
-CHECKING --> ACCEPTED : accept
-CHECKING --> DECLINED : decline
-ACCEPTED --> [*]
-DECLINED --> [*]
-note right of ACCEPTED : A sanction may be applied\nin the same transaction.
-"""
-
-D["r4_sm_appeal"] = r"""
-[*] --> PENDING : restricted player submits appeal
-PENDING --> CHECKING : Admin starts review
-PENDING --> ACCEPTED : accept
-PENDING --> DECLINED : decline
-CHECKING --> ACCEPTED : accept
-CHECKING --> DECLINED : decline
-ACCEPTED --> [*] : sanction revoked
-DECLINED --> [*] : sanction kept
-"""
-
-D["r4_sm_aijob"] = r"""
-[*] --> pending : all telemetry parts received
-pending --> processing : worker claims job (lease 60 s)
-processing --> completed : analysis saved
-processing --> pending : error [attempts < 10] / backoff
-processing --> pending : lease expired
-processing --> failed : error [attempts = 10]
-completed --> [*]
-failed --> [*]
-"""
-
-D["r4_sm_friend"] = r"""
-[*] --> PENDING : request sent [not blocked, not friends]
-PENDING --> ACCEPTED : receiver accepts
-PENDING --> DECLINED : receiver declines
-ACCEPTED --> [*] : friendship created
-DECLINED --> [*]
-"""
-
 D["r4_cls_social"] = r"""
 skinparam classAttributeIconSize 0
 package "Unity client" {
@@ -1592,95 +833,10 @@ SocialMediaService --> IUnitOfWork
 IUnitOfWork --> GameRepository
 """
 
-D["r4_seq_social_post"] = SEQ_HEAD + r"""
-actor Player
-participant "SocialLobbyMenu" as UI
-participant "SocialContentController" as C
-participant "SocialMediaService" as M
-participant "SocialContentService" as S
-database "PostgreSQL" as DB
-database "Object storage" as S3
-opt video attached (Unity Editor only in release 1.0)
-  UI -> C : POST /api/Game/social/video (MP4 body)
-  C -> M : Upload
-  alt too large or four uploads running
-    M --> UI : 413 / 429 (MSG68, MSG69)
-  else accepted
-    M -> M : spool to disk, ffprobe check
-    alt not MP4 H.264/AAC or over 15 min
-      M --> UI : 400 (MSG67)
-    else valid
-      M -> DB : SocialMedia draft (Ready = false)
-      M -> S3 : put social/video/<id>.mp4
-      M -> DB : Ready = true
-      M --> UI : mediaId
-    end
-  end
-end
-Player -> UI : text, audience, replay; Đăng bài
-UI -> C : POST /api/Game/social/posts
-C -> S : Save
-S -> DB : lock post and media; check audience, exclusions,\nreplay complete, media owned and unused
-alt invalid
-  S --> UI : 400 (MSG66)
-else valid
-  S -> DB : insert post and exclusions (one transaction)
-  S --> UI : SocialPostItem
-end
-"""
-
-D["r4_seq_message"] = SEQ_HEAD + r"""
-actor "Player A" as A
-participant "SocialLobbyMenu (A)" as UI
-participant "SocialContentController" as C
-participant "SocialDirectService" as S
-database "PostgreSQL" as DB
-participant "SocialHub" as H
-database "Redis" as R
-actor "Player B" as B
-group Direct message
-  UI -> C : POST /api/Game/social/messages\n(recipient, clientMessageId, body)
-  C -> S : Send
-  S -> DB : lock both players; look up clientMessageId
-  alt same clientMessageId already stored
-    S --> UI : the first message (no duplicate)
-  else not friends, blocked or recipient inactive
-    S --> UI : 403 (MSG72)
-  else allowed
-    S -> DB : conversation (create once) and message
-    S -> H : MessageChanged to A and B
-    H --> B : inbox refreshed (if online)
-    S --> UI : SocialMessageItem
-  end
-end
-group Whisper (both players in the lobby)
-  UI -> H : Whisper(recipient, body)
-  H -> R : sender connection registered (Presence)?
-  H -> S : Whisper
-  alt blocked or recipient not verified
-    S --> UI : HubException (MSG73)
-  else recipient has no live connection
-    S --> UI : HubException (MSG74)
-  else
-    H --> B : WhisperReceived (not stored)
-  end
-end
-"""
-
-D["r4_sm_media"] = r"""
-state "Draft (Ready = false)" as Draft
-state "Ready" as Ready
-state "Attached to a post" as Attached
-state "Deleted" as Deleted
-[*] --> Draft : upload accepted by ffprobe
-Draft --> Ready : stored in object storage
-Draft --> Deleted : storage write failed
-Ready --> Attached : post saved with the video
-Ready --> Removed : not attached within 24 h\n(SocialMediaCleanup)
-Attached --> Deleted : post deleted or video replaced
-Deleted --> Removed : object deleted (cleanup)
-Removed --> [*]
-"""
+from r4_behaviour import SEQ, ACT, SM  # noqa: E402
+D.update(SEQ)
+D.update(ACT)
+D.update(SM)
 
 if __name__ == "__main__":
     print(write_all(D))

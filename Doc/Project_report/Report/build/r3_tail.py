@@ -155,7 +155,7 @@ MSG = [
     ("MSG67", "In line", "Video format or length refused", "Video phải là MP4 H.264, âm thanh AAC nếu có, dài tối đa 15 phút."),
     ("MSG68", "In line", "Video larger than 250 MB", "Chọn MP4 tối đa 250 MB."),
     ("MSG69", "In line", "Too many uploads at the same time (HTTP 429)", "Đang có nhiều video được tải lên. Vui lòng thử lại."),
-    ("MSG70", "In line", "Video upload in a Windows or Android build (LI-12)", "Tải video hiện khả dụng trong Unity Editor."),
+    ("MSG70", "In line", "Video upload in the Android build (LI-12)", "Tải video hiện có trên bản Windows. Bản Android chưa hỗ trợ chọn tệp video."),
     ("MSG71", "In line", "Comment, message or whisper length invalid", "Nhập nội dung từ 1 đến 1.000 ký tự."),
     ("MSG72", "In line", "Direct message to a player who is not an unblocked friend", "Bạn cần kết bạn và có quyền nhắn tin với người chơi này."),
     ("MSG73", "In line", "Whisper to a blocked or unverified player", "Bạn không thể thì thầm với người chơi này."),
@@ -167,7 +167,7 @@ MSG = [
 ]
 
 TRACE = [
-    ("F01", "Account and first steps", "FR-01, FR-02, FR-03, FR-04", "UC-01 to UC-08", "W01", "Trần Nguyễn Hiếu Thuận"),
+    ("F01", "Account and onboarding", "FR-01, FR-02, FR-03, FR-04", "UC-01 to UC-08", "W01", "Trần Nguyễn Hiếu Thuận"),
     ("F02", "Rules and controls", "FR-05, FR-06, FR-11", "UC-09, UC-10", "W01", "Trần Nguyễn Hiếu Thuận"),
     ("F03", "Guided drills", "FR-07, FR-08", "UC-11, UC-12", "W01", "Nguyễn Gia Huy"),
     ("F04", "Levels and items", "FR-20, FR-23", "UC-43, UC-44", "W01", "Nguyễn Văn Thành Đạt"),
@@ -186,7 +186,7 @@ TRACE = [
     ("F17", "Match care and reports", "FR-27, FR-28, FR-30, FR-32", "UC-30, UC-45, UC-46, UC-54, UC-55, UC-62 to UC-64", "W04", "Huỳnh Trung Kiên"),
     ("F18", "Admin charts", "FR-32", "UC-65, UC-66", "W04", "Huỳnh Trung Kiên"),
     ("–", "Shop (not in the Review 2 list)", "FR-22", "UC-41, UC-42", "–", "–"),
-    ("–", "Social feed and messages (Review 1 comment, added 17/11/2026)", "FR-24, FR-34, FR-35", "UC-69 to UC-76", "–", "Nguyễn Văn Thành Đạt (implementation)"),
+    ("–", "Social feed and messages (Review 1 comment, added 15/11/2026)", "FR-24, FR-34, FR-35", "UC-69 to UC-76", "–", "Nguyễn Văn Thành Đạt (implementation)"),
     ("–", "Expert review (addition to the proposal)", "FR-33", "UC-67, UC-68", "–", "–"),
 ]
 
@@ -265,6 +265,8 @@ def write(r):
         ["API, JWT, OTP, HMAC", "Application programming interface; JSON Web Token; one-time password; hash-based message authentication code"],
         ["BR, FR, NFR, UC, MSG", "Business rule; functional requirement; non-functional requirement; use case; message"],
     ], widths=[3.6, 12.4], size=9, first_col_bold=True, caption="Definitions and acronyms")
+    r.p("The game and the admin web are in Vietnamese only (Report 1, LI-09). This specification quotes the interface labels exactly as they appear, so that a tester can find them on the screen, and gives their English meaning in brackets at the first quoted occurrence. Table %d lists the interface labels quoted in the reports." % (r.tbl_no + 1))
+    r.ui_glossary("Vietnamese interface labels and their English meaning")
     r.h3("5.5 Appendix A – Traceability to the Review 2 Commitment")
     r.p("The table below links the 18 features committed in the Review 2 form BM04 (07/11/2026) to the use cases and functional requirements of this specification, with the workflow and the member accountable for each feature at the reviews. Report 5 links each requirement to its test cases. The social feature asked for at Review 1 is listed in the last rows; the full answer to the Review 1 comments is in Report 1, §6.3.")
     r.table(["Review 2 feature", "Name", "Functional requirements", "Use cases", "Workflow", "Owner (BM04)"], [list(t) for t in TRACE],

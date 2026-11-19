@@ -32,6 +32,6 @@ def render(names=None):
     if names:
         files = [f for f in files if f[:-5] in names]
     os.makedirs(PNG, exist_ok=True)
-    cmd = [java, "-Djava.awt.headless=true", "-jar", jar, "-charset", "UTF-8", "-tpng", "-o", PNG] + [os.path.join(SRC, f) for f in files]
+    cmd = [java, "-Djava.awt.headless=true", "-DPLANTUML_LIMIT_SIZE=16384", "-jar", jar, "-charset", "UTF-8", "-tpng", "-o", PNG] + [os.path.join(SRC, f) for f in files]
     r = subprocess.run(cmd, capture_output=True, text=True)
     return r.returncode, (r.stdout + r.stderr)[-4000:]

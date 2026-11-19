@@ -2,35 +2,47 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Visitor
-participant "AccountScreen" as UI
-participant "SceneLoading" as SL
-participant "AuthController" as C
-participant "AuthService" as S
-database "PostgreSQL" as DB
-participant "GameController" as G
-Visitor -> UI : email and password
-UI -> SL : LoadPrepared(Menu)
-SL -> C : POST /api/Auth/login
+boundary ":AccountScreen" as UI
+control ":AccountService" as AS
+control ":AuthController" as C
+control ":AuthService" as S
+entity ":IUserRepository" as UR
+entity ":GameRepository" as G
+control ":GameController" as GC
+Visitor -> UI : SignIn()
+activate UI
+UI -> AS : LoginAsync(email, password)
+activate AS
+AS -> C : Login(request)
+activate C
 C -> S : LoginAsync(request)
-S -> DB : read user, role, verification
+activate S
+S -> UR : GetByEmailAsync(email)
 alt wrong email or password
-  S --> C : 401 invalid_credentials
-  C --> UI : error, stay on Login
+  S --> C : error invalid_credentials
 else email not verified
-  S --> C : 401 email_not_verified
-  C --> UI : open Email Code screen
-else account restricted
-  S -> DB : store refresh token (SHA-256)
-  S --> C : tokens, scope = appeals
-  C --> UI : open Decisions and Appeals
-else active account
-  S -> DB : store refresh token (SHA-256)
-  S --> C : access token (2 h), refresh token (14 d), scope = game
-  C --> SL : AuthResponse
-  SL -> G : GET /api/Game/state
-  G --> SL : GameSnapshot (profile, catalog, inventory)
-  SL --> Visitor : reveal Menu after warm-up
+  S --> C : error email_not_verified
+else else
+  S -> G : EffectiveRestriction(user)
+  S -> UR : AddRefreshTokenAsync(hash)
+  S -> G : RecordLogin(user)
+  S --> C : AuthResponse (access 2 h, refresh 14 d, scope game or appeals)
 end
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : session
+deactivate AS
+opt scope = game
+  UI -> GC : State()
+  activate GC
+  GC --> UI : GameSnapshot (profile, catalog, inventory)
+  deactivate GC
+end
+UI --> Visitor : Menu, Decisions and Appeals or error message
+deactivate UI
 @enduml

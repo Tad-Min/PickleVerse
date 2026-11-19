@@ -1,47 +1,38 @@
-@startchen r3_cerd_training
+@startuml r3_cerd_training
 !include _style.iuml
-entity TECHNIQUE {
-  TechniqueId <<key>>
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "TECHNIQUE" as TECHNIQUE {
+  * TechniqueId
+  --
   Name
 }
-entity LESSON {
-  LessonId <<key>>
+entity "LESSON" as LESSON {
+  * LessonId
+  --
   Code
   PublishStatus
   ContentVersion
 }
-entity DRILL {
-  DrillId <<key>>
+entity "DRILL" as DRILL {
+  * DrillId
+  --
   Code
 }
-entity PLAYER_PROFILE {
-  PlayerId <<key>>
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
 }
-entity TRAINING_ATTEMPT {
-  AttemptId <<key>>
+entity "TRAINING_ATTEMPT" as TRAINING_ATTEMPT {
+  * AttemptId
+  --
   Stars
   Accuracy
   Completed
 }
-relationship CONTAINS {
-}
-relationship PRACTISES_SKILL {
-}
-relationship MAKES {
-}
-relationship USES {
-}
-relationship MASTERS {
-  MasteryLevel
-}
-LESSON -M- CONTAINS
-CONTAINS -N- DRILL
-DRILL -N- PRACTISES_SKILL
-PRACTISES_SKILL -1- TECHNIQUE
-PLAYER_PROFILE -1- MAKES
-MAKES -N- TRAINING_ATTEMPT
-TRAINING_ATTEMPT -N- USES
-USES -1- DRILL
-PLAYER_PROFILE -M- MASTERS
-MASTERS -N- TECHNIQUE
-@endchen
+LESSON }o--o{ DRILL : "contains"
+DRILL }o--|| TECHNIQUE : "practises skill"
+PLAYER_PROFILE ||--o{ TRAINING_ATTEMPT : "makes"
+TRAINING_ATTEMPT }o--|| DRILL : "uses"
+PLAYER_PROFILE }o--o{ TECHNIQUE : "masters (MasteryLevel)"
+@enduml

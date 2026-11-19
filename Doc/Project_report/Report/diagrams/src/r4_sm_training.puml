@@ -1,12 +1,12 @@
 @startuml r4_sm_training
 !include _style.iuml
-[*] --> Active : start [lesson unlocked and published]
-Active --> Active : checkpoint after trial
-Active --> Abandoned : new attempt started
-Active --> Completed : last trial played
+[*] --> Active : start [lesson unlocked and published] / createAttempt()
+Active --> Active : checkpoint [trial played]
+Active --> Abandoned : start [another attempt started]
+Active --> Completed : complete [last trial played] / recomputeStars()
 state Completed {
-  [*] --> Passed : successes >= required
-  [*] --> Failed : successes < required
+  [*] --> Passed : [successes >= required] / grantFirstPassRewardOnce()
+  [*] --> Failed : [else]
 }
 Completed --> [*]
 Abandoned --> [*]

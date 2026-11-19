@@ -1,7 +1,7 @@
 """Report 2 - Project Management Plan."""
 import collections
 
-from report_lib import Report
+from report_lib import Report, AI_USAGE
 import r5_cases as R5
 
 CHANGES = [
@@ -13,6 +13,8 @@ CHANGES = [
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: effort per member against capacity with corrective action; CI/CD status (never passed, manual releases) and new risk 13; secrets and commit-message practice described as they are; endpoint and test-case counts updated; workflow names and BM04 approval status as in the form; daily backup replaced by the real pre-deployment dump."),
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Updated after the fixes of 12–13/11/2026 (main @ d9200cc): the CI/CD pipeline passes and deploys staging (risk 13 closed, history of the 35 runs corrected); HTTPS on staging and credentials removed from the settings file; verified database dump before each deployment (risk 11); commit figures at d9200cc; iteration and milestone notes updated."),
     ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 96ff8e9 (17/11/2026) and the Review 1 comments: WBS items 4.6, 7.6, 10.4, 10.5 and 14.4 added for the work of 15–17/11/2026 and the effort overrun stated; membership subscription recorded as change request CR-01; new risks 14 (subscription), 15 (user content without moderation) and 16 (late scope); risks 2, 3, 12 and 13 updated (public repository, game-server pool, Android protocol, 53 pipeline runs and the skipped deploy job); Iteration 4 closed and Iteration 5 progress; pull-request practice described as it is; commit figures at 96ff8e9."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.5 – AI Usage Declaration added to §6.3 (Table 12); Review 2 status from BM04 V1.0 (the team did not attend, conclusion Re-review); acceptance testing described as the four workflows with a main and an exception scenario each; diagrams kept in one tool (PlantUML) after the outdated draw.io file was removed."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.6 – Corrected two statements: the estimate is above the team capacity (it was described as fitting it), and the admin web code is attributed as in the repository history (most of it committed by Nguyễn Văn Thành Đạt); WBS owners are the members responsible for each item."),
 ]
 
 # Two-level WBS: (id, name, complexity, man-days, owner)
@@ -143,7 +145,7 @@ for _, _, items in WBS:
         for p in people:
             load[p] += md / len(people)
 CAP = 14 * 5
-r.p("The total fits the team capacity, but the owners in Table 1 are the members who actually built each item (repository history), and Table %d shows that the load per member does not fit. Each member has 14 × 5 = %d man-days." % (r.tbl_no + 1, CAP))
+r.p("The total is above the team capacity, and Table %d shows that the load per member is also uneven. The owner of an item in Table 1 is the member responsible for it. Each member has 14 × 5 = %d man-days." % (r.tbl_no + 1, CAP))
 r.table(["Member", "Estimated effort of owned items (man-days)", "Capacity (man-days)", "Load"],
         [[full, "%.1f" % load[k], str(CAP), "%.0f%%" % (load[k] * 100.0 / CAP)] for k, full in NAMES] +
         [["**Total**", "**%.0f**" % sum(load.values()), "**%d**" % (CAP * 4), "**%.0f%%**" % (sum(load.values()) * 100.0 / (CAP * 4))]],
@@ -217,7 +219,7 @@ r.label("Reviewing", "Every report section is written by its owner and reviewed 
 r.label("Unit testing", "Unity EditMode tests (522 tests in 10 assemblies, all passed on 16/11/2026 on the source of commit 1b64424; not yet run on 96ff8e9) cover the rules, scoring, Elo, input, economy, replay and multiplayer protocol classes; pytest covers the AI service. The suite is run with the Unity CLI before each merge and the result file is stored with the commit hash.")
 r.label("Integration testing", "The IntegrationChecks console program and the API contract checks verify the API, the database writes and the dedicated-server ticket flow against a PostgreSQL and Redis instance. They run in the CI pipeline for every push that changes the backend, the Unity scripts or the AI service; since 17/11/2026 they have fifteen check groups, including room invitations, ranked doubles and social content, and their results are linked to test cases in Report 5 (EV-08, EV-11).")
 r.label("System testing", "The %d test cases in Report 5" % len(R5.CASES) + " are executed on the staging server for each package milestone; defects are logged in the tracking workbook with severity and retested before closing.")
-r.label("Acceptance testing", "The eight demo scenarios of the Review 2 commitment are run with the supervisor, and the results are recorded in Report 5.")
+r.label("Acceptance testing", "The four workflows W01–W04 of the Review 2 commitment are run end to end with the supervisor, each with its main and its exception scenario (eight demo scenarios, DS-01a to DS-04b), and the results are recorded in Report 5 (TC-W01 to TC-W04).")
 
 r.h3("2.3 Training Plan")
 r.table(["Training Area", "Participants", "When, Duration", "Waiver Criteria"], [
@@ -229,7 +231,7 @@ r.table(["Training Area", "Participants", "When, Duration", "Waiver Criteria"], 
     ["Python FastAPI and scikit-learn", "Đạt, Huy", "W8, 4 hours", "Has deployed a FastAPI service"],
     ["Docker, Docker Compose and GitHub Actions", "All members", "W9, 4 hours", "Can start the local stack and read container logs"],
     ["Blender and character animation import", "Huy, Thuận", "W4, 6 hours", "Has rigged and imported a character into Unity"],
-    ["UML modelling with PlantUML and draw.io", "All members", "W3, 3 hours", "Mandatory"],
+    ["UML 2.5 modelling with PlantUML", "All members", "W3, 3 hours", "Mandatory"],
 ], widths=[5.6, 2.8, 4.0, 4.6], size=9, caption="Training plan")
 
 r.h2("3. Project Deliverables")
@@ -239,7 +241,7 @@ r.table(["#", "Deliverable", "Due Date", "Actual Date", "Status", "Notes"], [
     ["M02", "Report 2 – Project Management Plan, schedule, tracking workbook", "20/09/2026", "06/11/2026", "Done, late", "v1.0 on 11/11/2026"],
     ["M03", "Report 3 – Software Requirement Specification", "27/09/2026", "06/11/2026", "Done, late", "v1.0 on 11/11/2026"],
     ["M04", "Report 4 – Software Design Document; Report 5 test plan", "11/10/2026", "06/11/2026", "Done, late", "v1.0 on 11/11/2026"],
-    ["M05", "Software Package 1 – single-player core, training, first online build (Review 2)", "25/10/2026", "27/10/2026", "Done, 2 days late", "Review 2 forms BM01–BM04"],
+    ["M05", "Software Package 1 – single-player core, training, first online build (Review 2)", "25/10/2026", "27/10/2026", "Done, 2 days late", "Review 2 forms BM01–BM04; BM04 V1.0 (07/11/2026) records the conclusion Re-review – the team did not attend the Review 2 session and received no comments"],
     ["M06", "Software Package 2 – Web API, admin web, AI service, dedicated server, CI/CD", "08/11/2026", "06/11/2026", "Done, on time", "Staging on tad-min.io.vn; the CI/CD workflow was written on time but first passed on 13/11/2026, so the releases of 08–10/11 were manual (risk 13)"],
     ["M07", "Software Package 3 – defect fixes, system and load tests (Review 3)", "22/11/2026", "–", "In progress", "Report 5 results due with this package; the social feature (Review 1) and ranked doubles were added on 15–17/11/2026"],
     ["M08", "Full software package with test results and open defects", "06/12/2026", "–", "Planned", ""],
@@ -250,7 +252,7 @@ r.p("Figure 2 places the iterations and milestones on the calendar; the red line
 r.figure("r2_gantt.png", "Master schedule: iterations and milestones", width_cm=16.5)
 
 r.h2("4. Responsibility Assignments")
-r.p("D~Do; R~Review; S~Support; I~Informed; <blank>~Omitted. Every row has exactly one D. Each member owns one end-to-end workflow, which that member demonstrates at the reviews; the workflow owners and supporting members follow the Review 2 commitment form BM04 (v1.0 of 07/11/2026, not yet approved by the reviewers). Workflow ownership is an accountability for acceptance, not a measure of implementation effort: the technical rows show who built each part, and the repository history shows that Nguyễn Gia Huy and Nguyễn Văn Thành Đạt carried the largest share of the code (Table 2). Huỳnh Trung Kiên is the D for the admin web because he wrote most of it (about 6,800 added lines under src/Frontend).")
+r.p("D~Do; R~Review; S~Support; I~Informed; <blank>~Omitted. Every row has exactly one D. Each member owns one end-to-end workflow, which that member demonstrates at the reviews; the workflow owners and supporting members follow the Review 2 commitment form BM04 (V1.0 of 07/11/2026; the team did not attend the Review 2 session and the form records the conclusion Re-review). Workflow ownership is an accountability for acceptance, not a measure of implementation effort: the technical rows show the member responsible for each part, and the repository history shows that Nguyễn Gia Huy and Nguyễn Văn Thành Đạt carried the largest share of the code (Table 2). Huỳnh Trung Kiên is the D for the admin web as the owner of its acceptance and of workflow W04; most of the admin web code in the repository was committed by Nguyễn Văn Thành Đạt.")
 M = ["KienHT SE184454", "DatNVT SE184450", "HuyNG SE184439", "ThuanTNH SE184471"]
 r.table(["Responsibility"] + M, [
     ["Project planning and tracking", "D", "R", "S", "S"],
@@ -295,7 +297,7 @@ r.bullets([
     "All project documents are stored in the Git repository under `Doc/`: the proposal in `Doc/Proposal`, review forms in `Doc/Project_report/Review*`, and Reports 1–7 with the tracking workbook and schedule in `Doc/Project_report/Report`.",
     "File names follow the course template: `Report<n>_<Title>.docx`, `PickleVerse_Project_Tracking.xlsx` and `PickleVerse_Project_Schedule.xml`.",
     "Each document records its versions in the Record of Changes table: v0.x for drafts and v1.0, v1.1 and so on for reviewed versions submitted to the supervisor.",
-    "Diagrams are written as PlantUML sources in `Doc/Project_report/Report/diagrams/src` and rendered to PNG, so every figure can be regenerated and reviewed as text; the use case and conceptual ERD drawings are also kept as draw.io files.",
+    "All diagrams are written in one tool, PlantUML, following UML 2.5: the sources are in `Doc/Project_report/Report/diagrams/src` and are rendered to PNG at 200 dpi, so every figure can be regenerated and reviewed as text. An older draw.io drawing of the use cases and the conceptual ERD was removed on 19/11/2026 because it no longer matched the product.",
     "A document is submitted only after it has been reviewed by the member marked R in Table 9 and the leader; the PDF exported from the reviewed version is uploaded to the LMS.",
 ])
 r.h3("6.2 Source Code Management")
@@ -314,14 +316,18 @@ r.table(["Category", "Tools / Infrastructure"], [
     ["Database", "PostgreSQL 16 (Npgsql Entity Framework Core); Redis 7.4 (matchmaking queue, leases, presence, cache); S3-compatible object storage (replays)"],
     ["IDEs/Editors", "Unity Editor and Unity CLI, Visual Studio Code, Visual Studio, pgAdmin 4, Docker Desktop, Photon Dashboard"],
     ["Art and audio", "Blender (rigging and animation), Meshy AI (base character meshes), Figma (interface mock-ups)"],
-    ["Diagramming", "PlantUML with Graphviz, draw.io"],
+    ["Diagramming", "PlantUML with Graphviz (all UML diagrams and ERDs)"],
     ["Documentation", "Microsoft Office (Word, Excel, Project-compatible XML), Markdown"],
     ["Version Control", "Git and GitHub (source code and documents)"],
     ["CI/CD and deployment", "GitHub Actions (plan, check, build, publish and deploy jobs; 17 of 53 runs passed by 17/11/2026), Docker and Docker Compose, Docker Hub; staging host tad-min.io.vn (Ubuntu 24.04, Caddy reverse proxy with HTTPS, deploy/linux/Caddyfile)"],
     ["Testing", "Unity Test Framework (EditMode), Unity CLI, pytest, IntegrationChecks console harness, Swagger UI; k6 is planned for the API load test (NFR-04)"],
     ["Project management", "Tracking workbook (backlog, WBS, issues, defects, Q&A) and the MS Project XML schedule; GitHub for code and pull requests"],
-    ["AI assistants", "OpenAI Codex and Anthropic Claude for code suggestions and first drafts of documents; every output is reviewed by the item owner"],
+    ["AI assistants", "OpenAI Codex, Anthropic Claude Code and Meshy AI, declared in Table %d" % (r.tbl_no + 2)],
 ], widths=[3.6, 12.4], size=9.5, first_col_bold=True, caption="Tools and infrastructure")
+
+r.p("**AI Usage Declaration.** Table %d declares the AI tools used in the project, as required by the capstone guideline. Every output was reviewed by the member who used the tool before it was committed; generated code had to pass the existing automated tests, and figures quoted in the reports were taken from real runs (Report 5, §5.1)." % (r.tbl_no + 1))
+r.table(["Tool · version", "Purpose", "Scope", "Member", "How the output was checked"],
+        [list(row) for row in AI_USAGE], widths=[2.8, 3.6, 4.0, 1.8, 3.8], size=8.5, caption="AI Usage Declaration")
 
 out = r.save("Report2_Project Management Plan.docx", "Report 2 – Project Management Plan")
 print(out, "total", total, counts, "tables", r.tbl_no, "figs", r.fig_no)

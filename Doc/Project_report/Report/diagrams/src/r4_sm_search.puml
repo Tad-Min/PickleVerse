@@ -1,11 +1,11 @@
 @startuml r4_sm_search
 !include _style.iuml
-[*] --> SEARCHING : search started
-SEARCHING --> MATCHED : compatible player found
-SEARCHING --> BOT : singles: no player within 180 s
-SEARCHING --> MATCHED : doubles: free seats filled\nwith bots after 180 s
-SEARCHING --> CANCELLED : player cancels
-SEARCHING --> TIMEOUT : ticket expired
+[*] --> SEARCHING : beginRankedSearch / enqueueTicket()
+SEARCHING --> MATCHED : poll [compatible sides found]
+SEARCHING --> BOT : assignRankedBot [singles and 180 s passed]
+SEARCHING --> MATCHED : poll [doubles, 180 s passed] / fillSeatsWithBots()
+SEARCHING --> CANCELLED : cancelSearch
+SEARCHING --> TIMEOUT : poll [ticket expired]
 MATCHED --> [*]
 BOT --> [*]
 CANCELLED --> [*]

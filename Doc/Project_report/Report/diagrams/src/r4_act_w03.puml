@@ -2,42 +2,45 @@
 !include _style.iuml
 |Player|
 start
-if (Private room?) then (yes)
+if () then ([private room])
   :Create room and invite friend;
-elseif (Ranked doubles?) then (yes)
+elseif () then ([ranked doubles])
   :Search alone or with a party of two;
   |Web API|
-  if (Two sides of two humans within 180 s?) then (yes)
+  if () then ([two sides of humans within 180 s])
     :Build ranked 2v2 roster;
-  else (no)
+  else ([else])
     :Fill free seats with ranked bots;
   endif
-else (ranked singles)
+else ([else])
   |Player|
-  :Find ranked match;
+  :Find ranked singles match;
   |Web API|
-  if (Opponent found within 180 s?) then (yes)
+  if () then ([opponent found within 180 s])
     :Pair players by Elo;
-  else (no)
+  else ([else])
     :Assign ranked bot;
   endif
 endif
 |Player|
 :Accept ready check (10 s);
 |Web API|
-if (All required humans accepted?) then (yes)
+if () then ([all required humans accepted])
   :Create match record (PLAYING);
   :Reserve a free game-server container\nand issue tickets;
-else (no)
+else ([else])
   :Close offer;
   stop
 endif
 |Dedicated server|
 :Verify ticket and admit players;
 :Simulate rallies authoritatively;
-if (Stopped or lease lost?) then (yes)
-  :End match as INTERRUPTED;
-else (no)
+if () then ([stopped by an administrator or lease lost])
+  :End match as INTERRUPTED\n(no Elo, no reward);
+elseif () then ([a player left or did not return within 30 s])
+  :End match as a forfeit\n(the other team wins, BR-28);
+  :Send final result;
+else ([else])
   :Send final result;
 endif
 |Web API|

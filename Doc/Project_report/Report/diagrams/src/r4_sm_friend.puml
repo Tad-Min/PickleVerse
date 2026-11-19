@@ -1,8 +1,8 @@
 @startuml r4_sm_friend
 !include _style.iuml
-[*] --> PENDING : request sent [not blocked, not friends]
-PENDING --> ACCEPTED : receiver accepts
-PENDING --> DECLINED : receiver declines
-ACCEPTED --> [*] : friendship created
+[*] --> PENDING : sendFriendRequest [not blocked and not friends]
+PENDING --> ACCEPTED : respond [accepted] / addFriendship()
+PENDING --> DECLINED : respond [declined]
+ACCEPTED --> [*]
 DECLINED --> [*]
 @enduml

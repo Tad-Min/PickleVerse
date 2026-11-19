@@ -1,0 +1,79 @@
+@startuml r4_lerd_moderation
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "ReportPlayerInMatch" as ReportPlayerInMatch {
+  * ReporterId <<PK, FK>>
+  * ReportedPlayerId <<PK, FK>>
+  * MatchId <<PK, FK>>
+  --
+  * Reason
+  * Status
+  * CreatedAt
+  * UpdatedAt
+  ReviewerId <<FK>>
+  DecisionReason
+}
+entity "UserSanctions" as UserSanctions {
+  * SanctionId <<PK>>
+  --
+  * UserId <<FK>>
+  * ActorId <<FK>>
+  * Restriction
+  * Reason
+  * CreatedAt
+  ExpiresAt
+  RevokedAt
+  RevokedBy <<FK>>
+  RevocationReason
+  ReportMatchId <<FK>>
+  ReporterId <<FK>>
+}
+entity "SanctionAppeals" as SanctionAppeals {
+  * AppealId <<PK>>
+  --
+  * SanctionId <<FK>>
+  * UserId <<FK>>
+  * Statement
+  * Status
+  * CreatedAt
+  * UpdatedAt
+  ReviewerId <<FK>>
+  DecisionReason
+}
+entity "AdminAudits" as AdminAudits {
+  * AuditId <<PK>>
+  --
+  * ActorId
+  TargetId
+  * Action
+  * Details
+  * CreatedAt
+}
+entity "Users" as Users {
+  * UserId <<PK>>
+  --
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+}
+entity "GameMatches" as GameMatches {
+  * MatchId <<PK>>
+  --
+}
+Users |o--o{ ReportPlayerInMatch : "ReviewerId"
+PlayerProfiles ||--o{ ReportPlayerInMatch : "ReporterId"
+PlayerProfiles ||--o{ ReportPlayerInMatch : "ReportedPlayerId"
+GameMatches ||--o{ ReportPlayerInMatch : "MatchId"
+Users ||--o{ UserSanctions : "UserId"
+Users ||--o{ UserSanctions : "ActorId"
+Users |o--o{ UserSanctions : "RevokedBy"
+GameMatches |o--o{ UserSanctions : "ReportMatchId"
+Users |o--o{ UserSanctions : "ReporterId"
+UserSanctions ||--o{ SanctionAppeals : "SanctionId"
+Users ||--o{ SanctionAppeals : "UserId"
+Users |o--o{ SanctionAppeals : "ReviewerId"
+@enduml

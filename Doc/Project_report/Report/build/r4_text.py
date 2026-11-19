@@ -118,23 +118,34 @@ DECISIONS = [
     ["9", "SignalR hub only for live lobby events; REST for posts, messages and history", "WebSocket for everything; polling only", "Messages must survive an offline recipient, so they are stored through REST; whispers and notifications need a push channel", "Whispers are lost if the recipient leaves the lobby; clients reconnect the hub every 3 s after a drop"],
 ]
 
-DB_INTRO = ("The logical database design is derived directly from src/Database.sql (59 tables, 403 columns, 88 foreign keys). To keep the "
-            "diagrams readable the schema is divided into eight subject areas (Figures %d to %d). Each diagram uses crow's-foot notation: "
-            "* marks NOT NULL columns, «PK» and «FK» mark keys, and tables drawn without columns belong to another area and are shown only "
-            "for their relationships. Table names follow the PascalCase convention of the EF model; the AI tables (ai*) and ratingledger "
-            "use lower case because they were created for the Python service and the rating ledger and are mapped explicitly in "
-            "PickleVerseContext.")
+DB_INTRO = ("The database is designed at three levels in one notation (crow's foot): the conceptual ERD of Report 3, §3.1.5, "
+            "the logical data model in §2.1 and the physical data model in §2.2. Both lower levels are derived directly from "
+            "src/Database.sql (59 tables, 403 columns, 88 foreign keys) and divided into the same eight subject areas so that the "
+            "diagrams stay readable. «PK» and «FK» mark keys, * marks mandatory attributes, and tables drawn without attributes belong "
+            "to another area and are shown only for their relationships. Table names follow the PascalCase convention of the EF model; "
+            "the AI tables (ai*) and ratingledger use lower case because they were created for the Python service and the rating "
+            "ledger and are mapped explicitly in PickleVerseContext.")
 
-ERD_FIGS = [
-    ("r4_erd_account.png", "Logical ERD – accounts and profiles"),
-    ("r4_erd_social.png", "Logical ERD – friends and blocking"),
-    ("r4_erd_training.png", "Logical ERD – techniques, lessons and training"),
-    ("r4_erd_match.png", "Logical ERD – matches, ratings, replays and matchmaking"),
-    ("r4_erd_economy.png", "Logical ERD – currencies, cosmetics, missions and achievements"),
-    ("r4_erd_moderation.png", "Logical ERD – reports, sanctions, appeals and audit"),
-    ("r4_erd_coaching.png", "Logical ERD – telemetry, coaching and expert review"),
-    ("r4_erd_feed.png", "Logical ERD – posts, videos and messages"),
+LOGICAL_INTRO = ("The logical data model lists every entity with its attributes, keys and relationships, without DBMS data types, "
+                 "indexes or storage details (Figures %d to %d). Optional relationships (|o) correspond to nullable foreign keys; "
+                 "one-to-one relationships are those whose foreign key is also the primary key.")
+
+PHYSICAL_INTRO = ("The physical data model maps the logical model to PostgreSQL 16: every column has its PostgreSQL type, and NOT "
+                  "NULL constraints and keys are those of src/Database.sql (Figures %d to %d). Table %d describes every table with "
+                  "its keys, and §2.3 gives the column-level data dictionary of the core tables.")
+
+ERD_AREAS = [
+    ("account", "accounts and profiles"),
+    ("social", "friends and blocking"),
+    ("training", "techniques, lessons and training"),
+    ("match", "matches, ratings, replays and matchmaking"),
+    ("economy", "currencies, cosmetics, missions and achievements"),
+    ("moderation", "reports, sanctions, appeals and audit"),
+    ("coaching", "telemetry, coaching and expert review"),
+    ("feed", "posts, videos and messages"),
 ]
+LOGICAL_FIGS = [("r4_lerd_%s.png" % a, "Logical ERD – %s" % t) for a, t in ERD_AREAS]
+ERD_FIGS = [("r4_erd_%s.png" % a, "Physical ERD – %s" % t) for a, t in ERD_AREAS]
 
 TABLE_DESC = {
     "Roles": "Role catalogue (Player, Admin).",
@@ -311,7 +322,7 @@ RESP = {
     "IMatchReplayService": "Contract of replay storage",
     "OnlineSocialService": "Friend requests, friendships, blocks and leaderboard cache",
     "GameRepository": "EF Core queries and locks for matches, progression and economy",
-    "PickleVerseContext": "EF Core DbContext mapping the 51 tables",
+    "PickleVerseContext": "EF Core DbContext mapping the 59 tables",
     # admin
     "AuthContext": "Admin web session state and role check",
     "CMS page": "Lesson, drill, item and mission forms",
@@ -335,7 +346,7 @@ RESP = {
     # social (added 17/11/2026)
     "SocialLobbyMenu": "Feed, post editor, comments, video player, inbox, conversation and whispers screens of the lobby",
     "SocialLobbyConnection": "SignalR JSON client over WebSocket: presence, Whisper invocation, events WhisperReceived and MessageChanged; reconnects every 3 s",
-    "SocialTransport": "MP4 upload with UnityWebRequest (Editor only in release 1.0) and the authenticated WebSocket connection",
+    "SocialTransport": "MP4 upload with UnityWebRequest (Unity Editor and Windows build; the Android build has no file picker yet) and the authenticated WebSocket connection",
     "SocialContentController": "REST endpoints /api/Game/social/posts, video, conversations and messages",
     "SocialHub": "SignalR hub /api/Game/social/hub: Presence and Whisper; checks the game scope and the session version",
     "ISocialContentService": "Contract of posts, likes, comments and shared replays",
@@ -441,7 +452,9 @@ API_INTRO = ("The Web API exposes 147 REST endpoints in 29 controller classes (2
              "Service key (dedicated server only).")
 API_LEGACY = ("24 endpoints are marked Not called. They belong to the first resource-style controllers (Achievements, Economy, Friends, "
               "Matches, Missions, Profiles, Replays, Training) and to three AiCoaching routes; the game now uses the command-style /api/Game "
-              "routes for the same data. They still require authentication and pass through the same services, but they are not tested by "
+              "routes for the same data. They still require authentication. Five of them are retired and only answer HTTP 410 Gone (POST "
+              "/api/Matches/finish, /api/Training/submit-drill, /api/AiCoaching/log-error, /api/Profiles/sync-time and /api/Replays/save), "
+              "so a client cannot submit its own result through them; the others use the same services as the /api/Game routes but are not tested by "
               "the clients and are recorded as issue I-12 of the project tracking workbook: they will be removed or documented as public API before release.")
 API_RULES = [
     ["Base path and format", "/api/<Controller>/...; JSON (UTF-8); enum values serialised as strings"],

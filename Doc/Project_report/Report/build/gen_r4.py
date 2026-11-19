@@ -17,6 +17,8 @@ CHANGES = [
     ("12/11/2026", "M", "Nguyễn Gia Huy", "v1.2 – Revised after the second internal review: API table regenerated from the controllers (129 endpoints, access and Used by); dedicated-server controllers corrected; time-out removed from the gameplay class diagram and SM-05; FlowState Delay, camera framing, lobby classes and quick doubles added; netcode design table; table descriptions of Users, PlayerProfiles and GameMatchPlayers corrected; delivery pipeline status and data-at-rest deviation recorded; workflow names aligned with BM04."),
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Deployment updated after the fixes of 12–13/11/2026 (main @ d9200cc): delivery pipeline described as it runs (plan, checks, build, publish by digest, deploy with a verified dump) with the history of the 35 runs; Caddy HTTPS reverse proxy and the ports of staging; transport, secrets and data-protection rows of the security table."),
     ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 96ff8e9: social feed and messaging (class diagram, two sequence diagrams, SM-15, logical ERD of the 8 new tables, security row); dedicated-server pool with WAITING_CAPACITY (architecture, deployment, SM-09, decision 8); ranked doubles with bot fill in the ranked sequence, W03 and SM-06; protocol 20; time-out removed from the gameplay class diagram and SM-05; 59 tables, 147 endpoints; delivery status with the skipped deploy job."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.5 – Diagrams corrected to UML 2.5: architecture redrawn as a component diagram with provided and required interfaces; sequence diagrams with boundary, control and entity lifelines, messages named after the operations of the receiving classes, execution bars and bracketed guards; activity diagrams with guards on every flow and [else], and the forfeit path in W03; state machine transitions written trigger [guard] / effect; operations added to the admin web and controller classes. Database design split into a logical data model (§2.1, new figures) and a physical data model (§2.2); PickleVerseContext maps 59 tables. Diagrams rendered at 200 dpi."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.6 – §3.9: the five retired legacy endpoints that answer HTTP 410 Gone are named."),
 ]
 
 DESIGN_SRC = os.path.join(REPORT_DIR, "diagrams", "gen_r4_design.py")
@@ -55,14 +57,15 @@ r.h1("II. Software Design Document")
 # ================================================================== 1. System design
 r.h2("1. System Design")
 r.h3("1.1 System Architecture")
+r.h4("1.1.1 Component View")
 r.p(T.ARCH_INTRO)
-r.figure("r4_architecture.png", "System architecture (component view)", width_cm=16.5)
+r.figure("r4_architecture.png", "System architecture – UML component diagram with provided and required interfaces", width_cm=15, max_height_cm=21)
 if "r4_architecture.png" in STALE_FIGURES:
     r.p("Note: the figure was drawn on 12/11/2026. It names the host proxy nginx and shows the game client calling the API directly; since 13/11/2026 the client and the admin web reach the API through the Caddy HTTPS reverse proxy, as described in Table 2.")
 r.table(["Component", "Technology", "Responsibility"], T.COMPONENTS, widths=[3.4, 3.6, 9.0], size=8.5, first_col_bold=True,
         caption="Architecture components")
 r.p(T.AUTHORITY)
-r.h4("Deployment")
+r.h4("1.1.2 Deployment View")
 r.p(T.DEPLOY_INTRO)
 r.figure("r4_deployment.png", "Deployment diagram of the staging environment", width_cm=16.5)
 if "r4_deployment.png" in STALE_FIGURES:
@@ -87,18 +90,23 @@ r.table(["#", "Decision", "Alternatives", "Reason", "Consequence"], T.DECISIONS,
 
 # ================================================================== 2. Database design
 r.h2("2. Database Design")
-r.p(T.DB_INTRO % (r.fig_no + 1, r.fig_no + len(T.ERD_FIGS)))
+r.p(T.DB_INTRO)
 tables = schema_lib.parse()
+r.h3("2.1 Logical Data Model")
+r.p(T.LOGICAL_INTRO % (r.fig_no + 1, r.fig_no + len(T.LOGICAL_FIGS)))
+for f, cap in T.LOGICAL_FIGS:
+    r.figure(f, cap, width_cm=16.5, max_height_cm=21)
+r.h3("2.2 Physical Data Model")
+r.p(T.PHYSICAL_INTRO % (r.fig_no + 1, r.fig_no + len(T.ERD_FIGS), r.tbl_no + 1))
 for f, cap in T.ERD_FIGS:
     r.figure(f, cap, width_cm=16.5, max_height_cm=21)
-r.p("**Table Descriptions**")
 rows = []
 for i, (name, t) in enumerate(tables.items(), 1):
     fk = ["%s → %s" % (", ".join(c), ref) for c, ref in t["fks"]]
     desc = T.TABLE_DESC.get(name, "")
     rows.append([("%02d" % i), name, desc + "\n- Primary keys: " + ", ".join(t["pk"]) + "\n- Foreign keys: " + ("; ".join(fk) if fk else "none")])
 r.table(["No", "Table", "Description"], rows, widths=[1.0, 3.8, 11.2], size=8, caption="Table descriptions (%d tables)" % len(tables))
-r.h3("2.1 Data Dictionary of the Core Tables")
+r.h3("2.3 Data Dictionary of the Core Tables")
 r.p("The core tables of the account, match, training and moderation domains are listed column by column. Types are PostgreSQL types; * marks NOT NULL.")
 for name in T.DICT_TABLES:
     t = tables[name]
@@ -113,12 +121,12 @@ for name in T.DICT_TABLES:
             key.append("FK → " + fkc[c["name"].lower()])
         drows.append([c["name"], c["type"], "*" if c["notnull"] else "", ", ".join(key), T.COL_NOTES.get((name, c["name"]), "")])
     r.table(["Column", "Type", "Null", "Key", "Notes"], drows, widths=[3.6, 3.0, 1.0, 3.4, 5.0], size=7.5, caption="Data dictionary – %s" % name)
-r.h3("2.2 Design Notes")
+r.h3("2.4 Design Notes")
 r.bullets(T.DB_NOTES)
 
 # ================================================================== 3. Detailed design
 r.h2("3. Detailed Design")
-r.p("Each subsection gives the class diagram of one feature group, the specification of its classes and the sequence diagrams of its main functions. Client classes (Unity) and server classes (Web API) are drawn in the same diagram only when the diagram shows their interaction; the boundary is the HTTP API, marked as a dependency to the controller.")
+r.p("Each subsection gives the class diagram of one feature group, the specification of its classes and the sequence diagrams of its main functions. Client classes (Unity) and server classes (Web API) are drawn in the same diagram only when the diagram shows their interaction; the boundary is the HTTP API, marked as a dependency to the controller. The sequence diagrams follow UML 2.5: lifelines are instances (:Class) drawn as boundary, control or entity objects; every message is an operation of the receiving class with its arguments, as named in the class diagrams and the source code; execution bars show when an object is processing; alt, opt and loop fragments carry their guards in square brackets. Messages from a client class to a controller travel as HTTPS requests, whose routes are listed in §3.9.")
 for sec in T.SECTIONS:
     r.h3(sec["title"])
     r.p(sec["intro"])
@@ -171,7 +179,7 @@ for f, cap, text in T.ACTIVITIES:
     r.p(text)
     r.figure(f, cap, width_cm=16, max_height_cm=21)
 r.h3("4.2 State Machine Diagrams")
-r.p("The following state machines specify every entity or runtime object with a life cycle. Each transition is labelled event [guard] / action.")
+r.p("The following state machines specify every entity or runtime object with a life cycle. Each transition is labelled trigger [guard] / effect, as in UML 2.5; a missing part means that the transition has no guard or no effect. State names are the status values stored in the database or held by the runtime object.")
 for f, cap, text in T.STATES:
     r.h4(cap)
     r.p(text)

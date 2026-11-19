@@ -178,7 +178,7 @@ C("TC-F07-04", "FE04 Online", "FR-14, FR-18", "Integration", "Main", "Ranked dou
   "Disposable PostgreSQL 16 database created from Database.sql; Redis 7.4", auto="IntegrationChecks --check-ranked-doubles (CI validate job)",
   status="Passed", date=D17, tester="GitHub Actions (CI)", note="EV-11 (run 52). The playable 2v2 with four clients on the dedicated server was not run; needs four accounts at the same time (Round 2).")
 C("TC-F08-01", "FE04 Online", "FR-15", "System", "Main", "Create a private singles room and join it by code",
-  "1. Player A: Mode Selection → Tạo phòng → Đấu đơn 1v1; note the room code.\n2. Player B: Online lobby → enter the code → Tham gia bằng mã.\n3. Player A starts the match.",
+  "1. Player A: Mode Selection → Tạo phòng → Đấu đơn 1v1; note the room code.\n2. Player B: Online lobby → enter the code → THAM GIA.\n3. Player A starts the match.",
   "Player B appears in the roster; the match starts on the dedicated server; the result is unrated.", "Two signed-in accounts on two devices",
   note="Not run: needs two devices and accounts at the same time.")
 C("TC-F08-02", "FE04 Online", "FR-15", "Unit", "Rule", "Custom room start rules",
@@ -335,7 +335,7 @@ C("TC-W02", "Workflows", "FR-13, FR-18, FR-19", "Acceptance", "Workflow", "W02 P
   "Signed-in player; hybrid coaching enabled", status="Passed", date=D10, tester=HUY, note="EV-02 (TC-F05-01, TC-F06-01).")
 C("TC-W03", "Workflows", "FR-14, FR-16, FR-18", "Acceptance", "Workflow", "W03 Play online and save the result (owner: Đạt, support: Huy)",
   "1. Search ranked 1v1.\n2. Accept the offer.\n3. Play on the dedicated server to the result.", "The match runs on the dedicated server and both sides see the final result.",
-  "Dedicated server idle", status="Passed", date=D10, tester=HUY, note="EV-02, bot-fallback variant: accept 11:03:23, match started 11:03:46, result 0:2 at 11:06:04. Human-versus-human variant is TC-F09-01 (failed). D-14 found.")
+  "Dedicated server idle", status="Passed", date=D10, tester=HUY, note="EV-02, bot-fallback variant: accept 11:03:23, match started 11:03:46, result 0:2 at 11:06:04. Human-versus-human variant is TC-F09-01, which failed in Round 1 (D-09). D-14 found.")
 C("TC-W04", "Workflows", "FR-27, FR-28, FR-30, FR-31", "Acceptance", "Workflow", "W04 Review a report and publish a lesson (owner: Kiên, support: Thuận)",
   "1. Player reports an opponent.\n2. Admin accepts and suspends.\n3. Suspended player appeals.\n4. Admin accepts the appeal.\n5. Admin edits a lesson draft and publishes it.\n6. A player restarts the client and opens the lesson.", "Account becomes SUSPENDED, then ACTIVE after the accepted appeal; all decisions are audited; the published lesson text appears in the client.",
   "Two players and one admin", note="Not run: blocked by D-09.")

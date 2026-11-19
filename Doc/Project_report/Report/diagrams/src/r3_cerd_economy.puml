@@ -1,51 +1,35 @@
-@startchen r3_cerd_economy
+@startuml r3_cerd_economy
 !include _style.iuml
-entity PLAYER_PROFILE {
-  PlayerId <<key>>
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
 }
-entity CURRENCY {
-  CurrencyId <<key>>
+entity "CURRENCY" as CURRENCY {
+  * CurrencyId
+  --
   Name
 }
-entity COSMETIC {
-  CosmeticId <<key>>
+entity "COSMETIC" as COSMETIC {
+  * CosmeticId
+  --
   ItemCode
 }
-entity MISSION {
-  MissionId <<key>>
+entity "MISSION" as MISSION {
+  * MissionId
+  --
   Scope
   Target
 }
-entity ACHIEVEMENT {
-  AchievementId <<key>>
+entity "ACHIEVEMENT" as ACHIEVEMENT {
+  * AchievementId
+  --
   Target
 }
-relationship HOLDS {
-  Balance
-}
-relationship PRICED_IN {
-  Price
-}
-relationship OWNS {
-  Equipped
-}
-relationship PROGRESSES {
-  PeriodKey
-  Progress
-  Claimed
-}
-relationship EARNS {
-  Progress
-  Claimed
-}
-PLAYER_PROFILE -M- HOLDS
-HOLDS -N- CURRENCY
-COSMETIC -M- PRICED_IN
-PRICED_IN -N- CURRENCY
-PLAYER_PROFILE -M- OWNS
-OWNS -N- COSMETIC
-PLAYER_PROFILE -M- PROGRESSES
-PROGRESSES -N- MISSION
-PLAYER_PROFILE -M- EARNS
-EARNS -N- ACHIEVEMENT
-@endchen
+PLAYER_PROFILE }o--o{ CURRENCY : "holds (Balance)"
+COSMETIC }o--o{ CURRENCY : "priced in (Price)"
+PLAYER_PROFILE }o--o{ COSMETIC : "owns (Equipped)"
+PLAYER_PROFILE }o--o{ MISSION : "progresses (PeriodKey, Progress, Claimed)"
+PLAYER_PROFILE }o--o{ ACHIEVEMENT : "earns (Progress, Claimed)"
+@enduml

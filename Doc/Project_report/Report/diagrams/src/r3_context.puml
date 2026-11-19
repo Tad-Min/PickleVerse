@@ -7,9 +7,9 @@ skinparam rectangle {
 actor "Player\n(PC / Android)" as Player
 actor "Administrator" as Admin
 rectangle "<b>PickleVerse System</b>\n\nUnity game client, Web API,\nadmin web, AI coaching service,\ndedicated game server,\nPostgreSQL and Redis" as SYS #F5F9FC
-rectangle "Photon Cloud\n(Fusion session and relay)" as PH
-rectangle "Gmail SMTP\n(email delivery)" as SMTP
-rectangle "S3-compatible\nobject storage" as S3
+rectangle "Photon Cloud\n(Fusion session and relay)" as PH <<external system>>
+rectangle "Gmail SMTP\n(email delivery)" as SMTP <<external system>>
+rectangle "S3-compatible\nobject storage" as S3 <<external system>>
 
 Player --> SYS : account data, game input,\ntraining runs, reports, appeals
 SYS --> Player : game state, rewards, rankings,\ncoaching tips, replays

@@ -13,6 +13,7 @@ CHANGES = [
     ("13/11/2026", "M", "Nguyễn Gia Huy", "v1.3 – Communication interfaces: the staging environment serves the Web API and the admin web over HTTPS since 13/11/2026."),
     ("17/11/2026", "M", "Nguyễn Gia Huy", "v1.4 – Updated to main @ 96ff8e9 and the Review 1 comments: use cases UC-69 to UC-76 and the use case diagram P4 part 3; FR-34 Social Feed and Posts and FR-35 Direct Messages and Whispers; match detail in FR-24; display modes and quit in FR-05; ranked doubles with bot fill in UC-19, FR-14, FR-18, BR-22, BR-23 and BR-26; XP curve n × 10 in FR-20 and BR-33; business rules BR-52 to BR-57; messages MSG66 to MSG78; social screens, authorisation, non-screen functions and conceptual ERD; 59 tables and 147 endpoints."),
     ("18/11/2026", "M", "Nguyễn Gia Huy", "v1.5 – Rules aligned with the implemented behaviour after the defect review (Report 5, D-28 and D-30): BR-28 and FR-17 – a player who leaves or does not return within the 30-second reconnection window forfeits (loss, no Tokenpad or XP), and only an administrator stop or a lost dedicated server ends a match as interrupted; BR-32 – custom room matches give no XP or Tokenpad."),
+    ("19/11/2026", "M", "Nguyễn Gia Huy", "v1.6 – Interface labels checked against the build: Online Lobby join button THAM GIA, new screen Match Summary (THOÁT TRẬN, VỀ PHÒNG CHỜ, VỀ TRANG CHỦ); MSG70 and the feed use case updated after the fix of D-22 for Windows; Vietnamese labels explained in English (Table of interface labels in §5.4); conceptual ERD redrawn in crow's-foot notation, the notation of the logical and physical ERDs; use case overview drawn with packages and the main use cases; non-human actors drawn as «actor» rectangles."),
 ]
 
 r = Report("Report3_Software Requirement Specification.docx", "Report 3 – Software Requirement Specification", CHANGES)
@@ -176,6 +177,7 @@ SCREENS = [
     ("FE-04", "Online Lobby", "Singles 1v1 and Doubles 2v2 tabs, room code with Copy, Join by code, roster slots with Invite buttons, a collapsible friends column listing online friends who can be invited, and the Find match / Cancel button with an elapsed-time counter."),
     ("FE-04", "Ready Check [popup]", "Match found message with Accept and Decline buttons and a 10-second countdown."),
     ("FE-04", "Multiplayer Court", "Online match on the dedicated server with score, connection state, reconnecting overlay and leave control."),
+    ("FE-04", "Match Summary [overlay]", "Outcome cinematic with the THOÁT TRẬN button, then the summary card PICKLEVERSE / TỔNG KẾT TRẬN ĐẤU: outcome, players, Elo change with the rating before and after, current rank, game scores and XP, and the buttons VỀ PHÒNG CHỜ (back to the room or the online lobby) and VỀ TRANG CHỦ (back to the menu)."),
     ("FE-07", "Match History [popup]", "Level card and the last 20 matches with opponent, mode, Vietnam time, result, game score, Elo change, and Report and Replay buttons; selecting a match opens Match Detail."),
     ("FE-07", "Match Detail [popup]", "Kind, mode, series score, Elo change and end time; tab Tỉ số with the score of each game for team A and team B; tab Thông số with the errors per technique and game of each player; Làm mới and Quay lại."),
     ("FE-07", "Replay Viewer", "Playback of a recorded match with play/pause, a seek bar and speeds from 0.5× to 2×."),
@@ -214,7 +216,7 @@ AUTH = [
     ("    Update name, select character, sign out", "", "X", "", ""),
     ("Training Academy, Drill Result, Training Progress", "", "X", "", ""),
     ("Bot Match Setup, Bot Match, Match Result, Coaching Summary", "", "X", "", ""),
-    ("Online Lobby, Ready Check, Multiplayer Court", "", "X", "", ""),
+    ("Online Lobby, Ready Check, Multiplayer Court, Match Summary", "", "X", "", ""),
     ("    Create room, invite friend, start a custom match (host only)", "", "X", "", ""),
     ("Match History, Match Detail, Replay Viewer", "", "X", "", ""),
     ("    Query own matches and replays only", "", "X", "", ""),
@@ -272,7 +274,7 @@ r.table(["#", "Feature", "System Function", "Description"], [[str(i + 1), a, b, 
         widths=[0.8, 1.5, 3.8, 9.9], size=8.5, caption="Non-screen functions")
 
 r.h4("3.1.5 Entity Relationship Diagram")
-r.p("The conceptual ERD is drawn in Chen notation and split into seven subject areas so that every diagram stays readable. Entities are business concepts rather than database tables: junction tables appear as relationships with their own attributes (for example PARTICIPATES carries Team and Outcome), and purely technical tables such as refresh tokens and telemetry parts are omitted. The logical design of all 59 tables is given in Report 4, §2.")
+r.p("The conceptual ERD is the first of the three ERD levels; the logical and the physical ERDs follow in Report 4, §2.1 and §2.2, and all three use crow's-foot notation. It is split into seven subject areas so that every diagram stays readable. Entities are business concepts rather than database tables, with their business attributes and the key above the line; many-to-many relationships keep their own attributes on the relationship line (for example participates carries Team and Outcome), and purely technical tables such as refresh tokens and telemetry parts are omitted. The logical design of all 59 tables is given in Report 4, §2.")
 for f, cap in [
     ("r3_cerd_account.png", "Conceptual ERD – accounts, profiles and social relations"),
     ("r3_cerd_training.png", "Conceptual ERD – techniques, lessons and training"),

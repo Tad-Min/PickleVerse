@@ -2,22 +2,76 @@
 !include _style.iuml
 skinparam classAttributeIconSize 0
 package "Admin Web (React)" {
-  class AuthContext
-  class "CMS page" as CmsPage
-  class "Users page" as UsersPage
-  class "Moderation page" as ModPage
-  class "Matches page" as MatchesPage
-  class "Analytics page" as AnalyticsPage
+  class AuthContext {
+    + login(email, password) : Promise
+    + logout() : void
+  }
+  class CmsPage <<page>> {
+    + saveDraft(id, draft, version) : Promise
+    + publish(id) : Promise
+    + unpublish(id) : Promise
+  }
+  class UsersPage <<page>> {
+    + search(query) : Promise
+    + previewReset(player, groups) : Promise
+    + resetProgress(player, request) : Promise
+  }
+  class ModerationPage <<page>> {
+    + reviewReport(request) : Promise
+    + reviewAppeal(id, request) : Promise
+  }
+  class MatchesPage <<page>> {
+    + stopMatch(match, reason) : Promise
+    + stopStatus(match) : Promise
+  }
+  class AnalyticsPage <<page>> {
+    + load() : Promise
+  }
   class "Axios client\n(ApiResponse unwrap)" as Axios
 }
 package "Web API" {
-  class ContentController <<ApiController>>
-  class ProgressResetController <<ApiController>>
-  class AdminController <<ApiController>>
-  class AdminModerationController <<ApiController>>
-  class LiveMatchesController <<ApiController>>
-  class AnalyticsController <<ApiController>>
-  class ExpertReviewController <<ApiController>>
+  class ContentController <<ApiController>> {
+    + List() : IActionResult
+    + Get(id) : IActionResult
+    + Save(id, draft) : IActionResult
+    + Publish(id) : IActionResult
+    + Unpublish(id) : IActionResult
+  }
+  class ProgressResetController <<ApiController>> {
+    + Preview(player, request) : IActionResult
+    + Reset(player, request) : IActionResult
+  }
+  class AdminController <<ApiController>> {
+    + GetUsers(query) : IActionResult
+    + AssignRole(request) : IActionResult
+    + BanUser(request) : IActionResult
+    + UnbanUser(request) : IActionResult
+    + ManualVerifyUserEmail(user) : IActionResult
+    + GetReports(query) : IActionResult
+    + ReviewReport(request) : IActionResult
+  }
+  class AdminModerationController <<ApiController>> {
+    + Sanctions(player) : IActionResult
+    + Appeals(query) : IActionResult
+    + Review(id, request) : IActionResult
+    + Stop(match, request) : IActionResult
+    + StopOperation(match) : IActionResult
+  }
+  class LiveMatchesController <<ApiController>> {
+    + Live() : IActionResult
+  }
+  class AnalyticsController <<ApiController>> {
+    + Summary() : IActionResult
+    + Errors() : IActionResult
+    + Report(from, to) : IActionResult
+  }
+  class ExpertReviewController <<ApiController>> {
+    + Sessions(query) : IActionResult
+    + Evidence(session) : IActionResult
+    + Review(batch, request) : IActionResult
+    + TierDataset() : IActionResult
+    + CoachingDataset() : IActionResult
+  }
   interface IContentService {
     + Lessons() : Task<List<LessonSummary>>
     + Get(id) : Task<LessonDraft>
@@ -50,7 +104,7 @@ package "Web API" {
 }
 CmsPage --> Axios
 UsersPage --> Axios
-ModPage --> Axios
+ModerationPage --> Axios
 MatchesPage --> Axios
 AnalyticsPage --> Axios
 AuthContext --> Axios

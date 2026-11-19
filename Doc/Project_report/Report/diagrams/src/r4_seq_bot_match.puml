@@ -2,30 +2,43 @@
 !include _style.iuml
 autonumber
 skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
 
 actor Player
-participant "ModeSelectionMenu" as MS
-participant "BotMatch" as BM
-participant "BhTreeBot / LocalBot" as Bot
-participant "SinglesRules" as R
-participant "ProgressionRuntime" as PR
-participant "GameMatchesController" as C
-Player -> MS : choose difficulty, time of day, venue
-MS -> BM : load BotMatch scene
-BM -> PR : StartBotAsync()
-PR -> C : POST /api/Game/match/bot/start
-C --> PR : match id
-BM -> BM : intro cinematic (skippable)
-loop each rally until a player wins 2 games
+boundary ":ModeSelectionMenu" as MS
+boundary ":BotMatch" as BM
+control ":BhTreeBot" as Bot
+control ":SinglesRules" as R
+control ":ProgressionRuntime" as PR
+control ":GameMatchesController" as C
+Player -> MS : StartBot()
+activate MS
+MS -> BM : load BotMatch scene (difficulty, time of day, venue)
+deactivate MS
+activate BM
+BM -> PR : StartBotAsync(kind, requestId)
+activate PR
+PR -> C : StartBot(request)
+PR --> BM : match id
+deactivate PR
+loop no player has won two games
   Player -> BM : movement and shot keys
   BM -> Bot : Step(dt)
-  Bot --> BM : movement and shot request
-  BM -> R : Serve / Hit / Bounce
-  R --> BM : Fault or continue
+  activate Bot
+  Bot --> BM : move, run
+  deactivate Bot
+  BM -> R : Hit(player, contact, feetInKitchen)
+  activate R
+  R --> BM : fault or rally continues
+  deactivate R
   BM -> R : CommitRally()
 end
-BM -> PR : FinishBotAsync(result)
-PR -> C : POST /api/Game/match/bot/complete
-C --> PR : snapshot with rewards
-BM --> Player : result screen and coaching button
+BM -> PR : FinishBotAsync(result, requestId)
+activate PR
+PR -> C : FinishBot(request)
+PR --> BM : snapshot with rewards
+deactivate PR
+BM --> Player : result screen and Xem phân tích button
+deactivate BM
 @enduml

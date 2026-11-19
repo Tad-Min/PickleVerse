@@ -1,0 +1,107 @@
+@startuml r4_lerd_match
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "GameMatches" as GameMatches {
+  * MatchId <<PK>>
+  --
+  * AuthorityMode
+  ServerHeartbeatAt
+  * Kind
+  * Status
+  * RatingPolicyVersion
+  * Mode
+  PhotonSession
+  SearchId
+  Region
+  * Night
+  * Venue
+  * CreatedAt
+  * UpdatedAt
+  StartedAt
+  EndedAt
+  Sequence
+}
+entity "GameMatchPlayers" as GameMatchPlayers {
+  * MatchId <<PK, FK>>
+  * PlayerId <<PK, FK>>
+  --
+  * Team
+  * EloBefore
+  GroupId
+  * RosterIndex
+  * IsReplayWriter
+  * ValidReturns
+  * ValidServes
+  * EndReason
+  ReportedAt
+  * LastSeenAt
+  Outcome
+  * LocalForfeit
+  FinalizedAt
+}
+entity "MatchScore" as MatchScore {
+  * MatchId <<PK, FK>>
+  * GameNumber <<PK>>
+  --
+  * TeamAScore
+  * TeamBScore
+  * Completed
+  TeamAStartSide
+}
+entity "ratingledger" as ratingledger {
+  * playerid <<PK, FK>>
+  * matchid <<PK, FK>>
+  --
+  * beforeelo
+  * afterelo
+  * opponentelo
+  * delta
+  * policyversion
+  * createdat
+}
+entity "MatchHistoryReplay" as MatchHistoryReplay {
+  * MatchId <<PK, FK>>
+  --
+  * ObjectKey
+}
+entity "MatchmakingSearches" as MatchmakingSearches {
+  * SearchId <<PK>>
+  --
+  * PlayerId <<FK>>
+  * Mode
+  * Region
+  * Protocol
+  * State
+  * StartedAt
+  * LastSeenAt
+  EndedAt
+  WaitMilliseconds
+  MatchId
+  * CancelledAfterAssignment
+}
+entity "DedicatedOperations" as DedicatedOperations {
+  * OperationId <<PK>>
+  --
+  * MatchId <<FK>>
+  * LeaseId
+  * ActorId
+  * Reason
+  * CreatedAt
+  AcknowledgedAt
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+}
+GameMatches ||--o{ GameMatchPlayers : "MatchId"
+PlayerProfiles ||--o{ GameMatchPlayers : "PlayerId"
+GameMatches ||--o{ MatchScore : "MatchId"
+PlayerProfiles ||--o{ ratingledger : "playerid"
+GameMatches ||--o{ ratingledger : "matchid"
+GameMatches ||--o| MatchHistoryReplay : "MatchId"
+PlayerProfiles ||--o{ MatchmakingSearches : "PlayerId"
+GameMatches ||--o{ DedicatedOperations : "MatchId"
+@enduml

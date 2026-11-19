@@ -1,44 +1,36 @@
-@startchen r3_cerd_account
+@startuml r3_cerd_account
 !include _style.iuml
-entity ACCOUNT {
-  AccountId <<key>>
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "ACCOUNT" as ACCOUNT {
+  * AccountId
+  --
   Email
   PasswordHash
   Status
 }
-entity ROLE {
-  RoleId <<key>>
+entity "ROLE" as ROLE {
+  * RoleId
+  --
   RoleName
 }
-entity PLAYER_PROFILE {
-  PlayerId <<key>>
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+  --
   PlayerName
   Elo
   Level
   ExperienceChoice
 }
-entity VERIFICATION_CODE {
-  CodeId <<key>>
+entity "VERIFICATION_CODE" as VERIFICATION_CODE {
+  * CodeId
+  --
   ExpiresAt
 }
-relationship HAS_ROLE {
-}
-relationship OWNS_PROFILE {
-}
-relationship VERIFIES {
-}
-relationship FRIEND_OF {
-}
-relationship BLOCKS {
-}
-ROLE -1- HAS_ROLE
-HAS_ROLE -N- ACCOUNT
-ACCOUNT -1- OWNS_PROFILE
-OWNS_PROFILE -1- PLAYER_PROFILE
-ACCOUNT -1- VERIFIES
-VERIFIES -N- VERIFICATION_CODE
-ACCOUNT -M- FRIEND_OF
-FRIEND_OF -N- ACCOUNT
-ACCOUNT -M- BLOCKS
-BLOCKS -N- ACCOUNT
-@endchen
+ROLE ||--o{ ACCOUNT : "has role"
+ACCOUNT ||--|| PLAYER_PROFILE : "owns profile"
+ACCOUNT ||--o{ VERIFICATION_CODE : "verifies"
+ACCOUNT }o--o{ ACCOUNT : "friend of"
+ACCOUNT }o--o{ ACCOUNT : "blocks"
+@enduml
