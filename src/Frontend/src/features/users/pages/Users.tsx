@@ -1,4 +1,4 @@
-import { UserStatus } from '../../../types/status';
+import { UserStatus, userStatusLabel } from '../../../types/status';
 import { ProgressResetDialog } from './ProgressResetDialog';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -122,7 +122,7 @@ export const Users: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold font-display text-foreground tracking-tight">Quản lý Người dùng</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Tra cứu tài khoản, phân quyền Role (RBAC), kích hoạt thủ công và xử lý kỷ luật
+            Tra cứu tài khoản, phân quyền vai trò, kích hoạt thủ công và xử lý kỷ luật
           </p>
         </div>
       </div>
@@ -132,8 +132,8 @@ export const Users: React.FC = () => {
         <div
           className={`p-3.5 rounded-lg flex items-center justify-between text-xs font-medium border ${
             actionMessage.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-              : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+              ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+              : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
           }`}
         >
           <span>{actionMessage.text}</span>
@@ -158,7 +158,7 @@ export const Users: React.FC = () => {
               setPage(1);
             }}
             placeholder="Tìm theo tên người chơi, email..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-border rounded-lg text-xs text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-lg text-xs text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
 
@@ -171,12 +171,12 @@ export const Users: React.FC = () => {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="bg-slate-900 border border-border rounded-lg text-xs text-foreground px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="bg-background border border-border rounded-lg text-xs text-foreground px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">Tất cả trạng thái</option>
-            <option value="ACTIVE">ACTIVE (Đang hoạt động)</option>
-            <option value="BANNED">BANNED (Bị khóa)</option>
-            <option value="SUSPENDED">SUSPENDED (Tạm ngưng)</option>
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="BANNED">Bị cấm</option>
+            <option value="SUSPENDED">Đình chỉ</option>
           </select>
         </div>
       </div>
@@ -185,10 +185,10 @@ export const Users: React.FC = () => {
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/60 border-b border-border text-muted-foreground uppercase tracking-wider text-[11px] font-semibold">
+            <thead className="bg-background/60 border-b border-border text-muted-foreground uppercase tracking-wider text-[11px] font-semibold">
               <tr>
                 <th className="py-3.5 px-4">Người chơi / Email</th>
-                <th className="py-3.5 px-4">Vai trò (Role)</th>
+                <th className="py-3.5 px-4">Vai trò</th>
                 <th className="py-3.5 px-4">Trạng thái</th>
                 <th className="py-3.5 px-4">Điểm Elo</th>
                 <th className="py-3.5 px-4">Thời gian chơi</th>
@@ -217,7 +217,7 @@ export const Users: React.FC = () => {
                   const isAdminRole = u.roleName === 'Admin' || u.roleId === 2;
 
                   return (
-                    <tr key={u.userId} className="hover:bg-slate-800/50 transition-colors">
+                    <tr key={u.userId} className="hover:bg-muted/50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{u.playerName || 'Chưa đặt tên'}</div>
                         <div className="text-[11px] text-muted-foreground font-mono">{u.email}</div>
@@ -225,27 +225,27 @@ export const Users: React.FC = () => {
 
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
+                          className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-[11px] font-medium border ${
                             isAdminRole
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                              : 'bg-slate-700/30 text-slate-300 border-slate-700'
+                              ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
+                              : 'bg-muted/30 text-muted-foreground border-border'
                           }`}
                         >
-                          {isAdminRole ? 'Admin' : 'Player'}
+                          {isAdminRole ? 'Quản trị viên' : 'Người chơi'}
                         </span>
                       </td>
 
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
+                          className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-[11px] font-medium border ${
                             isBanned
-                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                              ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
                               : isUnverified
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                           }`}
                         >
-                          {u.status}
+                          {userStatusLabel[u.status] ?? u.status}
                         </span>
                       </td>
 
@@ -264,8 +264,8 @@ export const Users: React.FC = () => {
                           {/* Role Assign */}
                           <button
                             onClick={() => handleOpenRoleModal(u)}
-                            title="Gán vai trò (Role)"
-                            className="p-1.5 rounded hover:bg-slate-700 text-muted-foreground hover:text-foreground transition-colors"
+                            title="Gán vai trò"
+                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                           >
                             <Shield className="w-3.5 h-3.5" />
                           </button>
@@ -275,7 +275,7 @@ export const Users: React.FC = () => {
                             <button
                               onClick={() => verifyEmailMutation.mutate(u.userId)}
                               title="Kích hoạt tài khoản thủ công"
-                              className="p-1.5 rounded hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                              className="p-1.5 rounded hover:bg-emerald-500/20 text-emerald-600 transition-colors"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
                             </button>
@@ -285,7 +285,7 @@ export const Users: React.FC = () => {
                           <button
                             onClick={() => handleOpenResetModal(u)}
                             title="Đặt lại tiến trình"
-                            className="p-1.5 rounded hover:bg-amber-500/20 text-amber-400 transition-colors"
+                            className="p-1.5 rounded hover:bg-amber-500/20 text-amber-600 transition-colors"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
                           </button>
@@ -294,16 +294,16 @@ export const Users: React.FC = () => {
                           {isBanned ? (
                             <button
                               onClick={() => { setSelectedUser(u); setBanReason(''); setActiveModal('UNBAN'); }}
-                              title="Mở khóa tài khoản (Unban)"
-                              className="p-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
+                              title="Mở khóa tài khoản"
+                              className="p-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 border border-emerald-500/20 transition-colors"
                             >
                               <UserCheck className="w-3.5 h-3.5" />
                             </button>
                           ) : (
                             <button
                               onClick={() => handleOpenBanModal(u)}
-                              title="Khóa tài khoản (Ban)"
-                              className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
+                              title="Khóa tài khoản"
+                              className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 transition-colors"
                             >
                               <ShieldAlert className="w-3.5 h-3.5" />
                             </button>
@@ -325,14 +325,14 @@ export const Users: React.FC = () => {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1 || isFetching}
-              className="p-1.5 rounded bg-slate-900 border border-border hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
+              className="p-1.5 rounded bg-background border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={users.length < pageSize || isFetching}
-              className="p-1.5 rounded bg-slate-900 border border-border hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
+              className="p-1.5 rounded bg-background border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -344,13 +344,13 @@ export const Users: React.FC = () => {
       {activeModal === 'ROLE' && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-card border border-border rounded-xl p-6 shadow-2xl relative">
-            <h3 className="text-base font-bold text-foreground font-display mb-2">Gán Vai trò (RBAC)</h3>
+            <h3 className="text-base font-bold text-foreground font-display mb-2">Gán Vai trò</h3>
             <p className="text-xs text-muted-foreground mb-4">
               Người dùng: <span className="font-semibold text-foreground">{selectedUser.playerName}</span> ({selectedUser.email})
             </p>
 
             <div className="space-y-3 mb-6">
-              <label className="flex items-center gap-3 p-3 rounded-lg border border-border bg-slate-900/50 cursor-pointer hover:border-primary transition-all">
+              <label className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background/50 cursor-pointer hover:border-primary transition-all">
                 <input
                   type="radio"
                   name="role"
@@ -360,12 +360,12 @@ export const Users: React.FC = () => {
                   className="text-primary focus:ring-primary"
                 />
                 <div>
-                  <div className="text-xs font-semibold text-foreground">Role: Player (Người chơi)</div>
+                  <div className="text-xs font-semibold text-foreground">Người chơi</div>
                   <div className="text-[11px] text-muted-foreground">Chỉ truy cập game client, không thể vào trang quản trị.</div>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 rounded-lg border border-border bg-slate-900/50 cursor-pointer hover:border-primary transition-all">
+              <label className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background/50 cursor-pointer hover:border-primary transition-all">
                 <input
                   type="radio"
                   name="role"
@@ -375,8 +375,8 @@ export const Users: React.FC = () => {
                   className="text-primary focus:ring-primary"
                 />
                 <div>
-                  <div className="text-xs font-semibold text-foreground">Role: Admin (Quản trị viên)</div>
-                  <div className="text-[11px] text-muted-foreground">Toàn quyền truy cập và thao tác trên Admin Portal.</div>
+                  <div className="text-xs font-semibold text-foreground">Quản trị viên</div>
+                  <div className="text-[11px] text-muted-foreground">Toàn quyền truy cập và thao tác trên Cổng quản trị.</div>
                 </div>
               </label>
             </div>
@@ -404,7 +404,7 @@ export const Users: React.FC = () => {
       {(activeModal === 'BAN' || activeModal === 'UNBAN') && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-card border border-border rounded-xl p-6 shadow-2xl relative">
-            <h3 className="text-base font-bold text-foreground font-display mb-1 text-rose-400">{activeModal === 'UNBAN' ? 'Thu hồi hạn chế tài khoản' : 'Khóa / tạm ngưng tài khoản'}</h3>
+            <h3 className="text-base font-bold text-foreground font-display mb-1 text-rose-600">{activeModal === 'UNBAN' ? 'Thu hồi hạn chế tài khoản' : 'Khóa / đình chỉ tài khoản'}</h3>
             <p className="text-xs text-muted-foreground mb-4">
               Khóa tài khoản: <span className="font-semibold text-foreground">{selectedUser.playerName}</span> ({selectedUser.email})
             </p>
@@ -412,33 +412,33 @@ export const Users: React.FC = () => {
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  Lý do vi phạm kỷ luật <span className="text-rose-400">*</span>
+                  Lý do vi phạm kỷ luật <span className="text-rose-600">*</span>
                 </label>
                 <textarea
                   value={banReason}
                   onChange={(e) => setBanReason(e.target.value)}
                   placeholder="Ví dụ: Gian lận điểm Elo, sử dụng ngôn từ kích động, AFK liên tục..."
                   rows={3}
-                  className="w-full p-2.5 bg-slate-900 border border-border rounded-lg text-xs text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full p-2.5 bg-background border border-border rounded-lg text-xs text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500"
                   required
                 />
               </div>
 
               {activeModal === 'BAN' && <div>
-                <label className="block text-xs font-semibold mb-1.5">Hình thức</label>
-                <select value={restriction} onChange={e => setRestriction(e.target.value as UserStatus.Banned | UserStatus.Suspended)} className="w-full p-2 bg-slate-900 border rounded">
-                  <option value={UserStatus.Banned}>Khóa tài khoản</option><option value={UserStatus.Suspended}>Tạm ngưng có thời hạn</option>
+                <label className="block text-xs font-semibold text-foreground mb-1.5">Hình thức</label>
+                <select value={restriction} onChange={e => setRestriction(e.target.value as UserStatus.Banned | UserStatus.Suspended)} className="w-full p-2.5 bg-background border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value={UserStatus.Banned}>Khóa tài khoản</option><option value={UserStatus.Suspended}>Đình chỉ có thời hạn</option>
                 </select>
               </div>}
               {activeModal === 'BAN' && <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  Thời hạn (bắt buộc khi tạm ngưng)
+                  Thời hạn (bắt buộc khi đình chỉ)
                 </label>
                 <input
                   type="datetime-local"
                   value={bannedUntil}
                   onChange={(e) => setBannedUntil(e.target.value)}
-                  className="w-full p-2 bg-slate-900 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-2 bg-background border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>}
             </div>

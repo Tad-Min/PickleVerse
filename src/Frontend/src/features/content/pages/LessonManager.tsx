@@ -4,6 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { apiClient } from '../../../api/client';
 import { ContentPublishStatus } from '../../../types/status';
+import {
+  badgeBase, btnGhost, btnPrimary, card, fieldLabel, inputClass, notice, rowHover, sectionTitle, tone,
+} from '../../../shared/ui/adminStyles';
 
 type Skill = 'Serve' | 'Drive' | 'Dink' | 'Volley' | 'Modifiers' | 'Drop' | 'Reset' | 'Smash' | 'Footwork' | 'Approach' | 'DoublesCover' | 'DoublesTransition';
 interface TrainingConfig {
@@ -13,23 +16,25 @@ interface TrainingConfig {
   requiredLevel: number; targetRadius: number; targetDepth: number;
   alternateTargets: boolean; requireRecovery: boolean; masks: number[]; prerequisites: string[];
 }
-interface LessonContent {
+export interface LessonContent {
   lessonId: number; code: string; status: ContentPublishStatus; version: number; order: number;
   draft: TrainingConfig; published: TrainingConfig | null;
 }
 const templates: Record<Skill, { label: string; masks: number[] }> = {
   Serve: { label: 'Giao bóng', masks: [1] }, Drive: { label: 'Drive', masks: [1] }, Dink: { label: 'Dink', masks: [2] },
   Volley: { label: 'Volley', masks: [4] }, Modifiers: { label: 'Lực và hướng', masks: [9,17,10,18,12,20] },
-  Drop: { label: 'Third-shot drop', masks: [3] }, Reset: { label: 'Reset bóng', masks: [6] }, Smash: { label: 'Smash', masks: [5] },
+  Drop: { label: 'Thả bóng cú ba', masks: [3] }, Reset: { label: 'Reset bóng', masks: [6] }, Smash: { label: 'Smash', masks: [5] },
   Footwork: { label: 'Di chuyển', masks: [1,17] }, Approach: { label: 'Drop và tiến lên', masks: [3] },
   DoublesCover: { label: 'Đội hình đôi', masks: [4,20] }, DoublesTransition: { label: 'Phối hợp đôi', masks: [3,2,4] },
 };
-const names: Record<ContentPublishStatus, string> = { DRAFT: 'Bản nháp', PUBLISHED: 'Đang xuất bản', UNPUBLISHED: 'Đã gỡ' };
+export const names: Record<ContentPublishStatus, string> = { DRAFT: 'Bản nháp', PUBLISHED: 'Đang xuất bản', UNPUBLISHED: 'Đã gỡ' };
+const statusTone: Record<ContentPublishStatus, string> = {
+  DRAFT: tone.amber, PUBLISHED: tone.emerald, UNPUBLISHED: tone.neutral,
+} as Record<ContentPublishStatus, string>;
 const blank = (): TrainingConfig => ({ id: '', title: '', explanation: '', coaching: '', skill: 'Serve', tier: 0, trials: 8,
   required: 6, reward: 150, xp: 5, requiredLevel: 1, targetRadius: .9, targetDepth: 0, alternateTargets: false,
   requireRecovery: false, masks: [1], prerequisites: [] });
-const input = 'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm';
-const button = 'rounded-lg border border-border px-4 py-2 text-sm hover:bg-accent disabled:opacity-40';
+const checkboxRow = 'flex items-start gap-2 text-xs text-foreground';
 
 export function LessonManager() {
   const client = useQueryClient();
@@ -66,53 +71,241 @@ export function LessonManager() {
     ['xp','Thưởng XP',0,10000,1], ['requiredLevel','Cấp độ tối thiểu',1,1000,1], ['targetRadius','Bán kính đích (m)',.3,2,.05],
     ['targetDepth','Độ sâu đích (m; 0 = theo mẫu)',0,6.4,.05],
   ];
-  return <section className="grid gap-5 lg:grid-cols-[290px_1fr]">
-    <aside className="space-y-3 rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center justify-between"><h2 className="font-semibold">Danh mục ({query.data?.length ?? 0})</h2>
-        <button type="button" className={button} onClick={() => { setSelected(null); setConfig(blank()); setFeedback(''); }}>Tạo bài</button></div>
-      {query.isLoading && <p>Đang tải…</p>}
-      {query.isError && <p className="text-red-400">Không tải được danh mục. <button onClick={() => query.refetch()}>Thử lại</button></p>}
-      <div className="max-h-[700px] space-y-2 overflow-y-auto">{query.data?.map(row => <button key={row.lessonId} type="button"
-        disabled={action.isPending} onClick={() => { setSelected(row.lessonId); setFeedback(''); }}
-        className={`w-full rounded-lg border p-3 text-left ${selected === row.lessonId ? 'border-primary bg-primary/10' : 'border-border'}`}>
-        <span className="block text-sm font-medium">{row.draft.title}</span><span className="text-xs text-muted-foreground">{names[row.status]} · Phiên bản {row.version}</span>
-      </button>)}</div>
-    </aside>
-    <form onSubmit={submit} className="space-y-5 rounded-xl border border-border bg-card p-5">
-        <label className="block text-sm">Phiên bản tham chiếu kỹ thuật
-          <select className={input} value={config.referenceId || ''} onChange={e => update('referenceId', e.target.value)}>
-            <option value="">Tự chọn phiên bản mới nhất khi xuất bản</option>
-            {references.data?.filter(x => x.technique === config.skill).map(x => <option value={x.referenceId} key={x.referenceId}>{x.technique} · v{x.version}</option>)}
-          </select>
-        </label>
-      <div><h2 className="text-lg font-semibold">{current ? 'Chỉnh sửa bài học và drill' : 'Tạo bài học từ mẫu'}</h2>
-        <p className="mt-1 text-xs text-muted-foreground">Lưu tạo bản nháp. Xuất bản áp dụng cấu hình cho lượt chơi mới; lượt đang tập giữ phiên bản cũ.</p></div>
-      {feedback && <p role="status" className="rounded-lg border border-border bg-background p-3 text-sm">{feedback}</p>}
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-1 text-sm">Mã bài<input className={input} required pattern="[a-z][a-z0-9-]{1,49}" value={config.id} disabled={!!current} onChange={e => update('id',e.target.value)} /></label>
-        <label className="space-y-1 text-sm">Tên bài<input className={input} required maxLength={254} value={config.title} onChange={e => update('title',e.target.value)} /></label>
-        <label className="space-y-1 text-sm">Mẫu kỹ thuật<select className={input} value={config.skill} onChange={e => {
-          const skill = e.target.value as Skill; setConfig(old => ({ ...old, skill, masks: templates[skill].masks, alternateTargets: false }));
-        }}>{Object.entries(templates).map(([key,t]) => <option key={key} value={key}>{t.label}</option>)}</select></label>
-        <label className="space-y-1 text-sm">Nhóm độ khó<select className={input} value={config.tier} onChange={e => update('tier',+e.target.value)}>
-          {['Cơ bản','Kiểm soát','Nâng cao','Đánh đôi'].map((name,i) => <option key={name} value={i}>{name}</option>)}</select></label>
-        {numeric.map(([key,label,min,max,step]) => <label key={key} className="space-y-1 text-sm">{label}<input className={input} type="number" required min={min} max={max} step={step} value={config[key]} onChange={e => update(key,+e.target.value)} /></label>)}
-        <label className="space-y-1 text-sm">Thứ tự<input className={input} type="number" value={order} onChange={e => setOrder(+e.target.value)} /></label>
-      </div>
-      {config.skill === 'Dink' && <label className="flex gap-2 text-sm"><input type="checkbox" checked={config.masks.every(m => m === 18)}
-        onChange={e => update('masks',e.target.checked ? [18] : [2])} />Chỉ luyện Dink chéo sân</label>}
-      {config.skill === 'Serve' && <label className="flex gap-2 text-sm"><input type="checkbox" checked={config.alternateTargets} onChange={e => update('alternateTargets',e.target.checked)} />Luân phiên hai ô giao</label>}
-      <label className="flex gap-2 text-sm"><input type="checkbox" checked={config.requireRecovery} onChange={e => update('requireRecovery',e.target.checked)} />Yêu cầu trở về vòng hồi vị sau cú đánh</label>
-      <label className="block space-y-1 text-sm">Mục tiêu bài<textarea className={input} required maxLength={254} rows={2} value={config.explanation} onChange={e => update('explanation',e.target.value)} /></label>
-      <label className="block space-y-1 text-sm">Hướng dẫn và góp ý<textarea className={input} required maxLength={2000} rows={3} value={config.coaching} onChange={e => update('coaching',e.target.value)} /></label>
-      <fieldset className="space-y-2"><legend className="text-sm font-medium">Bài điều kiện</legend><div className="grid gap-2 md:grid-cols-2">{query.data?.filter(row => row.code !== config.id).map(row => <label key={row.code} className="flex items-center gap-2 text-xs">
-        <input type="checkbox" checked={config.prerequisites.includes(row.code)} onChange={e => update('prerequisites',e.target.checked ? [...config.prerequisites,row.code] : config.prerequisites.filter(id => id !== row.code))} />{row.draft.title}
-      </label>)}</div></fieldset>
-      <div className="flex flex-wrap gap-3 border-t border-border pt-4">
-        <button className={`${button} bg-primary text-primary-foreground`} disabled={action.isPending}>Lưu bản nháp</button>
-        {current && <button className={button} type="button" disabled={action.isPending} onClick={() => action.mutate('publish')}>Xuất bản bản đã lưu</button>}
-        {current?.status === ContentPublishStatus.Published && <button className={button} type="button" disabled={action.isPending} onClick={() => action.mutate('unpublish')}>Gỡ xuất bản</button>}
-      </div>
-    </form>
-  </section>;
+
+  return (
+    <section className="grid gap-5 lg:grid-cols-[300px_1fr] items-start">
+      {/* Catalog */}
+      <aside className={`${card} space-y-3 lg:sticky lg:top-6`}>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className={sectionTitle}>Danh mục ({query.data?.length ?? 0})</h2>
+          <button
+            type="button"
+            className={btnGhost}
+            onClick={() => { setSelected(null); setConfig(blank()); setFeedback(''); }}
+          >
+            Tạo bài
+          </button>
+        </div>
+        {query.isLoading && <p className="text-xs text-muted-foreground">Đang tải…</p>}
+        {query.isError && (
+          <p className="text-xs text-rose-600">
+            Không tải được danh mục.{' '}
+            <button className="underline" onClick={() => query.refetch()}>Thử lại</button>
+          </p>
+        )}
+        <div className="max-h-[640px] space-y-2 overflow-y-auto pr-1">
+          {query.data?.map(row => (
+            <button
+              key={row.lessonId}
+              type="button"
+              disabled={action.isPending}
+              onClick={() => { setSelected(row.lessonId); setFeedback(''); }}
+              className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                selected === row.lessonId ? 'border-primary bg-primary/5' : `border-border ${rowHover}`
+              }`}
+            >
+              <span className="block text-xs font-semibold text-foreground">{row.draft.title}</span>
+              <span className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                <span className={`${badgeBase} ${statusTone[row.status]}`}>{names[row.status]}</span>
+                Phiên bản {row.version}
+              </span>
+            </button>
+          ))}
+          {query.data && query.data.length === 0 && (
+            <p className="text-xs text-muted-foreground">Chưa có bài học nào. Nhập form bên phải để tạo bài đầu tiên.</p>
+          )}
+        </div>
+      </aside>
+
+      {/* Form */}
+      <form onSubmit={submit} className={`${card} space-y-6`}>
+        <div>
+          <h2 className={sectionTitle}>{current ? 'Chỉnh sửa bài học và drill' : 'Tạo bài học từ mẫu'}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Lưu tạo bản nháp. Xuất bản áp dụng cấu hình cho lượt chơi mới; lượt đang tập giữ phiên bản cũ.
+          </p>
+        </div>
+
+        {feedback && <p role="status" className={`${notice('success')} text-xs`}>{feedback}</p>}
+
+        {/* Basic info */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Thông tin chung</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className={fieldLabel}>
+              Mã bài
+              <input
+                className={`${inputClass} font-mono`}
+                required
+                pattern="[a-z][a-z0-9-]{1,49}"
+                value={config.id}
+                disabled={!!current}
+                onChange={e => update('id', e.target.value)}
+              />
+            </label>
+            <label className={fieldLabel}>
+              Tên bài
+              <input className={inputClass} required maxLength={254} value={config.title} onChange={e => update('title', e.target.value)} />
+            </label>
+            <label className={fieldLabel}>
+              Mẫu kỹ thuật
+              <select
+                className={inputClass}
+                value={config.skill}
+                onChange={e => {
+                  const skill = e.target.value as Skill;
+                  setConfig(old => ({ ...old, skill, masks: templates[skill].masks, alternateTargets: false }));
+                }}
+              >
+                {Object.entries(templates).map(([key, t]) => <option key={key} value={key}>{t.label}</option>)}
+              </select>
+            </label>
+            <label className={fieldLabel}>
+              Nhóm độ khó
+              <select className={inputClass} value={config.tier} onChange={e => update('tier', +e.target.value)}>
+                {['Cơ bản', 'Kiểm soát', 'Nâng cao', 'Đánh đôi'].map((name, i) => <option key={name} value={i}>{name}</option>)}
+              </select>
+            </label>
+            <label className={fieldLabel}>
+              Phiên bản tham chiếu kỹ thuật
+              <select
+                className={inputClass}
+                value={config.referenceId || ''}
+                onChange={e => update('referenceId', e.target.value)}
+              >
+                <option value="">Tự chọn phiên bản mới nhất khi xuất bản</option>
+                {references.data?.filter(x => x.technique === config.skill).map(x => (
+                  <option value={x.referenceId} key={x.referenceId}>{x.technique} · v{x.version}</option>
+                ))}
+              </select>
+            </label>
+            <label className={fieldLabel}>
+              Thứ tự
+              <input className={inputClass} type="number" value={order} onChange={e => setOrder(+e.target.value)} />
+            </label>
+          </div>
+        </div>
+
+        {/* Training parameters */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Thông số luyện tập</h3>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {numeric.map(([key, label, min, max, step]) => (
+              <label key={key} className={fieldLabel}>
+                {label}
+                <input
+                  className={inputClass}
+                  type="number"
+                  required
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={config[key]}
+                  onChange={e => update(key, +e.target.value)}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="space-y-2">
+            {config.skill === 'Dink' && (
+              <label className={checkboxRow}>
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={config.masks.every(m => m === 18)}
+                  onChange={e => update('masks', e.target.checked ? [18] : [2])}
+                />
+                Chỉ luyện Dink chéo sân
+              </label>
+            )}
+            {config.skill === 'Serve' && (
+              <label className={checkboxRow}>
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={config.alternateTargets}
+                  onChange={e => update('alternateTargets', e.target.checked)}
+                />
+                Luân phiên hai ô giao
+              </label>
+            )}
+            <label className={checkboxRow}>
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={config.requireRecovery}
+                onChange={e => update('requireRecovery', e.target.checked)}
+              />
+              Yêu cầu trở về vòng hồi vị sau cú đánh
+            </label>
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nội dung hướng dẫn</h3>
+          <label className={fieldLabel}>
+            Mục tiêu bài
+            <textarea
+              className={inputClass}
+              required
+              maxLength={254}
+              rows={2}
+              value={config.explanation}
+              onChange={e => update('explanation', e.target.value)}
+            />
+          </label>
+          <label className={fieldLabel}>
+            Hướng dẫn và góp ý
+            <textarea
+              className={inputClass}
+              required
+              maxLength={2000}
+              rows={3}
+              value={config.coaching}
+              onChange={e => update('coaching', e.target.value)}
+            />
+          </label>
+        </div>
+
+        {/* Prerequisites */}
+        <fieldset className="space-y-2">
+          <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bài điều kiện</legend>
+          <div className="grid gap-2 md:grid-cols-2">
+            {query.data?.filter(row => row.code !== config.id).map(row => (
+              <label key={row.code} className={`${checkboxRow} rounded-lg border border-border bg-background p-2.5`}>
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={config.prerequisites.includes(row.code)}
+                  onChange={e => update(
+                    'prerequisites',
+                    e.target.checked
+                      ? [...config.prerequisites, row.code]
+                      : config.prerequisites.filter(id => id !== row.code),
+                  )}
+                />
+                {row.draft.title}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {/* Actions */}
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5">
+          {current?.status === ContentPublishStatus.Published && (
+            <button className={btnGhost} type="button" disabled={action.isPending} onClick={() => action.mutate('unpublish')}>
+              Gỡ xuất bản
+            </button>
+          )}
+          {current && (
+            <button className={btnGhost} type="button" disabled={action.isPending} onClick={() => action.mutate('publish')}>
+              Xuất bản bản đã lưu
+            </button>
+          )}
+          <button className={btnPrimary} disabled={action.isPending}>Lưu bản nháp</button>
+        </div>
+      </form>
+    </section>
+  );
 }

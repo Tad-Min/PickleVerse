@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.role !== 'Admin') {
         return {
           success: false,
-          message: 'Tài khoản của bạn không có vai trò Quản trị viên (Admin). Truy cập bị từ chối.',
+          message: 'Tài khoản của bạn không có vai trò Quản trị viên. Truy cập bị từ chối.',
         };
       }
 

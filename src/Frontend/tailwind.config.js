@@ -8,39 +8,41 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0F172A', // Slate 900
+        // Bảng màu: #2563EB (primary), #383838 (chữ), #686868 (chữ phụ), #F2F2F4 (nền)
+        background: '#F2F2F4',
+        foreground: '#383838',
         card: {
-          DEFAULT: '#1E293B', // Slate 800
-          foreground: '#F8FAFC',
+          DEFAULT: '#FFFFFF',
+          foreground: '#383838',
         },
         popover: {
-          DEFAULT: '#1E293B',
-          foreground: '#F8FAFC',
+          DEFAULT: '#FFFFFF',
+          foreground: '#383838',
         },
         primary: {
-          DEFAULT: '#4F46E5', // Indigo 600
+          DEFAULT: '#2563EB',
           foreground: '#FFFFFF',
-          hover: '#4338CA',
+          hover: '#1D4ED8',
         },
         secondary: {
-          DEFAULT: '#334155', // Slate 700
-          foreground: '#F8FAFC',
+          DEFAULT: '#F2F2F4',
+          foreground: '#383838',
         },
         muted: {
-          DEFAULT: '#1E293B',
-          foreground: '#94A3B8', // Slate 400
+          DEFAULT: '#F2F2F4',
+          foreground: '#686868',
         },
         accent: {
-          DEFAULT: '#06B6D4', // Cyan 500
-          foreground: '#0F172A',
-        },
-        destructive: {
-          DEFAULT: '#EF4444', // Rose 500
+          DEFAULT: '#2563EB',
           foreground: '#FFFFFF',
         },
-        border: '#334155', // Slate 700
-        input: '#334155',
-        ring: '#4F46E5',
+        destructive: {
+          DEFAULT: '#DC2626',
+          foreground: '#FFFFFF',
+        },
+        border: '#DEDEE3',
+        input: '#DEDEE3',
+        ring: '#2563EB',
       },
       fontFamily: {
         display: ['"Plus Jakarta Sans"', 'sans-serif'],

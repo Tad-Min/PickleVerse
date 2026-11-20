@@ -46,12 +46,12 @@ export const Login: React.FC = () => {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-accent mx-auto flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
             <Shield className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground font-display">PickleVerse Portal</h1>
+          <h1 className="text-2xl font-bold text-foreground font-display">Cổng PickleVerse</h1>
           <p className="text-xs text-muted-foreground mt-1">Cổng đăng nhập hệ thống Quản trị & Điều hành</p>
         </div>
 
         {isMockMode && (
-          <div className="mb-5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2.5 text-xs text-cyan-200">
+          <div className="mb-5 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2.5 text-xs text-blue-700">
             <div className="font-semibold">Chế độ xem thử — không kết nối backend</div>
             <div className="mt-1">Tài khoản: <code>admin@pickleverse.local</code></div>
             <div>Mật khẩu: <code>Admin123!</code></div>
@@ -60,7 +60,7 @@ export const Login: React.FC = () => {
 
         {/* Error Notification */}
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-rose-400 text-xs">
+          <div className="mb-6 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-rose-600 text-xs">
             <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -82,7 +82,7 @@ export const Login: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin@pickleverse.vn"
                 disabled={submitting}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-border rounded-lg text-sm text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 required
               />
             </div>
@@ -102,7 +102,7 @@ export const Login: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
                 disabled={submitting}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-border rounded-lg text-sm text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 required
               />
             </div>
@@ -127,7 +127,7 @@ export const Login: React.FC = () => {
         {/* Security Notice */}
         <div className="mt-8 pt-4 border-t border-border text-center">
           <p className="text-[11px] text-muted-foreground">
-            Chỉ tài khoản được cấp quyền <span className="text-emerald-400 font-semibold">Admin</span> mới có quyền đăng nhập. Mọi lượt truy cập trái phép đều được ghi nhận vào biên bản an ninh.
+            Chỉ tài khoản được cấp quyền <span className="text-emerald-600 font-semibold">Quản trị viên</span> mới có quyền đăng nhập. Mọi lượt truy cập trái phép đều được ghi nhận vào biên bản an ninh.
           </p>
         </div>
       </div>
