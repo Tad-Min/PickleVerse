@@ -1,39 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Users,
-  FolderKanban,
-  Activity,
-  ShieldAlert,
-  BarChart3,
-  ClipboardCheck,
-  LogOut,
-  Trophy,
-  Eye,
-} from 'lucide-react';
+import { LogOut, Trophy, Eye } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { isMockMode } from '../../api/mockMode';
+import { NAV_ITEMS } from './navigation';
 
 /** Thời gian giữ chuột trên một mục trước khi hiện tên đầy đủ. */
 const LABEL_DELAY_MS = 2000;
-
-interface NavItem {
-  name: string;
-  path: string;
-  icon: React.ElementType;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { name: 'Tổng quan', path: '/', icon: LayoutDashboard },
-  { name: 'Quản lý người dùng', path: '/users', icon: Users },
-  { name: 'Nội dung (CMS)', path: '/cms', icon: FolderKanban },
-  { name: 'Giám sát trận đấu', path: '/matches', icon: Activity },
-  { name: 'Xử lý vi phạm', path: '/moderation', icon: ShieldAlert },
-  { name: 'Thống kê & Telemetry AI', path: '/analytics', icon: BarChart3 },
-  { name: 'Gán nhãn coaching', path: '/coaching', icon: ClipboardCheck },
-];
 
 /**
  * Bọc một mục của sidebar. Khi người dùng giữ chuột (hoặc focus bàn phím)
@@ -60,7 +34,7 @@ const DelayedLabel: React.FC<{ label: string; className?: string; children: Reac
     cancel();
     timer.current = window.setTimeout(() => {
       const rect = ref.current?.getBoundingClientRect();
-      if (rect) setAnchor({ x: rect.right + 10, y: rect.top + rect.height / 2 });
+      if (rect) setAnchor({ x: rect.right + 12, y: rect.top + rect.height / 2 });
       timer.current = null;
     }, LABEL_DELAY_MS);
   };
@@ -80,7 +54,7 @@ const DelayedLabel: React.FC<{ label: string; className?: string; children: Reac
           <div
             role="tooltip"
             style={{ position: 'fixed', left: anchor.x, top: anchor.y, transform: 'translateY(-50%)' }}
-            className="z-50 pointer-events-none whitespace-nowrap rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-lg"
+            className="z-50 pointer-events-none animate-fade-in whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-lift"
           >
             {label}
           </div>,
@@ -95,53 +69,53 @@ export const Sidebar: React.FC = () => {
   const displayName = user?.username || 'Quản trị viên';
 
   return (
-    <aside className="w-16 bg-card border-r border-border flex flex-col h-screen sticky top-0 select-none">
-      {/* Brand Header */}
-      <div className="h-16 border-b border-border flex items-center justify-center">
+    <aside className="sticky top-0 flex h-screen w-[72px] select-none flex-col border-r border-border bg-card/90 backdrop-blur">
+      {/* Brand */}
+      <div className="flex h-16 items-center justify-center">
         <DelayedLabel label="PickleVerse · Cổng quản trị">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-            <Trophy className="w-5 h-5 text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-500 shadow-glow">
+            <Trophy className="h-5 w-5 text-white" />
           </div>
         </DelayedLabel>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-2 mb-3 border-t border-border" aria-hidden="true" />
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden px-3 py-3">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           return (
             <DelayedLabel key={item.path} label={item.name}>
               <NavLink
                 to={item.path}
+                end={item.path === '/'}
                 aria-label={item.name}
                 className={({ isActive }) =>
-                  `flex items-center justify-center w-full h-10 rounded-lg transition-all duration-150 ${
+                  `relative flex h-11 w-full items-center justify-center rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary text-white shadow-sm shadow-primary/30'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-primary text-white shadow-glow'
+                      : 'text-muted-foreground hover:bg-primary-soft hover:text-primary'
                   }`
                 }
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <Icon className="h-5 w-5 shrink-0" />
               </NavLink>
             </DelayedLabel>
           );
         })}
       </nav>
 
-      {/* Admin User Footer */}
-      <div className="p-3 border-t border-border bg-background/40 flex flex-col items-center gap-3">
+      {/* Account */}
+      <div className="flex flex-col items-center gap-3 border-t border-border px-3 py-4">
         <DelayedLabel label={`${displayName} · Vai trò: Quản trị viên`}>
-          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-foreground border border-border">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-sm font-bold text-white ring-2 ring-white shadow-card">
             {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
           </div>
         </DelayedLabel>
 
         {isMockMode ? (
           <DelayedLabel label="Chế độ xem thử — không cần đăng nhập">
-            <div className="w-9 h-9 rounded-md flex items-center justify-center text-blue-700 bg-blue-500/10 border border-blue-500/20">
-              <Eye className="w-4 h-4" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-700">
+              <Eye className="h-4 w-4" />
             </div>
           </DelayedLabel>
         ) : (
@@ -149,9 +123,9 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={logout}
               aria-label="Đăng xuất"
-              className="w-9 h-9 flex items-center justify-center text-rose-600 bg-rose-500/10 hover:bg-rose-500/20 rounded-md transition-colors border border-rose-500/20"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-600 transition-colors hover:bg-rose-500/20"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="h-4 w-4" />
             </button>
           </DelayedLabel>
         )}

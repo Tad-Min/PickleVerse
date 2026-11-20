@@ -5,9 +5,10 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { adminApi } from '../../../api/adminApi';
 import { CreateCosmeticRequest, CreateMissionRequest } from '../../../types/api';
-import { BookOpen, Target, ShoppingBag, Award, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { BookOpen, Target, ShoppingBag, Award, CheckCircle2, AlertCircle, X, FolderKanban } from 'lucide-react';
+import { PageHeader } from '../../../shared/ui/PageHeader';
 import {
-  btnPrimary, btnTab, card, fieldLabel, inputClass, notice, pageSubtitle, pageTitle, sectionTitle, toolbar,
+  btnPrimary, btnTab, card, fieldLabel, inputClass, notice, sectionTitle, toolbar,
 } from '../../../shared/ui/adminStyles';
 
 type CmsTab = 'LESSON' | 'DRILL' | 'COSMETIC' | 'MISSION';
@@ -60,12 +61,11 @@ export const CMS: React.FC = () => {
       <TechniqueReferences />
 
       {/* Title */}
-      <div>
-        <h1 className={pageTitle}>Quản trị Nội dung (CMS)</h1>
-        <p className={pageSubtitle}>
-          Cập nhật bài học, drill kỹ thuật, mở bán vật phẩm và quản lý nhiệm vụ trực tiếp vào Game
-        </p>
-      </div>
+      <PageHeader
+        icon={FolderKanban}
+        title="Quản trị Nội dung (CMS)"
+        subtitle="Cập nhật bài học, drill kỹ thuật, mở bán vật phẩm và quản lý nhiệm vụ trực tiếp vào Game"
+      />
 
       {/* Feedback */}
       {feedback && (

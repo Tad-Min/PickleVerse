@@ -2,8 +2,10 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../../api/client';
+import { ClipboardCheck } from 'lucide-react';
+import { PageHeader } from '../../../shared/ui/PageHeader';
 import {
-  badgeBase, btnGhost, btnPrimary, btnTab, card, fieldLabel, inputClass, notice, pageSubtitle, pageTitle, rowHover,
+  badgeBase, btnGhost, btnPrimary, btnTab, card, fieldLabel, inputClass, notice, rowHover,
   sectionTitle, tableHead, th, td, tone,
 } from '../../../shared/ui/adminStyles';
 
@@ -93,10 +95,11 @@ export function ExpertReview() {
   const demo = params.get('source') === 'demo';
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className={pageTitle}>Gán nhãn phiên luyện tập</h1>
-        <p className={pageSubtitle}>Xác nhận trình độ và từng lỗi kỹ thuật từ telemetry kết hợp quan sát của chuyên gia</p>
-      </div>
+      <PageHeader
+        icon={ClipboardCheck}
+        title="Gán nhãn phiên luyện tập"
+        subtitle="Xác nhận trình độ và từng lỗi kỹ thuật từ telemetry kết hợp quan sát của chuyên gia"
+      />
 
       <div className="flex flex-wrap items-center gap-2" aria-label="Nguồn phiên luyện tập">
         <button type="button" className={btnTab(!demo)} aria-pressed={!demo} onClick={() => setParams({})}>

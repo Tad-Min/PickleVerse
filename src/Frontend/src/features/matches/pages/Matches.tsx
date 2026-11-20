@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { Activity, X } from 'lucide-react';
+import { PageHeader } from '../../../shared/ui/PageHeader';
 import { apiClient } from '../../../api/client';
 import { adminApi } from '../../../api/adminApi';
 import { LiveMatch, StopOperation } from '../../../types/api';
 import { matchStatusLabel } from '../../../types/status';
 import {
   badgeBase, btnGhost, btnPrimary, btnTab, card, fieldLabel, inputClass, modalCard, modalOverlay,
-  notice, pageSubtitle, pageTitle, sectionTitle, tableCard, tableHead, tableText, th, td, rowHover, tone, toolbar,
+  notice, sectionTitle, tableCard, tableHead, tableText, th, td, rowHover, tone, toolbar,
 } from '../../../shared/ui/adminStyles';
 
 const stamp = (value?: string | null) => (value ? new Date(value).toLocaleString('vi-VN') : 'Chưa có');
@@ -57,12 +58,11 @@ export function Matches() {
   return (
     <div className="space-y-6">
       {/* Title */}
-      <div>
-        <h1 className={pageTitle}>Giám sát trận đấu</h1>
-        <p className={pageSubtitle}>
-          Điểm và kết nối được cập nhật từ tín hiệu của máy chủ trận đấu. Lịch sử được hiển thị riêng.
-        </p>
-      </div>
+      <PageHeader
+        icon={Activity}
+        title="Giám sát trận đấu"
+        subtitle="Điểm và kết nối được cập nhật từ tín hiệu của máy chủ trận đấu. Lịch sử được hiển thị riêng."
+      />
 
       {/* Toolbar */}
       <div className={toolbar}>

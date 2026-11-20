@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { apiClient } from '../../../api/client';
 import { AnalyticsReport } from '../../../types/api';
+import { BarChart3 } from 'lucide-react';
+import { PageHeader } from '../../../shared/ui/PageHeader';
 import {
-  btnPrimary, card, fieldLabel, inputClass, pageSubtitle, pageTitle, sectionTitle, tableCard, tableHead, tableText, th, td, rowHover,
+  btnPrimary, card, fieldLabel, inputClass, sectionTitle, tableCard, tableHead, tableText, th, td, rowHover,
 } from '../../../shared/ui/adminStyles';
 
 const today = new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10);
@@ -31,10 +33,11 @@ export function Analytics() {
   return (
     <div className="space-y-6">
       {/* Title */}
-      <div>
-        <h1 className={pageTitle}>Thống kê người chơi và ghép trận</h1>
-        <p className={pageSubtitle}>Theo dõi người chơi đăng nhập, tỷ lệ quay lại, bài luyện tập và tình trạng ghép trận</p>
-      </div>
+      <PageHeader
+        icon={BarChart3}
+        title="Thống kê người chơi và ghép trận"
+        subtitle="Theo dõi người chơi đăng nhập, tỷ lệ quay lại, bài luyện tập và tình trạng ghép trận"
+      />
 
       {/* Date range toolbar */}
       <form

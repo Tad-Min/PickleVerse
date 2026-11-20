@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw, ShieldAlert, X } from 'lucide-react';
+import { PageHeader } from '../../../shared/ui/PageHeader';
 import { apiClient } from '../../../api/client';
 import { adminApi } from '../../../api/adminApi';
 import { AdminReportDto, ReviewReportRequest, SanctionAppeal, SanctionDecision } from '../../../types/api';
@@ -106,12 +107,11 @@ export function Moderation() {
   return (
     <div className="space-y-6">
       {/* Title */}
-      <div>
-        <h1 className="text-2xl font-bold font-display text-foreground tracking-tight">Xử lý vi phạm</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Tiếp nhận tố cáo, ra quyết định xử lý và giải quyết khiếu nại
-        </p>
-      </div>
+      <PageHeader
+        icon={ShieldAlert}
+        title="Xử lý vi phạm"
+        subtitle="Tiếp nhận tố cáo, ra quyết định xử lý và giải quyết khiếu nại"
+      />
 
       {/* Notification Banner */}
       {notice && (

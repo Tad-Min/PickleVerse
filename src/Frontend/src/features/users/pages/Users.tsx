@@ -1,5 +1,7 @@
 import { UserStatus, userStatusLabel } from '../../../types/status';
 import { ProgressResetDialog } from './ProgressResetDialog';
+import { PageHeader } from '../../../shared/ui/PageHeader';
+import { Users as UsersIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../../api/adminApi';
@@ -118,14 +120,11 @@ export const Users: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Title & Feedback */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-display text-foreground tracking-tight">Quản lý Người dùng</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Tra cứu tài khoản, phân quyền vai trò, kích hoạt thủ công và xử lý kỷ luật
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={UsersIcon}
+        title="Quản lý Người dùng"
+        subtitle="Tra cứu tài khoản, phân quyền vai trò, kích hoạt thủ công và xử lý kỷ luật"
+      />
 
       {/* Action Notification Banner */}
       {actionMessage && (
@@ -144,7 +143,7 @@ export const Users: React.FC = () => {
       )}
 
       {/* Filters & Search Toolbar */}
-      <div className="bg-card border border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-card border border-border rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-card">
         {/* Search Input */}
         <div className="relative w-full md:w-96">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
@@ -182,7 +181,7 @@ export const Users: React.FC = () => {
       </div>
 
       {/* Users Table */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-background/60 border-b border-border text-muted-foreground uppercase tracking-wider text-[11px] font-semibold">
@@ -217,7 +216,7 @@ export const Users: React.FC = () => {
                   const isAdminRole = u.roleName === 'Admin' || u.roleId === 2;
 
                   return (
-                    <tr key={u.userId} className="hover:bg-muted/50 transition-colors">
+                    <tr key={u.userId} className="hover:bg-primary-soft/50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{u.playerName || 'Chưa đặt tên'}</div>
                         <div className="text-[11px] text-muted-foreground font-mono">{u.email}</div>
@@ -225,7 +224,7 @@ export const Users: React.FC = () => {
 
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-[11px] font-medium border ${
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-medium border before:content-[''] before:h-1.5 before:w-1.5 before:rounded-full before:bg-current ${
                             isAdminRole
                               ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
                               : 'bg-muted/30 text-muted-foreground border-border'
@@ -237,7 +236,7 @@ export const Users: React.FC = () => {
 
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-[11px] font-medium border ${
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-medium border before:content-[''] before:h-1.5 before:w-1.5 before:rounded-full before:bg-current ${
                             isBanned
                               ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
                               : isUnverified
