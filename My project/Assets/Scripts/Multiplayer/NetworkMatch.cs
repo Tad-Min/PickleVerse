@@ -266,15 +266,20 @@ namespace PickleVerse.Multiplayer
         }
         IEnumerator ClientCamera()
         {
-            NetworkPlayer player;
-            while (NetworkPlayer.All.Count(p => p && p.Runner == Runner) < Roster.Count ||
-                   !(player = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.IsLocalHuman)))
+            // Scene preparation also removes the old lobby on takeover. Do not bind
+            // the player's camera or signal readiness while that UI is still alive.
+            while (IsSpawned && !IsCourtSceneSynchronized())
                 yield return null;
+            NetworkPlayer player = null;
+            while (IsSpawned && (NetworkPlayer.All.Count(p => p && p.Runner == Runner) < Roster.Count ||
+                   !(player = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.IsLocalHuman))))
+                yield return null;
+            if (!IsSpawned) yield break;
             Debug.Log($"[Court] Actors ready match={Roster.matchId} players={Roster.Count}");
             bool renders = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null;
             if (renders)
             {
-                var camera = Camera.main;
+                var camera = Camera.allCameras.FirstOrDefault(c => c.gameObject.scene == gameObject.scene && c.CompareTag("MainCamera"));
                 if (camera)
                 {
                     var follow = camera.GetComponent<CourtCamera>();

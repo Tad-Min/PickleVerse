@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Linq;
+using System.Reflection;
 using Fusion;
 using NUnit.Framework;
 using PickleVerse.Multiplayer;
@@ -32,6 +34,50 @@ public sealed class PhotonSceneIdentityTests
     [Test] public void MissingSceneIsNotMappedToAnUnrelatedScene()
     {
         Assert.That(manager.GetSceneRef("Assets/Scenes/DoesNotExist.unity"), Is.EqualTo(SceneRef.None));
+    }
+
+    [TestCase("Menu", true)]
+    [TestCase("ModeSelection", true)]
+    [TestCase("PlayMultiplayer", true)]
+    [TestCase("Loading", false)]
+    [TestCase("Login", false)]
+    [TestCase("MultiplayerCourt", false)]
+    [TestCase("PhotonLobby", false)]
+    [TestCase("Settings", false)]
+    [TestCase("Replay", false)]
+    [TestCase("Dedicated Match_[Player:2]", false)]
+    [TestCase("", false)]
+    [TestCase(null, false)]
+    public void EnteringCourtRemovesFrontendScenesAndPreservesNetworkAndLoadingScenes(string name, bool remove)
+    {
+        Assert.That(PhotonSceneManager.IsFrontEndScene(name, "PlayMultiplayer"), Is.EqualTo(remove));
+    }
+
+    [Test] public void CustomRoomCleanupAlsoRecognizesTheNormalMenuAndRoom()
+    {
+        foreach (string name in new[] { "Menu", "ModeSelection", "PlayMultiplayer", "Custom Room" })
+            Assert.That(PhotonSceneManager.IsFrontEndScene(name, "Custom Room"), Is.True);
+        Assert.That(PhotonSceneManager.IsFrontEndScene("MultiplayerCourt", "Custom Room"), Is.False);
+    }
+
+    [Test] public void MissingCourtCannotStartFrontendCleanup()
+    {
+        Assert.That(PhotonSceneManager.PrepareCourtScene(default, "PlayMultiplayer", () => true).MoveNext(), Is.False);
+    }
+
+    [TestCase(MultiplayerSceneConfiguration.CourtPath, true)]
+    [TestCase(MultiplayerSceneConfiguration.LobbyPath, false)]
+    public void CourtRemainsBusyDuringPostLoadAndReleasesTheGateOnCancellation(string path, bool busy)
+    {
+        var loaded = typeof(PhotonSceneManager).GetMethod("OnSceneLoaded", BindingFlags.Instance | BindingFlags.NonPublic);
+        var flow = (IEnumerator)loaded.Invoke(manager, new object[] { SceneRef.FromPath(path), default(UnityEngine.SceneManagement.Scene), default(NetworkLoadSceneParameters) });
+        try
+        {
+            Assert.That(flow.MoveNext(), Is.True);
+            Assert.That(manager.IsBusy, Is.EqualTo(busy), "Court readiness must wait before processing the base scene callback.");
+        }
+        finally { ((System.IDisposable)flow).Dispose(); }
+        Assert.That(manager.IsBusy, Is.False, "Cancelling the scene load must not leave a stuck loading gate.");
     }
 
     [Test] public void WindowsAndGlobalLayoutsResolveTheSameNetworkSceneIdentity()

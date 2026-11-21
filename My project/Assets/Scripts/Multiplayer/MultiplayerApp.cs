@@ -642,7 +642,6 @@ namespace PickleVerse.Multiplayer
             Match = session;
             session.Changed += MatchChanged;
             session.SceneStarted += SceneStarted;
-            session.SceneDone += SceneDone;
             session.PeerLeft += (r, p) =>
             {
                 if (!closing && State == FlowState.InMatch && session.IsHost)
@@ -801,14 +800,6 @@ namespace PickleVerse.Multiplayer
             if (Match?.Runner == runner && Match.Data.phase == "loading")
                 PickleVerse.Settings.SceneLoading.BeginExternal("MultiplayerCourt");
         }
-        async void SceneDone(NetworkRunner runner)
-        {
-            if (Match?.Runner != runner || !courtLoading && Match.Data.phase != "loading")
-                return;
-            var menu = SceneManager.GetSceneByName(RoomSceneName);
-            if (menu.IsValid() && menu.isLoaded)
-                await SceneManager.UnloadSceneAsync(menu);
-        }
         async Task ReconnectAsync(PhotonSession previous)
         {
             if (reconnecting)
@@ -923,7 +914,6 @@ namespace PickleVerse.Multiplayer
             {
                 old.Changed -= MatchChanged;
                 old.SceneStarted -= SceneStarted;
-                old.SceneDone -= SceneDone;
                 await old.LeaveAsync();
             }
             Roster = null;
