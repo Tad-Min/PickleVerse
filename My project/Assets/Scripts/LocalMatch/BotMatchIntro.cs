@@ -85,8 +85,8 @@ namespace PickleVerse.LocalMatch
             view = followCamera.GetComponent<Camera>();
             followWasEnabled = followCamera.enabled;
             followCamera.enabled = false;
-            humanPose = new PoseCache(match.human, femaleWalk, femaleGroundOffset, playerEntrance);
-            botPose = new PoseCache(match.bot, maleWalk, maleGroundOffset, opponentEntrance);
+            humanPose = new PoseCache(match.human, match.human.IsFemale ? femaleWalk : maleWalk, match.human.IsFemale ? femaleGroundOffset : maleGroundOffset, playerEntrance);
+            botPose = new PoseCache(match.bot, match.bot.IsFemale ? femaleWalk : maleWalk, match.bot.IsFemale ? femaleGroundOffset : maleGroundOffset, opponentEntrance);
             int count = match.hud.transform.childCount - 1;
             hudObjects = new GameObject[count];
             hudActive = new bool[count];

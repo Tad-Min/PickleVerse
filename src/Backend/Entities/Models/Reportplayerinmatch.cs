@@ -1,3 +1,4 @@
+using Entities.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +14,7 @@ public partial class Reportplayerinmatch
 
     public string Reason { get; set; } = null!;
 
-    public string Status { get; set; } = null!;
+    public ReportStatus Status { get; set; } = ReportStatus.Pending;
 
     public DateTime Createdat { get; set; }
 

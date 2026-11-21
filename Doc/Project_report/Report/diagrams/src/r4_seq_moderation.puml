@@ -1,0 +1,67 @@
+@startuml r4_seq_moderation
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+actor "Restricted Player" as RP
+actor Administrator as Admin
+control ":MatchesController" as MC
+control ":MatchService" as MS
+entity ":IMatchRepository" as MR
+control ":AdminController" as AC
+control ":ModerationController" as PC
+control ":AdminModerationController" as AMC
+control ":ModerationService" as S
+entity ":GameRepository" as G
+Player -> MC : ReportPlayer(request)
+activate MC
+MC -> MS : ReportPlayerAsync(reporter, request)
+activate MS
+MS -> MR : GetMatchByIdAsync(match)
+MS -> MR : AddReportAsync(report)
+MS --> MC : true (report PENDING)
+deactivate MS
+MC --> Player : ApiResponse
+deactivate MC
+Admin -> AC : ReviewReport(request)
+activate AC
+AC -> S : ReviewReport(actor, request)
+activate S
+S -> G : LockReport(id)
+opt decision ACCEPTED with a sanction
+  S -> G : AddSanction(sanction)
+  S -> G : AddAudit(actor, decision)
+end
+S --> AC : saved in one transaction
+deactivate S
+deactivate AC
+RP -> PC : Decisions()
+activate PC
+PC --> RP : sanction and reason
+deactivate PC
+RP -> PC : Appeal(request)
+activate PC
+PC -> S : SubmitAppeal(player, request)
+activate S
+S -> G : AppealForSanction(sanction)
+S -> G : AddAppeal(appeal)
+S --> PC : SanctionAppeal (PENDING)
+deactivate S
+deactivate PC
+Admin -> AMC : Review(id, request)
+activate AMC
+AMC -> S : ReviewAppeal(actor, id, request)
+activate S
+S -> G : Appeal(id)
+alt appeal ACCEPTED
+  S -> S : Revoke(actor, sanction, reason)
+else else
+  S -> G : AddAudit(actor, declined)
+end
+S --> AMC : SanctionAppeal
+deactivate S
+deactivate AMC
+@enduml

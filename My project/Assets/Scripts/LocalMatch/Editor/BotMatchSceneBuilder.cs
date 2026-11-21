@@ -381,8 +381,6 @@ namespace PickleVerse.LocalMatch.Editor
             hud.timing = Text("ContactFeedback", bottom, "", new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 8), new Vector2(580, 25), 17);
             Button("Settings", root, "Esc / Cài đặt", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -16), new Vector2(130, 36), hud.OpenSettings);
             Button("Help", root, "F1 / Hướng dẫn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -59), new Vector2(150, 36), hud.ToggleHelp);
-            Button("Touch", root, "Cảm ứng", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -102), new Vector2(130, 36), hud.ToggleTouch);
-            Button("Timeout", root, "T / Time-out", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -62), new Vector2(140, 36), hud.Timeout);
             hud.difficultyLabel = Text("Difficulty", root, "Máy: Vừa", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -110), new Vector2(390, 78), 18, TextAlignmentOptions.TopLeft);
             var touch = Rect("TouchControls", root, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
             touch.anchorMax = Vector2.one;
@@ -415,7 +413,7 @@ namespace PickleVerse.LocalMatch.Editor
             touch.gameObject.SetActive(false);
             var help = Panel("ControlsHelp", root, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(730, 370), ink);
             hud.help = help.gameObject;
-            Text("HelpText", help, "<size=28><color=#83E6CD>ĐIỀU KHIỂN & LUẬT</color></size>\n\nWASD di chuyển • Shift chạy • Không có nhảy\nJ Đánh bạt sau nảy | K Bóng ngắn sau nảy | L Vô lê trước nảy\nJ+K Bỏ nhỏ | J+L Đập bóng bóng cao | K+L Hãm bóng vô lê\nJ/K/L + U tấn công | J/K/L + I chéo • Tối đa hai nút\n\nGiữ để chọn, thả phím gốc để swing; swing trễ có thể trượt.\nReturn và cú thứ ba phải nảy. Vô lê trong vùng cấm vô lê hoặc đà vào vùng cấm vô lê là lỗi.\nT gọi hội ý trước giao • Esc dừng • Enter tiếp tục\nCảm ứng: cần điều khiển và giữ/thả nút; U/I bật tắt làm bổ trợ.", new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 15), new Vector2(690, 310), 19);
+            Text("HelpText", help, "<size=28><color=#83E6CD>ĐIỀU KHIỂN & LUẬT</color></size>\n\nWASD di chuyển • Shift chạy • Không có nhảy\nJ Đánh bạt sau nảy | K Bóng ngắn sau nảy | L Vô lê trước nảy\nJ+K Bỏ nhỏ | J+L Đập bóng bóng cao | K+L Hãm bóng vô lê\nJ/K/L + U tấn công | J/K/L + I chéo • Tối đa hai nút\n\nGiữ để chọn, thả phím gốc để swing; swing trễ có thể trượt.\nReturn và cú thứ ba phải nảy. Vô lê trong vùng cấm vô lê hoặc đà vào vùng cấm vô lê là lỗi.\nEsc mở cài đặt • Enter tiếp tục\nCảm ứng: cần điều khiển và giữ/thả nút; U/I bật tắt làm bổ trợ.", new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 15), new Vector2(690, 310), 19);
             Button("CloseHelp", help, "Đóng / F1", new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 15), new Vector2(180, 36), hud.ToggleHelp);
             help.gameObject.SetActive(false);
             var modal = Panel("MatchDialog", root, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 5), new Vector2(760, 370), ink);

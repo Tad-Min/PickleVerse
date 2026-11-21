@@ -10,6 +10,7 @@ using Services.Interfaces;
 namespace API.Controllers
 {
     [ApiController]
+    [API.Filters.AllowRestrictedSession]
     [Route("api/[controller]")]
     [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase
@@ -68,6 +69,11 @@ namespace API.Controllers
         {
             return Ok(await _authService.ResendOtpAsync(request));
         }
+
+        [Authorize]
+        [DisableRateLimiting]
+        [HttpGet("session")]
+        public IActionResult Session() => Ok(new MessageResponse { Message = "Phiên đăng nhập đang hoạt động." });
 
         [Authorize]
         [HttpPost("logout")]

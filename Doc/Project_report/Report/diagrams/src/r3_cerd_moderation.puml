@@ -1,0 +1,38 @@
+@startuml r3_cerd_moderation
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+skinparam ranksep 18
+skinparam nodesep 22
+entity "ACCOUNT" as ACCOUNT {
+  * AccountId
+}
+entity "MATCH" as MATCH {
+  * MatchId
+}
+entity "PLAYER_REPORT" as PLAYER_REPORT {
+  --
+  Reason
+  Status
+}
+entity "SANCTION" as SANCTION {
+  * SanctionId
+  --
+  Restriction
+  ExpiresAt
+}
+entity "APPEAL" as APPEAL {
+  * AppealId
+  --
+  Statement
+  Status
+}
+ACCOUNT ||--o{ PLAYER_REPORT : "files"
+PLAYER_REPORT }o--|| ACCOUNT : "concerns"
+PLAYER_REPORT }o--|| MATCH : "occurs in"
+SANCTION }o--|| ACCOUNT : "restricts"
+APPEAL ||--|| SANCTION : "contests"
+ACCOUNT ||--o{ PLAYER_REPORT : "reviews (DecisionReason)"
+ACCOUNT ||--o{ SANCTION : "issues"
+@enduml

@@ -1,0 +1,59 @@
+@startuml r4_seq_dedicated
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+boundary ":MultiplayerApp" as Cl
+control ":DedicatedController" as DC
+control ":DedicatedWorkerController" as WC
+control ":DedicatedServerService" as S
+entity ":DedicatedLeaseRepository" as L
+control ":DedicatedWorker" as W
+control ":OnlineGameService" as G
+W -> WC : Poll(request)
+activate WC
+WC -> S : Poll(worker)
+activate S
+S -> L : Poll(worker, seconds)
+S --> WC : DedicatedAllocation (match, roster, lease)
+deactivate S
+WC --> W : allocation
+deactivate WC
+activate W
+W -> W : StartDedicatedAsync(session, region, roster, port, admission)
+W -> WC : Ready(request)
+loop allocation not ready
+  Cl -> DC : Ticket(matchId)
+  activate DC
+  DC -> S : Ticket(player, match)
+  DC --> Cl : starting
+  deactivate DC
+end
+Cl -> DC : Ticket(matchId)
+activate DC
+DC --> Cl : ready + HMAC connection token
+deactivate DC
+Cl -> W : JoinDedicatedAsync(session, region, player, token, roster)
+W -> WC : AuthorizeAdmission(request)
+loop match running
+  W -> WC : Heartbeat(request)
+  activate WC
+  WC -> S : Renew(lease)
+  WC --> W : HeartbeatReply (pending stop command, if any)
+  deactivate WC
+end
+W -> WC : Telemetry(lease, batch)
+W -> WC : Complete(request)
+activate WC
+WC -> S : Complete(lease, result)
+activate S
+S -> G : CompleteDedicated(match, result)
+S -> L : Release(lease, worker)
+S --> WC : saved once
+deactivate S
+WC --> W : ok
+deactivate WC
+deactivate W
+@enduml

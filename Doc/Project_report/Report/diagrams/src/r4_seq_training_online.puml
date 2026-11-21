@@ -1,0 +1,61 @@
+@startuml r4_seq_training_online
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":TrainingDirector" as TD
+control ":ProgressionRuntime" as PR
+control ":GameTrainingController" as C
+control ":OnlineGameService" as S
+entity ":GameRepository" as G
+Player -> TD : StartLesson(false)
+activate TD
+TD -> PR : StartTrainingAsync(id, retry)
+activate PR
+PR -> C : Start(request)
+activate C
+C -> S : StartTraining(player, request)
+activate S
+S -> G : CatalogSnapshot()
+alt lesson locked or not published
+  S --> C : error lesson_not_available
+else else
+  S -> G : StartTraining(player, attempt)
+  S --> C : GameSnapshot with the active attempt
+end
+deactivate S
+C --> PR : ApiResponse
+deactivate C
+PR --> TD : attempt
+deactivate PR
+loop trial < number of trials
+  Player -> TD : Advance(dt, mask, movement, run, tap)
+  TD -> TD : SaveActive(false)
+  TD -> PR : SaveTrainingAsync(attempt, false)
+  activate PR
+  PR -> C : Checkpoint(request)
+  PR --> TD : snapshot
+  deactivate PR
+end
+TD -> PR : SaveTrainingAsync(attempt, true)
+activate PR
+PR -> C : Complete(request)
+activate C
+C -> S : UpdateTraining(player, request, true)
+activate S
+S -> G : TrainingAttempt(player, id)
+S -> G : UpdateTraining(attempt)
+S -> G : RecordLesson(player, lesson, stars)
+S -> G : GrantOnce(player, firstPassReward)
+S --> C : GameSnapshot (stars recomputed, BR-11)
+deactivate S
+C --> PR : ApiResponse
+deactivate C
+PR --> TD : stars and reward
+deactivate PR
+TD --> Player : result screen
+deactivate TD
+@enduml

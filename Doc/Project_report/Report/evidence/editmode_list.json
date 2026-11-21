@@ -1,0 +1,4661 @@
+{
+  "success": true,
+  "command": "command",
+  "data": {
+    "command": "test list",
+    "parameters": {
+      "mode": "editor"
+    },
+    "result": {
+      "Mode": "EditMode",
+      "Count": 515,
+      "Tests": [
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.AnotherOwnerCannotStealOrReleaseMusicModal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.CatalogContainsFourMatchingDiscsAndAudio",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Menu\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"ModeSelection\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"PlayMultiplayer\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Shop\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Collection\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"BotMatch\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"MultiplayerCourt\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Training\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"SampleScene\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Settings\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(null,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Menu\",True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Shop\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Collection\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"ModeSelection\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"PlayMultiplayer\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"BotMatch\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Training\",False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(null,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.PlaylistCyclesInBothDirections",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MusicPolicyTests.TrainingHasMusicOnlyOutsideExercise",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Audio.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.AccountGateCanCloseAuthoredModalBeforePresentationIsAttached",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.FrontEnd.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.AccountGateCanCloseBeforeAnyModalExists",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.FrontEnd.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.ClosingInitializedModalDisablesItsRenderingAndInput",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.FrontEnd.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.OpaqueModalKeepsAClearOnlyCameraAndRestoresTheSceneCamera",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.FrontEnd.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "AdaptiveBotGraphTests.DesktopGraphProfileIsMeasured",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "AdaptiveBotGraphTests.MandatoryBounceAndKitchenExcludeVolleyBranches",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "AdaptiveBotGraphTests.SeededGraphIsEquivalentAcrossContextsAndCommandsAreLegal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.AnalysisShowsCurrentMeasuredSummaryAndSupportsOlderResults",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"ServeTimeout\",\"10 giây\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"DoubleBounce\",\"nảy thứ hai\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"Out\",\"ra ngoài\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"KitchenVolley\",\"chân\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.BotQueuesFeedbackAsSoonAsBallStopsWithoutCoachingSession",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.DedicatedClientNormalizesReceiverButServerPreservesSender",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "GameplayRegressionTests.TrainingViewMirrorsEndsAndFramesDoubles",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "NetworkCoachingTests.AuthoritativeDeliveryDeduplicatesAndCannotCrossAccountOrSession",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "NetworkCoachingTests.FullTelemetryRecordFitsExistingPhotonMessageLimit",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "NetworkCoachingTests.LandingAndClearanceUseAuthoritativeFlightAndOnlyFirstBounce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.HybridBot.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(1,0,70,\"SMASH\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(2,0,70,\"DROP\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(4,0,70,\"RESET\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(2,-70,0,\"CHÉO\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(1,70,0,\"LỰC\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(1,0,-70,\"HỦY\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.CancelClearsHeldSprintAndMovementWithoutFiring",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.DragCancelAndDisableCannotFireStaleShot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.DragStartsWithoutInputModulesDefaultPixelDelay",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.FiveControlsRemainAndJoystickIsRecessed",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.JoystickAndShotUseIndependentFingers",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.JoystickEdgeNeverStartsSprintAndRunUsesItsOwnFinger",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.QuickTapIsSynchronousAndCannotBeDispatchedTwice",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ReleasePositionIsUsedEvenWithoutLastDragCallback",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.RoundTargetsAcceptCentersAndIgnoreTransparentCorners",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.WaveHasRendererAndVisibleGeometry",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.CancelAndForeignPointerCannotFireShot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ChangingDirectionDoesNotReleaseOrAccumulateComboBits",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.HysteresisStopsThumbJitterAndAllowsReturnToCenter",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(2400,1080)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(1600,720)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(2960,1440)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(1280,720)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,0,0,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,0,0,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,0,0,4)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,0,60,5)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,0,60,3)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,0,60,6)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,-60,0,17)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,-60,0,18)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,-60,0,20)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,60,0,9)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,60,0,10)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,60,0,12)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(0,0,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(0,70,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(-70,0,17)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(70,0,9)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(667,375)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(844,390)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(915,412)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1280,720)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1920,1080)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(2400,1080)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1600,720)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1024,768)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(390,844)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchSettingsMigrationTests.MissingOldPositionsUseNewDefaultsWithoutApplyingOffsetsTwice",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchSettingsMigrationTests.OldDefaultsMigrateOnceToFourButtonFan",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.LocalMatch.Tests.TouchSettingsMigrationTests.PreviousFanKeepsCustomOffsetsAndGetsAnIndependentRunButton",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.AnotherTurnBlendsFromTheCurrentPoseRatherThanAnOldDirection",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.DirectionChangeConvergesWithoutFreezingTheGait",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.DirectionChangeStartsAtTheDisplayedLegPose",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.LegMaskIncludesFeetButDoesNotReplaceArmLocalPose",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.MovingLegsKeepTheStrikeTorsoAndHandOrientation",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.ResetDoesNotReuseATransitionFromThePreviousRally",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ActorPoseMixerTests.ZeroLegWeightRetainsTheStandingStrikePose",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.BasicTierUsesDriveAfterMandatoryBounce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.DinkNearNet",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(100,0.28f,0.3f,0)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(499,0.28f,0.3f,0)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(500,0.15f,0.16f,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(1999,0.15f,0.16f,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(2000,0.08f,0.08f,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.EloRemainsFixedAndSimulationInputIsExposed",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.FastIncomingBallSelectsReset",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.HighIncomingBallSelectsSmash",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.MandatoryTwoBounceAndKitchenRejectAirShots",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.RealGraphRecoversWhenOtherPlayerHits",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.RealGraphSelectsServeBeforeRecovery",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.RealGraphWaitsWhenPaused",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.ThirdShotUsesDropAtMiddleTier",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.BhTreeTests.VolleyOutsideKitchen",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.AccuratePaddleContactIsPerfect",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.ActualUnderhandReleaseAtHipIsNotRejectedByFrontBox",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.ContactOutsideSwingWindowMisses(0.32f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.ContactOutsideSwingWindowMisses(0.48f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FastBallCrossingPaddleIsDetectedBetweenSamples",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FastPreciseCrossingSurvivesLowPresentationFrameRate",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistContactIsGood",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.2f,1.0f,-0.3f,0.55f,1.0f,-0.3f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.9f,1.0f,0.6f,0.55f,1.0f,0.6f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.1f,0.08f,0.6f,0.45f,0.08f,0.6f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.1f,1.0f,1.5f,0.45f,1.0f,1.5f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.MovingPlayersAtEitherEndUseTheSameZones(1.0f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.MovingPlayersAtEitherEndUseTheSameZones(-1.0f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(-0.06f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(-0.03f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(0.0f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(0.03f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(0.06f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.ObjectsPassingSameLocationAtDifferentTimesDoNotContact",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.PhysicalContactOutsidePerfectTimingIsGood",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.SmashDoesNotUseBroadFrontAssistBeforePaddleArrives",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.StationaryNearMissRetainsItsRealDistance",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.SweptContactClipsTimeBeforeCheckingPaddle",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.SwingCrossingBallIsDetectedBetweenSamples",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(0.0f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(0.1f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(0.5f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(1.0f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleContactTests.ValidEarlyContactStillHitsAndIsRatedGood",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.2f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.05f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.01666667f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.00694444f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.HoldingIntoNetStopsBodyAndVelocity(-1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.HoldingIntoNetStopsBodyAndVelocity(1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.MatchModesKeepExistingNetFaultBoundary",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.ReleasingRunDeceleratesAndSettles",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PracticeMovementTests.ReversingAwayFromNetImmediatelyRestoresMovement",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BackspaceOrLostFocusCannotFireOnRelease",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BallisticShotLandsAtRequestedSpot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(1,Drive)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(2,Dink)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(4,Volley)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(3,Drop)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(5,Smash)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(6,Reset)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.BaselineAndSidelineAreIn",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.DecidingGameChangesEndsAtSixOnlyOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ElevenTenDoesNotWinAndTwelveTenDoes",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.HighServeContactIsIllegal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.KitchenMomentumOverridesDeadBallBeforeScore",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.MatchRequiresTwoGameWins",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.MissedServeLosesServeWithoutCreatingAStroke",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ModifierMustStillBeHeldAtCommit",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ReceiverWinningOnlyChangesServe",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ReleasingOneComboKeyOnlyCommitsOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ReturnCannotVolley",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.SecondBounceOutsideStillFaultsReceiver",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeAtTenSecondsIsAllowedButAfterTenIsNot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeDoesNotAcceptDropCombo",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeKitchenLineIsFault",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeOnBaselineIsFootFault",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ServerWinningScoresAndStaysServer",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ThirdShotMustBounceToo",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.ThreeKeysCancelWithoutAnySwing",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.TimeoutLimitedToTwoAndOnlyBeforeServe",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.VolleyKitchenFaultButBouncedDinkIsLegal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.SinglesMatchTests.WrongDiagonalIsFault",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.AdvancedBaseCombosAreNotInBasicCourse",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.FeedReachesAuthoredPoseAndClearsNet(True,0.93f,-4.4f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.FeedReachesAuthoredPoseAndClearsNet(False,0.75f,-2.6f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.IntroductionOnlyRequiredUntilFinishedOrExplicitlyDeferred",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.KitchenVolleyIsFlaggedAndBounceShotIsLegal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(4)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(9)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(10)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(12)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(17)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(18)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(20)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TutorialTests.VolleyPracticeStartsAfterTwoMandatoryBounces",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.LocalMatch.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "DedicatedPrefabTests.DedicatedAssetsDoNotCarrySharedOnlyAuthorityFlags",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "DedicatedPrefabTests.SessionHeapFitsTheBakedMatchStateWithoutGrowingTheHeapBudget(False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "DedicatedPrefabTests.SessionHeapFitsTheBakedMatchStateWithoutGrowingTheHeapBudget(True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.AcceptanceFromDifferentRosterCannotApprove",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.AnyDeclineCancelsWholeMatchButOnlyAcceptingPlayersRequeue(Singles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.AnyDeclineCancelsWholeMatchButOnlyAcceptingPlayersRequeue(Doubles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.BotFallbackStillNeedsHumanConfirmation",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.EveryHumanMustAcceptAndConnect(Singles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.EveryHumanMustAcceptAndConnect(Doubles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.ExpiredDeadlineCannotApproveEvenWithLateAcceptances(Singles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.ExpiredDeadlineCannotApproveEvenWithLateAcceptances(Doubles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.InvalidRosterCannotStart",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.MatchmakerPartitionsBothQueuesByClientProtocolWithoutPinningARelease(1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchReadyPolicyTests.MatchmakerPartitionsBothQueuesByClientProtocolWithoutPinningARelease(2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchResultTransferTests.IncompleteConflictingAndOversizedTransfersDoNotProduceAResult",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MatchResultTransferTests.ReorderedDuplicatedChunksPreserveVietnameseAndSurrogatePairs",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MovementInputPlaybackTests.AckWaitsForBothSimulationSubsteps",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MovementInputPlaybackTests.BatchedSnapshotsDoNotSkipUnsimulatedInputs",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MovementInputPlaybackTests.MissingInputNeverAdvancesAck",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MovementInputPlaybackTests.RebindingDiscardsPartiallySimulatedInputFromPreviousPeer",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MultiplayerBotRosterTests.BotsCannotBeInsertedIntoCustomOrDoublesMatches",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MultiplayerBotRosterTests.HumanSinglesStillRequireBothConnectedPlayers",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "MultiplayerBotRosterTests.NamedBotOccupiesOpponentSeatWithoutRequiringASecondConnection",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PhotonSceneIdentityTests.CourtAndLobbyCannotResolveToSettingsOrReplay",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PhotonSceneIdentityTests.MissingSceneIsNotMappedToAnUnrelatedScene",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PhotonSceneIdentityTests.NetworkScenesUseCanonicalPaths(\"Assets/Scenes/PhotonLobby.unity\",\"PhotonLobby\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PhotonSceneIdentityTests.NetworkScenesUseCanonicalPaths(\"Assets/Scenes/MultiplayerCourt.unity\",\"MultiplayerCourt\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PhotonSceneIdentityTests.NetworkVersionSeparatesLegacyClientsWithoutMutatingSavedSettings",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PhotonSceneIdentityTests.WindowsAndGlobalLayoutsResolveTheSameNetworkSceneIdentity",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(Professional,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(Professional,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(LowPoly,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(LowPoly,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.HostChoiceSurvivesRosterSnapshotWithoutChangingRoom(False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.HostChoiceSurvivesRosterSnapshotWithoutChangingRoom(True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.RosterWithoutEnvironmentRemainsCompatibleAndDefaultsToDay",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ModeNavigationTests.CancellationFailureDoesNotNavigate",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ModeNavigationTests.DuplicateBackDoesNotLeaveTwice",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ModeNavigationTests.InvalidateBeforeAwaitAndLateCallbacksStayInvalidAfterReopen",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ModeNavigationTests.LeaveFailureKeepsPageAndAllowsRetry(False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ModeNavigationTests.LeaveFailureKeepsPageAndAllowsRetry(True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.AutomaticDoublesStillRequiresFourPlayers",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.BlankNameGetsFourUppercaseLetters",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(0,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(2,0)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(3,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(1,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(1,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(2,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(2,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.GuestCannotStartCustom",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.NameDoesNotChangeAuthenticationProfile",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.SoloSideChangesServiceCourtAfterScoring",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(1,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(2,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(1,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ActualGroundContactOutsideSidelineIsOut",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.AlternatingFirstServerStartsFromRandomlySelectedTeam",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.BallMustCrossNetEntirelyBeforeContact",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.BestOfThreeOnlyEndsAfterTwoGameWins",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DecidingGameChangesEndsAtSixOnceWithoutResettingScoresOrServe",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DinkAfterBounceCanBePlayedFromBaselineLikeBotMatch",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DoublesSecondServerStaysInLeftCourtUntilScoring",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DoublesSideOutFirstServerStartsRightEvenWithOddScore",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.IllegalTechniqueDoesNotTurnIntoAutomaticLegalShot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.KitchenMomentumOverridesDeadBallAndScoresOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.OnlyServingSideScoresAndTenAllRequiresTwelveTen",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.OpeningDoublesServerIsSecondThenSideOutStartsFirstServer",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.RequeueKeepsElapsedTime",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SearchBeginsAtSixAndExpiresAfter120SearchingSeconds",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SecondBounceAndBodyContactEndRallyOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SecondBounceOutsideStillLosesForReceiver",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeAndReturnBothMustBounceBeforeVolley",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeCentreLineMatchesBotMatch(0.0f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeCentreLineMatchesBotMatch(0.0254f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeContactHeightMatchesBotMatch(0.1f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeContactHeightMatchesBotMatch(1.06f)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeMustBeDiagonalPastKitchenAndLinesAreIn",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.TimeoutsAreLimitedAndResetPerGame",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.MultiplayerRulesTests.WrongReceiverStillFaultsAfterServeBounce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.BlankCodeNeverSchedulesConnection(null)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.BlankCodeNeverSchedulesConnection(\"\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.BlankCodeNeverSchedulesConnection(\"   \")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.CreatingCustomRoomClearsPreviousInvitationRegion",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.InvitationRegionSurvivesNavigationExactlyOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.JoinNormalizesSharedCode",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.RankedEntryClearsPrivateIntent",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.RoomTypeSurvivesNavigationExactlyOnce(Singles,CreateSingles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.RoomTypeSurvivesNavigationExactlyOnce(Doubles,CreateDoubles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomOperationGateTests.FailedConnectionStillAllowsLeavingAndRetry",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomOperationGateTests.NavigationWaitsForInitialSceneAndCancelledRoomCleanup",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.RoomOperationGateTests.SecondCreateCannotReplaceTheOperationNavigationIsWaitingFor",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "RoomDataSerializationTests.OlderRoomWithoutMapsKeepsUsableEmptyDictionaries",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "RoomDataSerializationTests.TeamAssignmentsVersionsAndAcknowledgementsSurviveJson",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.ActivationSpikeMustLeaveWindowBeforeReveal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.AlternatingStallsDoNotBecomeReadyJustBecauseTimePassed",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.DoesNotFinishFromOneFastFrame",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.IntentionallyCappedThirtyFpsIsReady",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.InvalidSamplesCannotAdvanceLoading",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.SlowerDeviceMustSettleBeforeReveal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "SceneWarmupTests.SmoothFramesPrepareScene",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Multiplayer.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ContactThresholdIsStrict(0.259999d,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ContactThresholdIsStrict(0.26d,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.NewRallyCanResolveReusedStrokeNumber",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ReturnAfterServeStillUsesRatingAndOneDecisionPerStroke",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SameBallCannotRerollAcrossTicksOrRepeatedSwings(0.1d,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SameBallCannotRerollAcrossTicksOrRepeatedSwings(0.8d,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(0,25)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(100,25)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(220,26)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(9000,99)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(9100,100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(100000,100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ServeCannotReuseACachedMiss",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(0)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(500)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(2000)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(9100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.ChunkingPreservesStableShotIdsAndPartMetadata",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.LegacyMatchRetainsFormulaAndNewPolicyIgnoresStreak",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.ProfileIsFrozenAndThresholdsPreserved",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.StandardElo(400,400,True,16)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.StandardElo(400,400,False,-16)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.StandardElo(100,100,False,0)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "HybridAiTests.StandardElo(400,360,False,-18)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(Custom)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(MatchedDoubles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(RankedSingles)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(RankedBot)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(BotPractice)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.ConsecutiveDaysLossStillCounts",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.ExitsAndInterruptionsDoNotCount(Won,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.ExitsAndInterruptionsDoNotCount(Lost,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.ExitsAndInterruptionsDoNotCount(Interrupted,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.GapExpiresAndNextMatchRestarts",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.LateHistoricalResultDoesNotReviveExpiredStreak",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.LateResultBridgesGap",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.MigrationDoesNotBackfillOrAlterExistingProfile",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.RemainingPlayerForfeitWinCounts",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.ResultBeforeEnableDoesNotCount",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.SameDayAndDuplicateCountOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.SaveReopenAndSwitchProfilesRemainSeparate",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.DailyStreakTests.UtcMidnightIsVietnamSeven",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.AcceptedOrDuplicateReceiptsRemoveTheOutboxOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ActiveAttemptRetainsItsOwnDefinitionAfterCatalogChanges",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ANewResetEpochDoesNotOverlayOldProgress",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.CorruptPrimaryFallsBackToTheLastValidBackup",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.DelayedSyncResponseCannotOverwriteANewerSnapshot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.OwnerMismatchCannotRemoveQueuedProgress",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ProvisionalCompletionDoesNotCreateSpendableMoney",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptEnumUsesCanonicalServerCodes",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptRejectsInvalidEnumCodes(\"0\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptRejectsInvalidEnumCodes(\"999\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptRejectsInvalidEnumCodes(\"\\\"invalid\\\"\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.RestartRestoresTheLatestCheckpoint",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.RetryablePrerequisiteFailuresKeepTheAttempt",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TerminalRejectionKeepsEvidenceAndReason",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TutorialAndOnboardingChangesSurviveRestart",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TutorialCheckpointSurvivesRestartAndNeverMovesBackwards",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TwoWritersCannotCorruptOneAccountFile",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(0,25)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(100,25)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(220,26)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(9000,99)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(9100,100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(100000,100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.BotRatingAndSeededDecisions",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.CatalogAndAchievementLifetimeClaims",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.CompletedMatchRemainsClearedAfterStoreReopenAndRollback",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.CustomInterruptedForfeitAndSeparateRankStreaks",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,240,True,20)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,240,False,-20)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,200,True,20)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,200,False,-20)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(400,360,True,10)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(400,360,False,-160)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,160,False,-100)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(100,100,False,0)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,201,True,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.EloStreaksAndComeback",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.HistoryKeepsLatestTwentyAndPerGameScores",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.LateForfeitBreaksOnlyItsEndedMissionPeriod",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.MutualPairKeysEnforceBothPreferencesAndWindow",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.OfflineResetAutoClaimsAllEligibleItemsAndBonusesOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(100,\"Đồng\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(499,\"Đồng\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(500,\"Bạc\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(999,\"Bạc\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(1000,\"Vàng\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(1999,\"Vàng\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(2000,\"Bạch Kim\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(3499,\"Bạch Kim\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(3500,\"Kim Cương\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(4999,\"Kim Cương\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(5000,\"Cao Thủ\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(6999,\"Cao Thủ\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(7000,\"Huyền Thoại\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.ResultsAndRewardsAreIdempotentAndSurviveSerialization",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.SearchDeadlineRaceCancellationAndRetry",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.StoreLeaseSelectionSwitchReopenRollbackAndBackup",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.TicketArraysRespectServiceLimitWithoutDroppingCanonicalPairs",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.UtcMondayResetAndLateConfirmedResultUsesItsEndPeriod",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.ValidStrokesComeFromAcceptedFlightsOnce",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProgressionTests.XpRemainderMultipleLevelsAndTotal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.AttemptUsesItsOwnCatalogWithoutChangingOtherSessions",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.BasicLessonsAreAvailableAndAdvancedLessonsNeedPrerequisites",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.CurriculumCoversFifteenDrillsAndAllTwelveSkills",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.EmptyLegacyCheckpointIsNotAResumableAttempt",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.FailedDrillRecordsErrorsAndReceivesNoCurrency",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.FailedFirstAttemptCanStillEarnFirstCompletionReward",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.FirstCompletionPaysButReviewAndCompletionReplayDoNot",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.HarderGroupsPayMoreAndHistoriesStayBounded",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.LegacyMasteryAndOldCheckpointCannotClaimAgain",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.MissingTrialsAndOtherPlayerCannotClaimRewards",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.NewDrillsUseExistingControlsAndDistinctPracticeGoals",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.ResultsAndActiveCheckpointSurviveJsonReload",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.ReviewStillImprovesStarsAndLogsMistakesWithoutRewardsAfterReload",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.SlowTimingCannotReceiveThreeStars",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.StarsUseAccuracyAndTiming(6,1)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.StarsUseAccuracyAndTiming(7,2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.StarsUseAccuracyAndTiming(8,3)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.TrainingTests.TrainingAwardsXpWithoutChangingEloMatchesOrElite",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "QuickCoachingRulesTests.AssistedTimingIsNotAHumanTechniqueFinding",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "QuickCoachingRulesTests.MissingAndEarlierRallyDataDoNotProduceTips",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "QuickCoachingRulesTests.StandingInKitchenRequiresAVolleyToBeAFault",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Progression.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.BackgroundWriterDrainsBeforeFinishing",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.BonePathHandlesNamesWithSlash",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.CleanupRetainsTwentyHistoryAndPendingAndOtherProfile",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.CompressedRoundTripPreservesSnapshotsAndEvents",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.CorruptChunkDoesNotMutateProfile",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.MetadataBackupRecoversCorruptMain",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.MissingChunkHasClearFailure",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.MissingMetadataDoesNotCreateHistory",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.PartialRecordIsReadable",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.PathsCannotEscapeStorage",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecorderCapturesAllPlayersAndBoundsBuffer(2)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecorderCapturesAllPlayersAndBoundsBuffer(4)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecorderPreservesBallRotationAndScale",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecoverChunkCommittedBeforeMetadata",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecoveryKeepsValidChunkWhenLaterChunkIsBroken",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ReplayRepositoryTests.UnsupportedVersionIsExplicit",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Replays.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityClosesBeforeLogoutOrAccountSwitch(False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityClosesBeforeLogoutOrAccountSwitch(True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityFlushesWaitForThePreviousCheckpoint",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityQueuedCloseDoesNotFollowAnAccountChange",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"http://localhost:8080\",True,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"http://localhost:8080\",False,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"http://example.com\",True,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"https://example.com\",False,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"https://user:password@example.com\",False,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ClearingSessionWhileLoginIsPendingPreventsResurrection",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ConcurrentUnauthorizedRequestsShareOneRefresh",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.FailedRefreshClearsCredentials",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.LoginLoadsAuthenticatedProfileInsteadOfTrustingLocalData",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.LogoutRevokesTheRotatedRefreshToken",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.OtpDisplayTimingComesFromApiResponses",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.PendingLogoutDoesNotClearANewerLogin",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ProblemDetailsNeverDisplaysDevelopmentStackTraces",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RegistrationNeverCreatesASignedInSession",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",True,True,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080/\",True,True,True)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",True,False,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",False,True,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",False,False,False)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ResendPreservesServerStatusWithoutSigningIn(\"email_already_verified\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ResendPreservesServerStatusWithoutSigningIn(\"verification_requested\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RestrictedLoginUsesItsProfileWithoutCallingBlockedProfileEndpoint",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeRejectsInvalidWireValues(\"0\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeRejectsInvalidWireValues(\"999\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeRejectsInvalidWireValues(\"\\\"unknown\\\"\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeUsesTheCanonicalServerCodes",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.Services.AccountServiceTests.UnauthorizedRetryFromOldSessionDoesNotClearANewerLogin",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Services.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.CatalogOrderTests.EmptyCatalogHasNoFeaturedProduct",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.CatalogOrderTests.EqualReleaseOrderKeepsStableCatalogOrder",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.CatalogOrderTests.NewestProductDoesNotDependOnCatalogPosition",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.EquippedPaddleLifecycleTests.LobbyPaddleCanEnableBeforeAuthenticatedInventoryIsReady",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.ExistingFundedBalanceSurvivesReload",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.FailedSaveDoesNotMutateMemoryState",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.GemstoneRejectsTokenpad",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.InsufficientFundsLeaveStateUntouched",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.InvalidItemAndCurrencyCannotSpend",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.NewWalletNeverSeedsEliteEvenWithAnOldCatalog",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.OwnedItemCannotBeBoughtWithOtherCurrency",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.ReplayCannotChangeItemOrCurrency",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.RequestReplayDoesNotDebitTwice",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.RewardsAreIdempotentAndNeverGrantElite",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.RewardSaveFailureDoesNotMarkItClaimed",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.SnapshotIsIsolatedFromCallerChanges",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.ThotSupportsEitherCurrency(Tokenpad,100,1000)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.LocalEconomyTests.ThotSupportsEitherCurrency(Elite,1000,750)",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.DefaultBelongsToCollectionOnly",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.DefaultIsAlwaysOwnedWithoutPurchase",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.EquipPersistsAndDoesNotSpendMoney",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.InvalidSavedEquipmentFallsBack(\"unknown\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.InvalidSavedEquipmentFallsBack(\"thot\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.LegacyWalletKeepsBalancesOwnershipAndReceipts",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.SaveFailureKeepsPreviousEquipment",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.PaddleEquipmentTests.UnownedAndUnknownCannotEquip",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.AllGameplayRewardsIgnoreLegacyEliteAmounts",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.CorruptInventoryCannotResetTheWallet",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.LegacyGameplayEliteIsRemovedOnceWithoutLosingProgress",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.LegacyShopImportKeepsItemsAndTokenpadButRemovesFreeElite",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.PurchaseAndMatchRewardStayIdempotentAfterReload",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.ShopDebitsTheSameBalanceThatProgressionRewardsCredit",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.ProfileEconomyTests.SwitchingPlayersSeparatesWalletAndInventory",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Shop.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.AddRejectsSelfUnknownAndDuplicatesAndRemoveIsIdempotent",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.EmptyAndMissingQueriesAreHandled",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.FixturesAreThirtyUniquePlayersAndDoNotChangeProfile",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.LivePlayerIsIncludedExactlyOnceAndEloChangesReorder",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.PlayersHaveSeparateSessionListsAndANewSessionRestoresSeeds",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\" dan thanh \",\"DEMO-005\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"ĐAN THANH\",\"DEMO-005\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"quynh nhu\",\"DEMO-019\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"demo-030\",\"DEMO-030\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"Quốc Bảo\",\"DEMO-018\")",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        },
+        {
+          "FullName": "PickleVerse.Tests.OfflineSocialTests.TiesHaveStableIdOrderAndFilteredPositionsStayGlobal",
+          "Mode": "EditMode",
+          "Assembly": "PickleVerse.Social.Tests",
+          "Categories": [
+            "Uncategorized"
+          ],
+          "Explicit": false
+        }
+      ],
+      "success": true,
+      "result": null,
+      "message": "Found 515 test(s)."
+    },
+    "target": {
+      "host": "127.0.0.1",
+      "port": 7800,
+      "projectPath": "D:\\Github\\PickleVerse\\My project"
+    }
+  },
+  "errors": [],
+  "warnings": []
+}

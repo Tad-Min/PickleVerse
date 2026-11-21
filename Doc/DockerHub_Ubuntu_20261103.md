@@ -1,5 +1,7 @@
 # Chạy thử PickleVerse trên Ubuntu bằng Docker Hub
 
+Tài liệu lịch sử của gói bàn giao ngày 03/11/2026. Các lệnh bên dưới chỉ áp dụng cho gói cũ đã phát hành. Để triển khai từ repo hiện tại, dùng riêng `docker-compose.linux.yml` theo [hướng dẫn CI/CD PickleVerse](CI_CD_DockerHub.md).
+
 Repository: `tadminm/pickelverse`. Phiên bản: `20261103-p18-53871c6-hub1`, protocol 18, Linux amd64. Ba tag là `api-20261103-p18-53871c6-hub1`, `ai-20261103-p18-53871c6-hub1`, `server-20261103-p18-53871c6-hub1`. Dùng cùng bộ phiên bản; không đổi các tag `latest`/`ai` cũ.
 
 Ubuntu chỉ cần Docker/Compose >=2.24.4 và gói cấu hình này. Mã backend/AI và Linux dedicated nằm trong image; không cài Unity Editor, Python hoặc .NET SDK trên Ubuntu. Windows client vẫn chạy riêng trên máy người chơi.

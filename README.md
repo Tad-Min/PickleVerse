@@ -1,5 +1,12 @@
 # PickleVerse
 
+## CI/CD Docker Hub
+
+Push vào `main` kích hoạt GitHub Actions so với bản đã triển khai trên Ubuntu, build lại các image bị ảnh hưởng rồi kiểm tra đúng bộ image theo digest. Sau đó workflow deploy lên Linux development qua SSH. [Cách thiết lập secrets, dữ liệu bền vững và vận hành](Doc/CI_CD_DockerHub.md)
+
+- **Local:** chạy `docker-compose.yml` với `.env` local.
+- **Ubuntu:** chạy `docker-compose.linux.yml` với `.env` trên máy chủ. File này đã có service `game-server`.
+
 ## Khởi tạo database mới
 
 Chỉ dùng **[`src/Database.sql`](src/Database.sql)**. File này chứa toàn bộ schema,
@@ -41,6 +48,8 @@ Unity đọc địa chỉ API từ asset `My project/Assets/Resources/BackendApi
 
 `src/Backend/API/appsettings.json` quản lý SMTP (Host/Port/FromName), OTP (10 phút / gửi lại sau 60 giây / 5 lần sai), token (2 giờ / 14 ngày), Matchmaking (bot sau 360 giây / xác nhận 120 giây), OnlineMatch (mất kết nối 35 giây / heartbeat 8 giây) và toàn bộ EXP/phần thưởng progression. API kiểm tra cấu hình khi khởi động; sau khi sửa chạy `docker compose up -d --build backend-api`.
 
+Docker đọc thông tin kết nối, khóa JWT và thông tin lưu trữ từ `.env`. Với volume PostgreSQL có sẵn, dùng thông tin đăng nhập hiện tại của volume. Khi chạy API trực tiếp, cấu hình `ConnectionStrings__DefaultConnection`, `Jwt__Key`, `Storage__AccessKey` và `Storage__SecretKey` qua biến môi trường của tiến trình. Đổi các credential đã từng commit tại hệ thống tương ứng vì bản cũ vẫn nằm trong lịch sử Git.
+
 Khi chạy Docker, SMTP Username/Password/FromEmail lấy từ `SMTP_USERNAME`, `SMTP_APP_PASSWORD`, `SMTP_FROM_EMAIL` trong `.env` và ghi đè các giá trị tương ứng trong `appsettings.json`. Sau khi đổi Google App Password, cập nhật `SMTP_APP_PASSWORD` trong `.env` rồi chạy `docker compose up -d backend-api` để tạo lại container với mật khẩu mới; `docker compose restart` không nạp lại `.env`. Không commit giá trị bí mật. Unity chỉ nhận cấu hình gameplay công khai qua catalog API.
 
 SQL khởi tạo bao gồm toàn bộ schema game, hàng đợi Hybrid AI và Elo ledger. Trong giai đoạn phát triển, cập nhật trực tiếp `src/Database.sql` và khởi tạo database mới khi schema thay đổi. Danh mục game và dữ liệu gốc được seed trong cùng transaction.
@@ -68,3 +77,7 @@ Xem [triển khai và kết quả kiểm tra](Doc/Proccess/Friend_Room_Invitatio
 Kiến trúc Unity-local bot + FastAPI analytics, khởi tạo database, cờ triển khai và hướng dẫn kiểm thử nằm tại [Hybrid AI](Doc/Hybrid_AI_Implementation.md). Các bảng Hybrid và Elo ledger được tạo trực tiếp bởi `src/Database.sql`.
 
 Hướng dẫn thử coaching trên môi trường development đã bật ngày 31/10/2026: [AI service và cách test trong game](Doc/AI_Service_Activation_20261031.md).
+
+## Kiểm thử
+
+Các bộ kiểm thử .NET, FastAPI và Unity nằm trong `src/Testing`. [Cách chạy và đề xuất kiến trúc kiểm thử](src/Testing/README.md)

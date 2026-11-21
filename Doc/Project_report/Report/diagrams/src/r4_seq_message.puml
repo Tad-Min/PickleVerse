@@ -1,0 +1,58 @@
+@startuml r4_seq_message
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor "Player A" as A
+boundary ":SocialLobbyMenu" as UI
+control ":SocialContentController" as C
+control ":SocialHub" as H
+control ":SocialDirectService" as S
+entity ":GameRepository" as G
+entity ":SocialPresenceRepository" as R
+actor "Player B" as B
+group Direct message
+  A -> UI : write message, send
+  activate UI
+  UI -> C : Send(input)
+  activate C
+  C -> S : Send(actor, input)
+  activate S
+  S -> G : LockPlayers(a, b)
+  S -> G : MessageByClientId(a, clientMessageId)
+  alt clientMessageId already stored
+    S --> C : the first message (no duplicate)
+  else not friends, blocked or recipient inactive
+    S --> C : error 403 (MSG72)
+  else else
+    S -> G : SocialConversationFor(a, b)
+    S -> G : AddSocialMessage(message)
+    S -> H : MessageChanged(a, b)
+    H ->> B : inbox refreshed (if online)
+    S --> C : SocialMessageItem
+  end
+  deactivate S
+  C --> UI : ApiResponse
+  deactivate C
+  deactivate UI
+end
+group Whisper (both players in the lobby)
+  UI -> H : Whisper(recipient, body)
+  activate H
+  H -> R : Connections(recipient)
+  H -> S : Whisper(sender, recipient, body)
+  activate S
+  alt blocked or recipient not verified
+    S --> H : HubException (MSG73)
+  else recipient has no live connection
+    S --> H : HubException (MSG74)
+  else else
+    S --> H : allowed
+    H ->> B : WhisperReceived (not stored)
+  end
+  deactivate S
+  deactivate H
+end
+@enduml

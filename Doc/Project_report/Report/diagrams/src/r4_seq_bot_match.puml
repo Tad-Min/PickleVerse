@@ -1,0 +1,44 @@
+@startuml r4_seq_bot_match
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":ModeSelectionMenu" as MS
+boundary ":BotMatch" as BM
+control ":BhTreeBot" as Bot
+control ":SinglesRules" as R
+control ":ProgressionRuntime" as PR
+control ":GameMatchesController" as C
+Player -> MS : StartBot()
+activate MS
+MS -> BM : load BotMatch scene (difficulty, time of day, venue)
+deactivate MS
+activate BM
+BM -> PR : StartBotAsync(kind, requestId)
+activate PR
+PR -> C : StartBot(request)
+PR --> BM : match id
+deactivate PR
+loop no player has won two games
+  Player -> BM : movement and shot keys
+  BM -> Bot : Step(dt)
+  activate Bot
+  Bot --> BM : move, run
+  deactivate Bot
+  BM -> R : Hit(player, contact, feetInKitchen)
+  activate R
+  R --> BM : fault or rally continues
+  deactivate R
+  BM -> R : CommitRally()
+end
+BM -> PR : FinishBotAsync(result, requestId)
+activate PR
+PR -> C : FinishBot(request)
+PR --> BM : snapshot with rewards
+deactivate PR
+BM --> Player : result screen and Xem phân tích button
+deactivate BM
+@enduml

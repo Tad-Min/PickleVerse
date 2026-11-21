@@ -1,0 +1,50 @@
+@startuml r4_architecture
+!include _style.iuml
+skinparam componentStyle uml2
+component "Unity Game Client\n(Windows, Android)" as Client
+component "Admin Web\n(React SPA)" as Web
+component "HTTPS Reverse Proxy\n(Caddy)" as Proxy
+component "Web API\n(ASP.NET Core 10, SocialHub)" as API
+component "Background Workers\n(hosted in the Web API process)" as Workers
+component "AI Coaching Service\n(Python FastAPI)" as AI
+component "Dedicated Game Server\n(Unity Linux headless,\none container per match)" as DS
+component "PostgreSQL 16" as PG <<database>>
+component "Redis 7.4" as RD <<database>>
+component "S3-compatible Storage" as S3 <<external>>
+component "Photon Cloud" as Photon <<external>>
+component "Gmail SMTP" as SMTP <<external>>
+interface "HTTPS\n(REST JSON, SignalR)" as IHttps
+interface "Web API\n/api (JWT)" as IApi
+interface "Server API\n(service key)" as ISrv
+interface "Fusion match session\n(UDP 3669+, signed ticket)" as IGame
+interface "Fusion lobby\nand relay" as IPhoton
+interface "Analyze API\n(X-AI-Key)" as IAI
+interface "SQL\n(Npgsql EF Core)" as ISql
+interface "Redis\nprotocol" as IRedis
+interface "S3 API" as IS3
+interface "SMTP\n(STARTTLS)" as ISmtp
+Proxy -up- IHttps
+Client -down-( IHttps
+Web -down-( IHttps
+API -up- IApi
+Proxy -down-( IApi
+API -right- ISrv
+DS -left-( ISrv
+DS -up- IGame
+Client -down-( IGame
+Photon -down- IPhoton
+Client -( IPhoton
+DS -up-( IPhoton
+AI -up- IAI
+Workers -down-( IAI
+PG -up- ISql
+API -down-( ISql
+Workers -down-( ISql
+RD -up- IRedis
+API -down-( IRedis
+S3 -up- IS3
+API -down-( IS3
+SMTP -up- ISmtp
+API -down-( ISmtp
+Workers .up.> API : <<hosted in>>
+@enduml

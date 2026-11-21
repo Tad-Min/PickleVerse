@@ -8,7 +8,7 @@ namespace PickleVerse.Progression
     {
         static TrainingDrill D(string id, string title, TrainingSkill skill, int tier, int[] masks, string explanation, string coaching, params string[] prerequisites)
         {
-            return new TrainingDrill { id = id, title = title, skill = skill, tier = tier, masks = masks, explanation = explanation, coaching = coaching, prerequisites = prerequisites, trials = tier < 1 ? 8 : tier == 1 ? 10 : 12, required = tier < 1 ? 6 : tier == 1 ? 7 : 9, reward = new[] { 150, 225, 300, 450 }[tier], xp = new[] { 5, 7, 10, 15 }[tier] };
+            return new TrainingDrill { alternateTargets = id == "serve-alternating", requireRecovery = id == "volley-recovery", targetRadius = tier < 2 ? .9f : .7f, id = id, title = title, skill = skill, tier = tier, masks = masks, explanation = explanation, coaching = coaching, prerequisites = prerequisites, trials = tier < 1 ? 8 : tier == 1 ? 10 : 12, required = tier < 1 ? 6 : tier == 1 ? 7 : 9, reward = new[] { 150, 225, 300, 450 }[tier], xp = new[] { 5, 7, 10, 15 }[tier] };
         }
         public static TrainingDrill[] Lessons { get; private set; } = new TrainingDrill[] {
             D("serve", "Giao bóng đúng ô", TrainingSkill.Serve, 0, new[]{1}, "Giao dưới tay từ sau đường biên cuối sân. Bóng phải sang ô chéo và vượt cả vạch vùng cấm vô lê.", "Đứng trong vùng sáng phía sau đường biên cuối sân. Giữ rồi thả Đánh bạt; không bước vào sân trước khi chạm bóng."),
@@ -22,7 +22,10 @@ namespace PickleVerse.Progression
             D("footwork", "Di chuyển và hồi vị", TrainingSkill.Footwork, 2, new[]{1, 17}, "Đón bóng luân phiên hai bên sân, đánh Đánh bạt rồi trở về vị trí hồi phục.", "Di chuyển A/D hoặc cần điều khiển tới vùng đón bóng. Có thể dùng chạy; sau cú đánh quay về vòng hồi vị.", "drive", "modifiers"),
             D("approach", "Bỏ nhỏ rồi tiến lên", TrainingSkill.Approach, 2, new[]{3}, "Đánh bỏ nhỏ từ cuối sân, tiến lên vùng sẵn sàng trước vùng cấm vô lê. Dừng có kiểm soát trước lượt tiếp theo.", "Ghép Đánh bạt + Bóng ngắn rồi di chuyển W lên vùng sáng. Đừng chạy qua vạch vùng cấm vô lê để đón vô lê.", "drop", "footwork"),
             D("doubles-cover", "Đánh đôi: giữ khoảng cách", TrainingSkill.DoublesCover, 3, new[]{4, 20}, "Hai người giữ hàng ngang, dịch chuyển cùng phía bóng. Đánh bóng phần sân của bạn và giữ khe giữa đội nhỏ.", "Đồng đội AI đi cùng bạn. Dịch chuyển ngang, đánh Vô lê theo chỉ dẫn, rồi hồi vị để cả đội giữ hàng ngang.", "volley", "footwork"),
-            D("doubles-transition", "Đánh đôi: bỏ nhỏ và phối hợp", TrainingSkill.DoublesTransition, 3, new[]{3, 2, 4}, "Đội giao chờ trả giao nảy, dùng bỏ nhỏ tiến lên cùng nhau rồi chuyển sang bóng ngắn và vô lê. Có lượt bóng của đồng đội AI.", "Theo dấu vị trí của bạn. Sau bỏ nhỏ tiến lên cùng đồng đội; khi hiện ‘Bóng của đồng đội’, giữ hàng ngang và để AI xử lý.", "approach", "doubles-cover", "reset")
+            D("doubles-transition", "Đánh đôi: bỏ nhỏ và phối hợp", TrainingSkill.DoublesTransition, 3, new[]{3, 2, 4}, "Đội giao chờ trả giao nảy, dùng bỏ nhỏ tiến lên cùng nhau rồi chuyển sang bóng ngắn và vô lê. Có lượt bóng của đồng đội AI.", "Theo dấu vị trí của bạn. Sau bỏ nhỏ tiến lên cùng đồng đội; khi hiện ‘Bóng của đồng đội’, giữ hàng ngang và để AI xử lý.", "approach", "doubles-cover", "reset"),
+            D("serve-alternating", "Giao bóng luân phiên hai ô", TrainingSkill.Serve, 1, new[]{1}, "Luân phiên giao từ hai bên đường cuối sân. Đưa bóng vào đúng ô chéo và ngoài Kitchen.", "Quan sát vị trí bắt đầu đổi bên. Giữ chân sau đường cuối sân và giao vào vùng đích.", "serve"),
+            D("dink-cross", "Dink chéo sân", TrainingSkill.Dink, 1, new[]{18}, "Đánh Dink chéo sân sau một lần nảy, đưa bóng vào vùng Kitchen đã đánh dấu.", "Giữ hướng chéo đến khi thả nút. Ưu tiên kiểm soát bóng ngắn và đứng cân bằng.", "dink", "modifiers"),
+            D("volley-recovery", "Volley rồi hồi vị", TrainingSkill.Volley, 2, new[]{4, 20}, "Đón Volley ngoài Kitchen rồi trở về vòng hồi vị trước lượt tiếp theo.", "Dừng đà sau cú đánh, giữ chân ngoài Kitchen và quay về vòng hồi vị.", "volley", "footwork")
         };
         public static void Configure(TrainingDrill[] lessons)
         {
@@ -63,19 +66,20 @@ namespace PickleVerse.Progression
         }
         public static bool Unlocked(TrainingProfile p, TrainingDrill d) => d.prerequisites.All(id => p.lessons.Any(r => r.id == id && r.bestStars > 0));
         public static bool Completed(TrainingProfile p, string id) => p.lessons.Any(r => r.id == id && (r.bestStars > 0 || r.completions > 0));
-        public static string Recommended(TrainingProfile p)
+        public static string Recommended(TrainingProfile p, TrainingDrill[] catalog = null)
         {
-            if (p.active != null && !p.active.completed && TrainingCurriculum.Find(p.active.lessonId) != null)
+            var lessons = catalog ?? TrainingCurriculum.Lessons;
+            if (p.active != null && !p.active.completed && lessons.Any(d => d.id == p.active.lessonId))
                 return p.active.lessonId;
-            var next = TrainingCurriculum.Lessons.FirstOrDefault(d => Unlocked(p, d) && !p.lessons.Any(r => r.id == d.id && r.bestStars > 0));
+            var next = lessons.FirstOrDefault(d => Unlocked(p, d) && !p.lessons.Any(r => r.id == d.id && r.bestStars > 0));
             if (next != null)
                 return next.id;
             return p.lessons.OrderBy(r => r.bestAccuracy).ThenByDescending(r => r.retries).Select(r => r.id).FirstOrDefault() ?? "serve";
         }
-        public static TrainingAttempt Start(PlayerProfile p, string id, bool retry = false)
+        public static TrainingAttempt Start(PlayerProfile p, string id, bool retry = false, TrainingDrill[] catalog = null)
         {
             var data = Ensure(p);
-            var lesson = TrainingCurriculum.Find(id);
+            var lesson = (catalog ?? TrainingCurriculum.Lessons).FirstOrDefault(d => d.id == id);
             if (lesson == null || !Unlocked(data, lesson))
                 throw new InvalidOperationException("Bài tập chưa mở khóa.");
             var record = Record(data, id);
@@ -86,10 +90,10 @@ namespace PickleVerse.Progression
             data.active = new TrainingAttempt { id = Guid.NewGuid().ToString("N"), lessonId = id, playerId = p.id, review = Completed(data, id) };
             return data.active;
         }
-        public static bool Complete(PlayerProfile p, TrainingAttempt a)
+        public static bool Complete(PlayerProfile p, TrainingAttempt a, TrainingDrill[] catalog = null)
         {
             var data = Ensure(p);
-            var lesson = TrainingCurriculum.Find(a.lessonId);
+            var lesson = (catalog ?? TrainingCurriculum.Lessons).FirstOrDefault(d => d.id == a.lessonId);
             if (lesson == null || a.playerId != p.id || data.active?.id != a.id || a.trials != lesson.trials || a.successes < 0 || a.successes > a.trials || data.completedAttempts.Contains(a.id))
                 return false;
             // Check saved mastery too: old checkpoints predate the review flag.

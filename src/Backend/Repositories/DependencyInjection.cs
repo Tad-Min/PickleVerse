@@ -14,13 +14,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPickleVerseRepositories(this IServiceCollection services, IConfiguration configuration)
     {
-        var connection = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
+        var connection = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connection))
+            throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection.");
         services.AddDbContext<PickleVerseContext>(options => options.UseNpgsql(connection));
         services.AddSingleton<RedisGameState>();
+        services.AddSingleton<RedisAppActivity>();
         services.AddSingleton<LeaderboardCache>();
         services.AddSingleton<LobbyRepository>();
         services.AddSingleton<DedicatedLeaseRepository>();
+        services.AddSingleton<SocialPresenceRepository>();
         services.AddScoped<GameRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();

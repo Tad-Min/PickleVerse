@@ -10,7 +10,8 @@ namespace PickleVerse.Progression
         public static int Delta(int own, int opponent, bool won, int priorWins, int priorLosses)
             => StandardDelta(own, opponent, won);
         public static int VersionedDelta(string version, int own, int opponent, bool won, int priorWins, int priorLosses)
-            => version == CurrentVersion ? StandardDelta(own, opponent, won) : LegacyDelta(own, opponent, won, priorWins, priorLosses);
+            => version is CurrentVersion or MatchResult.DoublesStandardRating
+                ? StandardDelta(own, opponent, won) : LegacyDelta(own, opponent, won, priorWins, priorLosses);
         public static int StandardDelta(int own, int opponent, bool won)
         {
             double expected = 1d / (1d + Math.Pow(10, ((double)opponent - own) / 400d));

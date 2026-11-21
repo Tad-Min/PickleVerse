@@ -360,7 +360,7 @@ namespace PickleVerse.FrontEnd
         {
             if (!safeArea || Screen.width <= 0 || Screen.height <= 0)
                 return;
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             var resolution = new Vector2(Screen.width, Screen.height);
             if (area == lastSafeArea && resolution == lastResolution)
                 return;

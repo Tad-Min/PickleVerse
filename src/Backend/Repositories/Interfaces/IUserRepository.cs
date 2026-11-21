@@ -10,8 +10,8 @@ namespace Repositories.Interfaces
     {
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdWithRoleAndProfileAsync(Guid userId);
-        Task<List<User>> GetPagedUsersAsync(string? search, string? status, int page, int pageSize);
-        Task<int> GetTotalUsersCountAsync(string? search, string? status);
+        Task<List<User>> GetPagedUsersAsync(string? search, UserStatus? status, int page, int pageSize);
+        Task<int> GetTotalUsersCountAsync(string? search, UserStatus? status);
         Task<Refreshtoken?> GetRefreshTokenAsync(string tokenHash);
         Task AddRefreshTokenAsync(Refreshtoken token);
         Task RevokeRefreshTokenAsync(Refreshtoken token);

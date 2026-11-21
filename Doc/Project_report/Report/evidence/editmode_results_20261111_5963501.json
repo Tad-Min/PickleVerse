@@ -1,0 +1,3625 @@
+{
+  "status": "completed",
+  "duration": 5.96,
+  "summary": {
+    "total": 516,
+    "passed": 516,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.AnotherOwnerCannotStealOrReleaseMusicModal",
+      "Status": "Passed",
+      "Duration": 0.0006435,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.CatalogContainsFourMatchingDiscsAndAudio",
+      "Status": "Passed",
+      "Duration": 0.0217193,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Menu\",True)",
+      "Status": "Passed",
+      "Duration": 0.0006648,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"ModeSelection\",True)",
+      "Status": "Passed",
+      "Duration": 0.0001413,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"PlayMultiplayer\",True)",
+      "Status": "Passed",
+      "Duration": 0.0000725,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Shop\",True)",
+      "Status": "Passed",
+      "Duration": 0.0000735,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Collection\",True)",
+      "Status": "Passed",
+      "Duration": 0.0000687,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"BotMatch\",False)",
+      "Status": "Passed",
+      "Duration": 0.0001023,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"MultiplayerCourt\",False)",
+      "Status": "Passed",
+      "Duration": 0.000139,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Training\",True)",
+      "Status": "Passed",
+      "Duration": 0.0000655,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"SampleScene\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000829,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(\"Settings\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000636,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyFrontEndPagesHaveMusic(null,False)",
+      "Status": "Passed",
+      "Duration": 0.0000653,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Menu\",True)",
+      "Status": "Passed",
+      "Duration": 0.0003225,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Shop\",False)",
+      "Status": "Passed",
+      "Duration": 0.000076,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Collection\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000625,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"ModeSelection\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000607,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"PlayMultiplayer\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000591,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"BotMatch\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000918,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(\"Training\",False)",
+      "Status": "Passed",
+      "Duration": 0.0000701,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.OnlyLobbyHasMusicWidget(null,False)",
+      "Status": "Passed",
+      "Duration": 0.0000591,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.PlaylistCyclesInBothDirections",
+      "Status": "Passed",
+      "Duration": 0.0002999,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MusicPolicyTests.TrainingHasMusicOnlyOutsideExercise",
+      "Status": "Passed",
+      "Duration": 0.0002357,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.AccountGateCanCloseAuthoredModalBeforePresentationIsAttached",
+      "Status": "Passed",
+      "Duration": 0.0029656,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.AccountGateCanCloseBeforeAnyModalExists",
+      "Status": "Passed",
+      "Duration": 0.0003674,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.ClosingInitializedModalDisablesItsRenderingAndInput",
+      "Status": "Passed",
+      "Duration": 0.0021201,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.FrontEnd.PlayerProgressionMenuLifecycleTests.OpaqueModalKeepsAClearOnlyCameraAndRestoresTheSceneCamera",
+      "Status": "Passed",
+      "Duration": 0.0045609,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "AdaptiveBotGraphTests.DesktopGraphProfileIsMeasured",
+      "Status": "Passed",
+      "Duration": 0.0393038,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "AdaptiveBotGraphTests.MandatoryBounceAndKitchenExcludeVolleyBranches",
+      "Status": "Passed",
+      "Duration": 0.0084398,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "AdaptiveBotGraphTests.SeededGraphIsEquivalentAcrossContextsAndCommandsAreLegal",
+      "Status": "Passed",
+      "Duration": 0.0216692,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.AnalysisShowsCurrentMeasuredSummaryAndSupportsOlderResults",
+      "Status": "Passed",
+      "Duration": 0.0050372,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"ServeTimeout\",\"10 giây\")",
+      "Status": "Passed",
+      "Duration": 0.0010734,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"DoubleBounce\",\"nảy thứ hai\")",
+      "Status": "Passed",
+      "Duration": 0.0003242,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"Out\",\"ra ngoài\")",
+      "Status": "Passed",
+      "Duration": 0.0001809,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.BotFeedbackUsesConfirmedFaultWithoutTelemetry(\"KitchenVolley\",\"chân\")",
+      "Status": "Passed",
+      "Duration": 0.000108,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.BotQueuesFeedbackAsSoonAsBallStopsWithoutCoachingSession",
+      "Status": "Passed",
+      "Duration": 0.0021042,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.DedicatedClientNormalizesReceiverButServerPreservesSender",
+      "Status": "Passed",
+      "Duration": 0.001012,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.FollowViewKeepsFeetAboveHudBandAndFarBaselineInView",
+      "Status": "Passed",
+      "Duration": 0.0078764,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "GameplayRegressionTests.TrainingViewMirrorsEndsAndFramesDoubles",
+      "Status": "Passed",
+      "Duration": 0.0008665,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "NetworkCoachingTests.AuthoritativeDeliveryDeduplicatesAndCannotCrossAccountOrSession",
+      "Status": "Passed",
+      "Duration": 0.0170577,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "NetworkCoachingTests.FullTelemetryRecordFitsExistingPhotonMessageLimit",
+      "Status": "Passed",
+      "Duration": 0.002675,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "NetworkCoachingTests.LandingAndClearanceUseAuthoritativeFlightAndOnlyFirstBounce",
+      "Status": "Passed",
+      "Duration": 0.0037401,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(1,0,70,\"SMASH\")",
+      "Status": "Passed",
+      "Duration": 0.1572149,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(2,0,70,\"DROP\")",
+      "Status": "Passed",
+      "Duration": 0.0087305,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(4,0,70,\"RESET\")",
+      "Status": "Passed",
+      "Duration": 0.0081539,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(2,-70,0,\"CHÉO\")",
+      "Status": "Passed",
+      "Duration": 0.0063999,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(1,70,0,\"LỰC\")",
+      "Status": "Passed",
+      "Duration": 0.0062643,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ActiveWaveLabelHasAContrastingOpaqueBacking(1,0,-70,\"HỦY\")",
+      "Status": "Passed",
+      "Duration": 0.0061209,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.CancelClearsHeldSprintAndMovementWithoutFiring",
+      "Status": "Passed",
+      "Duration": 0.0070155,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.DragCancelAndDisableCannotFireStaleShot",
+      "Status": "Passed",
+      "Duration": 0.0078561,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.DragStartsWithoutInputModulesDefaultPixelDelay",
+      "Status": "Passed",
+      "Duration": 0.0062818,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.FiveControlsRemainAndJoystickIsRecessed",
+      "Status": "Passed",
+      "Duration": 0.0064868,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.JoystickAndShotUseIndependentFingers",
+      "Status": "Passed",
+      "Duration": 0.0066467,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.JoystickEdgeNeverStartsSprintAndRunUsesItsOwnFinger",
+      "Status": "Passed",
+      "Duration": 0.0066074,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.QuickTapIsSynchronousAndCannotBeDispatchedTwice",
+      "Status": "Passed",
+      "Duration": 0.0064724,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.ReleasePositionIsUsedEvenWithoutLastDragCallback",
+      "Status": "Passed",
+      "Duration": 0.0064583,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.RoundTargetsAcceptCentersAndIgnoreTransparentCorners",
+      "Status": "Passed",
+      "Duration": 0.0081268,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.MobileTouchPadEventTests.WaveHasRendererAndVisibleGeometry",
+      "Status": "Passed",
+      "Duration": 0.0094331,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.CancelAndForeignPointerCannotFireShot",
+      "Status": "Passed",
+      "Duration": 0.0005015,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ChangingDirectionDoesNotReleaseOrAccumulateComboBits",
+      "Status": "Passed",
+      "Duration": 0.0004735,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.HysteresisStopsThumbJitterAndAllowsReturnToCenter",
+      "Status": "Passed",
+      "Duration": 0.0003282,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(2400,1080)",
+      "Status": "Passed",
+      "Duration": 0.0006655,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(1600,720)",
+      "Status": "Passed",
+      "Duration": 0.0000923,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(2960,1440)",
+      "Status": "Passed",
+      "Duration": 0.0000634,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.Mobile3DUsesAtMost720pWhileNativeScreenRemainsUnchanged(1280,720)",
+      "Status": "Passed",
+      "Duration": 0.0000603,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,0,0,1)",
+      "Status": "Passed",
+      "Duration": 0.0012174,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,0,0,2)",
+      "Status": "Passed",
+      "Duration": 0.0001841,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,0,0,4)",
+      "Status": "Passed",
+      "Duration": 0.0000914,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,0,60,5)",
+      "Status": "Passed",
+      "Duration": 0.0000856,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,0,60,3)",
+      "Status": "Passed",
+      "Duration": 0.0000741,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,0,60,6)",
+      "Status": "Passed",
+      "Duration": 0.0000736,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,-60,0,17)",
+      "Status": "Passed",
+      "Duration": 0.0000716,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,-60,0,18)",
+      "Status": "Passed",
+      "Duration": 0.0000705,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,-60,0,20)",
+      "Status": "Passed",
+      "Duration": 0.0000687,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(1,60,0,9)",
+      "Status": "Passed",
+      "Duration": 0.0000712,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(2,60,0,10)",
+      "Status": "Passed",
+      "Duration": 0.0000703,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ReleaseProducesOneValidGameplayShot(4,60,0,12)",
+      "Status": "Passed",
+      "Duration": 0.0000754,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(0,0,1)",
+      "Status": "Passed",
+      "Duration": 0.0004565,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(0,70,1)",
+      "Status": "Passed",
+      "Duration": 0.0000812,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(-70,0,17)",
+      "Status": "Passed",
+      "Duration": 0.0000614,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.ServeGesturePreservesLegalServe(70,0,9)",
+      "Status": "Passed",
+      "Duration": 0.0000614,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(667,375)",
+      "Status": "Passed",
+      "Duration": 0.0008414,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(844,390)",
+      "Status": "Passed",
+      "Duration": 0.0002577,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(915,412)",
+      "Status": "Passed",
+      "Duration": 0.0002275,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1280,720)",
+      "Status": "Passed",
+      "Duration": 0.0002232,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1920,1080)",
+      "Status": "Passed",
+      "Duration": 0.0002091,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(2400,1080)",
+      "Status": "Passed",
+      "Duration": 0.0002058,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1600,720)",
+      "Status": "Passed",
+      "Duration": 0.0002071,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(1024,768)",
+      "Status": "Passed",
+      "Duration": 0.0002067,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchControlsTests.WholeWaveFitsSafeAreaAtEveryScaleAndHandedness(390,844)",
+      "Status": "Passed",
+      "Duration": 0.0002099,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchSettingsMigrationTests.MissingOldPositionsUseNewDefaultsWithoutApplyingOffsetsTwice",
+      "Status": "Passed",
+      "Duration": 0.0005907,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchSettingsMigrationTests.OldDefaultsMigrateOnceToFourButtonFan",
+      "Status": "Passed",
+      "Duration": 0.000402,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.LocalMatch.Tests.TouchSettingsMigrationTests.PreviousFanKeepsCustomOffsetsAndGetsAnIndependentRunButton",
+      "Status": "Passed",
+      "Duration": 0.0004745,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.AnotherTurnBlendsFromTheCurrentPoseRatherThanAnOldDirection",
+      "Status": "Passed",
+      "Duration": 0.0017356,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.DirectionChangeConvergesWithoutFreezingTheGait",
+      "Status": "Passed",
+      "Duration": 0.0008853,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.DirectionChangeStartsAtTheDisplayedLegPose",
+      "Status": "Passed",
+      "Duration": 0.0004663,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.LegMaskIncludesFeetButDoesNotReplaceArmLocalPose",
+      "Status": "Passed",
+      "Duration": 0.0005813,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.MovingLegsKeepTheStrikeTorsoAndHandOrientation",
+      "Status": "Passed",
+      "Duration": 0.0007353,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.ResetDoesNotReuseATransitionFromThePreviousRally",
+      "Status": "Passed",
+      "Duration": 0.0004576,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ActorPoseMixerTests.ZeroLegWeightRetainsTheStandingStrikePose",
+      "Status": "Passed",
+      "Duration": 0.0004097,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.BasicTierUsesDriveAfterMandatoryBounce",
+      "Status": "Passed",
+      "Duration": 1.3394711,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.DinkNearNet",
+      "Status": "Passed",
+      "Duration": 0.0522148,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(100,0.28f,0.3f,0)",
+      "Status": "Passed",
+      "Duration": 0.051404,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(499,0.28f,0.3f,0)",
+      "Status": "Passed",
+      "Duration": 0.0521903,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(500,0.15f,0.16f,1)",
+      "Status": "Passed",
+      "Duration": 0.0497381,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(1999,0.15f,0.16f,1)",
+      "Status": "Passed",
+      "Duration": 0.0571223,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.EloBoundaries(2000,0.08f,0.08f,2)",
+      "Status": "Passed",
+      "Duration": 0.0483472,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.EloRemainsFixedAndSimulationInputIsExposed",
+      "Status": "Passed",
+      "Duration": 0.0487489,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.FastIncomingBallSelectsReset",
+      "Status": "Passed",
+      "Duration": 0.0534382,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.HighIncomingBallSelectsSmash",
+      "Status": "Passed",
+      "Duration": 0.0512886,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.MandatoryTwoBounceAndKitchenRejectAirShots",
+      "Status": "Passed",
+      "Duration": 0.0496393,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.RealGraphRecoversWhenOtherPlayerHits",
+      "Status": "Passed",
+      "Duration": 0.0501943,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.RealGraphSelectsServeBeforeRecovery",
+      "Status": "Passed",
+      "Duration": 0.0559223,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.RealGraphWaitsWhenPaused",
+      "Status": "Passed",
+      "Duration": 0.0498702,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.ThirdShotUsesDropAtMiddleTier",
+      "Status": "Passed",
+      "Duration": 0.0533429,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.BhTreeTests.VolleyOutsideKitchen",
+      "Status": "Passed",
+      "Duration": 0.0541993,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.AccuratePaddleContactIsPerfect",
+      "Status": "Passed",
+      "Duration": 0.001581,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.ActualUnderhandReleaseAtHipIsNotRejectedByFrontBox",
+      "Status": "Passed",
+      "Duration": 0.0002941,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.ContactOutsideSwingWindowMisses(0.32f)",
+      "Status": "Passed",
+      "Duration": 0.0004124,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.ContactOutsideSwingWindowMisses(0.48f)",
+      "Status": "Passed",
+      "Duration": 0.0000944,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FastBallCrossingPaddleIsDetectedBetweenSamples",
+      "Status": "Passed",
+      "Duration": 0.0004176,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FastPreciseCrossingSurvivesLowPresentationFrameRate",
+      "Status": "Passed",
+      "Duration": 0.0003413,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistContactIsGood",
+      "Status": "Passed",
+      "Duration": 0.0002004,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.2f,1.0f,-0.3f,0.55f,1.0f,-0.3f)",
+      "Status": "Passed",
+      "Duration": 0.0004917,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.9f,1.0f,0.6f,0.55f,1.0f,0.6f)",
+      "Status": "Passed",
+      "Duration": 0.0001132,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.1f,0.08f,0.6f,0.45f,0.08f,0.6f)",
+      "Status": "Passed",
+      "Duration": 0.0000633,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.FrontAssistRejectsBehindSideGroundAndDistantBall(0.1f,1.0f,1.5f,0.45f,1.0f,1.5f)",
+      "Status": "Passed",
+      "Duration": 0.0000621,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.MovingPlayersAtEitherEndUseTheSameZones(1.0f)",
+      "Status": "Passed",
+      "Duration": 0.000561,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.MovingPlayersAtEitherEndUseTheSameZones(-1.0f)",
+      "Status": "Passed",
+      "Duration": 0.0000713,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(-0.06f)",
+      "Status": "Passed",
+      "Duration": 0.0002755,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(-0.03f)",
+      "Status": "Passed",
+      "Duration": 0.0000745,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(0.0f)",
+      "Status": "Passed",
+      "Duration": 0.0000588,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(0.03f)",
+      "Status": "Passed",
+      "Duration": 0.0000564,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.NormalCatchRadiusWorksAcrossWholeContactWindow(0.06f)",
+      "Status": "Passed",
+      "Duration": 0.0000559,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.ObjectsPassingSameLocationAtDifferentTimesDoNotContact",
+      "Status": "Passed",
+      "Duration": 0.0002048,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.PhysicalContactOutsidePerfectTimingIsGood",
+      "Status": "Passed",
+      "Duration": 0.0002029,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.SmashDoesNotUseBroadFrontAssistBeforePaddleArrives",
+      "Status": "Passed",
+      "Duration": 0.0002038,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.StationaryNearMissRetainsItsRealDistance",
+      "Status": "Passed",
+      "Duration": 0.0001682,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.SweptContactClipsTimeBeforeCheckingPaddle",
+      "Status": "Passed",
+      "Duration": 0.0001969,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.SwingCrossingBallIsDetectedBetweenSamples",
+      "Status": "Passed",
+      "Duration": 0.0001763,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(0.0f)",
+      "Status": "Passed",
+      "Duration": 0.000351,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(0.1f)",
+      "Status": "Passed",
+      "Duration": 0.0000645,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(0.5f)",
+      "Status": "Passed",
+      "Duration": 0.0000565,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.TranslatingCourtDoesNotChangeContact(1.0f)",
+      "Status": "Passed",
+      "Duration": 0.0000541,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleContactTests.ValidEarlyContactStillHitsAndIsRatedGood",
+      "Status": "Passed",
+      "Duration": 0.0002031,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.2f)",
+      "Status": "Passed",
+      "Duration": 0.0004858,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.05f)",
+      "Status": "Passed",
+      "Duration": 0.0000823,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.01666667f)",
+      "Status": "Passed",
+      "Duration": 0.00006,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.DiagonalInputSlidesAlongBoundaryWithoutOutwardVelocity(0.00694444f)",
+      "Status": "Passed",
+      "Duration": 0.0000697,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.HoldingIntoNetStopsBodyAndVelocity(-1)",
+      "Status": "Passed",
+      "Duration": 0.0005969,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.HoldingIntoNetStopsBodyAndVelocity(1)",
+      "Status": "Passed",
+      "Duration": 0.0001447,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.MatchModesKeepExistingNetFaultBoundary",
+      "Status": "Passed",
+      "Duration": 0.0002673,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.ReleasingRunDeceleratesAndSettles",
+      "Status": "Passed",
+      "Duration": 0.0002729,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PracticeMovementTests.ReversingAwayFromNetImmediatelyRestoresMovement",
+      "Status": "Passed",
+      "Duration": 0.0002777,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BackspaceOrLostFocusCannotFireOnRelease",
+      "Status": "Passed",
+      "Duration": 0.000199,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BallisticShotLandsAtRequestedSpot",
+      "Status": "Passed",
+      "Duration": 0.0003783,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(1,Drive)",
+      "Status": "Passed",
+      "Duration": 0.0002539,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(2,Dink)",
+      "Status": "Passed",
+      "Duration": 0.0001031,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(4,Volley)",
+      "Status": "Passed",
+      "Duration": 0.0000914,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(3,Drop)",
+      "Status": "Passed",
+      "Duration": 0.0000903,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(5,Smash)",
+      "Status": "Passed",
+      "Duration": 0.0000896,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaseAndComboCommitOnRelease(6,Reset)",
+      "Status": "Passed",
+      "Duration": 0.0000947,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.BaselineAndSidelineAreIn",
+      "Status": "Passed",
+      "Duration": 0.0007666,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.DecidingGameChangesEndsAtSixOnlyOnce",
+      "Status": "Passed",
+      "Duration": 0.0005253,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ElevenTenDoesNotWinAndTwelveTenDoes",
+      "Status": "Passed",
+      "Duration": 0.0001978,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.HighServeContactIsIllegal",
+      "Status": "Passed",
+      "Duration": 0.0001787,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.KitchenMomentumOverridesDeadBallBeforeScore",
+      "Status": "Passed",
+      "Duration": 0.0003713,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.MatchRequiresTwoGameWins",
+      "Status": "Passed",
+      "Duration": 0.000167,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.MissedServeLosesServeWithoutCreatingAStroke",
+      "Status": "Passed",
+      "Duration": 0.0002209,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ModifierMustStillBeHeldAtCommit",
+      "Status": "Passed",
+      "Duration": 0.0001892,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ReceiverWinningOnlyChangesServe",
+      "Status": "Passed",
+      "Duration": 0.0001392,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ReleasingOneComboKeyOnlyCommitsOnce",
+      "Status": "Passed",
+      "Duration": 0.0002115,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ReturnCannotVolley",
+      "Status": "Passed",
+      "Duration": 0.0001439,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.SecondBounceOutsideStillFaultsReceiver",
+      "Status": "Passed",
+      "Duration": 0.0001725,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeAtTenSecondsIsAllowedButAfterTenIsNot",
+      "Status": "Passed",
+      "Duration": 0.0001599,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeDoesNotAcceptDropCombo",
+      "Status": "Passed",
+      "Duration": 0.0001358,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeKitchenLineIsFault",
+      "Status": "Passed",
+      "Duration": 0.0001297,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ServeOnBaselineIsFootFault",
+      "Status": "Passed",
+      "Duration": 0.0001557,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ServerWinningScoresAndStaysServer",
+      "Status": "Passed",
+      "Duration": 0.0001378,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ThirdShotMustBounceToo",
+      "Status": "Passed",
+      "Duration": 0.0001526,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.ThreeKeysCancelWithoutAnySwing",
+      "Status": "Passed",
+      "Duration": 0.0001274,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.TimeoutLimitedToTwoAndOnlyBeforeServe",
+      "Status": "Passed",
+      "Duration": 0.000226,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.VolleyKitchenFaultButBouncedDinkIsLegal",
+      "Status": "Passed",
+      "Duration": 0.0001783,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.SinglesMatchTests.WrongDiagonalIsFault",
+      "Status": "Passed",
+      "Duration": 0.000142,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.AdvancedBaseCombosAreNotInBasicCourse",
+      "Status": "Passed",
+      "Duration": 0.0017166,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.FeedReachesAuthoredPoseAndClearsNet(True,0.93f,-4.4f)",
+      "Status": "Passed",
+      "Duration": 0.0011436,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.FeedReachesAuthoredPoseAndClearsNet(False,0.75f,-2.6f)",
+      "Status": "Passed",
+      "Duration": 0.0001244,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.IntroductionOnlyRequiredUntilFinishedOrExplicitlyDeferred",
+      "Status": "Passed",
+      "Duration": 0.0004951,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.KitchenVolleyIsFlaggedAndBounceShotIsLegal",
+      "Status": "Passed",
+      "Duration": 0.0005087,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(1)",
+      "Status": "Passed",
+      "Duration": 0.0004795,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(2)",
+      "Status": "Passed",
+      "Duration": 0.0001126,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(4)",
+      "Status": "Passed",
+      "Duration": 0.0000984,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(9)",
+      "Status": "Passed",
+      "Duration": 0.0000971,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(10)",
+      "Status": "Passed",
+      "Duration": 0.0000977,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(12)",
+      "Status": "Passed",
+      "Duration": 0.0000969,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(17)",
+      "Status": "Passed",
+      "Duration": 0.0001029,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(18)",
+      "Status": "Passed",
+      "Duration": 0.0000979,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.LessonInputsMatchActualGameplayResolver(20)",
+      "Status": "Passed",
+      "Duration": 0.0000958,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TutorialTests.VolleyPracticeStartsAfterTwoMandatoryBounces",
+      "Status": "Passed",
+      "Duration": 0.0002594,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "DedicatedPrefabTests.DedicatedAssetsDoNotCarrySharedOnlyAuthorityFlags",
+      "Status": "Passed",
+      "Duration": 0.0133386,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "DedicatedPrefabTests.SessionHeapFitsTheBakedMatchStateWithoutGrowingTheHeapBudget(False)",
+      "Status": "Passed",
+      "Duration": 0.576784,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "DedicatedPrefabTests.SessionHeapFitsTheBakedMatchStateWithoutGrowingTheHeapBudget(True)",
+      "Status": "Passed",
+      "Duration": 0.0002718,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.AcceptanceFromDifferentRosterCannotApprove",
+      "Status": "Passed",
+      "Duration": 0.0037028,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.AnyDeclineCancelsWholeMatchButOnlyAcceptingPlayersRequeue(Singles)",
+      "Status": "Passed",
+      "Duration": 0.0006654,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.AnyDeclineCancelsWholeMatchButOnlyAcceptingPlayersRequeue(Doubles)",
+      "Status": "Passed",
+      "Duration": 0.0003789,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.BotFallbackStillNeedsHumanConfirmation",
+      "Status": "Passed",
+      "Duration": 0.0003235,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.EveryHumanMustAcceptAndConnect(Singles)",
+      "Status": "Passed",
+      "Duration": 0.0004742,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.EveryHumanMustAcceptAndConnect(Doubles)",
+      "Status": "Passed",
+      "Duration": 0.000101,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.ExpiredDeadlineCannotApproveEvenWithLateAcceptances(Singles)",
+      "Status": "Passed",
+      "Duration": 0.000163,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.ExpiredDeadlineCannotApproveEvenWithLateAcceptances(Doubles)",
+      "Status": "Passed",
+      "Duration": 0.0000755,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.InvalidRosterCannotStart",
+      "Status": "Passed",
+      "Duration": 0.0001474,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.MatchmakerPartitionsBothQueuesByClientProtocolWithoutPinningARelease(1)",
+      "Status": "Passed",
+      "Duration": 0.0031445,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchReadyPolicyTests.MatchmakerPartitionsBothQueuesByClientProtocolWithoutPinningARelease(2)",
+      "Status": "Passed",
+      "Duration": 0.0012356,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchResultTransferTests.IncompleteConflictingAndOversizedTransfersDoNotProduceAResult",
+      "Status": "Passed",
+      "Duration": 0.0020667,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MatchResultTransferTests.ReorderedDuplicatedChunksPreserveVietnameseAndSurrogatePairs",
+      "Status": "Passed",
+      "Duration": 0.0052563,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MovementInputPlaybackTests.AckWaitsForBothSimulationSubsteps",
+      "Status": "Passed",
+      "Duration": 0.0014853,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MovementInputPlaybackTests.BatchedSnapshotsDoNotSkipUnsimulatedInputs",
+      "Status": "Passed",
+      "Duration": 0.0003597,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MovementInputPlaybackTests.MissingInputNeverAdvancesAck",
+      "Status": "Passed",
+      "Duration": 0.0003287,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MovementInputPlaybackTests.RebindingDiscardsPartiallySimulatedInputFromPreviousPeer",
+      "Status": "Passed",
+      "Duration": 0.0002682,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MultiplayerBotRosterTests.BotsCannotBeInsertedIntoCustomOrDoublesMatches",
+      "Status": "Passed",
+      "Duration": 0.000491,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MultiplayerBotRosterTests.HumanSinglesStillRequireBothConnectedPlayers",
+      "Status": "Passed",
+      "Duration": 0.0002144,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "MultiplayerBotRosterTests.NamedBotOccupiesOpponentSeatWithoutRequiringASecondConnection",
+      "Status": "Passed",
+      "Duration": 0.0003597,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PhotonSceneIdentityTests.CourtAndLobbyCannotResolveToSettingsOrReplay",
+      "Status": "Passed",
+      "Duration": 0.0027343,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PhotonSceneIdentityTests.MissingSceneIsNotMappedToAnUnrelatedScene",
+      "Status": "Passed",
+      "Duration": 0.0011155,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PhotonSceneIdentityTests.NetworkScenesUseCanonicalPaths(\"Assets/Scenes/PhotonLobby.unity\",\"PhotonLobby\")",
+      "Status": "Passed",
+      "Duration": 0.0011925,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PhotonSceneIdentityTests.NetworkScenesUseCanonicalPaths(\"Assets/Scenes/MultiplayerCourt.unity\",\"MultiplayerCourt\")",
+      "Status": "Passed",
+      "Duration": 0.0004853,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PhotonSceneIdentityTests.NetworkVersionSeparatesLegacyClientsWithoutMutatingSavedSettings",
+      "Status": "Passed",
+      "Duration": 0.001353,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PhotonSceneIdentityTests.WindowsAndGlobalLayoutsResolveTheSameNetworkSceneIdentity",
+      "Status": "Passed",
+      "Duration": 0.0068684,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(Professional,False)",
+      "Status": "Passed",
+      "Duration": 0.0093838,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(Professional,True)",
+      "Status": "Passed",
+      "Duration": 0.0004198,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(LowPoly,False)",
+      "Status": "Passed",
+      "Duration": 0.0003585,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.EveryClientReceivesTheHostVenue(LowPoly,True)",
+      "Status": "Passed",
+      "Duration": 0.0002996,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.HostChoiceSurvivesRosterSnapshotWithoutChangingRoom(False)",
+      "Status": "Passed",
+      "Duration": 0.0005161,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.HostChoiceSurvivesRosterSnapshotWithoutChangingRoom(True)",
+      "Status": "Passed",
+      "Duration": 0.0001568,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MatchEnvironmentPayloadTests.RosterWithoutEnvironmentRemainsCompatibleAndDefaultsToDay",
+      "Status": "Passed",
+      "Duration": 0.0002657,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ModeNavigationTests.CancellationFailureDoesNotNavigate",
+      "Status": "Passed",
+      "Duration": 0.0079376,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ModeNavigationTests.DuplicateBackDoesNotLeaveTwice",
+      "Status": "Passed",
+      "Duration": 0.0039518,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ModeNavigationTests.InvalidateBeforeAwaitAndLateCallbacksStayInvalidAfterReopen",
+      "Status": "Passed",
+      "Duration": 0.0013786,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ModeNavigationTests.LeaveFailureKeepsPageAndAllowsRetry(False)",
+      "Status": "Passed",
+      "Duration": 0.0021655,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ModeNavigationTests.LeaveFailureKeepsPageAndAllowsRetry(True)",
+      "Status": "Passed",
+      "Duration": 0.0004567,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.AutomaticDoublesStillRequiresFourPlayers",
+      "Status": "Passed",
+      "Duration": 0.0017204,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.BlankNameGetsFourUppercaseLetters",
+      "Status": "Passed",
+      "Duration": 0.0042515,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(0,2)",
+      "Status": "Passed",
+      "Duration": 0.0011193,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(2,0)",
+      "Status": "Passed",
+      "Duration": 0.000183,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCannotStartEmptyOrOverfilledTeam(3,1)",
+      "Status": "Passed",
+      "Duration": 0.0001337,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(1,1)",
+      "Status": "Passed",
+      "Duration": 0.0002895,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(1,2)",
+      "Status": "Passed",
+      "Duration": 0.0000843,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(2,1)",
+      "Status": "Passed",
+      "Duration": 0.0000625,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.CustomCanStartWithoutReadiness(2,2)",
+      "Status": "Passed",
+      "Duration": 0.0000595,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.GuestCannotStartCustom",
+      "Status": "Passed",
+      "Duration": 0.0002321,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.NameDoesNotChangeAuthenticationProfile",
+      "Status": "Passed",
+      "Duration": 0.000624,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.SoloSideChangesServiceCourtAfterScoring",
+      "Status": "Passed",
+      "Duration": 0.000901,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(1,2)",
+      "Status": "Passed",
+      "Duration": 0.0002841,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(2,1)",
+      "Status": "Passed",
+      "Duration": 0.000136,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRoomServiceTests.UnevenCustomNeverSelectsMissingServerOrReceiver(1,1)",
+      "Status": "Passed",
+      "Duration": 0.000117,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ActualGroundContactOutsideSidelineIsOut",
+      "Status": "Passed",
+      "Duration": 0.0008798,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.AlternatingFirstServerStartsFromRandomlySelectedTeam",
+      "Status": "Passed",
+      "Duration": 0.0002733,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.BallMustCrossNetEntirelyBeforeContact",
+      "Status": "Passed",
+      "Duration": 0.0004487,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.BestOfThreeOnlyEndsAfterTwoGameWins",
+      "Status": "Passed",
+      "Duration": 0.0004586,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DecidingGameChangesEndsAtSixOnceWithoutResettingScoresOrServe",
+      "Status": "Passed",
+      "Duration": 0.0003231,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DinkAfterBounceCanBePlayedFromBaselineLikeBotMatch",
+      "Status": "Passed",
+      "Duration": 0.0001885,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DoublesSecondServerStaysInLeftCourtUntilScoring",
+      "Status": "Passed",
+      "Duration": 0.0003453,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.DoublesSideOutFirstServerStartsRightEvenWithOddScore",
+      "Status": "Passed",
+      "Duration": 0.0002379,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.IllegalTechniqueDoesNotTurnIntoAutomaticLegalShot",
+      "Status": "Passed",
+      "Duration": 0.0001971,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.KitchenMomentumOverridesDeadBallAndScoresOnce",
+      "Status": "Passed",
+      "Duration": 0.0005201,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.OnlyServingSideScoresAndTenAllRequiresTwelveTen",
+      "Status": "Passed",
+      "Duration": 0.0002911,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.OpeningDoublesServerIsSecondThenSideOutStartsFirstServer",
+      "Status": "Passed",
+      "Duration": 0.0002457,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.RequeueKeepsElapsedTime",
+      "Status": "Passed",
+      "Duration": 0.0004343,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SearchBeginsAtSixAndExpiresAfter120SearchingSeconds",
+      "Status": "Passed",
+      "Duration": 0.0003395,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SecondBounceAndBodyContactEndRallyOnce",
+      "Status": "Passed",
+      "Duration": 0.0002184,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.SecondBounceOutsideStillLosesForReceiver",
+      "Status": "Passed",
+      "Duration": 0.0001748,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeAndReturnBothMustBounceBeforeVolley",
+      "Status": "Passed",
+      "Duration": 0.0003252,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeCentreLineMatchesBotMatch(0.0f)",
+      "Status": "Passed",
+      "Duration": 0.0003141,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeCentreLineMatchesBotMatch(0.0254f)",
+      "Status": "Passed",
+      "Duration": 0.0000635,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeContactHeightMatchesBotMatch(0.1f)",
+      "Status": "Passed",
+      "Duration": 0.0001902,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeContactHeightMatchesBotMatch(1.06f)",
+      "Status": "Passed",
+      "Duration": 0.0000546,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.ServeMustBeDiagonalPastKitchenAndLinesAreIn",
+      "Status": "Passed",
+      "Duration": 0.0002406,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.TimeoutsAreLimitedAndResetPerGame",
+      "Status": "Passed",
+      "Duration": 0.0002421,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.MultiplayerRulesTests.WrongReceiverStillFaultsAfterServeBounce",
+      "Status": "Passed",
+      "Duration": 0.0002156,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.BlankCodeNeverSchedulesConnection(null)",
+      "Status": "Passed",
+      "Duration": 0.0006491,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.BlankCodeNeverSchedulesConnection(\"\")",
+      "Status": "Passed",
+      "Duration": 0.0001247,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.BlankCodeNeverSchedulesConnection(\"   \")",
+      "Status": "Passed",
+      "Duration": 0.0001043,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.CreatingCustomRoomClearsPreviousInvitationRegion",
+      "Status": "Passed",
+      "Duration": 0.0002724,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.InvitationRegionSurvivesNavigationExactlyOnce",
+      "Status": "Passed",
+      "Duration": 0.0001935,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.JoinNormalizesSharedCode",
+      "Status": "Passed",
+      "Duration": 0.0001808,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.RankedEntryClearsPrivateIntent",
+      "Status": "Passed",
+      "Duration": 0.0001946,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.RoomTypeSurvivesNavigationExactlyOnce(Singles,CreateSingles)",
+      "Status": "Passed",
+      "Duration": 0.000288,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomLaunchRequestTests.RoomTypeSurvivesNavigationExactlyOnce(Doubles,CreateDoubles)",
+      "Status": "Passed",
+      "Duration": 0.0001249,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomOperationGateTests.FailedConnectionStillAllowsLeavingAndRetry",
+      "Status": "Passed",
+      "Duration": 0.0025836,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomOperationGateTests.NavigationWaitsForInitialSceneAndCancelledRoomCleanup",
+      "Status": "Passed",
+      "Duration": 0.0020763,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.RoomOperationGateTests.SecondCreateCannotReplaceTheOperationNavigationIsWaitingFor",
+      "Status": "Passed",
+      "Duration": 0.0010218,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoomDataSerializationTests.OlderRoomWithoutMapsKeepsUsableEmptyDictionaries",
+      "Status": "Passed",
+      "Duration": 0.0023278,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoomDataSerializationTests.TeamAssignmentsVersionsAndAcknowledgementsSurviveJson",
+      "Status": "Passed",
+      "Duration": 0.0060525,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.ActivationSpikeMustLeaveWindowBeforeReveal",
+      "Status": "Passed",
+      "Duration": 0.0014202,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.AlternatingStallsDoNotBecomeReadyJustBecauseTimePassed",
+      "Status": "Passed",
+      "Duration": 0.000217,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.DoesNotFinishFromOneFastFrame",
+      "Status": "Passed",
+      "Duration": 0.0001317,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.IntentionallyCappedThirtyFpsIsReady",
+      "Status": "Passed",
+      "Duration": 0.0001391,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.InvalidSamplesCannotAdvanceLoading",
+      "Status": "Passed",
+      "Duration": 0.0001683,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.SlowerDeviceMustSettleBeforeReveal",
+      "Status": "Passed",
+      "Duration": 0.0001566,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "SceneWarmupTests.SmoothFramesPrepareScene",
+      "Status": "Passed",
+      "Duration": 0.0001243,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ContactThresholdIsStrict(0.259999d,True)",
+      "Status": "Passed",
+      "Duration": 0.0005455,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ContactThresholdIsStrict(0.26d,False)",
+      "Status": "Passed",
+      "Duration": 0.0001016,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.NewRallyCanResolveReusedStrokeNumber",
+      "Status": "Passed",
+      "Duration": 0.0003449,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ReturnAfterServeStillUsesRatingAndOneDecisionPerStroke",
+      "Status": "Passed",
+      "Duration": 0.0006248,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SameBallCannotRerollAcrossTicksOrRepeatedSwings(0.1d,True)",
+      "Status": "Passed",
+      "Duration": 0.0085746,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SameBallCannotRerollAcrossTicksOrRepeatedSwings(0.8d,False)",
+      "Status": "Passed",
+      "Duration": 0.0163846,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(0,25)",
+      "Status": "Passed",
+      "Duration": 0.0006873,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(100,25)",
+      "Status": "Passed",
+      "Duration": 0.0002947,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(220,26)",
+      "Status": "Passed",
+      "Duration": 0.0002469,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(9000,99)",
+      "Status": "Passed",
+      "Duration": 0.0002151,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(9100,100)",
+      "Status": "Passed",
+      "Duration": 0.0002403,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.SeededContactDistributionUsesBotElo(100000,100)",
+      "Status": "Passed",
+      "Duration": 0.0002264,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ServeCannotReuseACachedMiss",
+      "Status": "Passed",
+      "Duration": 0.0003052,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(0)",
+      "Status": "Passed",
+      "Duration": 0.0027101,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(100)",
+      "Status": "Passed",
+      "Duration": 0.0022578,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(500)",
+      "Status": "Passed",
+      "Duration": 0.0022716,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(2000)",
+      "Status": "Passed",
+      "Duration": 0.0023397,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "BotContactChanceTests.ServesNeverWhiffAtAnyRating(9100)",
+      "Status": "Passed",
+      "Duration": 0.0026082,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.ChunkingPreservesStableShotIdsAndPartMetadata",
+      "Status": "Passed",
+      "Duration": 0.0150835,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.LegacyMatchRetainsFormulaAndNewPolicyIgnoresStreak",
+      "Status": "Passed",
+      "Duration": 0.0007895,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.ProfileIsFrozenAndThresholdsPreserved",
+      "Status": "Passed",
+      "Duration": 0.0003332,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.StandardElo(400,400,True,16)",
+      "Status": "Passed",
+      "Duration": 0.0007384,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.StandardElo(400,400,False,-16)",
+      "Status": "Passed",
+      "Duration": 0.0002983,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.StandardElo(100,100,False,0)",
+      "Status": "Passed",
+      "Duration": 0.0001161,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HybridAiTests.StandardElo(400,360,False,-18)",
+      "Status": "Passed",
+      "Duration": 0.0002702,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(Custom)",
+      "Status": "Passed",
+      "Duration": 0.0096532,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(MatchedDoubles)",
+      "Status": "Passed",
+      "Duration": 0.0010484,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(RankedSingles)",
+      "Status": "Passed",
+      "Duration": 0.0002635,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(RankedBot)",
+      "Status": "Passed",
+      "Duration": 0.0002059,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.AllMatchModesCount(BotPractice)",
+      "Status": "Passed",
+      "Duration": 0.0001984,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.ConsecutiveDaysLossStillCounts",
+      "Status": "Passed",
+      "Duration": 0.001423,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.ExitsAndInterruptionsDoNotCount(Won,True)",
+      "Status": "Passed",
+      "Duration": 0.0005126,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.ExitsAndInterruptionsDoNotCount(Lost,True)",
+      "Status": "Passed",
+      "Duration": 0.000214,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.ExitsAndInterruptionsDoNotCount(Interrupted,False)",
+      "Status": "Passed",
+      "Duration": 0.0001811,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.GapExpiresAndNextMatchRestarts",
+      "Status": "Passed",
+      "Duration": 0.0006607,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.LateHistoricalResultDoesNotReviveExpiredStreak",
+      "Status": "Passed",
+      "Duration": 0.0003697,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.LateResultBridgesGap",
+      "Status": "Passed",
+      "Duration": 0.0005057,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.MigrationDoesNotBackfillOrAlterExistingProfile",
+      "Status": "Passed",
+      "Duration": 0.001684,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.RemainingPlayerForfeitWinCounts",
+      "Status": "Passed",
+      "Duration": 0.0002984,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.ResultBeforeEnableDoesNotCount",
+      "Status": "Passed",
+      "Duration": 0.0003015,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.SameDayAndDuplicateCountOnce",
+      "Status": "Passed",
+      "Duration": 0.000418,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.SaveReopenAndSwitchProfilesRemainSeparate",
+      "Status": "Passed",
+      "Duration": 0.0680699,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.DailyStreakTests.UtcMidnightIsVietnamSeven",
+      "Status": "Passed",
+      "Duration": 0.0006769,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.AcceptedOrDuplicateReceiptsRemoveTheOutboxOnce",
+      "Status": "Passed",
+      "Duration": 0.1268641,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ActiveAttemptRetainsItsOwnDefinitionAfterCatalogChanges",
+      "Status": "Passed",
+      "Duration": 0.0582836,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ANewResetEpochDoesNotOverlayOldProgress",
+      "Status": "Passed",
+      "Duration": 0.0450296,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.CorruptPrimaryFallsBackToTheLastValidBackup",
+      "Status": "Passed",
+      "Duration": 0.0250378,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.DelayedSyncResponseCannotOverwriteANewerSnapshot",
+      "Status": "Passed",
+      "Duration": 0.0558247,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.OwnerMismatchCannotRemoveQueuedProgress",
+      "Status": "Passed",
+      "Duration": 0.0344856,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ProvisionalCompletionDoesNotCreateSpendableMoney",
+      "Status": "Passed",
+      "Duration": 0.0532066,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptEnumUsesCanonicalServerCodes",
+      "Status": "Passed",
+      "Duration": 0.0230024,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptRejectsInvalidEnumCodes(\"0\")",
+      "Status": "Passed",
+      "Duration": 0.0222012,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptRejectsInvalidEnumCodes(\"999\")",
+      "Status": "Passed",
+      "Duration": 0.0120665,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.ReceiptRejectsInvalidEnumCodes(\"\\\"invalid\\\"\")",
+      "Status": "Passed",
+      "Duration": 0.0101593,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.RestartRestoresTheLatestCheckpoint",
+      "Status": "Passed",
+      "Duration": 0.0608401,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.RetryablePrerequisiteFailuresKeepTheAttempt",
+      "Status": "Passed",
+      "Duration": 0.0634724,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TerminalRejectionKeepsEvidenceAndReason",
+      "Status": "Passed",
+      "Duration": 0.0529259,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TutorialAndOnboardingChangesSurviveRestart",
+      "Status": "Passed",
+      "Duration": 0.0382421,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TutorialCheckpointSurvivesRestartAndNeverMovesBackwards",
+      "Status": "Passed",
+      "Duration": 0.0328065,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineTrainingStoreTests.TwoWritersCannotCorruptOneAccountFile",
+      "Status": "Passed",
+      "Duration": 0.0088109,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(0,25)",
+      "Status": "Passed",
+      "Duration": 0.0008125,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(100,25)",
+      "Status": "Passed",
+      "Duration": 0.0002041,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(220,26)",
+      "Status": "Passed",
+      "Duration": 0.0001638,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(9000,99)",
+      "Status": "Passed",
+      "Duration": 0.0001551,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(9100,100)",
+      "Status": "Passed",
+      "Duration": 0.000156,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.AccuracyThresholds(100000,100)",
+      "Status": "Passed",
+      "Duration": 0.0001545,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.BotRatingAndSeededDecisions",
+      "Status": "Passed",
+      "Duration": 0.0013217,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.CatalogAndAchievementLifetimeClaims",
+      "Status": "Passed",
+      "Duration": 0.0018653,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.CompletedMatchRemainsClearedAfterStoreReopenAndRollback",
+      "Status": "Passed",
+      "Duration": 0.0504934,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.CustomInterruptedForfeitAndSeparateRankStreaks",
+      "Status": "Passed",
+      "Duration": 0.0008956,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,240,True,20)",
+      "Status": "Passed",
+      "Duration": 0.0004313,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,240,False,-20)",
+      "Status": "Passed",
+      "Duration": 0.0002038,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,200,True,20)",
+      "Status": "Passed",
+      "Duration": 0.0001687,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,200,False,-20)",
+      "Status": "Passed",
+      "Duration": 0.0001609,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(400,360,True,10)",
+      "Status": "Passed",
+      "Duration": 0.0001652,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(400,360,False,-160)",
+      "Status": "Passed",
+      "Duration": 0.0001587,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,160,False,-100)",
+      "Status": "Passed",
+      "Duration": 0.0004031,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(100,100,False,0)",
+      "Status": "Passed",
+      "Duration": 0.0001665,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloSixCasesRoundingAndFloor(200,201,True,1)",
+      "Status": "Passed",
+      "Duration": 0.0001651,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.EloStreaksAndComeback",
+      "Status": "Passed",
+      "Duration": 0.0004006,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.HistoryKeepsLatestTwentyAndPerGameScores",
+      "Status": "Passed",
+      "Duration": 0.0016859,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.LateForfeitBreaksOnlyItsEndedMissionPeriod",
+      "Status": "Passed",
+      "Duration": 0.0007975,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.MutualPairKeysEnforceBothPreferencesAndWindow",
+      "Status": "Passed",
+      "Duration": 0.0016306,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.OfflineResetAutoClaimsAllEligibleItemsAndBonusesOnce",
+      "Status": "Passed",
+      "Duration": 0.0028474,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(100,\"Đồng\")",
+      "Status": "Passed",
+      "Duration": 0.0004444,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(499,\"Đồng\")",
+      "Status": "Passed",
+      "Duration": 0.0001913,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(500,\"Bạc\")",
+      "Status": "Passed",
+      "Duration": 0.0001614,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(999,\"Bạc\")",
+      "Status": "Passed",
+      "Duration": 0.0001562,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(1000,\"Vàng\")",
+      "Status": "Passed",
+      "Duration": 0.0001679,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(1999,\"Vàng\")",
+      "Status": "Passed",
+      "Duration": 0.0001583,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(2000,\"Bạch Kim\")",
+      "Status": "Passed",
+      "Duration": 0.0001557,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(3499,\"Bạch Kim\")",
+      "Status": "Passed",
+      "Duration": 0.0001573,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(3500,\"Kim Cương\")",
+      "Status": "Passed",
+      "Duration": 0.0001581,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(4999,\"Kim Cương\")",
+      "Status": "Passed",
+      "Duration": 0.0001867,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(5000,\"Cao Thủ\")",
+      "Status": "Passed",
+      "Duration": 0.0001557,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(6999,\"Cao Thủ\")",
+      "Status": "Passed",
+      "Duration": 0.0001518,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.RankBoundaries(7000,\"Huyền Thoại\")",
+      "Status": "Passed",
+      "Duration": 0.0001548,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.ResultsAndRewardsAreIdempotentAndSurviveSerialization",
+      "Status": "Passed",
+      "Duration": 0.0008013,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.SearchDeadlineRaceCancellationAndRetry",
+      "Status": "Passed",
+      "Duration": 0.0007744,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.StoreLeaseSelectionSwitchReopenRollbackAndBackup",
+      "Status": "Passed",
+      "Duration": 0.0947396,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.TicketArraysRespectServiceLimitWithoutDroppingCanonicalPairs",
+      "Status": "Passed",
+      "Duration": 0.0220654,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.UtcMondayResetAndLateConfirmedResultUsesItsEndPeriod",
+      "Status": "Passed",
+      "Duration": 0.0013359,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.ValidStrokesComeFromAcceptedFlightsOnce",
+      "Status": "Passed",
+      "Duration": 0.0008126,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProgressionTests.XpRemainderMultipleLevelsAndTotal",
+      "Status": "Passed",
+      "Duration": 0.0004965,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.AttemptUsesItsOwnCatalogWithoutChangingOtherSessions",
+      "Status": "Passed",
+      "Duration": 0.0005074,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.BasicLessonsAreAvailableAndAdvancedLessonsNeedPrerequisites",
+      "Status": "Passed",
+      "Duration": 0.0007156,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.CurriculumCoversFifteenDrillsAndAllTwelveSkills",
+      "Status": "Passed",
+      "Duration": 0.0028426,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.EmptyLegacyCheckpointIsNotAResumableAttempt",
+      "Status": "Passed",
+      "Duration": 0.0010085,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.FailedDrillRecordsErrorsAndReceivesNoCurrency",
+      "Status": "Passed",
+      "Duration": 0.0005965,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.FailedFirstAttemptCanStillEarnFirstCompletionReward",
+      "Status": "Passed",
+      "Duration": 0.0001982,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.FirstCompletionPaysButReviewAndCompletionReplayDoNot",
+      "Status": "Passed",
+      "Duration": 0.0003963,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.HarderGroupsPayMoreAndHistoriesStayBounded",
+      "Status": "Passed",
+      "Duration": 0.0003571,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.LegacyMasteryAndOldCheckpointCannotClaimAgain",
+      "Status": "Passed",
+      "Duration": 0.0003378,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.MissingTrialsAndOtherPlayerCannotClaimRewards",
+      "Status": "Passed",
+      "Duration": 0.0001604,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.NewDrillsUseExistingControlsAndDistinctPracticeGoals",
+      "Status": "Passed",
+      "Duration": 0.0001857,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.ResultsAndActiveCheckpointSurviveJsonReload",
+      "Status": "Passed",
+      "Duration": 0.0005081,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.ReviewStillImprovesStarsAndLogsMistakesWithoutRewardsAfterReload",
+      "Status": "Passed",
+      "Duration": 0.0004577,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.SlowTimingCannotReceiveThreeStars",
+      "Status": "Passed",
+      "Duration": 0.0002134,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.StarsUseAccuracyAndTiming(6,1)",
+      "Status": "Passed",
+      "Duration": 0.00017,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.StarsUseAccuracyAndTiming(7,2)",
+      "Status": "Passed",
+      "Duration": 0.0000819,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.StarsUseAccuracyAndTiming(8,3)",
+      "Status": "Passed",
+      "Duration": 0.0000659,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.TrainingTests.TrainingAwardsXpWithoutChangingEloMatchesOrElite",
+      "Status": "Passed",
+      "Duration": 0.0001851,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "QuickCoachingRulesTests.AssistedTimingIsNotAHumanTechniqueFinding",
+      "Status": "Passed",
+      "Duration": 0.0007909,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "QuickCoachingRulesTests.MissingAndEarlierRallyDataDoNotProduceTips",
+      "Status": "Passed",
+      "Duration": 0.0002657,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "QuickCoachingRulesTests.StandingInKitchenRequiresAVolleyToBeAFault",
+      "Status": "Passed",
+      "Duration": 0.0002764,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.BackgroundWriterDrainsBeforeFinishing",
+      "Status": "Passed",
+      "Duration": 0.0618028,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.BonePathHandlesNamesWithSlash",
+      "Status": "Passed",
+      "Duration": 0.0061994,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.CleanupRetainsTwentyHistoryAndPendingAndOtherProfile",
+      "Status": "Passed",
+      "Duration": 0.2216577,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.CompressedRoundTripPreservesSnapshotsAndEvents",
+      "Status": "Passed",
+      "Duration": 0.0152613,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.CorruptChunkDoesNotMutateProfile",
+      "Status": "Passed",
+      "Duration": 0.012996,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.MetadataBackupRecoversCorruptMain",
+      "Status": "Passed",
+      "Duration": 0.0150337,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.MissingChunkHasClearFailure",
+      "Status": "Passed",
+      "Duration": 0.0104205,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.MissingMetadataDoesNotCreateHistory",
+      "Status": "Passed",
+      "Duration": 0.0042782,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.PartialRecordIsReadable",
+      "Status": "Passed",
+      "Duration": 0.0100743,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.PathsCannotEscapeStorage",
+      "Status": "Passed",
+      "Duration": 0.0045364,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecorderCapturesAllPlayersAndBoundsBuffer(2)",
+      "Status": "Passed",
+      "Duration": 0.0543844,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecorderCapturesAllPlayersAndBoundsBuffer(4)",
+      "Status": "Passed",
+      "Duration": 0.0455183,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecorderPreservesBallRotationAndScale",
+      "Status": "Passed",
+      "Duration": 0.0327382,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecoverChunkCommittedBeforeMetadata",
+      "Status": "Passed",
+      "Duration": 0.0167324,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.RecoveryKeepsValidChunkWhenLaterChunkIsBroken",
+      "Status": "Passed",
+      "Duration": 0.0194803,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ReplayRepositoryTests.UnsupportedVersionIsExplicit",
+      "Status": "Passed",
+      "Duration": 0.0141275,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityClosesBeforeLogoutOrAccountSwitch(False)",
+      "Status": "Passed",
+      "Duration": 0.0280137,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityClosesBeforeLogoutOrAccountSwitch(True)",
+      "Status": "Passed",
+      "Duration": 0.0007105,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityFlushesWaitForThePreviousCheckpoint",
+      "Status": "Passed",
+      "Duration": 0.0108718,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ActivityQueuedCloseDoesNotFollowAnAccountChange",
+      "Status": "Passed",
+      "Duration": 0.0037793,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"http://localhost:8080\",True,True)",
+      "Status": "Passed",
+      "Duration": 0.000876,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"http://localhost:8080\",False,False)",
+      "Status": "Passed",
+      "Duration": 0.0001906,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"http://example.com\",True,False)",
+      "Status": "Passed",
+      "Duration": 0.0001082,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"https://example.com\",False,True)",
+      "Status": "Passed",
+      "Duration": 0.0000876,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ApiUrlRequiresHttpsOutsideLocalDevelopment(\"https://user:password@example.com\",False,False)",
+      "Status": "Passed",
+      "Duration": 0.0001559,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ClearingSessionWhileLoginIsPendingPreventsResurrection",
+      "Status": "Passed",
+      "Duration": 0.0019007,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ConcurrentUnauthorizedRequestsShareOneRefresh",
+      "Status": "Passed",
+      "Duration": 0.0054401,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.FailedRefreshClearsCredentials",
+      "Status": "Passed",
+      "Duration": 0.0015009,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.LoginLoadsAuthenticatedProfileInsteadOfTrustingLocalData",
+      "Status": "Passed",
+      "Duration": 0.0011572,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.LogoutRevokesTheRotatedRefreshToken",
+      "Status": "Passed",
+      "Duration": 0.0021599,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.OtpDisplayTimingComesFromApiResponses",
+      "Status": "Passed",
+      "Duration": 0.0062855,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.PendingLogoutDoesNotClearANewerLogin",
+      "Status": "Passed",
+      "Duration": 0.0021991,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ProblemDetailsNeverDisplaysDevelopmentStackTraces",
+      "Status": "Passed",
+      "Duration": 0.0003649,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RegistrationNeverCreatesASignedInSession",
+      "Status": "Passed",
+      "Duration": 0.0024404,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",True,True,True)",
+      "Status": "Passed",
+      "Duration": 0.0003413,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080/\",True,True,True)",
+      "Status": "Passed",
+      "Duration": 0.0001052,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",True,False,False)",
+      "Status": "Passed",
+      "Duration": 0.0001782,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",False,True,False)",
+      "Status": "Passed",
+      "Duration": 0.000103,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RemoteHttpRequiresDevelopmentAndExplicitOptIn(\"http://tad-min.io.vn:8080\",False,False,False)",
+      "Status": "Passed",
+      "Duration": 0.0000961,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ResendPreservesServerStatusWithoutSigningIn(\"email_already_verified\")",
+      "Status": "Passed",
+      "Duration": 0.0038026,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.ResendPreservesServerStatusWithoutSigningIn(\"verification_requested\")",
+      "Status": "Passed",
+      "Duration": 0.0003457,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.RestrictedLoginUsesItsProfileWithoutCallingBlockedProfileEndpoint",
+      "Status": "Passed",
+      "Duration": 0.0014241,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeRejectsInvalidWireValues(\"0\")",
+      "Status": "Passed",
+      "Duration": 0.0004927,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeRejectsInvalidWireValues(\"999\")",
+      "Status": "Passed",
+      "Duration": 0.0001507,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeRejectsInvalidWireValues(\"\\\"unknown\\\"\")",
+      "Status": "Passed",
+      "Duration": 0.0001169,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.SessionScopeUsesTheCanonicalServerCodes",
+      "Status": "Passed",
+      "Duration": 0.0012692,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.Services.AccountServiceTests.UnauthorizedRetryFromOldSessionDoesNotClearANewerLogin",
+      "Status": "Passed",
+      "Duration": 0.0027619,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.CatalogOrderTests.EmptyCatalogHasNoFeaturedProduct",
+      "Status": "Passed",
+      "Duration": 0.0018685,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.CatalogOrderTests.EqualReleaseOrderKeepsStableCatalogOrder",
+      "Status": "Passed",
+      "Duration": 0.0009833,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.CatalogOrderTests.NewestProductDoesNotDependOnCatalogPosition",
+      "Status": "Passed",
+      "Duration": 0.0003177,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.EquippedPaddleLifecycleTests.LobbyPaddleCanEnableBeforeAuthenticatedInventoryIsReady",
+      "Status": "Passed",
+      "Duration": 0.0013232,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.ExistingFundedBalanceSurvivesReload",
+      "Status": "Passed",
+      "Duration": 0.0250309,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.FailedSaveDoesNotMutateMemoryState",
+      "Status": "Passed",
+      "Duration": 0.0149041,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.GemstoneRejectsTokenpad",
+      "Status": "Passed",
+      "Duration": 0.0118085,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.InsufficientFundsLeaveStateUntouched",
+      "Status": "Passed",
+      "Duration": 0.014882,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.InvalidItemAndCurrencyCannotSpend",
+      "Status": "Passed",
+      "Duration": 0.0114261,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.NewWalletNeverSeedsEliteEvenWithAnOldCatalog",
+      "Status": "Passed",
+      "Duration": 0.0131962,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.OwnedItemCannotBeBoughtWithOtherCurrency",
+      "Status": "Passed",
+      "Duration": 0.0160522,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.ReplayCannotChangeItemOrCurrency",
+      "Status": "Passed",
+      "Duration": 0.0115443,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.RequestReplayDoesNotDebitTwice",
+      "Status": "Passed",
+      "Duration": 0.0141073,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.RewardsAreIdempotentAndNeverGrantElite",
+      "Status": "Passed",
+      "Duration": 0.0159047,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.RewardSaveFailureDoesNotMarkItClaimed",
+      "Status": "Passed",
+      "Duration": 0.0108947,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.SnapshotIsIsolatedFromCallerChanges",
+      "Status": "Passed",
+      "Duration": 0.0138136,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.ThotSupportsEitherCurrency(Tokenpad,100,1000)",
+      "Status": "Passed",
+      "Duration": 0.0128615,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.LocalEconomyTests.ThotSupportsEitherCurrency(Elite,1000,750)",
+      "Status": "Passed",
+      "Duration": 0.0124363,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.DefaultBelongsToCollectionOnly",
+      "Status": "Passed",
+      "Duration": 0.0013901,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.DefaultIsAlwaysOwnedWithoutPurchase",
+      "Status": "Passed",
+      "Duration": 0.0110052,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.EquipPersistsAndDoesNotSpendMoney",
+      "Status": "Passed",
+      "Duration": 0.0149279,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.InvalidSavedEquipmentFallsBack(\"unknown\")",
+      "Status": "Passed",
+      "Duration": 0.0122047,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.InvalidSavedEquipmentFallsBack(\"thot\")",
+      "Status": "Passed",
+      "Duration": 0.0122881,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.LegacyWalletKeepsBalancesOwnershipAndReceipts",
+      "Status": "Passed",
+      "Duration": 0.0147061,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.SaveFailureKeepsPreviousEquipment",
+      "Status": "Passed",
+      "Duration": 0.0136578,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.PaddleEquipmentTests.UnownedAndUnknownCannotEquip",
+      "Status": "Passed",
+      "Duration": 0.0141982,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.AllGameplayRewardsIgnoreLegacyEliteAmounts",
+      "Status": "Passed",
+      "Duration": 0.0290619,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.CorruptInventoryCannotResetTheWallet",
+      "Status": "Passed",
+      "Duration": 0.0225701,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.LegacyGameplayEliteIsRemovedOnceWithoutLosingProgress",
+      "Status": "Passed",
+      "Duration": 0.0179576,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.LegacyShopImportKeepsItemsAndTokenpadButRemovesFreeElite",
+      "Status": "Passed",
+      "Duration": 0.0228315,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.PurchaseAndMatchRewardStayIdempotentAfterReload",
+      "Status": "Passed",
+      "Duration": 0.049181,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.ShopDebitsTheSameBalanceThatProgressionRewardsCredit",
+      "Status": "Passed",
+      "Duration": 0.0410717,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.ProfileEconomyTests.SwitchingPlayersSeparatesWalletAndInventory",
+      "Status": "Passed",
+      "Duration": 0.0550999,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.AddRejectsSelfUnknownAndDuplicatesAndRemoveIsIdempotent",
+      "Status": "Passed",
+      "Duration": 0.0042457,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.EmptyAndMissingQueriesAreHandled",
+      "Status": "Passed",
+      "Duration": 0.0007625,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.FixturesAreThirtyUniquePlayersAndDoNotChangeProfile",
+      "Status": "Passed",
+      "Duration": 0.0031852,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.LivePlayerIsIncludedExactlyOnceAndEloChangesReorder",
+      "Status": "Passed",
+      "Duration": 0.0010218,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.PlayersHaveSeparateSessionListsAndANewSessionRestoresSeeds",
+      "Status": "Passed",
+      "Duration": 0.0004143,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\" dan thanh \",\"DEMO-005\")",
+      "Status": "Passed",
+      "Duration": 0.0005435,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"ĐAN THANH\",\"DEMO-005\")",
+      "Status": "Passed",
+      "Duration": 0.0002112,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"quynh nhu\",\"DEMO-019\")",
+      "Status": "Passed",
+      "Duration": 0.0002158,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"demo-030\",\"DEMO-030\")",
+      "Status": "Passed",
+      "Duration": 0.0001949,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.SearchMatchesVietnameseWithoutAccentsOrCase(\"Quốc Bảo\",\"DEMO-018\")",
+      "Status": "Passed",
+      "Duration": 0.0002154,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "PickleVerse.Tests.OfflineSocialTests.TiesHaveStableIdOrderAndFilteredPositionsStayGlobal",
+      "Status": "Passed",
+      "Duration": 0.0015441,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

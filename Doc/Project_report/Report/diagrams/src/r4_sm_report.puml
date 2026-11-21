@@ -1,0 +1,11 @@
+@startuml r4_sm_report
+!include _style.iuml
+[*] --> PENDING : reportPlayer [reporter took part in the match]
+PENDING --> CHECKING : startReview
+PENDING --> ACCEPTED : reviewReport [accepted] / applySanction()
+PENDING --> DECLINED : reviewReport [declined]
+CHECKING --> ACCEPTED : reviewReport [accepted] / applySanction()
+CHECKING --> DECLINED : reviewReport [declined]
+ACCEPTED --> [*]
+DECLINED --> [*]
+@enduml

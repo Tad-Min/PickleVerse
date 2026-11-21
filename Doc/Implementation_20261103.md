@@ -1,5 +1,7 @@
 # Bàn giao tài khoản, multiplayer, HLV và dedicated — 03/11/2026
 
+Tài liệu lưu cấu hình và kết quả kiểm thử của bản bàn giao ngày 03/11/2026. Với repo hiện tại, xem [hướng dẫn CI/CD](CI_CD_DockerHub.md) để triển khai Ubuntu bằng `docker-compose.linux.yml`.
+
 ## Phiên bản và triển khai
 
 Client và dedicated dùng protocol **18**, Unity **6000.6.2f1**. Các client cũ không được ghép chung phòng.

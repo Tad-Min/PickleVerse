@@ -6,11 +6,12 @@ using System.Text;
 using Entities.Models;
 using PickleVerse.Progression;
 using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 using Services.Configuration;
 
 namespace Services.Implementations;
 
-public sealed partial class OnlineGameService : IOnlineGameService
+public sealed partial class OnlineGameService : IOnlineGameService, IGameTrainingService, IGameMatchService, IDedicatedMatchResults
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGameCatalogService catalogs;
@@ -19,8 +20,12 @@ public sealed partial class OnlineGameService : IOnlineGameService
     private readonly RedisGameState matchmaking;
     private readonly LeaderboardCache leaderboard;
     private readonly IMatchReplayService replays;
+    private readonly DedicatedLeaseRepository? leases;
+    private readonly ILogger<OnlineGameService>? logger;
 
-    public OnlineGameService(IUnitOfWork unitOfWork, IGameCatalogService catalogs, TimeProvider clock, ServerSettings settings, RedisGameState matchmaking, LeaderboardCache leaderboard, IMatchReplayService replays)
+    public OnlineGameService(IUnitOfWork unitOfWork, IGameCatalogService catalogs, TimeProvider clock, ServerSettings settings,
+        RedisGameState matchmaking, LeaderboardCache leaderboard, IMatchReplayService replays,
+        DedicatedLeaseRepository? leases = null, ILogger<OnlineGameService>? logger = null)
     {
         _unitOfWork = unitOfWork;
         this.catalogs = catalogs;
@@ -29,6 +34,8 @@ public sealed partial class OnlineGameService : IOnlineGameService
         this.matchmaking = matchmaking;
         this.leaderboard = leaderboard;
         this.replays = replays;
+        this.leases = leases;
+        this.logger = logger;
     }
 
     sealed class PlayerState
@@ -48,7 +55,8 @@ public sealed partial class OnlineGameService : IOnlineGameService
         public HashSet<string> bonusCommands = [];
         public PlayerProfile Player => state.player;
         public ProgressionEngine Engine => new(catalog.Rules());
-        public GameSnapshot Snapshot() => new() { player = Player, inventory = inventory, catalog = catalog, isMale = profile.Ismale, revision = revision, tutorial = state.tutorial };
+        public GameSnapshot Snapshot() => new() { player = Player, inventory = inventory, catalog = catalog, isMale = profile.Ismale, revision = revision,
+            tutorial = state.tutorial, learningEpoch = profile.LearningEpoch, experienceChoice = profile.ExperienceChoice };
     }
     DateTime Now => clock.GetUtcNow().UtcDateTime;
     static AppException Bad(string message) => new(message, HttpStatusCode.BadRequest);
@@ -60,7 +68,6 @@ public sealed partial class OnlineGameService : IOnlineGameService
             ?? throw new AppException("Không tìm thấy hồ sơ.", HttpStatusCode.NotFound);
         var s = new Session { profile=profile, catalog=catalog };
         var p = s.Player;
-        p.online = true;
         p.id = id.ToString("N");
         p.playerName = profile.Playername;
         p.avatarId = profile.Avatar;
@@ -82,6 +89,7 @@ public sealed partial class OnlineGameService : IOnlineGameService
 
     async Task Persist(Session s, Guid id, string command, string reason)
     {
+        await GrantMilestones(s, id);
         var p = s.Player;
         if (p.coins < 0 || p.gems < 0 || p.coins > int.MaxValue || p.gems > int.MaxValue)
             throw Bad("Số dư vượt giới hạn hỗ trợ.");
@@ -104,6 +112,19 @@ public sealed partial class OnlineGameService : IOnlineGameService
             await _unitOfWork.Game.SaveAchievement(id, def.id, (int)Math.Min(int.MaxValue, s.Engine.Progress(p, def)), p.achievementClaims.Contains(def.id));
         await PersistProgress(s,id);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    async Task GrantMilestones(Session s, Guid player)
+    {
+        foreach (var milestone in new[] { (key: "milestone:training:10", code: "paddle.thot", eligible: s.Player.training.lessons.Count(l => l.bestStars > 0) >= 10),
+            (key: "milestone:level:25", code: "paddle.gemstone", eligible: s.Player.level >= 25) })
+        {
+            if (!milestone.eligible || !await _unitOfWork.Game.GrantOnce(player, milestone.key, GameJson.Write(new { cosmetic = milestone.code }), Now)) continue;
+            if (s.inventory.owned.Contains(milestone.code)) continue;
+            int cosmetic = await _unitOfWork.Game.CosmeticId(milestone.code) ?? throw Bad("Chưa có vật phẩm thưởng trong danh mục.");
+            _unitOfWork.Game.AddCosmetic(player, cosmetic);
+            s.inventory.owned.Add(milestone.code);
+        }
     }
 
     async Task<GameSnapshot> Execute(Guid id, string? requestId, string kind, object? payload, Func<Session, Task> operation)
@@ -159,6 +180,7 @@ public sealed partial class OnlineGameService : IOnlineGameService
             s.state.tutorial.completed = true;
         else if (request.Key == "skipped")
             s.state.tutorial.skipped = true;
+        else if (request.Key == "checkpoint" && request.Step is >= 0 and <= 17) s.state.tutorial.checkpoint = Math.Max(s.state.tutorial.checkpoint, request.Step);
         else throw Bad("Trạng thái hướng dẫn không hợp lệ.");
         return Task.CompletedTask;
     });

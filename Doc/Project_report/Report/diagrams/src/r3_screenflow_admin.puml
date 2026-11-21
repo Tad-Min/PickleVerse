@@ -1,0 +1,28 @@
+@startuml r3_screenflow_admin
+!include _style.iuml
+hide empty description
+state "Admin Login" as Login
+state "Dashboard" as Dash
+state "Users" as Users
+state "Progress Reset\n[dialog]" as Reset
+state "Content (CMS)" as CMS
+state "Lesson Editor" as Lesson
+state "Technique References" as Refs
+state "Matches\n(live and history)" as Matches
+state "Stop Match\n[dialog]" as Stop
+state "Moderation\n(reports, sanctions, appeals)" as Mod
+state "Analytics" as Analytics
+state "Coaching Review" as Coach
+[*] --> Login
+Login --> Dash : Admin role
+Dash --> Users
+Users --> Reset
+Dash --> CMS
+CMS --> Lesson
+CMS --> Refs
+Dash --> Matches
+Matches --> Stop
+Dash --> Mod
+Dash --> Analytics
+Dash --> Coach
+@enduml

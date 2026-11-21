@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { adminApi } from '../api/adminApi';
+import { apiClient } from '../api/client';
 import { isMockMode } from '../api/mockMode';
 import { UserSession } from '../types/api';
 
@@ -46,6 +47,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  useEffect(() => {
+    if (isMockMode || !user) return;
+    let checking = false;
+    let disposed = false;
+    const checkSession = async () => {
+      if (disposed || checking || localStorage.getItem('pickleverse_token') !== user.token) return;
+      checking = true;
+      try {
+        await apiClient.get('/api/Auth/session');
+      } catch {
+        // The interceptor handles an invalid session. Connection failures preserve the login.
+      } finally {
+        checking = false;
+      }
+    };
+    void checkSession();
+    const interval = window.setInterval(() => void checkSession(), 5000);
+    window.addEventListener('focus', checkSession);
+    return () => {
+      disposed = true;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', checkSession);
+    };
+  }, [user]);
+
   const login = async (emailOrUsername: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
       const res = await adminApi.login({
@@ -56,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.role !== 'Admin') {
         return {
           success: false,
-          message: 'Tài khoản của bạn không có vai trò Quản trị viên (Admin). Truy cập bị từ chối.',
+          message: 'Tài khoản của bạn không có vai trò Quản trị viên. Truy cập bị từ chối.',
         };
       }
 

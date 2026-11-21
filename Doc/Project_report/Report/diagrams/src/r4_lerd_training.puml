@@ -1,0 +1,142 @@
+@startuml r4_lerd_training
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "Techniques" as Techniques {
+  * TechniqueId <<PK>>
+  --
+  * TechniqueName
+  * Description
+}
+entity "TechniqueReferences" as TechniqueReferences {
+  * ReferenceId <<PK>>
+  --
+  * TechniqueId <<FK>>
+  * Version
+  * Data
+  * CreatedAt
+}
+entity "Lessons" as Lessons {
+  * LessonId <<PK>>
+  --
+  * LessonName
+  * Description
+  Code
+  * SortOrder
+  * Type
+  * Target
+  * Config
+  * PublishStatus
+  DraftConfig
+  * ContentVersion
+  * Reward
+}
+entity "Drills" as Drills {
+  * DrillId <<PK>>
+  --
+  * TechniqueId <<FK>>
+  * DrillName
+  * Description
+  Code
+}
+entity "LessonDrills" as LessonDrills {
+  * LessonId <<PK, FK>>
+  * DrillId <<PK, FK>>
+  --
+  * Target
+}
+entity "ContentCatalogs" as ContentCatalogs {
+  * Version <<PK>>
+  --
+  * Data
+  * CreatedAt
+}
+entity "PlayerLessonDrills" as PlayerLessonDrills {
+  * PlayerId <<PK, FK>>
+  * LessonId <<PK, FK>>
+  * DrillId <<PK, FK>>
+  --
+  * Score
+  * IsClaimedReward
+  * Attempts
+  * Retries
+  * Completions
+  * Trials
+  * Successes
+  * Seconds
+  * BestAccuracy
+  * Errors
+}
+entity "TrainingSessions" as TrainingSessions {
+  * AttemptId <<PK>>
+  --
+  Sequence
+  * PlayerId <<FK>>
+  * LessonId <<FK>>
+  * DrillId <<FK>>
+  * Data
+  * CatalogVersion
+  * ProgressEpoch
+  * Fingerprint
+  * Completed
+  * IsCurrent
+  * CreatedAt
+  * UpdatedAt
+}
+entity "PlayerTechniqueMastery" as PlayerTechniqueMastery {
+  * PlayerId <<PK, FK>>
+  * TechniqueId <<PK, FK>>
+  --
+  * TotalAttempts
+  * TotalErrors
+  MasteryScore
+  * LastUpdatedAt
+}
+entity "PlayerTechniquesErrors" as PlayerTechniquesErrors {
+  * ErrorLogId <<PK>>
+  --
+  * PlayerId <<FK>>
+  * TechniqueId <<FK>>
+  MatchId <<FK>>
+  LessonId <<FK>>
+  * ErrorType
+  * CoachingTip
+  * CreatedAt
+}
+entity "GameCommands" as GameCommands {
+  * PlayerId <<PK, FK>>
+  * CommandId <<PK>>
+  --
+  * Kind
+  * Fingerprint
+  * Result
+  * CreatedAt
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+}
+entity "GameMatches" as GameMatches {
+  * MatchId <<PK>>
+  --
+}
+Techniques ||--o{ TechniqueReferences : "TechniqueId"
+Techniques ||--o{ Drills : "TechniqueId"
+Lessons ||--o{ LessonDrills : "LessonId"
+Drills ||--o{ LessonDrills : "DrillId"
+PlayerProfiles ||--o{ PlayerLessonDrills : "PlayerId"
+LessonDrills ||--o{ PlayerLessonDrills : "LessonId, DrillId"
+PlayerProfiles ||--o{ TrainingSessions : "PlayerId"
+Lessons ||--o{ TrainingSessions : "LessonId"
+Drills ||--o{ TrainingSessions : "DrillId"
+LessonDrills ||--o{ TrainingSessions : "LessonId, DrillId"
+PlayerProfiles ||--o{ PlayerTechniqueMastery : "PlayerId"
+Techniques ||--o{ PlayerTechniqueMastery : "TechniqueId"
+PlayerProfiles ||--o{ PlayerTechniquesErrors : "PlayerId"
+Techniques ||--o{ PlayerTechniquesErrors : "TechniqueId"
+GameMatches |o--o{ PlayerTechniquesErrors : "MatchId"
+Lessons |o--o{ PlayerTechniquesErrors : "LessonId"
+PlayerProfiles ||--o{ GameCommands : "PlayerId"
+@enduml

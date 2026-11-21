@@ -1,0 +1,11 @@
+@startuml r3_uc_p5_restricted
+!include _style.iuml
+left to right direction
+actor "Restricted Player" as RP
+rectangle "P5 Account Restriction" {
+  usecase "UC-45 View Sanction Decision" as UC45
+  usecase "UC-46 Submit Appeal" as UC46
+}
+RP -- UC45
+UC46 .> UC45 : <<extend>>
+@enduml

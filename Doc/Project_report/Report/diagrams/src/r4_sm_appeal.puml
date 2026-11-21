@@ -1,0 +1,11 @@
+@startuml r4_sm_appeal
+!include _style.iuml
+[*] --> PENDING : submitAppeal [one appeal per sanction]
+PENDING --> CHECKING : startReview
+PENDING --> ACCEPTED : reviewAppeal [accepted] / revokeSanction()
+PENDING --> DECLINED : reviewAppeal [declined] / keepSanction()
+CHECKING --> ACCEPTED : reviewAppeal [accepted] / revokeSanction()
+CHECKING --> DECLINED : reviewAppeal [declined] / keepSanction()
+ACCEPTED --> [*]
+DECLINED --> [*]
+@enduml

@@ -43,6 +43,14 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpGet("{id:guid}")]
+        public Task<MatchDetail> Detail(Guid id) => _matchService.Detail(GetCurrentUserId(), id);
+
+        [Authorize]
+        [HttpGet("{id:guid}/report-targets")]
+        public Task<System.Collections.Generic.List<ReportTargetDto>> ReportTargets(Guid id) => _matchService.ReportTargets(GetCurrentUserId(), id);
+
+        [Authorize]
         [HttpPost("report")]
         public async Task<IActionResult> ReportPlayer([FromBody] ReportPlayerRequest request)
         {

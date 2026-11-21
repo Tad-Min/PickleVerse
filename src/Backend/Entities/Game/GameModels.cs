@@ -13,7 +13,7 @@ public static class GameJson
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         IgnoreReadOnlyProperties = true,
-        Converters = { new JsonStringEnumConverter() }
+        Converters = { new Entities.Enums.GameplayEnumConverter() }
     };
     public static string Write<T>(T value) => JsonSerializer.Serialize(value, Options);
     // Anonymous request fingerprints expose get-only properties. Snapshot options omit those
@@ -31,11 +31,13 @@ public sealed class CosmeticOffer
 }
 public sealed class GameCatalog
 {
+    public int contentSchemaVersion = 2;
     public BotPolicy botPolicy = new();
     public bool hybridTelemetryEnabled, hybridCoachingEnabled;
     public bool dedicatedServerEnabled;
     public string version = "";
-    public int winXp, lossXp;
+    public int winXp = PlayerProfile.LevelXpStep;
+    public int lossXp;
     public RewardBundle dailyBonus, weeklyBonus;
     public MatchRewards matchRewards = new();
     public RuntimeMatchmakingSettings matchmaking = new();
@@ -43,7 +45,7 @@ public sealed class GameCatalog
     public List<ProgressDefinition> definitions = [];
     public TrainingDrill[] lessons = [];
     public CosmeticOffer[] cosmetics = [];
-    public ProgressionConfig Rules() => new() { winXp = winXp, lossXp = lossXp, dailyBonus = dailyBonus, weeklyBonus = weeklyBonus, definitions = definitions };
+    public ProgressionConfig Rules() => new() { lossXp = lossXp, dailyBonus = dailyBonus, weeklyBonus = weeklyBonus, definitions = definitions };
 }
 public sealed class MatchRewards
 {
@@ -58,6 +60,8 @@ public sealed class OnlineInventory
 public sealed class GameSnapshot
 {
     public long revision;
+    public long learningEpoch;
+    public string? experienceChoice;
     public bool isMale;
     public PlayerProfile player = new();
     public OnlineInventory inventory = new();
@@ -109,13 +113,14 @@ public sealed class MatchFinishRequest
 }
 public sealed class TutorialUpdateRequest
 {
+    [Range(0,17)] public int Step { get; set; }
     [Required]
     [StringLength(64, MinimumLength = 8)]
     public string RequestId { get; set; } = "";
     [Required]
     public string Key { get; set; } = "";
 }
-public sealed class TutorialState { public bool completed, skipped; }
+public sealed class TutorialState { public bool completed, skipped; public int checkpoint; }
 
 public sealed class OnlineMatchRequest
 {
@@ -141,6 +146,7 @@ public sealed class AppActivityReceipt
 }
 public sealed class RankedSearchRequest
 {
+    public const int RankedDoublesProtocol = 20;
     public Guid SearchId { get; set; }
     public PickleVerse.Multiplayer.PlayMode Mode { get; set; } = PickleVerse.Multiplayer.PlayMode.Singles;
     public string Region { get; set; } = "asia";
@@ -152,7 +158,8 @@ public sealed class RankedSearchTicket
 {
     public double remainingSeconds;
     public bool roomReady;
-    public string state = "SEARCHING", matchId = "", session = "", hostPlayerId = "", region = "";
+    public Entities.Enums.MatchmakingSearchStatus state = Entities.Enums.MatchmakingSearchStatus.Searching;
+    public string matchId = "", session = "", hostPlayerId = "", region = "";
     public PickleVerse.Multiplayer.MatchRoster? roster;
 }
 public sealed class RankedBotRequest
@@ -168,6 +175,8 @@ public sealed class OnlineMatchTicket
     public string authorityMode = "shared";
     public PickleVerse.Multiplayer.MatchRoster roster = new();
     public bool allAccepted;
+    public bool accepted;
+    public bool partyAccepted;
     public string phase = "PREPARING";
     public double readyRemainingSeconds;
 }

@@ -13,17 +13,20 @@ namespace PickleVerse.Replays
     {
         public static string PlayerId, MatchId;
         public static Action Return;
-        public static void Select(string player, string match, Action onReturn = null)
+        public static long? SocialPostId { get; private set; }
+        public static void Select(string player, string match, Action onReturn = null, long? socialPostId = null)
         {
             PlayerId = player;
             MatchId = match;
             Return = onReturn;
+            SocialPostId = socialPostId;
         }
         public static void Close()
         {
             var callback = Return;
             Return = null;
             PlayerId = MatchId = null;
+            SocialPostId = null;
             if (callback != null)
                 callback();
             else SceneManager.LoadScene("Menu");
@@ -32,6 +35,7 @@ namespace PickleVerse.Replays
         static void Reset()
         {
             PlayerId = MatchId = null;
+            SocialPostId = null;
             Return = null;
         }
     }
@@ -59,7 +63,7 @@ namespace PickleVerse.Replays
         async void Start()
         {
             BuildControls();
-            repository = ReplayStorage.Repository;
+            repository = ReplayLaunch.SocialPostId.HasValue ? new OnlineReplayRepository(ReplayLaunch.SocialPostId) : ReplayStorage.Repository;
             try
             {
                 metadata = repository is IOnlineReplayRepository online ? await online.ReadAsync(ReplayLaunch.PlayerId, ReplayLaunch.MatchId) : repository.Read(ReplayLaunch.PlayerId, ReplayLaunch.MatchId);
@@ -169,11 +173,11 @@ namespace PickleVerse.Replays
                 var ballObject = transform.Find("Ball");
                 if (ballObject)
                 {
+                    // The scene defines the visual size. A dedicated recording can
+                    // contain the unit scale of its physics-only ball transform.
                     ballObject.position = Vector3.Lerp(new Vector3(a.ball[0], a.ball[1], a.ball[2]), new Vector3(b.ball[0], b.ball[1], b.ball[2]), t);
                     if (a.ballRotation?.Length == 4 && b.ballRotation?.Length == 4)
                         ballObject.rotation = Quaternion.Slerp(new Quaternion(a.ballRotation[0], a.ballRotation[1], a.ballRotation[2], a.ballRotation[3]), new Quaternion(b.ballRotation[0], b.ballRotation[1], b.ballRotation[2], b.ballRotation[3]), t);
-                    if (a.ballScale?.Length == 3 && b.ballScale?.Length == 3)
-                        ballObject.localScale = Vector3.Lerp(new Vector3(a.ballScale[0], a.ballScale[1], a.ballScale[2]), new Vector3(b.ballScale[0], b.ballScale[1], b.ballScale[2]), t);
                 }
                 if (Time.unscaledTime >= nextLabelUpdate || !playing)
                 {

@@ -20,6 +20,8 @@ namespace PickleVerse.Replays
     /// <summary>Only transient metadata is cached. Recording chunks are uploaded to the authenticated API.</summary>
     public sealed class OnlineReplayRepository : IOnlineReplayRepository
     {
+        readonly long? socialPost;
+        public OnlineReplayRepository(long? socialPost = null) => this.socialPost = socialPost;
         readonly Dictionary<string, ReplayMetadata> headers = new Dictionary<string, ReplayMetadata>();
         int session = -1;
         AccountService Account => AccountRuntime.Ensure().Account;
@@ -33,7 +35,8 @@ namespace PickleVerse.Replays
                 session = Account.SessionVersion;
             }
         }
-        static string Route(string match) => "api/Game/replays/" + Guid.Parse(match).ToString("N");
+        string Route(string match) => socialPost.HasValue ? $"api/Game/social/posts/{socialPost}/replay"
+            : "api/Game/replays/" + Guid.Parse(match).ToString("N");
         public ReplayMetadata Read(string player, string match)
         {
             Guard(player);
@@ -42,7 +45,9 @@ namespace PickleVerse.Replays
         public async Task RefreshAsync()
         {
             Guard(Account.Profile?.UserId.ToString("N"));
+            int requestedSession = session;
             var list = await Account.SendAuthorizedAsync<List<ReplayMetadata>>("GET", "api/Game/replays");
+            if (requestedSession != Account.SessionVersion) return;
             headers.Clear();
             foreach (var metadata in list)
                 headers[metadata.matchId] = metadata;
@@ -50,8 +55,9 @@ namespace PickleVerse.Replays
         public async Task<ReplayMetadata> ReadAsync(string player, string match)
         {
             Guard(player);
+            int requestedSession = session;
             var metadata = await Account.SendAuthorizedAsync<ReplayMetadata>("GET", Route(match));
-            headers[match] = metadata;
+            if (requestedSession == Account.SessionVersion) headers[match] = metadata;
             return metadata;
         }
         public async Task SaveAsync(ReplayMetadata metadata)

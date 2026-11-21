@@ -39,6 +39,7 @@ namespace PickleVerse.Services.Api
     [Serializable]
     public sealed class AuthResponse
     {
+        public SessionAccessScope AccessScope { get; set; } = SessionAccessScope.Game;
         public int OtpLifetimeMinutes { get; set; }
         public int OtpResendCooldownSeconds { get; set; }
         public bool Success { get; set; }

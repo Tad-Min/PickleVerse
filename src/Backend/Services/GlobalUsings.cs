@@ -1,3 +1,4 @@
+global using Entities.Enums;
 global using Entities.Game;
 global using Entities.DTOs;
 global using Services.Diagnostics;

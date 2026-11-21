@@ -1,0 +1,53 @@
+@startuml r4_seq_social_post
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":SocialLobbyMenu" as UI
+control ":SocialContentController" as C
+control ":SocialMediaService" as M
+control ":SocialContentService" as S
+entity ":GameRepository" as G
+entity ":StorageService" as S3
+opt video attached (Unity Editor and Windows build)
+  UI -> C : Upload()
+  activate C
+  C -> M : Upload(actor, stream, length, token)
+  activate M
+  alt file too large or four uploads running
+    M --> C : error 413 or 429 (MSG68, MSG69)
+  else not MP4 H.264/AAC or longer than 15 min
+    M --> C : error 400 (MSG67)
+  else else
+    M -> G : AddSocialMedia(draft)
+    M -> S3 : WriteVideo(key, input, cancellation)
+    M --> C : SocialMediaReceipt (mediaId)
+  end
+  deactivate M
+  C --> UI : ApiResponse
+  deactivate C
+end
+Player -> UI : text, audience, replay; Đăng bài
+activate UI
+UI -> C : Create(input)
+activate C
+C -> S : Create(actor, input)
+activate S
+S -> G : LockPlayers(actor)
+S -> G : MediaUsed(media)
+S -> G : PostExclusionTargetsExist(actor, exclusions)
+alt invalid audience, replay or media
+  S --> C : error 400 (MSG66)
+else else
+  S -> G : AddSocialPost(post)
+  S -> G : SetPostExclusions(post, exclusions)
+  S --> C : SocialPostItem
+end
+deactivate S
+C --> UI : ApiResponse
+deactivate C
+deactivate UI
+@enduml

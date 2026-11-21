@@ -1,0 +1,46 @@
+@startuml r4_seq_purchase
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":ShopScreen" as UI
+control ":ProgressionRuntime" as PR
+control ":GameController" as C
+control ":OnlineGameService" as S
+entity ":GameRepository" as G
+Player -> UI : RequestPurchase(currency)
+activate UI
+Player -> UI : ConfirmPurchase()
+UI -> PR : CommandAsync("purchase", request)
+activate PR
+PR -> C : Purchase(request)
+activate C
+C -> S : Purchase(player, request)
+activate S
+S -> G : Command(player, requestId)
+alt request already processed
+  S --> C : saved snapshot
+else else
+  S -> G : LockProfile(player)
+  S -> G : Price(cosmetic, currency)
+  alt item already owned
+    S --> C : error already_owned
+  else balance below the price
+    S --> C : error insufficient_balance
+  else else
+    S -> G : SaveBalance(player, currency, -price)
+    S -> G : AddCosmetic(player, cosmetic)
+    S -> G : AddCommand(player, requestId)
+    S --> C : updated snapshot
+  end
+end
+deactivate S
+C --> PR : ApiResponse
+deactivate C
+PR --> UI : balance and inventory
+deactivate PR
+deactivate UI
+@enduml

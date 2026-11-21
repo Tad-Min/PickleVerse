@@ -1,0 +1,79 @@
+@startuml r4_erd_moderation
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "ReportPlayerInMatch" as ReportPlayerInMatch {
+  * ReporterId : UUID <<PK, FK>>
+  * ReportedPlayerId : UUID <<PK, FK>>
+  * MatchId : UUID <<PK, FK>>
+  --
+  * Reason : VARCHAR(254)
+  * Status : VARCHAR(20)
+  * CreatedAt : TIMESTAMPTZ
+  * UpdatedAt : TIMESTAMPTZ
+  ReviewerId : UUID <<FK>>
+  DecisionReason : VARCHAR(2000)
+}
+entity "UserSanctions" as UserSanctions {
+  * SanctionId : UUID <<PK>>
+  --
+  * UserId : UUID <<FK>>
+  * ActorId : UUID <<FK>>
+  * Restriction : VARCHAR(20)
+  * Reason : VARCHAR(2000)
+  * CreatedAt : TIMESTAMPTZ
+  ExpiresAt : TIMESTAMPTZ
+  RevokedAt : TIMESTAMPTZ
+  RevokedBy : UUID <<FK>>
+  RevocationReason : VARCHAR(2000)
+  ReportMatchId : UUID <<FK>>
+  ReporterId : UUID <<FK>>
+}
+entity "SanctionAppeals" as SanctionAppeals {
+  * AppealId : UUID <<PK>>
+  --
+  * SanctionId : UUID <<FK>>
+  * UserId : UUID <<FK>>
+  * Statement : VARCHAR(4000)
+  * Status : VARCHAR(20)
+  * CreatedAt : TIMESTAMPTZ
+  * UpdatedAt : TIMESTAMPTZ
+  ReviewerId : UUID <<FK>>
+  DecisionReason : VARCHAR(2000)
+}
+entity "AdminAudits" as AdminAudits {
+  * AuditId : UUID <<PK>>
+  --
+  * ActorId : UUID
+  TargetId : UUID
+  * Action : VARCHAR(80)
+  * Details : JSONB
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "Users" as Users {
+  * UserId : UUID <<PK>>
+  --
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+}
+entity "GameMatches" as GameMatches {
+  * MatchId : UUID <<PK>>
+  --
+}
+Users |o--o{ ReportPlayerInMatch : "ReviewerId"
+PlayerProfiles ||--o{ ReportPlayerInMatch : "ReporterId"
+PlayerProfiles ||--o{ ReportPlayerInMatch : "ReportedPlayerId"
+GameMatches ||--o{ ReportPlayerInMatch : "MatchId"
+Users ||--o{ UserSanctions : "UserId"
+Users ||--o{ UserSanctions : "ActorId"
+Users |o--o{ UserSanctions : "RevokedBy"
+GameMatches |o--o{ UserSanctions : "ReportMatchId"
+Users |o--o{ UserSanctions : "ReporterId"
+UserSanctions ||--o{ SanctionAppeals : "SanctionId"
+Users ||--o{ SanctionAppeals : "UserId"
+Users |o--o{ SanctionAppeals : "ReviewerId"
+@enduml

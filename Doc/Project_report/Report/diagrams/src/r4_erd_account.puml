@@ -1,0 +1,111 @@
+@startuml r4_erd_account
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "Roles" as Roles {
+  * RoleId : SERIAL <<PK>>
+  --
+  * RoleName : VARCHAR(32)
+  * Description : VARCHAR(254)
+}
+entity "Users" as Users {
+  * UserId : UUID <<PK>>
+  --
+  * Email : VARCHAR(254)
+  * PasswordHash : VARCHAR(254)
+  * AuthVersion : INT
+  * RoleId : INT <<FK>>
+  * Status : VARCHAR(20)
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "RefreshTokens" as RefreshTokens {
+  * TokenId : SERIAL <<PK>>
+  --
+  * UserId : UUID <<FK>>
+  * TokenHash : VARCHAR(254)
+  * ExpiresAt : TIMESTAMPTZ
+  * IsRevoked : BOOLEAN
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "VerificationEmail" as VerificationEmail {
+  * VerificationEmailId : SERIAL <<PK>>
+  --
+  * UserId : UUID <<FK>>
+  * Email : VARCHAR(254)
+  * Token : VARCHAR(128)
+  * FailedAttempts : INT
+  * CreatedAt : TIMESTAMPTZ
+  * ExpiresAt : TIMESTAMPTZ
+  * IsVerified : BOOLEAN
+}
+entity "PasswordResetChallenges" as PasswordResetChallenges {
+  * UserId : UUID <<PK, FK>>
+  --
+  * ChallengeId : UUID
+  * TokenHash : VARCHAR(64)
+  * CreatedAt : TIMESTAMPTZ
+  * ExpiresAt : TIMESTAMPTZ
+  * FailedAttempts : INT
+  * Consumed : BOOLEAN
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+  * Avatar : VARCHAR(80)
+  * PlayerName : VARCHAR(18)
+  * Elo : INT
+  * IsMale : BOOLEAN
+  * TimePlayedSeconds : BIGINT
+  * Level : INT
+  * Exp : INT
+  * WinStreak : INT
+  * DayStreak : INT
+  * WinCount : INT
+  * LoseCount : INT
+  * Revision : BIGINT
+  * LearningEpoch : BIGINT
+  LearningResetAt : TIMESTAMPTZ
+  * MissionEpoch : BIGINT
+  * EconomyEpoch : BIGINT
+  ExperienceChoice : VARCHAR(20)
+  * TutorialCompleted : BOOLEAN
+  * TutorialSkipped : BOOLEAN
+  * TutorialCheckpoint : INT
+  DailyStreakEnabledAt : TIMESTAMPTZ
+  * RankWinStreak : INT
+  * RankLossStreak : INT
+  * BestWinStreak : INT
+  * LifetimeMatches : BIGINT
+  * LifetimePoints : BIGINT
+  * LifetimeReturns : BIGINT
+  * LifetimeServes : BIGINT
+  * LifetimeBotMatches : BIGINT
+  * LifetimeHumanMatches : BIGINT
+  * LifetimeHumanWins : BIGINT
+  * LifetimeRankedWins : BIGINT
+  * LifetimeDoublesWins : BIGINT
+  * LifetimeHigherRatedWins : BIGINT
+}
+entity "PlayerLoginDays" as PlayerLoginDays {
+  * PlayerId : UUID <<PK, FK>>
+  * Day : DATE <<PK>>
+  --
+  * FirstAt : TIMESTAMPTZ
+  * LastAt : TIMESTAMPTZ
+}
+entity "PlayerActivityDays" as PlayerActivityDays {
+  * PlayerId : UUID <<PK, FK>>
+  * Day : DATE <<PK>>
+  --
+  * Seconds : BIGINT
+}
+Roles ||--o{ Users : "RoleId"
+Users ||--o{ RefreshTokens : "UserId"
+Users ||--o{ VerificationEmail : "UserId"
+Users ||--o| PasswordResetChallenges : "UserId"
+Users ||--o| PlayerProfiles : "UserId"
+Users ||--o{ PlayerLoginDays : "PlayerId"
+PlayerProfiles ||--o{ PlayerActivityDays : "PlayerId"
+@enduml

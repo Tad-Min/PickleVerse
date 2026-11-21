@@ -1,0 +1,35 @@
+@startuml r3_cerd_economy
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+}
+entity "CURRENCY" as CURRENCY {
+  * CurrencyId
+  --
+  Name
+}
+entity "COSMETIC" as COSMETIC {
+  * CosmeticId
+  --
+  ItemCode
+}
+entity "MISSION" as MISSION {
+  * MissionId
+  --
+  Scope
+  Target
+}
+entity "ACHIEVEMENT" as ACHIEVEMENT {
+  * AchievementId
+  --
+  Target
+}
+PLAYER_PROFILE }o--o{ CURRENCY : "holds (Balance)"
+COSMETIC }o--o{ CURRENCY : "priced in (Price)"
+PLAYER_PROFILE }o--o{ COSMETIC : "owns (Equipped)"
+PLAYER_PROFILE }o--o{ MISSION : "progresses (PeriodKey, Progress, Claimed)"
+PLAYER_PROFILE }o--o{ ACHIEVEMENT : "earns (Progress, Claimed)"
+@enduml

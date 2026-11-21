@@ -1,0 +1,45 @@
+@startuml r4_seq_coaching
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+boundary ":ProgressionRuntime" as Src
+control ":AiCoachingController" as C
+control ":HybridCoachingService" as S
+entity ":GameRepository" as G
+control ":HybridAiWorker" as W
+control ":AI coaching service\n(FastAPI)" as AI
+Src -> C : Telemetry(batch)
+activate C
+C -> S : Ingest(player, batch)
+activate S
+S -> G : CreateTelemetry(session)
+S -> G : AddTelemetryPart(batch, part)
+opt all parts of the session received
+  S -> G : QueueAnalysis(session)
+end
+S --> C : TelemetryReceipt
+deactivate S
+C --> Src : ACK
+deactivate C
+W -> G : ClaimAnalysis(worker, 60 s)
+activate W
+W -> S : BuildRequest(job)
+W -> AI : analyze_session(request)
+activate AI
+AI --> W : findings, summary, recommendations, gated tier
+deactivate AI
+alt analysis returned
+  W -> G : CompleteAnalysis(job, result)
+else else
+  W -> G : RetryAnalysis(job, backoff)
+end
+deactivate W
+Src -> C : Summary(sessionId)
+activate C
+C -> S : Summary(player, session)
+C --> Src : summary and recommended drill
+deactivate C
+@enduml

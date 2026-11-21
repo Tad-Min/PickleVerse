@@ -1787,6 +1787,7 @@ namespace Fusion.Editor {
 namespace Fusion.Editor {
   using System;
   using System.IO;
+  using System.Linq;
   using UnityEditor;
   using UnityEditor.Compilation;
   using UnityEngine;
@@ -1811,11 +1812,10 @@ namespace Fusion.Editor {
     }
 
     static void ShutdownRunners() {
-      var runners = NetworkRunner.GetInstancesEnumerator();
-
-      while (runners.MoveNext()) {
-        if (runners.Current) {
-          runners.Current.Shutdown();
+      // Shutdown can remove the runner from Instances immediately.
+      foreach (var runner in NetworkRunner.Instances.ToArray()) {
+        if (runner) {
+          runner.Shutdown();
         }
       }
     }

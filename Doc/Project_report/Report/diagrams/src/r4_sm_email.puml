@@ -1,0 +1,9 @@
+@startuml r4_sm_email
+!include _style.iuml
+[*] --> Unverified : register / sendCode()
+Unverified --> Unverified : submitCode [code invalid and attempts < 5] / countFailure()
+Unverified --> Unverified : resendCode [60 s cooldown passed] / sendCode()
+Unverified --> Verified : submitCode [code valid and not expired]
+Unverified --> Verified : verifyManually [administrator]
+Verified --> [*]
+@enduml

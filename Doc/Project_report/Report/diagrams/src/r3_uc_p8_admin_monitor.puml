@@ -1,0 +1,21 @@
+@startuml r3_uc_p8_admin_monitor
+!include _style.iuml
+left to right direction
+actor Administrator as Admin
+rectangle "P8 Admin: Monitoring and Analytics" {
+  usecase "UC-62 Monitor Live Matches" as UC62
+  usecase "UC-63 Stop Live Match" as UC63
+  usecase "UC-64 View Match Records" as UC64
+  usecase "UC-65 View Dashboard Summary" as UC65
+  usecase "UC-66 View Analytics Report" as UC66
+  usecase "UC-67 Review Coaching Session" as UC67
+  usecase "UC-68 Export Labelled Dataset" as UC68
+}
+Admin -- UC62
+Admin -- UC64
+Admin -- UC65
+Admin -- UC66
+Admin -- UC67
+UC63 .> UC62 : <<extend>>
+UC68 .> UC67 : <<extend>>
+@enduml

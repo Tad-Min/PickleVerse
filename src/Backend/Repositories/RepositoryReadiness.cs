@@ -10,7 +10,7 @@ public sealed class RepositoryReadiness(GameRepository data, IConnectionMultiple
     {
         try
         {
-            if (!await data.CanConnect(cancellationToken)) return false;
+            await data.CheckSchema(cancellationToken);
             await redis.GetDatabase().PingAsync().WaitAsync(cancellationToken);
             return true;
         }

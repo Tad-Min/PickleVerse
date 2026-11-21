@@ -12,6 +12,12 @@ using API.Middlewares;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+// Media playback URLs contain a short-lived grant in the query string.
+builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Configure Jwt:Key with at least 32 bytes.");
 
 // The API composition root owns configuration binding and Redis connection setup.
 var redisSettings = builder.Configuration.GetSection("Redis").Get<RedisSettings>()
@@ -21,6 +27,10 @@ builder.Services.AddSingleton(redisSettings);
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
 
 builder.Services.AddPickleVerseServices(builder.Configuration);
+builder.Services.AddSingleton<ISocialEvents, API.Hubs.SocialEvents>();
+builder.Services.AddSignalR(options => options.MaximumReceiveMessageSize = 8 * 1024)
+    .AddStackExchangeRedis(redisSettings.ConnectionString, options =>
+        options.Configuration.ChannelPrefix = RedisChannel.Literal(redisSettings.KeyPrefix + "social-hub"));
 
 // 1. Add Controllers
 builder.Services.AddControllers(options => options.Filters.Add<ApiResponseFilter>()).AddJsonOptions(options =>
@@ -28,7 +38,7 @@ builder.Services.AddControllers(options => options.Filters.Add<ApiResponseFilter
     // The shared Unity game models use serializable fields and named enums.
     options.JsonSerializerOptions.IncludeFields = true;
     options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
-    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    options.JsonSerializerOptions.Converters.Add(new Entities.Enums.GameplayEnumConverter());
 });
 builder.Services.AddRequestDecompression();
 
@@ -37,6 +47,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AdminWebPolicy", policy =>
     {
         policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173")
+              .WithExposedHeaders("Content-Disposition", "X-Dataset-Sha256")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -44,11 +55,8 @@ builder.Services.AddCors(options =>
 });
 
 // 3. Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "PickleVerse_Super_Secret_Key_2026_DotNet10_Advanced_Capstone!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PickleVerseAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PickleVerseClient";
-if (jwtKey.Length < 32)
-    throw new InvalidOperationException("Jwt:Key must contain at least 32 characters.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -70,7 +78,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var principal = context.Principal;
                 if (!Guid.TryParse(principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ||
                     !int.TryParse(principal?.FindFirst("auth_version")?.Value, out int version) ||
-                    !await context.HttpContext.RequestServices.GetRequiredService<IAuthService>().ValidateSessionAsync(id, version))
+                    !await context.HttpContext.RequestServices.GetRequiredService<IAuthService>().ValidateSessionAsync(id, version,
+                        principal?.FindFirst("access_scope")?.Value ?? "game"))
                     context.Fail("Phiên đăng nhập đã hết hiệu lực.");
             }
         };
@@ -132,9 +141,11 @@ if (!app.Environment.IsDevelopment())
 app.UseCors("AdminWebPolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<RestrictedSessionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<API.Hubs.SocialHub>("/api/Game/social/hub", options => options.CloseOnAuthenticationExpiration = true);
 app.MapGet("/health/ready", async (IReadinessService readiness, CancellationToken ct) =>
     await readiness.Check(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
 

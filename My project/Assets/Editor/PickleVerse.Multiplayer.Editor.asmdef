@@ -13,7 +13,9 @@
     "PickleVerse.Entites",
     "Unity.Behavior.SerializableGUID",
     "PickleVerse.Replays",
-    "Unity.Behavior"
+    "Unity.Behavior",
+    "Unity.Pipeline.Attributes",
+    "Unity.RenderPipelines.Core.Editor"
   ],
   "includePlatforms": [
     "Editor"

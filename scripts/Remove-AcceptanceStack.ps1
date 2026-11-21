@@ -23,7 +23,7 @@ foreach ($name in $expected) {
 }
 $binding = (docker inspect pickleverse_s3 | ConvertFrom-Json)[0].NetworkSettings.Ports.'9000/tcp'[0]
 if ($binding.HostPort -ne '19000' -or $binding.HostIp -notin @('127.0.0.1','0.0.0.0')) { throw 'Unexpected local S3 endpoint.' }
-dotnet run --project src/Backend/IntegrationChecks -- --cleanup-acceptance-bucket
+dotnet run --project src/Testing/Backend -- --cleanup-acceptance-bucket
 if ($LASTEXITCODE -ne 0) { throw 'Isolated S3 cleanup failed.' }
 $s3Cleanup = Get-Content 'artifacts/account-multiplayer-ai-20261103/s3-cleanup.json' -Raw | ConvertFrom-Json
 if (!$s3Cleanup.bucketDeleted) {

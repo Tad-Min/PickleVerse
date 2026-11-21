@@ -8,6 +8,7 @@ namespace PickleVerse.LocalMatch
         Vector3 BallPosition { get; }
         Vector3 BallVelocity { get; }
         Vector3 OpponentPosition { get; }
+        float RecoveryX { get; }
         bool Active { get; }
         bool Incoming { get; }
         bool Serving { get; }
@@ -29,6 +30,7 @@ namespace PickleVerse.LocalMatch
         public Vector3 BallPosition => match.BallPosition;
         public Vector3 BallVelocity => match.BallVelocity;
         public Vector3 OpponentPosition => match.human.transform.position;
+        public float RecoveryX => 0;
         public bool Active => match && !match.Paused && (match.Phase == MatchPhase.PreServe || match.Phase == MatchPhase.Rally);
         public bool Incoming => Active && match.Phase == MatchPhase.Rally && match.Rules.Live && match.Rules.ExpectedHitter == Actor.playerId;
         public bool Serving => match.Phase == MatchPhase.PreServe;

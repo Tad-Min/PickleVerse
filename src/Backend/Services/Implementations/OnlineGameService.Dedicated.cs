@@ -8,11 +8,17 @@ public sealed partial class OnlineGameService
     public async Task CompleteDedicated(Guid match, List<DedicatedPlayerResult> input)
     {
         if (input == null || input.Count == 0 || input.Any(x => x == null)) throw Bad("Kết quả máy chủ không hợp lệ.");
-        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == "dedicated") ?? throw Bad("Không tìm thấy trận dedicated.");
+        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == MatchAuthorityMode.Dedicated) ?? throw Bad("Không tìm thấy trận dedicated.");
         var caller = record.Gamematchplayers.First(p => !RankedBotAccounts.Contains(p.Playerid.ToString("N"))).Playerid;
         await OnlineTransaction(caller, match, null, async (m, players, participants) =>
         {
-            if (m.phase == "FINISHED") return true;
+            if (m.phase is "FINISHED" or "CANCELLED") return true;
+            var operation = await _unitOfWork.Game.DedicatedOperation(match);
+            if (operation != null && m.phase == "PLAYING")
+            {
+                await EndOnline(match, m, players, null, operation.Reason[..Math.Min(500, operation.Reason.Length)], []);
+                return true;
+            }
             if (m.phase != "PLAYING" || input.Count != m.roster.Count || input.Select(x => x.onlineId).Distinct().Count() != input.Count ||
                 input.Any(x => x.result == null || x.onlineId != x.result.playerId || x.result.id != match.ToString("N")) ||
                 !input.Select(x => x.onlineId).ToHashSet().SetEquals(m.roster.members.Select(x => x.id))) throw Bad("Kết quả máy chủ không khớp đội hình.");
@@ -20,7 +26,11 @@ public sealed partial class OnlineGameService
             if (forfeits.Count > 0 || input.Any(x => x.result.outcome == MatchOutcome.Interrupted))
             {
                 var teams = m.roster.members.Where(x => forfeits.Contains(MatchId(x.id))).Select(x => x.team).Distinct().ToList();
-                await EndOnline(match, m, players, teams.Count == 1 ? teams[0] : null, "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits);
+                var scores = input.Select(entry => CanonicalScores(entry.result, m.roster.Find(entry.onlineId).team)).ToArray();
+                if (scores.Skip(1).Any(scorecard => !GameJson.Write(scorecard).Equals(GameJson.Write(scores[0]), StringComparison.Ordinal)))
+                    throw Bad("Điểm hai đội không khớp.");
+                await EndOnline(match, m, players, teams.Count == 1 ? teams[0] : null,
+                    "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits, scores[0]);
                 return true;
             }
             string? fingerprint = null;
@@ -43,14 +53,27 @@ public sealed partial class OnlineGameService
             return true;
         });
     }
+    static IReadOnlyList<GameScore> CanonicalScores(MatchResult result, int team)
+    {
+        if (result.scores == null || result.scores.Count > 3 || result.scores.Where((game, index) =>
+            game == null || game.own is < 0 or > 100000 || game.opponent is < 0 or > 100000
+            || game.teamAStartSide is not (null or -1 or 1) || !game.completed && index != result.scores.Count - 1
+            || game.completed && game.own == game.opponent).Any())
+            throw Bad("Tỷ số ván của máy chủ không hợp lệ.");
+        return team == 0 ? result.scores : result.scores.Select(game =>
+            new GameScore(game.opponent, game.own, game.completed, game.teamAStartSide)).ToArray();
+    }
     public async Task InterruptDedicated(Guid match)
     {
-        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == "dedicated" && m.Status == "PLAYING");
+        var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == MatchAuthorityMode.Dedicated
+            && (m.Status == MatchStatus.Playing || m.Status == MatchStatus.Preparing));
         if (record == null) return;
         var player = record.Gamematchplayers.First(p => !RankedBotAccounts.Contains(p.Playerid.ToString("N"))).Playerid;
         await OnlineTransaction(player, match, null, async (m, players, participants) =>
         {
-            if (m.phase == "PLAYING") await EndOnline(match, m, players, null, "Máy chủ thi đấu mất kết nối; trận bị gián đoạn.", []);
+            var operation = await _unitOfWork.Game.DedicatedOperation(match);
+            if (m.phase == "PLAYING") await EndOnline(match, m, players, null, operation == null ? "Máy chủ thi đấu mất kết nối; trận bị gián đoạn." : operation.Reason[..Math.Min(500, operation.Reason.Length)], []);
+            else if (m.phase == "PREPARING") { m.phase = "CANCELLED"; await SaveOnline(match, m); }
             return true;
         });
     }

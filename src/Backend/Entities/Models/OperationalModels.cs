@@ -38,6 +38,9 @@ public sealed class TrainingSessionRecord
     public int DrillId { get; set; }
     public string Data { get; set; } = null!;
     public bool Completed { get; set; }
+    public string CatalogVersion { get; set; } = "";
+    public long ProgressEpoch { get; set; }
+    public string Fingerprint { get; set; } = "";
     public bool IsCurrent { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

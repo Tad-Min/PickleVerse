@@ -43,7 +43,7 @@ namespace PickleVerse.Multiplayer
             int slot = CoachingSlot(player);
             coachingSequences.TryGetValue(slot, out int sequence);
             var shot = new ShotTelemetry { shotId = Guid.NewGuid().ToString("N"), sequence = sequence,
-                rally = coachingRally, kind = kind, technique = kind, source = "fusion-authority-observed",
+                rally = coachingRally, gameNumber = Rules.GameNumber, kind = kind, technique = kind, source = "fusion-authority-observed",
                 time = Math.Max(0, Runner.SimulationTime), bounces = Rules.bounceCount,
                 outcome = "Miss", assisted = true, engineAimed = true };
             coachingSequences[slot] = sequence + 1;

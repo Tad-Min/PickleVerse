@@ -54,6 +54,14 @@ namespace PickleVerse.FrontEnd
             if (!modal)
                 BuildShell();
             ConfigureOverlay();
+#if !UNITY_SERVER
+            var social = gameObject.AddComponent<SocialLobbyMenu>();
+            social.Bind(this);
+            var feed = Button("SocialFeed", window, "BẢNG TIN", new Vector2(.53f,.77f), new Vector2(.71f,.845f), Card, Mint, 16);
+            feed.onClick.AddListener(() => social.OpenFeed());
+            var inbox = Button("SocialInbox", window, "TIN NHẮN", new Vector2(.725f,.77f), new Vector2(.91f,.845f), Card, Mint, 16);
+            inbox.onClick.AddListener(() => social.OpenInbox());
+#endif
             blockedButton = Button("BlockedPlayers", window, "ĐÃ CHẶN", new Vector2(.76f, .51f), new Vector2(.98f, .58f), Card, White, 12);
             blockedButton.onClick.AddListener(() =>
             {
@@ -189,7 +197,7 @@ namespace PickleVerse.FrontEnd
         }
         void ApplySafeArea()
         {
-            var area = Screen.safeArea;
+            var area = PickleVerse.Settings.UiSafeArea.Area;
             if (Screen.width <= 0 || Screen.height <= 0)
                 return;
             var size = new Vector2(Screen.width, Screen.height);
@@ -376,6 +384,14 @@ namespace PickleVerse.FrontEnd
                     var block = Button("Block", row, "CHẶN", new Vector2(.83f, .02f), new Vector2(.975f, .23f), Surface, Muted, 10);
                     block.interactable = !mutating;
                     block.onClick.AddListener(() => ChangeFriend(entry, "block"));
+#if !UNITY_SERVER
+                    if (relation != "incoming")
+                    {
+                        var direct = Button("DirectMessage", row, relation == "friend" ? "NHẮN TIN" : "THÌ THẦM",
+                            new Vector2(.655f,.02f), new Vector2(.82f,.23f), Surface, Mint, 10);
+                        direct.onClick.AddListener(() => GetComponent<SocialLobbyMenu>().OpenDirect(Guid.Parse(entry.id), entry.name, relation == "friend"));
+                    }
+#endif
                 }
                 if (relation == "incoming")
                 {

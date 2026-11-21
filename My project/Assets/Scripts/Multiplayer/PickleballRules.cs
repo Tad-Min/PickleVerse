@@ -23,7 +23,6 @@ namespace PickleVerse.Multiplayer
         // courtRight[t] identifies the teammate occupying the right service court before a serve.
         public int[] courtRight = new int[2];
         public int[] teamSizes = new int[2];
-        public int[] timeouts = { 2, 2 };
         public bool[] volleyMomentum = new bool[4];
         public string reason = "Sẵn sàng giao bóng";
         public float serverWorldX;
@@ -270,7 +269,6 @@ namespace PickleVerse.Multiplayer
             gameFirstServer = 1 - gameFirstServer;
             servingTeam = gameFirstServer;
             score[0] = score[1] = 0;
-            timeouts[0] = timeouts[1] = 2;
             courtRight[0] = courtRight[1] = 0;
             serverIndex = receiverIndex = 0;
             serverNumber = 2;
@@ -278,13 +276,6 @@ namespace PickleVerse.Multiplayer
             NewRally();
         }
         bool HasMomentum() => Array.Exists(volleyMomentum, m => m);
-        public bool TakeTimeout(int team)
-        {
-            if (team < 0 || team > 1 || !waitingServe || live || complete || gameFinished || timeouts[team] <= 0)
-                return false;
-            timeouts[team]--;
-            return true;
-        }
         public void Forfeit(int team, string message)
         {
             if (!complete)

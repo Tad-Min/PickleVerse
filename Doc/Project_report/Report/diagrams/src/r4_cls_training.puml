@@ -1,0 +1,85 @@
+@startuml r4_cls_training
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class TrainingDirector <<MonoBehaviour>> {
+    + Phase : TrainingPhase
+    + Lesson : TrainingDrill
+    + Session : TrainingAttempt
+    + Catalogue() : void
+    + Select(id : string) : void
+    + StartLesson(retry : bool) : void
+    + Advance(dt, mask, movement, run, tap) : void
+    + CommitTouchShot(mask : int) : void
+    + SaveActive(force : bool) : void
+  }
+  enum TrainingPhase {
+    Catalogue
+    Briefing
+    Practice
+    Recovery
+    Finished
+  }
+  class TrainingEngine <<static>> {
+    + Unlocked(profile, drill) : bool
+    + Start(profile, id, retry, catalog) : TrainingAttempt
+    + Complete(profile, attempt, catalog) : bool
+    + Recommended(profile, catalog) : string
+  }
+  class ProgressionRuntime {
+    + Snapshot : OnlineGameSnapshot
+    + IsOffline : bool
+    + PendingOperations : int
+    + StartTrainingAsync(id, retry) : Task<OnlineGameSnapshot>
+    + SaveTrainingAsync(attempt, completed) : Task<OnlineGameSnapshot>
+    + TryEnterOffline() : bool
+    + SyncOfflineAsync() : Task
+  }
+  class OfflineTrainingStore {
+    + Owner : string
+    + PendingCount : int
+    + Start(code, retry) : OnlineGameSnapshot
+    + Save(attempt, completed) : OnlineGameSnapshot
+    + UploadBatch() : List<TrainingAttempt>
+    + Accept(OnlineTrainingSyncResult) : void
+  }
+  class TrainingAttempt {
+    + id : string
+    + lessonId : string
+    + trials : int
+    + successes : int
+    + stars : int
+    + catalogVersion : string
+    + progressEpoch : long
+  }
+}
+package "Web API" {
+  class GameTrainingController <<ApiController>> {
+    + Start(StartTrainingRequest) : GameSnapshot
+    + Checkpoint(TrainingCheckpointRequest) : GameSnapshot
+    + Complete(TrainingCompleteRequest) : GameSnapshot
+    + SyncTraining(TrainingSyncRequest) : TrainingSyncResult
+  }
+  interface IGameTrainingService {
+    + StartTraining(player, request) : Task<GameSnapshot>
+    + UpdateTraining(player, request, completed) : Task<GameSnapshot>
+    + SyncTraining(player, request) : Task<TrainingSyncResult>
+  }
+  class OnlineGameService {
+    - unitOfWork : IUnitOfWork
+    - catalog : IGameCatalogService
+  }
+  interface IGameCatalogService {
+    + Load() : Task<GameCatalog>
+  }
+}
+TrainingDirector --> TrainingPhase
+TrainingDirector --> ProgressionRuntime
+TrainingDirector ..> TrainingEngine
+ProgressionRuntime --> OfflineTrainingStore
+OfflineTrainingStore "1" o-- "0..*" TrainingAttempt
+ProgressionRuntime ..> GameTrainingController : HTTP JSON
+GameTrainingController --> IGameTrainingService
+OnlineGameService ..|> IGameTrainingService
+OnlineGameService --> IGameCatalogService
+@enduml

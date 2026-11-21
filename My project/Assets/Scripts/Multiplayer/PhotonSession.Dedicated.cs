@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Fusion;
 using Fusion.Sockets;
@@ -21,28 +22,36 @@ namespace PickleVerse.Multiplayer
         PhotonRoomData dedicatedData;
         int reliableSequence;
         public bool IsDedicated => dedicatedData != null;
+
+        static NetworkSceneInfo DedicatedCourtScene()
+        {
+            var scenes = new NetworkSceneInfo();
+            scenes.AddSceneRef(SceneRef.FromPath(Services.MultiplayerSceneConfiguration.CourtPath), LoadSceneMode.Single);
+            return scenes;
+        }
+
         public async Task StartDedicatedAsync(string session, string region, MatchRoster roster, ushort port, Func<byte[], bool> admission)
         {
             PrepareDedicated(roster);
             Callbacks.Admission = admission;
-            var scenes = new NetworkSceneInfo();
-            scenes.AddSceneRef(SceneRef.FromPath(Services.MultiplayerSceneConfiguration.CourtPath), LoadSceneMode.Single);
             var result = await Runner.StartGame(new StartGameArgs { GameMode = GameMode.Server,
-                SessionName = session, PlayerCount = roster.HumanCount, IsVisible = false, Address = NetAddress.Any(port),
+                // Leave transport seats for authenticated takeovers while the previous peers are still connected.
+                SessionName = session, PlayerCount = roster.HumanCount * 2, IsVisible = false, Address = NetAddress.Any(port),
                 Config = ConfigForSession(true),
-                CustomPhotonAppSettings = Settings(region), SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = scenes });
+                CustomPhotonAppSettings = Settings(region), SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });
             if (!result.Ok) throw new InvalidOperationException("Không khởi động được máy chủ Fusion: " + result.ShutdownReason);
             sessionName = session; sessionRegion = region;
         }
-        public async Task JoinDedicatedAsync(string session, string region, string player, string token, MatchRoster roster)
+        public async Task JoinDedicatedAsync(string session, string region, string player, string token, int authVersion, MatchRoster roster, CancellationToken cancellation = default)
         {
             PrepareDedicated(roster); Runner.ProvideInput = true;
             Callbacks.Input = (runner, input) => input.Set(NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == runner && p.IsLocalHuman)?.CaptureDedicatedInput() ?? default);
             var result = await Runner.StartGame(new StartGameArgs { GameMode = GameMode.Client, SessionName = session,
-                EnableClientSessionCreation = false, AuthValues = new Photon.Realtime.AuthenticationValues(player),
+                EnableClientSessionCreation = false, AuthValues = new Photon.Realtime.AuthenticationValues(DedicatedAdmission.ConnectionIdentity(player, authVersion)),
                 ConnectionToken = Convert.FromBase64String(token), CustomPhotonAppSettings = Settings(region),
-                Config = ConfigForSession(true),
-                SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>() });
+                Config = ConfigForSession(true), StartGameCancellationToken = cancellation,
+                SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });
+            cancellation.ThrowIfCancellationRequested();
             if (!result.Ok) throw new InvalidOperationException("Không kết nối được máy chủ thi đấu. Vui lòng thử lại.");
             sessionName = session; sessionRegion = region;
         }
@@ -53,10 +62,15 @@ namespace PickleVerse.Multiplayer
                 seats = roster.members.Select(m => new PhotonSeat { member = m, decision = ReadyDecision.Accepted }).ToList() };
             Callbacks.Reliable = (source, bytes) =>
             {
-                try { var message = JsonConvert.DeserializeObject<PhotonMessage>(Encoding.UTF8.GetString(bytes)); if (message != null) Deliver(source, message); }
+                // On a client this callback identifies the receiving player, not the
+                // server's state authority (None). Only the server can send this stream
+                // to clients. Preserve the actual sender on the server for admission/input checks.
+                try { var message = JsonConvert.DeserializeObject<PhotonMessage>(Encoding.UTF8.GetString(bytes)); if (message != null) Deliver(DedicatedMessageSource(Runner.IsServer, source), message); }
                 catch (JsonException) { }
             };
         }
+        public static PlayerRef DedicatedMessageSource(bool server, PlayerRef callbackPlayer)
+            => server ? callbackPlayer : PlayerRef.None;
         void SendDedicated(PlayerRef destination, PhotonMessage message)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));

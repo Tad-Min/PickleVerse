@@ -1,0 +1,54 @@
+@startuml r4_seq_offline_sync
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":TrainingDirector" as TD
+control ":ProgressionRuntime" as PR
+entity ":OfflineTrainingStore" as OS
+control ":GameTrainingController" as C
+control ":OnlineGameService" as S
+entity ":GameRepository" as G
+Player -> PR : TryEnterOffline()
+activate PR
+PR -> OS : Start(code, retry)
+PR --> Player : cached catalog
+deactivate PR
+Player -> TD : StartLesson(false)
+activate TD
+TD -> OS : Save(attempt, true)
+activate OS
+OS --> TD : snapshot (stored on the device)
+deactivate OS
+deactivate TD
+== Network available again ==
+PR -> PR : SyncOfflineAsync()
+activate PR
+PR -> OS : UploadBatch()
+PR -> C : SyncTraining(request)
+activate C
+C -> S : SyncTraining(player, request)
+activate S
+loop attempt in batch (at most 50)
+  S -> G : AttemptIdUsed(player, attempt)
+  S -> G : LearningEpoch(player)
+  alt new attempt and current epoch
+    S -> G : AddSyncedTraining(attempt)
+    S -> G : GrantOnce(player, reward)
+    S -> S : receipt APPLIED
+  else attempt already applied
+    S -> S : receipt DUPLICATE
+  else else
+    S -> S : receipt REJECTED with reason
+  end
+end
+S --> C : TrainingSyncResult
+deactivate S
+C --> PR : ApiResponse
+deactivate C
+PR -> OS : Accept(result)
+deactivate PR
+@enduml

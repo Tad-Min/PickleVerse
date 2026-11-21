@@ -46,7 +46,7 @@ namespace PickleVerse.Shop
         }
         void Update()
         {
-            var a = Screen.safeArea;
+            var a = PickleVerse.Settings.UiSafeArea.Area;
             var size = new Vector2(Screen.width, Screen.height);
             if (size.x > 0 && size.y > 0 && (a != lastSafeArea || size != lastResolution))
             {

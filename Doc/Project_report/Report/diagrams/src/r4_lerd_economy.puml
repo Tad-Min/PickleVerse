@@ -1,0 +1,117 @@
+@startuml r4_lerd_economy
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "Currencies" as Currencies {
+  * CurrencyId <<PK>>
+  --
+  * CurrencyName
+  * Description
+}
+entity "PlayerCurrencies" as PlayerCurrencies {
+  * PlayerId <<PK, FK>>
+  * CurrencyId <<PK, FK>>
+  --
+  * Amount
+}
+entity "CurrencyTransactions" as CurrencyTransactions {
+  * TransactionId <<PK>>
+  --
+  * PlayerId <<FK>>
+  * CurrencyId <<FK>>
+  * CommandId
+  * Delta
+  * BalanceAfter
+  * Reason
+  * CreatedAt
+}
+entity "Cosmetics" as Cosmetics {
+  * CosmeticId <<PK>>
+  --
+  * CurrencyId <<FK>>
+  * ItemCode
+  * CosmeticName
+  * Description
+  * Price
+  * Type
+  * Config
+}
+entity "CosmeticPrices" as CosmeticPrices {
+  * CosmeticId <<PK, FK>>
+  * CurrencyId <<PK, FK>>
+  --
+  * Price
+}
+entity "PlayerCosmetics" as PlayerCosmetics {
+  * PlayerId <<PK, FK>>
+  * CosmeticId <<PK, FK>>
+  --
+  * Equipped
+}
+entity "Missions" as Missions {
+  * MissionId <<PK>>
+  --
+  * MissionName
+  * Description
+  * Type
+  * Target
+  * Reward
+  Code
+  * Config
+}
+entity "PlayerMissions" as PlayerMissions {
+  * PlayerId <<PK, FK>>
+  * MissionId <<PK, FK>>
+  * PeriodKey <<PK>>
+  --
+  * Progress
+  * IsClaimed
+  ClaimedAt
+  * CurrentStreak
+}
+entity "Achievements" as Achievements {
+  * AchievementId <<PK>>
+  --
+  * AchievementCode
+  * AchievementName
+  * Description
+  * Type
+  * Target
+  * Reward
+}
+entity "PlayerAchievements" as PlayerAchievements {
+  * PlayerId <<PK, FK>>
+  * AchievementId <<PK, FK>>
+  --
+  * Progress
+  * IsClaimed
+  ClaimedAt
+}
+entity "ProgressRewardGrants" as ProgressRewardGrants {
+  * PlayerId <<PK, FK>>
+  * RewardKey <<PK>>
+  --
+  * Details
+  * CreatedAt
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId <<PK, FK>>
+  --
+}
+PlayerProfiles ||--o{ PlayerCurrencies : "PlayerId"
+Currencies ||--o{ PlayerCurrencies : "CurrencyId"
+PlayerProfiles ||--o{ CurrencyTransactions : "PlayerId"
+Currencies ||--o{ CurrencyTransactions : "CurrencyId"
+Currencies ||--o{ Cosmetics : "CurrencyId"
+Cosmetics ||--o{ CosmeticPrices : "CosmeticId"
+Currencies ||--o{ CosmeticPrices : "CurrencyId"
+PlayerProfiles ||--o{ PlayerCosmetics : "PlayerId"
+Cosmetics ||--o{ PlayerCosmetics : "CosmeticId"
+PlayerProfiles ||--o{ PlayerMissions : "PlayerId"
+Missions ||--o{ PlayerMissions : "MissionId"
+PlayerProfiles ||--o{ PlayerAchievements : "PlayerId"
+Achievements ||--o{ PlayerAchievements : "AchievementId"
+PlayerProfiles ||--o{ ProgressRewardGrants : "PlayerId"
+@enduml

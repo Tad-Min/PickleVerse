@@ -1,0 +1,92 @@
+@startuml r4_erd_feed
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "SocialMedia" as SocialMedia {
+  * MediaId : UUID <<PK>>
+  --
+  * OwnerId : UUID <<FK>>
+  * Bytes : BIGINT
+  * CreatedAt : TIMESTAMPTZ
+  * Ready : BOOLEAN
+  * Deleted : BOOLEAN
+}
+entity "SocialPosts" as SocialPosts {
+  * PostId : BIGINT <<PK>>
+  --
+  * AuthorId : UUID <<FK>>
+  * Body : VARCHAR(2000)
+  * Audience : VARCHAR(20)
+  MediaId : UUID <<FK>>
+  ReplayMatchId : UUID <<FK>>
+  * CreatedAt : TIMESTAMPTZ
+  EditedAt : TIMESTAMPTZ
+}
+entity "SocialPostExclusions" as SocialPostExclusions {
+  * PostId : BIGINT <<PK, FK>>
+  * PlayerId : UUID <<PK, FK>>
+  --
+}
+entity "SocialPostLikes" as SocialPostLikes {
+  * PostId : BIGINT <<PK, FK>>
+  * PlayerId : UUID <<PK, FK>>
+  --
+}
+entity "SocialPostComments" as SocialPostComments {
+  * CommentId : BIGINT <<PK>>
+  --
+  * PostId : BIGINT <<FK>>
+  * AuthorId : UUID <<FK>>
+  * Body : VARCHAR(1000)
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "SocialConversations" as SocialConversations {
+  * ConversationId : UUID <<PK>>
+  --
+  * FirstPlayerId : UUID <<FK>>
+  * SecondPlayerId : UUID <<FK>>
+  * UpdatedAt : TIMESTAMPTZ
+}
+entity "SocialConversationMembers" as SocialConversationMembers {
+  * ConversationId : UUID <<PK, FK>>
+  * PlayerId : UUID <<PK, FK>>
+  --
+  * ReadThrough : BIGINT
+}
+entity "SocialMessages" as SocialMessages {
+  * MessageId : BIGINT <<PK>>
+  --
+  * ConversationId : UUID <<FK>>
+  * SenderId : UUID <<FK>>
+  * ClientMessageId : UUID
+  * Body : VARCHAR(1000)
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+}
+entity "GameMatches" as GameMatches {
+  * MatchId : UUID <<PK>>
+  --
+}
+PlayerProfiles ||--o{ SocialMedia : "OwnerId"
+PlayerProfiles ||--o{ SocialPosts : "AuthorId"
+SocialMedia |o--o{ SocialPosts : "MediaId"
+GameMatches |o--o{ SocialPosts : "ReplayMatchId"
+SocialPosts ||--o{ SocialPostExclusions : "PostId"
+PlayerProfiles ||--o{ SocialPostExclusions : "PlayerId"
+SocialPosts ||--o{ SocialPostLikes : "PostId"
+PlayerProfiles ||--o{ SocialPostLikes : "PlayerId"
+SocialPosts ||--o{ SocialPostComments : "PostId"
+PlayerProfiles ||--o{ SocialPostComments : "AuthorId"
+PlayerProfiles ||--o{ SocialConversations : "FirstPlayerId"
+PlayerProfiles ||--o{ SocialConversations : "SecondPlayerId"
+SocialConversations ||--o{ SocialConversationMembers : "ConversationId"
+PlayerProfiles ||--o{ SocialConversationMembers : "PlayerId"
+SocialConversations ||--o{ SocialMessages : "ConversationId"
+PlayerProfiles ||--o{ SocialMessages : "SenderId"
+SocialConversationMembers ||--o{ SocialMessages : "ConversationId, SenderId"
+@enduml

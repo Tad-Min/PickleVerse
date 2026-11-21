@@ -1,0 +1,142 @@
+@startuml r4_erd_training
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "Techniques" as Techniques {
+  * TechniqueId : SERIAL <<PK>>
+  --
+  * TechniqueName : VARCHAR(254)
+  * Description : VARCHAR(254)
+}
+entity "TechniqueReferences" as TechniqueReferences {
+  * ReferenceId : UUID <<PK>>
+  --
+  * TechniqueId : INT <<FK>>
+  * Version : BIGINT
+  * Data : JSONB
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "Lessons" as Lessons {
+  * LessonId : SERIAL <<PK>>
+  --
+  * LessonName : VARCHAR(254)
+  * Description : VARCHAR(254)
+  Code : VARCHAR(50)
+  * SortOrder : INT
+  * Type : VARCHAR(25)
+  * Target : INT
+  * Config : JSONB
+  * PublishStatus : VARCHAR(20)
+  DraftConfig : JSONB
+  * ContentVersion : BIGINT
+  * Reward : JSONB
+}
+entity "Drills" as Drills {
+  * DrillId : SERIAL <<PK>>
+  --
+  * TechniqueId : INT <<FK>>
+  * DrillName : VARCHAR(254)
+  * Description : VARCHAR(254)
+  Code : VARCHAR(50)
+}
+entity "LessonDrills" as LessonDrills {
+  * LessonId : INT <<PK, FK>>
+  * DrillId : INT <<PK, FK>>
+  --
+  * Target : INT
+}
+entity "ContentCatalogs" as ContentCatalogs {
+  * Version : VARCHAR(64) <<PK>>
+  --
+  * Data : JSONB
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "PlayerLessonDrills" as PlayerLessonDrills {
+  * PlayerId : UUID <<PK, FK>>
+  * LessonId : INT <<PK, FK>>
+  * DrillId : INT <<PK, FK>>
+  --
+  * Score : INT
+  * IsClaimedReward : BOOLEAN
+  * Attempts : INT
+  * Retries : INT
+  * Completions : INT
+  * Trials : INT
+  * Successes : INT
+  * Seconds : DOUBLE PRECISION
+  * BestAccuracy : DOUBLE PRECISION
+  * Errors : JSONB
+}
+entity "TrainingSessions" as TrainingSessions {
+  * AttemptId : UUID <<PK>>
+  --
+  Sequence : BIGINT
+  * PlayerId : UUID <<FK>>
+  * LessonId : INT <<FK>>
+  * DrillId : INT <<FK>>
+  * Data : JSONB
+  * CatalogVersion : VARCHAR(64)
+  * ProgressEpoch : BIGINT
+  * Fingerprint : VARCHAR(64)
+  * Completed : BOOLEAN
+  * IsCurrent : BOOLEAN
+  * CreatedAt : TIMESTAMPTZ
+  * UpdatedAt : TIMESTAMPTZ
+}
+entity "PlayerTechniqueMastery" as PlayerTechniqueMastery {
+  * PlayerId : UUID <<PK, FK>>
+  * TechniqueId : INT <<PK, FK>>
+  --
+  * TotalAttempts : INT
+  * TotalErrors : INT
+  MasteryScore : SMALLINT
+  * LastUpdatedAt : TIMESTAMPTZ
+}
+entity "PlayerTechniquesErrors" as PlayerTechniquesErrors {
+  * ErrorLogId : SERIAL <<PK>>
+  --
+  * PlayerId : UUID <<FK>>
+  * TechniqueId : INT <<FK>>
+  MatchId : UUID <<FK>>
+  LessonId : INT <<FK>>
+  * ErrorType : VARCHAR(50)
+  * CoachingTip : TEXT
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "GameCommands" as GameCommands {
+  * PlayerId : UUID <<PK, FK>>
+  * CommandId : VARCHAR(64) <<PK>>
+  --
+  * Kind : VARCHAR(40)
+  * Fingerprint : VARCHAR(64)
+  * Result : JSONB
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+}
+entity "GameMatches" as GameMatches {
+  * MatchId : UUID <<PK>>
+  --
+}
+Techniques ||--o{ TechniqueReferences : "TechniqueId"
+Techniques ||--o{ Drills : "TechniqueId"
+Lessons ||--o{ LessonDrills : "LessonId"
+Drills ||--o{ LessonDrills : "DrillId"
+PlayerProfiles ||--o{ PlayerLessonDrills : "PlayerId"
+LessonDrills ||--o{ PlayerLessonDrills : "LessonId, DrillId"
+PlayerProfiles ||--o{ TrainingSessions : "PlayerId"
+Lessons ||--o{ TrainingSessions : "LessonId"
+Drills ||--o{ TrainingSessions : "DrillId"
+LessonDrills ||--o{ TrainingSessions : "LessonId, DrillId"
+PlayerProfiles ||--o{ PlayerTechniqueMastery : "PlayerId"
+Techniques ||--o{ PlayerTechniqueMastery : "TechniqueId"
+PlayerProfiles ||--o{ PlayerTechniquesErrors : "PlayerId"
+Techniques ||--o{ PlayerTechniquesErrors : "TechniqueId"
+GameMatches |o--o{ PlayerTechniquesErrors : "MatchId"
+Lessons |o--o{ PlayerTechniquesErrors : "LessonId"
+PlayerProfiles ||--o{ GameCommands : "PlayerId"
+@enduml

@@ -21,11 +21,12 @@ public static class MatchScoreStore
         for(int i=0;i<scores.Count;i++)
         {
             var game=i+1;var a=scores[i].own;var b=scores[i].opponent;var complete=scores[i].completed;
+            var startSide = scores[i].teamAStartSide;
             await db.Database.ExecuteSqlInterpolatedAsync($"""
-                INSERT INTO matchscore(matchid,gamenumber,teamascore,teambscore,completed)
-                VALUES({match},{game},{a},{b},{complete})
+                INSERT INTO matchscore(matchid,gamenumber,teamascore,teambscore,completed,teamastartside)
+                VALUES({match},{game},{a},{b},{complete},{startSide})
                 ON CONFLICT(matchid,gamenumber) DO UPDATE SET teamascore=EXCLUDED.teamascore,
-                    teambscore=EXCLUDED.teambscore,completed=EXCLUDED.completed
+                    teambscore=EXCLUDED.teambscore,completed=EXCLUDED.completed,teamastartside=EXCLUDED.teamastartside
                 """);
         }
         await db.Matchscores.Where(s=>s.Matchid==match && s.Gamenumber>scores.Count).ExecuteDeleteAsync();
@@ -38,9 +39,9 @@ public static class MatchScoreStore
         var ids=matches.Select(m=>Guid.Parse(m.id)).Distinct().ToArray();
         var rows=await db.Matchscores.AsNoTracking().Where(s=>ids.Contains(s.Matchid))
             .Join(db.Gamematchplayers.Where(p=>p.Playerid==player),s=>s.Matchid,p=>p.Matchid,
-                (s,p)=>new {match=s.Matchid,game=s.Gamenumber,team=p.Team,a=s.Teamascore,b=s.Teambscore,completed=s.Completed})
+                (s,p)=>new {match=s.Matchid,game=s.Gamenumber,team=p.Team,a=s.Teamascore,b=s.Teambscore,completed=s.Completed,side=s.Teamastartside})
             .OrderBy(r=>r.match).ThenBy(r=>r.game).ToListAsync();
-        var grouped=rows.GroupBy(r=>r.match).ToDictionary(g=>g.Key,g=>g.Select(r=>new GameScore(r.team==0?r.a:r.b,r.team==0?r.b:r.a,r.completed)).ToList());
+        var grouped=rows.GroupBy(r=>r.match).ToDictionary(g=>g.Key,g=>g.Select(r=>new GameScore(r.team==0?r.a:r.b,r.team==0?r.b:r.a,r.completed,r.side)).ToList());
         foreach(var match in matches)match.scores=grouped.GetValueOrDefault(Guid.Parse(match.id))??[];
     }
 }

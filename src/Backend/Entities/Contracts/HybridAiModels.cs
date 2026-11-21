@@ -33,9 +33,17 @@ namespace PickleVerse.Progression
     {
         public string shotId = "", kind = "", technique = "", source = "", outcome = "unknown";
         public int sequence, rally;
+        public int? gameNumber;
         public double time;
         // Signed seconds: negative = early, positive = late. Null means unobserved.
         public float? timingError;
+        // Recorded before the game assists contact timing or chooses a target.
+        public double? rawPressedAt, rawReleasedAt;
+        public float? rawTimingError;
+        public int? rawInputMask;
+        public bool? rawCrossCourt, rawPower;
+        public string rawTechnique, referenceId;
+        public float[] rawPosition;
         public float[] contact, leftFoot, rightFoot, intendedTarget, landing;
         public bool? kitchen, volley, momentum, recovered, targetHit;
         public int? bounces;
@@ -96,6 +104,12 @@ namespace PickleVerse.Progression
         public int opportunities, errors, severity;
     }
     [Serializable]
+    public sealed class GameTechniqueMetrics
+    {
+        public int gameNumber;
+        public List<TechniqueMetric> metrics = new();
+    }
+    [Serializable]
     public sealed class DrillRecommendation
     {
         public string id = "", title = "", reason = "";
@@ -110,9 +124,10 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class CoachingAnalysis
     {
-        public string sessionId = "", ruleVersion = "rules-v1";
+        public string sessionId = "", ruleVersion = "rules-v1", summary = "";
         public List<CoachingFinding> findings = new List<CoachingFinding>();
         public List<TechniqueMetric> metrics = new List<TechniqueMetric>();
+        public List<GameTechniqueMetrics> gameMetrics = new();
         public List<DrillRecommendation> recommendations = new List<DrillRecommendation>();
         public TierEstimate tier = new TierEstimate();
     }

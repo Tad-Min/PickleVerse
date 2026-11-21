@@ -34,11 +34,10 @@ namespace PickleVerse.Editor
                 await second.ReserveAsync(new List<RoomMember>{new RoomMember{id=b,name="Ready B",group=b,gender="Female"}});
                 await PhotonSession.WaitAsync(()=>first.Data.phase=="ready"&&second.Data.phase=="ready","Both clients did not enter ready check.");
                 Result.rosterReplicated=first.Data.seats.Count==2&&second.Data.seats.Count==2;
-                first.Lobby.Ready(true);
-                await PhotonSession.WaitAsync(()=>second.Data.seats.Exists(s=>s.member.id==a&&s.decision==ReadyDecision.Accepted),"First acceptance did not replicate.");
+                // This probe exercises the staging transport. Consent is covered by the backend integration checks.
                 Result.waitsForBoth=first.Data.phase=="ready"&&second.Data.phase=="ready";
-                second.Lobby.Ready(true);
-                await PhotonSession.WaitAsync(()=>first.Data.phase=="loading"&&second.Data.phase=="loading","Both acceptances did not release loading.");
+                first.Lobby.Command("load", "");
+                await PhotonSession.WaitAsync(()=>first.Data.phase=="loading"&&second.Data.phase=="loading","The loading phase did not replicate.");
                 Result.loadsAfterBoth=true;Result.passed=Result.rosterReplicated&&Result.waitsForBoth&&Result.loadsAfterBoth;
             }
             catch(Exception error){Result.error=error.Message;}

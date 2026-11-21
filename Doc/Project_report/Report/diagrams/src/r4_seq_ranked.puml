@@ -1,0 +1,77 @@
+@startuml r4_seq_ranked
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":MultiplayerApp" as App
+control ":GameMatchesController" as C
+control ":OnlineGameService" as S
+entity ":RedisGameState" as R
+entity ":DedicatedLeaseRepository" as L
+Player -> App : FindAsync()
+activate App
+App -> C : Search(request)
+activate C
+C -> S : BeginRankedSearch(player, request)
+activate S
+S -> R : Begin(entry)
+S --> C : RankedSearchTicket (SEARCHING)
+deactivate S
+deactivate C
+loop ticket is SEARCHING
+  App -> C : Poll(request)
+  activate C
+  C -> S : PollRankedSearch(player, request)
+  activate S
+  S -> R : Candidates(partition)
+  alt two compatible sides inside the Elo window
+    S -> R : Compare(before, after)
+    S --> C : MATCHED (roster)
+  else singles and 180 s passed
+    S --> C : FALLBACK
+  else doubles, 180 s passed and client protocol >= 20
+    S -> S : AssignRankedBot(player, request)
+    S --> C : MATCHED (roster with ranked bots)
+  else else
+    S --> C : SEARCHING
+  end
+  deactivate S
+  C --> App : ticket
+  deactivate C
+end
+opt singles fallback
+  App -> C : Bot(request)
+  activate C
+  C -> S : AssignRankedBot(player, request)
+  C --> App : BOT (virtual ranked account)
+  deactivate C
+end
+App -> C : OfferOnline(request)
+activate C
+C -> S : OfferOnline(player, request)
+activate S
+S -> L : Reserve(job, limit, seconds)
+alt no free game-server container
+  S --> C : WAITING_CAPACITY
+else else
+  S --> C : ticket with a 10 s ready deadline
+end
+deactivate S
+C --> App : OnlineMatchTicket
+deactivate C
+Player -> App : AcceptMatchAsync()
+alt all required humans accepted
+  App -> C : StartOnline(request)
+  activate C
+  C -> S : StartOnline(player, request)
+  S -> L : Activate(match, seconds)
+  C --> App : authorityMode = dedicated
+  deactivate C
+else else
+  App --> Player : offer closed
+end
+deactivate App
+@enduml

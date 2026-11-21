@@ -21,7 +21,7 @@ namespace PickleVerse.LocalMatch
                 scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1280, 720);
                 var text = new GameObject("Tip", typeof(RectTransform), typeof(TextMeshProUGUI)); text.transform.SetParent(canvas.transform, false);
                 var r = (RectTransform)text.transform; r.anchorMin = new Vector2(.22f, .15f); r.anchorMax = new Vector2(.78f, .24f); r.offsetMin = r.offsetMax = Vector2.zero;
-                view.label = text.GetComponent<TMP_Text>(); view.label.font = ScreenUiTheme.Current?.font; view.label.fontSize = 19;
+                view.label = text.GetComponent<TMP_Text>(); view.label.font = ScreenUiTheme.Current?.font ?? TMP_Settings.defaultFontAsset; view.label.fontSize = 19;
                 view.label.color = ScreenUiTheme.Mint; view.label.alignment = TextAlignmentOptions.Center; view.label.raycastTarget = false; view.label.richText = false;
             }
             view.label.text = string.IsNullOrEmpty(tip) ? "" : "HLV • " + tip; view.until = Time.unscaledTime + 3;

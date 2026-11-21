@@ -7,10 +7,10 @@ namespace PickleVerse.Multiplayer.Services
     /// <summary>Room use cases, independent of Canvas, buttons and Unity scene hierarchy.</summary>
     public sealed class RoomService : IRoomService
     {
-        readonly IMultiplayerBackend backend;
+        readonly IRoomBackend backend;
         readonly IPlayerIdentityService identity;
         public IMultiplayerState State => backend;
-        public RoomService(IMultiplayerBackend backend, IPlayerIdentityService identity)
+        public RoomService(IRoomBackend backend, IPlayerIdentityService identity)
         {
             this.backend = backend;
             this.identity = identity;

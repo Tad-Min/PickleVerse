@@ -1,0 +1,34 @@
+@startuml r3_cerd_coaching
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+skinparam ranksep 18
+skinparam nodesep 22
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+}
+entity "TELEMETRY_SESSION" as TELEMETRY_SESSION {
+  * BatchId
+  --
+  SessionType
+}
+entity "COACHING_RESULT" as COACHING_RESULT {
+  --
+  Summary
+  Recommendations
+}
+entity "EXPERT_REVIEW" as EXPERT_REVIEW {
+  * ReviewId
+  --
+  Label
+  Version
+}
+entity "ADMIN" as ADMIN {
+  * AccountId
+}
+PLAYER_PROFILE ||--o{ TELEMETRY_SESSION : "uploads"
+TELEMETRY_SESSION ||--|| COACHING_RESULT : "analysed into"
+TELEMETRY_SESSION ||--o{ EXPERT_REVIEW : "reviews"
+EXPERT_REVIEW }o--|| ADMIN : "reviewed by"
+@enduml

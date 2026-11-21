@@ -68,7 +68,7 @@ namespace PickleVerse.EditorTools
         {
             var m=Component<ModeSelectionMenu>(scene);if(m.difficultyButtons.Length==4)return;
             var button=Object.Instantiate(m.difficultyButtons[2],m.difficultyButtons[2].transform.parent);button.name="Difficulty3";Clear(button);UnityEventTools.AddIntPersistentListener(button.onClick,m.SetDifficulty,3);
-            button.transform.Find("Name").GetComponent<TMP_Text>().text="BhTree";
+            button.transform.Find("Name").GetComponent<TMP_Text>().text="Tự động";
             m.difficultyButtons=m.difficultyButtons.Concat(new[]{button}).ToArray();m.difficultySelected=m.difficultySelected.Concat(new[]{button.transform.Find("Selected").GetComponent<TMP_Text>()}).ToArray();
             foreach(var b in m.difficultyButtons){var layout=b.GetComponent<LayoutElement>();if(layout){layout.minWidth=0;layout.preferredWidth=-1;layout.flexibleWidth=1;}}
             EditorUtility.SetDirty(m);

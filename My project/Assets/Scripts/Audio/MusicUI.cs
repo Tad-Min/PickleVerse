@@ -283,7 +283,7 @@ namespace PickleVerse.Audio
         void ApplySafeArea()
         {
             var resolution = new Vector2(Screen.width, Screen.height);
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             if (resolution == lastResolution && area == lastSafeArea || resolution.x <= 0 || resolution.y <= 0)
                 return;
             lastResolution = resolution;

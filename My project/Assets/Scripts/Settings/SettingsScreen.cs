@@ -30,6 +30,9 @@ namespace PickleVerse.Settings
         Action confirmed;
         Rect lastSafeArea;
         Vector2 lastResolution;
+        UnityEngine.UI.Button quitButton;
+        UnityEngine.UI.Button[] displayChoices = Array.Empty<UnityEngine.UI.Button>(), sizeChoices = Array.Empty<UnityEngine.UI.Button>();
+        Vector2Int[] windowSizes = Array.Empty<Vector2Int>();
 
         void Awake()
         {
@@ -60,6 +63,7 @@ namespace PickleVerse.Settings
                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(events, gameObject.scene);
                 events.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
             }
+            AddDisplayTab();
             for (int i = 0; i < sliders.Length; i++)
             {
                 int index = i;
@@ -119,6 +123,7 @@ namespace PickleVerse.Settings
             leaveButton.gameObject.SetActive(game);
             signOutButton.gameObject.SetActive(SettingsOverlay.Host?.CanSignOut ?? false);
             contextLabel.text = game ? "TRẬN ĐẤU MÁY ĐANG TẠM DỪNG" : "THIẾT LẬP TRẢI NGHIỆM CỦA BẠN";
+            AddQuitButton();
             var hint = pages[0].transform.Find("PauseHint").GetComponent<TMP_Text>();
             if (!game)
                 hint.text = "Tùy chỉnh trước khi vào sân. Nút đăng xuất áp dụng cho phiên hiện tại.";
@@ -167,7 +172,8 @@ namespace PickleVerse.Settings
         {
             ApplySafeArea();
             var keyboard = UnityEngine.InputSystem.Keyboard.current;
-            if (keyboard == null)
+            // The quit confirmation above Settings owns Esc while it is open.
+            if (keyboard == null || GameExit.PromptOpen)
                 return;
             if (Capturing)
             {
@@ -229,6 +235,26 @@ namespace PickleVerse.Settings
             Draft.msaa = aa;
             Changed(true);
         }
+        public void SetDisplayMode(int mode)
+        {
+            Draft.displayMode = mode;
+            Changed(true);
+        }
+        public void SetWindowSize(int index)
+        {
+            if (index < 0 || index >= windowSizes.Length)
+                return;
+            Draft.windowWidth = windowSizes[index].x;
+            Draft.windowHeight = windowSizes[index].y;
+            if (Draft.Display != DisplayMode.Windowed)
+                Draft.displayMode = (int)DisplayMode.Windowed;
+            Changed(true);
+        }
+        public void QuitGame()
+        {
+            bool game = SettingsOverlay.Host?.IsGameplay ?? false;
+            Confirm("Thoát PickleVerse?" + (game ? " Bạn sẽ rời trận đang chơi." : "") + (Dirty ? " Các thay đổi chưa áp dụng sẽ không được lưu." : ""), GameExit.Quit);
+        }
         public void SetSlider(int index, float value)
         {
             if (refreshing)
@@ -247,7 +273,7 @@ namespace PickleVerse.Settings
 
         public void BeginBinding(int action)
         {
-            if (action == 14 || operation)
+            if (action == (int)GameAction.Settings || operation)
                 return;
             bindingAction = action;
             captureFrame = Time.frameCount;
@@ -411,6 +437,15 @@ namespace PickleVerse.Settings
                 Tint(fpsChoices[i], new[] { 30, 60, 120 }[i] == Draft.fps);
             for (int i = 0; i < aaChoices.Length; i++)
                 Tint(aaChoices[i], new[] { 1, 2, 4 }[i] == Draft.msaa);
+            for (int i = 0; i < displayChoices.Length; i++)
+                Tint(displayChoices[i], i == Draft.displayMode);
+            if (sizeChoices.Length > 0)
+            {
+                var monitor = DesktopWindow.MonitorSize;
+                var size = WindowSizes.Resolve(Draft.windowWidth, Draft.windowHeight, monitor.x, monitor.y);
+                for (int i = 0; i < sizeChoices.Length; i++)
+                    Tint(sizeChoices[i], Draft.Display == DisplayMode.Windowed && windowSizes[i] == size);
+            }
             for (int i = 0; i < bindingLabels.Length; i++)
                 bindingLabels[i].text = GameSettings.KeyName((Key)Draft.keys[i]);
             comboHint.text = "Drop: " + GameSettings.KeyName(Draft.KeyFor(GameAction.Drive)) + " + " + GameSettings.KeyName(Draft.KeyFor(GameAction.Dink)) + "   |   Smash: " + GameSettings.KeyName(Draft.KeyFor(GameAction.Drive)) + " + " + GameSettings.KeyName(Draft.KeyFor(GameAction.Volley));
@@ -418,6 +453,110 @@ namespace PickleVerse.Settings
                 handle.Refresh();
             applyButton.interactable = Dirty;
             refreshing = false;
+        }
+        // Desktop-only "Khung hình" tab built from the graphics page so it inherits the scene's styling.
+        void AddDisplayTab()
+        {
+            if (!(DesktopWindow.Supported || Application.isEditor) || tabs.Length != 4 || pages.Length != 4)
+                return;
+            var tab = Instantiate(tabs[2], tabs[2].transform.parent);
+            tab.name = "Tab4";
+            tab.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+            var tabLabel = tab.transform.Find("Label")?.GetComponent<TMP_Text>();
+            if (tabLabel)
+                tabLabel.text = "Khung hình";
+            var tabIcon = tab.GetComponentInChildren<UiLineIcon>(true);
+            if (tabIcon)
+                tabIcon.SetGlyph(ArenaGlyph.Display);
+
+            var page = Instantiate(pages[2], pages[2].transform.parent);
+            page.name = "Page4";
+            page.SetActive(false);
+            var heading = page.transform.Find("Heading");
+            var label = page.transform.Find("FpsLabel");
+            var choice = page.transform.Find("Fps0")?.GetComponent<UnityEngine.UI.Button>();
+            var hintSource = pages[0].transform.Find("Intro");
+            if (!heading || !label || !choice || !hintSource)
+            {
+                Destroy(page);
+                Destroy(tab.gameObject);
+                return;
+            }
+            foreach (Transform child in page.transform)
+                if (child != heading && child != label && child != choice.transform)
+                    Destroy(child.gameObject);
+            tabs = tabs.Append(tab).ToArray();
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                float top = .97f - i * .1925f;
+                Place((RectTransform)tabs[i].transform, 0, top - .17f, 1, top);
+            }
+            heading.GetComponent<TMP_Text>().text = "Khung hình và cửa sổ";
+            label.name = "DisplayModeLabel";
+            label.GetComponent<TMP_Text>().text = "Chế độ hiển thị";
+            Place((RectTransform)label, 0, .74f, 1, .82f);
+            string[] modes = { "Cửa sổ", "Toàn màn hình", "Không viền" };
+            displayChoices = new UnityEngine.UI.Button[modes.Length];
+            for (int i = 0; i < modes.Length; i++)
+            {
+                int mode = i;
+                displayChoices[i] = ChoiceButton(choice, page.transform, "DisplayMode" + i, modes[i], i, .6f, .72f);
+                displayChoices[i].onClick.AddListener(() => SetDisplayMode(mode));
+            }
+            var sizeLabel = Instantiate(label, page.transform);
+            sizeLabel.name = "WindowSizeLabel";
+            sizeLabel.GetComponent<TMP_Text>().text = "Kích thước cửa sổ";
+            Place((RectTransform)sizeLabel, 0, .44f, 1, .52f);
+            var monitor = DesktopWindow.MonitorSize;
+            windowSizes = WindowSizes.Choices(monitor.x, monitor.y);
+            sizeChoices = new UnityEngine.UI.Button[windowSizes.Length];
+            for (int i = 0; i < windowSizes.Length; i++)
+            {
+                int index = i;
+                sizeChoices[i] = ChoiceButton(choice, page.transform, "WindowSize" + i, WindowSizes.Label(windowSizes[i]), i, .3f, .42f);
+                sizeChoices[i].onClick.AddListener(() => SetWindowSize(index));
+            }
+            Destroy(choice.gameObject);
+            var hint = Instantiate(hintSource, page.transform).GetComponent<TMP_Text>();
+            hint.name = "WindowHint";
+            hint.text = "Chế độ cửa sổ dùng khung PickleVerse: kéo thanh tiêu đề để di chuyển, nút \u2013 để thu nhỏ, nút \u00D7 để thoát game. Chọn kích thước sẽ chuyển sang chế độ cửa sổ."
+                + (DesktopWindow.Supported ? "" : " Trong Unity Editor, lựa chọn chỉ được lưu, cửa sổ không đổi.");
+            hint.fontSize *= .82f;
+            hint.color = ScreenUiTheme.Muted;
+            Place(hint.rectTransform, 0, .02f, 1, .26f);
+            pages = pages.Append(page).ToArray();
+        }
+        static UnityEngine.UI.Button ChoiceButton(UnityEngine.UI.Button prototype, Transform parent, string name, string text, int column, float bottom, float top)
+        {
+            var button = Instantiate(prototype, parent);
+            button.name = name;
+            button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label)
+                label.text = text;
+            Place((RectTransform)button.transform, column * .34f, bottom, column * .34f + .32f, top);
+            return button;
+        }
+        void AddQuitButton()
+        {
+            if (!GameExit.Supported || !signOutButton)
+                return;
+            quitButton = Instantiate(signOutButton, signOutButton.transform.parent);
+            quitButton.name = "QuitGame";
+            quitButton.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+            quitButton.onClick.AddListener(QuitGame);
+            quitButton.gameObject.SetActive(true);
+            var label = quitButton.GetComponentInChildren<TMP_Text>(true);
+            if (label)
+                label.text = "Thoát game";
+            bool paired = signOutButton.gameObject.activeSelf || leaveButton.gameObject.activeSelf;
+            Place((RectTransform)quitButton.transform, paired ? .67f : 0, .1f, paired ? 1 : .64f, .25f);
+        }
+        static void Place(RectTransform rect, float left, float bottom, float right, float top)
+        {
+            rect.anchorMin = new Vector2(left, bottom);
+            rect.anchorMax = new Vector2(right, top);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
         }
         static void Tint(UnityEngine.UI.Button button, bool selected)
         {
@@ -427,7 +566,7 @@ namespace PickleVerse.Settings
         }
         void ApplySafeArea()
         {
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             var size = new Vector2(Screen.width, Screen.height);
             if (area == lastSafeArea && size == lastResolution)
                 return;

@@ -1,0 +1,62 @@
+@startuml r4_cls_progress
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class ProgressionRuntime {
+    + Snapshot : OnlineGameSnapshot
+    + ReloadAsync() : Task
+    + CommandAsync(path, payload) : Task<OnlineGameSnapshot>
+    + ClaimAsync(key) : Task
+  }
+  class PlayerProgressionMenu <<MonoBehaviour>>
+  class OfflineSocialMenu <<MonoBehaviour>>
+  class ShopScreen <<MonoBehaviour>>
+  class ReplayView <<MonoBehaviour>>
+}
+package "Web API" {
+  class GameController <<ApiController>> {
+    + State() : GameSnapshot
+    + Catalog() : GameCatalog
+    + Claim(ClaimRequest) : GameSnapshot
+    + Purchase(PurchaseRequest) : GameSnapshot
+    + Equip(EquipRequest) : GameSnapshot
+    + Onboarding(OnboardingRequest) : GameSnapshot
+  }
+  class OnlineSocialController <<ApiController>> {
+    + Read(view) : OnlineSocialPage
+    + Act(SocialAction) : void
+  }
+  class OnlineReplaysController <<ApiController>>
+  interface IOnlineGameService {
+    + Read(player) : Task<GameSnapshot>
+    + Claim(player, request) : Task<GameSnapshot>
+    + Purchase(player, request) : Task<GameSnapshot>
+    + Equip(player, request) : Task<GameSnapshot>
+    + Onboarding(player, request) : Task<GameSnapshot>
+  }
+  interface IOnlineSocialService {
+    + Read(player, view, query) : Task<OnlineSocialPage>
+    + Act(player, action) : Task
+  }
+  interface IMatchReplayService
+  class OnlineGameService
+  class OnlineSocialService
+  interface IUnitOfWork
+  class GameRepository
+  class PickleVerseContext <<DbContext>>
+}
+PlayerProgressionMenu --> ProgressionRuntime
+ShopScreen --> ProgressionRuntime
+OfflineSocialMenu ..> OnlineSocialController : HTTP
+ReplayView ..> OnlineReplaysController : HTTP
+ProgressionRuntime ..> GameController : HTTP JSON
+GameController --> IOnlineGameService
+OnlineSocialController --> IOnlineSocialService
+OnlineReplaysController --> IMatchReplayService
+OnlineGameService ..|> IOnlineGameService
+OnlineSocialService ..|> IOnlineSocialService
+OnlineGameService --> IUnitOfWork
+OnlineSocialService --> IUnitOfWork
+IUnitOfWork --> GameRepository
+GameRepository --> PickleVerseContext
+@enduml

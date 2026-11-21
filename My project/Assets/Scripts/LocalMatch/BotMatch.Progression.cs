@@ -18,6 +18,7 @@ namespace PickleVerse.LocalMatch
         MatchResult resultToSave;
         bool startingProgression;
         CoachingSession coachingSession;
+        int gameStartSide = -1;
         public bool BotMissedContact(MatchActor actor) => actor.playerId == 1 &&
             (progressionResult?.kind == MatchKind.RankedBot || botDifficulty == 3) && rankedBotContact.Missed(Rules.Stroke);
         bool TryRankedBotContact(MatchActor actor)
@@ -37,6 +38,7 @@ namespace PickleVerse.LocalMatch
         {
             botAccuracyRandom = new System.Random(731);
             progressStrokes = new StrokeProgressTracker();
+            gameStartSide = human.end;
             if (!Application.isPlaying)
                 return;
             var runtime = ProgressionRuntime.Instance;
@@ -92,7 +94,7 @@ namespace PickleVerse.LocalMatch
         {
             if (progressionResult == null || progressionResult.scores.Count >= Rules.GameNumber)
                 return;
-            progressionResult.scores.Add(new GameScore(Rules.Points[0], Rules.Points[1], true));
+            progressionResult.scores.Add(new GameScore(Rules.Points[0], Rules.Points[1], true, gameStartSide));
         }
         void CompleteProgressionMatch(bool forfeit)
         {
@@ -111,13 +113,19 @@ namespace PickleVerse.LocalMatch
             progressionResult.validReturns = progressStrokes.Returns(0);
             progressionResult.validServes = progressStrokes.Serves(0);
             if (forfeit && !Rules.GameFinished)
-                progressionResult.scores.Add(new GameScore(Rules.Points[0], Rules.Points[1], false));
+                progressionResult.scores.Add(new GameScore(Rules.Points[0], Rules.Points[1], false, gameStartSide));
             resultToSave = JsonConvert.DeserializeObject<MatchResult>(JsonConvert.SerializeObject(progressionResult));
             finishRequestId = Guid.NewGuid().ToString("N");
             savingProgression = SaveProgressionAsync();
             RankedBotLaunch.Clear();
         }
-        int quickCoachingStart;
+        string pendingQuickTip;
+        void LateUpdate()
+        {
+            if (string.IsNullOrEmpty(pendingQuickTip)) return;
+            CoachingQuickToast.Show(gameObject, pendingQuickTip);
+            pendingQuickTip = null;
+        }
         public string CoachingMatchId => progressionResult?.id;
         async Task SaveProgressionAsync()
         {

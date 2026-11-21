@@ -1,0 +1,19 @@
+@startuml r3_uc_p7_admin_content
+!include _style.iuml
+left to right direction
+actor Administrator as Admin
+rectangle "P7 Admin: Content" {
+  usecase "UC-56 Edit Lesson Draft" as UC56
+  usecase "UC-57 Publish Lesson" as UC57
+  usecase "UC-58 Unpublish Lesson" as UC58
+  usecase "UC-59 Manage Technique References" as UC59
+  usecase "UC-60 Add Cosmetic Item" as UC60
+  usecase "UC-61 Add Mission" as UC61
+}
+Admin -- UC56
+Admin -- UC57
+Admin -- UC58
+Admin -- UC59
+Admin -- UC60
+Admin -- UC61
+@enduml

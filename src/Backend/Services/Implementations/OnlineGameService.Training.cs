@@ -8,13 +8,16 @@ public sealed partial class OnlineGameService
     {
         if (s.Player.pendingMatch != null)
             throw Conflict("Bạn cần hoàn tất hoặc rời trận hiện tại trước khi luyện tập.");
-        var lesson = s.catalog.lessons.SingleOrDefault(d => d.id == request.LessonCode) ?? throw Bad("Bài học không tồn tại.");
         var training = TrainingEngine.Ensure(s.Player);
+        if (training.active is { completed: false } active && active.lessonId == request.LessonCode && !request.Retry) return;
+        var lesson = s.catalog.lessons.SingleOrDefault(d => d.id == request.LessonCode) ?? throw Bad("Bài học không tồn tại.");
         if (!TrainingEngine.Unlocked(training, lesson))
             throw Bad("Hãy hoàn thành các bài học điều kiện trước.");
-        if (training.active is { completed: false } active && active.lessonId == lesson.id && !request.Retry)
-            return;
-        var attempt = TrainingEngine.Start(s.Player, lesson.id, request.Retry);
+        if (s.Player.level < lesson.requiredLevel) throw Bad("Bạn chưa đủ cấp độ để luyện bài này.");
+        var attempt = TrainingEngine.Start(s.Player, lesson.id, request.Retry, s.catalog.lessons);
+        attempt.catalogVersion = s.catalog.version;
+        attempt.definition = lesson;
+        attempt.progressEpoch = s.profile.LearningEpoch;
         s.trainingChanged=true;
         var rows = await _unitOfWork.Game.StartTraining(id, attempt, Now);
         if (rows != 1)
@@ -30,10 +33,13 @@ public sealed partial class OnlineGameService
         if (row.Completed)
             throw Conflict("Lượt tập đã hoàn tất. Hãy tải lại tiến trình.");
         var original = GameJson.Read<TrainingAttempt>(row.Data);
+        if (row.ProgressEpoch != s.profile.LearningEpoch) throw Conflict("Tiến trình đã được đặt lại. Hãy tải hồ sơ mới.");
         var training = TrainingEngine.Ensure(s.Player);
         if (training.active?.id != original.id)
             throw Conflict("Lượt tập hiện tại đã thay đổi trên thiết bị khác.");
-        var lesson = s.catalog.lessons.Single(d => d.id == original.lessonId);
+        var snapshot = string.IsNullOrEmpty(row.CatalogVersion) ? s.catalog : GameJson.Read<GameCatalog>(
+            await _unitOfWork.Game.CatalogSnapshot(row.CatalogVersion) ?? throw Bad("Không tìm thấy phiên bản bài học."));
+        var lesson = snapshot.lessons.Single(d => d.id == original.lessonId);
         if (input.lessonId != original.lessonId || input.playerId != s.Player.id || input.trials < original.trials || input.trials > lesson.trials || input.successes < original.successes || input.successes > input.trials || input.contacts < original.contacts || input.contacts > lesson.trials || input.seconds < original.seconds || !double.IsFinite(input.seconds) || input.seconds > Math.Max(0, (Now - row.CreatedAt).TotalSeconds) + 5 || !double.IsFinite(input.timingTotal) || input.timingTotal < original.timingTotal || input.timingTotal > lesson.trials * 30 || input.errors == null || input.errors.Any(e => !Enum.IsDefined(e.error) || e.count < 0 || e.count > lesson.trials * 8) || input.errors.Select(e => e.error).Distinct().Count() != input.errors.Count)
             throw Bad("Số liệu lượt tập không hợp lệ hoặc đã cũ.");
         if (complete && input.trials != lesson.trials)
@@ -49,12 +55,17 @@ public sealed partial class OnlineGameService
         if (complete)
         {
             s.trainingChanged=true;
-            if (!TrainingEngine.Complete(s.Player, original))
+            if (!TrainingEngine.Complete(s.Player, original, snapshot.lessons))
                 throw Conflict("Không thể hoàn tất lượt tập.");
+            if (original.passed && !original.review && !await _unitOfWork.Game.GrantOnce(id, "lesson:" + lesson.id,
+                GameJson.Write(new { coins = original.rewardTokenpad, lesson = lesson.id }), Now))
+            {
+                s.Player.coins -= original.rewardTokenpad;
+                original.rewardTokenpad = 0;
+            }
             await _unitOfWork.Game.RecordLesson(id, lesson.id, original.stars, original.passed);
-            var aggregate = training.lessons.Single(x => x.id == lesson.id);
-            await _unitOfWork.Game.RecordMastery(id, lesson.skill.ToString(), aggregate.trials, aggregate.trials - aggregate.successes, Now);
+            await _unitOfWork.Game.IncrementMastery(id, lesson.skill.ToString(), original.trials, original.trials - original.successes, Now);
         }
-        await _unitOfWork.Game.UpdateTraining(attemptId, GameJson.Write(original), complete, Now);
+        await _unitOfWork.Game.UpdateTraining(attemptId, GameJson.Write(original), complete, Now, complete ? TrainingFingerprint(original) : null);
     });
 }

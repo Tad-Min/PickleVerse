@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PickleVerse.Progression
 {
@@ -32,9 +33,23 @@ namespace PickleVerse.Progression
     {
         public string shotId = "", kind = "", technique = "", source = "", outcome = "unknown";
         public int sequence, rally;
+        public int? gameNumber;
         public double time;
         // Signed seconds: negative = early, positive = late. Null means unobserved.
         public float? timingError;
+        // Recorded before the game assists contact timing or chooses a target.
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double? rawPressedAt, rawReleasedAt;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public float? rawTimingError;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? rawInputMask;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? rawCrossCourt, rawPower;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string rawTechnique, referenceId;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public float[] rawPosition;
         public float[] contact, leftFoot, rightFoot, intendedTarget, landing;
         public bool? kitchen, volley, momentum, recovered, targetHit;
         public int? bounces;
@@ -95,6 +110,12 @@ namespace PickleVerse.Progression
         public int opportunities, errors, severity;
     }
     [Serializable]
+    public sealed class GameTechniqueMetrics
+    {
+        public int gameNumber;
+        public List<TechniqueMetric> metrics = new List<TechniqueMetric>();
+    }
+    [Serializable]
     public sealed class DrillRecommendation
     {
         public string id = "", title = "", reason = "";
@@ -109,9 +130,10 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class CoachingAnalysis
     {
-        public string sessionId = "", ruleVersion = "rules-v1";
+        public string sessionId = "", ruleVersion = "rules-v1", summary = "";
         public List<CoachingFinding> findings = new List<CoachingFinding>();
         public List<TechniqueMetric> metrics = new List<TechniqueMetric>();
+        public List<GameTechniqueMetrics> gameMetrics = new List<GameTechniqueMetrics>();
         public List<DrillRecommendation> recommendations = new List<DrillRecommendation>();
         public TierEstimate tier = new TierEstimate();
     }

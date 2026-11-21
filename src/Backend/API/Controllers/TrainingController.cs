@@ -13,9 +13,9 @@ namespace API.Controllers
     public class TrainingController : ControllerBase
     {
         private readonly ITrainingService _trainingService;
-        private readonly Services.Interfaces.IOnlineGameService _game;
+        private readonly IGameTrainingService _game;
 
-        public TrainingController(ITrainingService trainingService, Services.Interfaces.IOnlineGameService game)
+        public TrainingController(ITrainingService trainingService, IGameTrainingService game)
         {
             _trainingService = trainingService;
             _game = game;

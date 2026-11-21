@@ -26,7 +26,6 @@ namespace PickleVerse.Multiplayer
         public PlayMode mode;
         public CourtVenue venue;
         public string matchId = "", matchSession = "", phase = "idle", notice = "";
-        public double deadline;
         public int expectedPlayers;
         public MatchRoster assignment;
         public int authority, revision;
@@ -234,14 +233,14 @@ namespace PickleVerse.Multiplayer
             if (Rejected != null)
                 throw new InvalidOperationException(Rejected);
         }
-        public static async Task WaitAsync(Func<bool> condition, string message, double seconds = 15)
+        public static async Task WaitAsync(Func<bool> condition, string message, double seconds = 15, System.Threading.CancellationToken cancellation = default)
         {
             double until = Time.realtimeSinceStartupAsDouble + seconds;
             while (!condition())
             {
                 if (Time.realtimeSinceStartupAsDouble >= until)
                     throw new TimeoutException(message);
-                await Task.Delay(50);
+                await Task.Delay(50, cancellation);
             }
         }
         public Task LeaveAsync() => leaving ?? (leaving = LeaveCoreAsync());

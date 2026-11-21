@@ -1,0 +1,38 @@
+@startuml r3_cerd_training
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "TECHNIQUE" as TECHNIQUE {
+  * TechniqueId
+  --
+  Name
+}
+entity "LESSON" as LESSON {
+  * LessonId
+  --
+  Code
+  PublishStatus
+  ContentVersion
+}
+entity "DRILL" as DRILL {
+  * DrillId
+  --
+  Code
+}
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+}
+entity "TRAINING_ATTEMPT" as TRAINING_ATTEMPT {
+  * AttemptId
+  --
+  Stars
+  Accuracy
+  Completed
+}
+LESSON }o--o{ DRILL : "contains"
+DRILL }o--|| TECHNIQUE : "practises skill"
+PLAYER_PROFILE ||--o{ TRAINING_ATTEMPT : "makes"
+TRAINING_ATTEMPT }o--|| DRILL : "uses"
+PLAYER_PROFILE }o--o{ TECHNIQUE : "masters (MasteryLevel)"
+@enduml

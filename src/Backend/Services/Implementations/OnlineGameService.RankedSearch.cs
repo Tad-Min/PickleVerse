@@ -39,12 +39,16 @@ public sealed partial class OnlineGameService
         var previous = await matchmaking.Active(id);
         if (previous != null && previous.searchId != entry.searchId)
         {
-            bool expired = previous.state == "SEARCHING" ? previous.lastSeen < Milliseconds - matchmaking.QueueLeaseSeconds * 1000L :
-                previous.assigned < Milliseconds - (settings.Matchmaking.ReadyConfirmationSeconds + 35) * 1000L;
+            bool expired = previous.lastSeen < Milliseconds - matchmaking.QueueLeaseSeconds * 1000L;
             bool ended = previous.matchId.Length > 0 && await _unitOfWork.Game.MatchEnded(Guid.Parse(previous.matchId));
-            if (expired || ended)
-                await matchmaking.Cancel(id, Guid.Parse(previous.searchId));
+            if (ended || expired && (previous.matchId.Length == 0 || !await _unitOfWork.Game.WaitingOnline(Guid.Parse(previous.matchId))))
+                await matchmaking.Cancel(previous);
         }
+        var history=await _unitOfWork.Game.SearchRecord(request.SearchId);
+        if(history!=null && (history.PlayerId!=id || await matchmaking.SearchSnapshot(request.SearchId)==null))
+            throw Conflict("Mã lượt tìm trận đã được sử dụng hoặc hết hạn.");
+        if(history!=null)entry.started=new DateTimeOffset(history.StartedAt).ToUnixTimeMilliseconds();
+        await _unitOfWork.Game.RecordSearch(entry,matchmaking.QueueLeaseSeconds);
         await matchmaking.Begin(entry);
         await tx.CommitAsync();
         return await PollRankedSearch(id, new() { SearchId = request.SearchId });
@@ -63,6 +67,11 @@ public sealed partial class OnlineGameService
     public async Task<RankedSearchTicket> PollRankedSearch(Guid id, RankedSearchRequest request)
     {
         var entry = await matchmaking.Get(id, request.SearchId, false);
+        if(entry.state==MatchmakingSearchStatus.Searching && entry.lastSeen<Milliseconds-matchmaking.QueueLeaseSeconds*1000L)
+        {
+            var before=GameJson.Write(entry);entry.state=MatchmakingSearchStatus.TimedOut;await matchmaking.Compare([before],[entry]);
+            throw Conflict("Lượt tìm trận đã hết hạn. Hãy tìm trận lại.");
+        }
         for (int retry = 0; retry < 8; retry++)
         {
             var before = GameJson.Write(entry);
@@ -71,70 +80,71 @@ public sealed partial class OnlineGameService
                 break;
             entry = await matchmaking.Get(id, request.SearchId, false);
         }
-        if (entry.state != "SEARCHING")
+        if (entry.state != MatchmakingSearchStatus.Searching)
         {
-            if (await matchmaking.ReadyCancelled(entry.matchId) || entry.assigned < Milliseconds - (settings.Matchmaking.ReadyConfirmationSeconds + 35) * 1000L)
+            if (await matchmaking.ReadyCancelled(entry.matchId))
                 throw Conflict("Lượt ghép trận đã bị hủy hoặc hết hạn.");
             return await QueueTicket(entry);
         }
-        var candidates = (await matchmaking.Candidates(entry, Milliseconds - matchmaking.QueueLeaseSeconds * 1000L)).Where(x => x.entry.state == "SEARCHING" && x.entry.mode == entry.mode && x.entry.region == entry.region
+        var candidates = (await matchmaking.Candidates(entry, Milliseconds - matchmaking.QueueLeaseSeconds * 1000L)).Where(x => x.entry.state == MatchmakingSearchStatus.Searching && x.entry.mode == entry.mode && x.entry.region == entry.region
             && x.entry.protocol == entry.protocol && x.entry.lastSeen >= Milliseconds - matchmaking.QueueLeaseSeconds * 1000L).ToList();
         var groups = candidates.GroupBy(x => x.entry.group).Select(g => g.OrderBy(x => x.entry.playerId, StringComparer.Ordinal).ToList())
             .Where(g => g.Count == g[0].entry.party.Length && g.Select(x => x.entry.playerId).SequenceEqual(g[0].entry.party)
                 && g.All(x => x.entry.party.SequenceEqual(g[0].entry.party))).OrderBy(g => g.Min(x => x.entry.started)).ToList();
         var own = groups.FirstOrDefault(g => g.Any(x => x.entry.playerId == entry.playerId));
         if (own == null)
-            return await QueueTicket(entry);
-        var selected = new List<List<(string raw, QueueEntry entry)>> { own };
+            return await QueueTicket(await matchmaking.Get(id, request.SearchId, false));
+        var seats = new List<(string raw, QueueEntry entry)>(own);
+        var teams = new Dictionary<string, int> { [own[0].entry.group] = 0 };
         int cap = entry.mode;
-        bool Fill(int at, int a, int b)
+        long now = Milliseconds;
+        long fallbackAt = now - settings.Matchmaking.BotFallbackSeconds * 1000L;
+        bool Fill(int at, int a, int b, int target)
         {
-            if (a == cap && b == cap)
+            if (a + b == target)
                 return true;
             for (int i = at; i < groups.Count; i++)
             {
                 var g = groups[i];
-                if (g == own)
+                if (g == own || a + b + g.Count > target)
                     continue;
                 if (cap == 1)
                 {
                     var other = g[0].entry;
-                    if (Milliseconds - entry.started >= settings.Matchmaking.BotFallbackSeconds * 1000L || Milliseconds - other.started >= settings.Matchmaking.BotFallbackSeconds * 1000L)
+                    if (entry.started <= fallbackAt || other.started <= fallbackAt)
                         continue;
-                    if (!EloPolicy.PairingKeys(entry.elo, entry.losses, Milliseconds - entry.started >= 30000)
-                        .Intersect(EloPolicy.PairingKeys(other.elo, other.losses, Milliseconds - other.started >= 30000)).Any())
+                    if (!EloPolicy.PairingKeys(entry.elo, entry.losses, now - entry.started >= 30000)
+                        .Intersect(EloPolicy.PairingKeys(other.elo, other.losses, now - other.started >= 30000)).Any())
                         continue;
                 }
-                selected.Add(g);
-                if (a + g.Count <= cap && Fill(i + 1, a + g.Count, b))
-                    return true;
-                if (b + g.Count <= cap && Fill(i + 1, a, b + g.Count))
-                    return true;
-                selected.RemoveAt(selected.Count - 1);
+                int firstTeam = a > b ? 1 : 0;
+                for (int choice = 0; choice < 2; choice++)
+                {
+                    int team = (firstTeam + choice) % 2;
+                    int nextA = a + (team == 0 ? g.Count : 0);
+                    int nextB = b + (team == 1 ? g.Count : 0);
+                    if (nextA > cap || nextB > cap)
+                        continue;
+                    teams[g[0].entry.group] = team;
+                    seats.AddRange(g);
+                    if (Fill(i + 1, nextA, nextB, target))
+                        return true;
+                    seats.RemoveRange(seats.Count - g.Count, g.Count);
+                    teams.Remove(g[0].entry.group);
+                }
             }
             return false;
         }
-        if (!Fill(0, own.Count, 0))
-            return await QueueTicket(entry);
-        var teams = new Dictionary<string, int>();
-        bool Teams(int at, int a, int b)
+        if (!Fill(0, own.Count, 0, 2 * cap))
         {
-            if (at == selected.Count)
-                return a == cap && b == cap;
-            var g = selected[at];
-            foreach (int team in new[] { 0, 1 })
-            {
-                if ((team == 0 ? a : b) + g.Count > cap)
-                    continue;
-                teams[g[0].entry.group] = team;
-                if (Teams(at + 1, a + (team == 0 ? g.Count : 0), b + (team == 1 ? g.Count : 0)))
-                    return true;
-            }
-            return false;
+            if (entry.mode != (int)PlayMode.Doubles || entry.protocol < RankedSearchRequest.RankedDoublesProtocol
+                || own.Any(x => x.entry.started > fallbackAt))
+                return await QueueTicket(entry);
+            // Search in descending order so any available human seat takes priority over a bot.
+            for (int target = 2 * cap - 1; target >= own.Count; target--)
+                if (Fill(0, own.Count, 0, target))
+                    break;
         }
-        if (!Teams(0, 0, 0))
-            return await QueueTicket(entry);
-        var seats = selected.SelectMany(g => g).ToList();
         var host = seats.OrderBy(x => x.entry.started).ThenBy(x => x.entry.playerId, StringComparer.Ordinal).First().entry.playerId;
         var match = Guid.NewGuid().ToString("N");
         var roster = new MatchRoster
@@ -151,9 +161,25 @@ public sealed partial class OnlineGameService
                 return m;
             }).ToList()
         };
+        int missing = 2 * cap - roster.Count;
+        if (missing > 0)
+        {
+            var bots = await _unitOfWork.Game.BotMembers(RankedBotAccounts.Ids.Select(Guid.Parse).ToArray(), missing);
+            if (bots.Count != missing)
+                return await QueueTicket(entry);
+            int humanElo = (int)Math.Round(seats.Average(x => x.entry.elo));
+            int humanLosses = (int)Math.Round(seats.Average(x => x.entry.losses));
+            int botElo = Math.Max(EloPolicy.Minimum, EloPolicy.BotElo(humanElo, humanLosses));
+            foreach (var bot in bots)
+            {
+                bot.team = roster.members.Count(m => m.team == 0) < cap ? 0 : 1;
+                bot.elo = botElo;
+                roster.members.Add(bot);
+            }
+        }
         foreach (var x in seats)
         {
-            x.entry.state = "MATCHED";
+            x.entry.state = MatchmakingSearchStatus.Matched;
             x.entry.matchId = match;
             x.entry.session = "PKV-" + match;
             x.entry.host = host;
@@ -171,22 +197,27 @@ public sealed partial class OnlineGameService
     }
     public async Task<RankedSearchTicket> CancelRankedSearch(Guid id, RankedSearchRequest request)
     {
-        QueueEntry entry;
-        try
+        for (int attempt = 0; attempt < 8; attempt++)
         {
-            entry = await matchmaking.Get(id, request.SearchId, false);
+            var entry = await matchmaking.SearchSnapshot(request.SearchId);
+            if (entry == null || entry.playerId != id.ToString("N"))
+                return new() { state = MatchmakingSearchStatus.Cancelled };
+            await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
+            if (Guid.TryParse(entry.matchId, out var match))
+            {
+                await _unitOfWork.Game.Lock("online-match:" + entry.matchId);
+                if (await _unitOfWork.Game.PlayingOnline(match))
+                    return await QueueTicket(entry);
+            }
+            if (!await matchmaking.Cancel(entry)) continue;
+            if (match != Guid.Empty)
+                await _unitOfWork.Game.CancelPreparation(match, Now);
+            await tx.CommitAsync();
+            if (leases != null && match != Guid.Empty)
+                await leases.CancelReservation(entry.matchId);
+            return new() { state = MatchmakingSearchStatus.Cancelled };
         }
-        catch (Entities.Exceptions.AppException e) when (e.StatusCode == System.Net.HttpStatusCode.Conflict)
-        {
-            return new() { state = "CANCELLED" };
-        }
-        await matchmaking.Cancel(id, request.SearchId);
-        if (entry.matchId.Length > 0)
-        {
-            var match=Guid.Parse(entry.matchId);var now=Now;
-            await _unitOfWork.Game.CancelPreparation(match, now);
-        }
-        return new() { state = "CANCELLED" };
+        throw Conflict("Lượt tìm trận đang thay đổi. Vui lòng thử hủy lại.");
     }
     public async Task<RoomMember> AssignRankedBot(Guid id, RankedBotRequest request)
     {
@@ -197,15 +228,20 @@ public sealed partial class OnlineGameService
         if (s.Player.pendingMatch != null)
             throw Conflict("Bạn vẫn còn trận chưa hoàn tất.");
         var search = await matchmaking.Get(id, request.SearchId, false);
+        if(search.state==MatchmakingSearchStatus.Searching && search.lastSeen<Milliseconds-matchmaking.QueueLeaseSeconds*1000L)
+        {
+            var before=GameJson.Write(search);search.state=MatchmakingSearchStatus.TimedOut;await matchmaking.Compare([before],[search]);
+            throw Conflict("Lượt tìm trận đã hết hạn. Hãy tìm trận lại.");
+        }
         if (search.mode != 1 || Milliseconds < search.started + settings.Matchmaking.BotFallbackSeconds * 1000L)
             throw Conflict($"Chưa đủ {settings.Matchmaking.BotFallbackSeconds} giây tìm đối thủ thật.");
-        if (search.state == "BOT")
+        if (search.state == MatchmakingSearchStatus.Bot)
         {
             if (search.matchId != request.MatchId.ToString("N") || search.session != request.Session)
                 throw Conflict("Bot đã được cấp cho phòng khác.");
             return search.roster!.members.Single(m => m.bot);
         }
-        if (search.state != "SEARCHING")
+        if (search.state != MatchmakingSearchStatus.Searching)
             throw Conflict("Lượt tìm trận đã có đối thủ thật.");
         var available = await _unitOfWork.Game.AvailableBots(RankedBotAccounts.Ids.Select(Guid.Parse).ToArray(), Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds));
         foreach (var bot in available)
@@ -216,7 +252,7 @@ public sealed partial class OnlineGameService
             if (member == null) continue;
             member.elo = Math.Max(EloPolicy.Minimum, EloPolicy.BotElo(s.Player.elo, s.Player.rankLossStreak));
             var before = GameJson.Write(search);
-            search.state = "BOT";
+            search.state = MatchmakingSearchStatus.Bot;
             search.matchId = request.MatchId.ToString("N");
             search.session = request.Session;
             search.host = id.ToString("N");
@@ -225,13 +261,13 @@ public sealed partial class OnlineGameService
             var own = GameJson.Read<RoomMember>(GameJson.Write(search.member));
             own.team = 0;
             search.roster = new() { matchId = search.matchId, mode = PlayMode.Singles, region = search.region, members = [own, member] };
-            if (await matchmaking.Compare([before], [search], bot.ToString("N"), settings.Matchmaking.ReadyConfirmationSeconds + 35))
+            if (await matchmaking.Compare([before], [search], bot.ToString("N"), 900))
             {
                 await tx.CommitAsync();
                 return member;
             }
             search = await matchmaking.Get(id, request.SearchId, false);
-            if (search.state != "SEARCHING")
+            if (search.state != MatchmakingSearchStatus.Searching)
                 throw Conflict("Lượt tìm trận vừa được xử lý. Vui lòng thử lại.");
         }
         throw Conflict("Các đối thủ dự phòng đang bận. Đang tiếp tục tìm trận.");

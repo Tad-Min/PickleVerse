@@ -7,6 +7,11 @@ if(Test-Path (Join-Path $privateRoot 'state.json')) { throw 'An acceptance stack
 $postgres=(docker inspect pickleverse_postgres | ConvertFrom-Json)[0]
 $pg=@{};foreach($entry in $postgres.Config.Env){$pair=$entry.Split('=',2);$pg[$pair[0]]=$pair[1]}
 if($postgres.Config.Image -ne 'postgres:16-alpine' -or $pg.POSTGRES_DB -ne 'pickleverse' -or $pg.POSTGRES_USER -ne 'sa'){throw 'Wrong development PostgreSQL instance.'}
+$s3=(docker inspect pickleverse_s3 | ConvertFrom-Json)[0]
+$s3Account=@($s3.Config.Env | Where-Object { $_.StartsWith('S3_ACCOUNT_ADMIN=') })
+if($s3Account.Count -ne 1){throw 'The development S3 container must have one S3_ACCOUNT_ADMIN setting.'}
+$s3Keys=$s3Account[0].Substring('S3_ACCOUNT_ADMIN='.Length).Split(':',2)
+if($s3Keys.Count -ne 2 -or !$s3Keys[0] -or !$s3Keys[1]){throw 'Invalid S3_ACCOUNT_ADMIN setting.'}
 $network=@($postgres.NetworkSettings.Networks.PSObject.Properties.Name)[0]
 $suffix=[guid]::NewGuid().ToString('N')
 $database='pkv_acceptance_'+$suffix
@@ -40,7 +45,7 @@ $apiEnv=@(
     'ASPNETCORE_ENVIRONMENT=Development','ASPNETCORE_URLS=http://+:8080',
     "ConnectionStrings__DefaultConnection=Host=pickleverse_postgres;Port=5432;Database=$database;Username=$($pg.POSTGRES_USER);Password=$($pg.POSTGRES_PASSWORD);Maximum Pool Size=20;GSS Encryption Mode=Disable",
     'Redis__ConnectionString=pickleverse_redis:6379,abortConnect=false',"Redis__KeyPrefix=pickleverse:acceptance:$suffix`:",
-    "Storage__BucketName=$bucket",'Storage__ServiceUrl=http://pickleverse_s3:9000','Storage__AccessKey=minioadmin','Storage__SecretKey=minioadmin','Storage__ForcePathStyle=true',
+    "Storage__BucketName=$bucket",'Storage__ServiceUrl=http://pickleverse_s3:9000',"Storage__AccessKey=$($s3Keys[0])","Storage__SecretKey=$($s3Keys[1])",'Storage__ForcePathStyle=true',
     "Jwt__Key=$jwt",'DedicatedServer__Enabled=true',"DedicatedServer__ServiceKey=$serverKey",'DedicatedServer__Protocol=18',
     'HybridAi__IngestEnabled=false','HybridAi__DispatcherEnabled=false','HybridAi__CoachingEnabled=false','HybridAi__ModelEnabled=false',
     "Smtp__Host=$mail",'Smtp__Port=1025','Smtp__FromEmail=qa@pickleverse.invalid','Smtp__FromName=PickleVerse','Smtp__Username=qa','Smtp__Password=acceptance-only'

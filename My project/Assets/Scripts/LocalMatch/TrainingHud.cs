@@ -16,7 +16,6 @@ namespace PickleVerse.LocalMatch
         public RectTransform safeArea, catalogue, content, briefing, practice, results;
         public TMP_Text heading, overview, lessonTitle, lessonBody, coachText, keys, status, timing, trial, resultTitle, resultBody;
         public Button start, continueButton, retry, next;
-        public GameObject pausePanel;
         public TrainingStars resultStars;
         public MatchAnnouncements announcements;
         int filter = -1;
@@ -28,6 +27,8 @@ namespace PickleVerse.LocalMatch
             EnsureRating();
             EnsurePracticeNavigation();
             EnsureAnnouncements();
+            if (keys)
+                HudActorClearance.Attach(keys.transform.parent.gameObject, () => training && training.player ? training.player.transform : null);
             foreach (var b in GetComponentsInChildren<Button>(true))
             {
                 b.onClick.RemoveAllListeners();
@@ -37,9 +38,12 @@ namespace PickleVerse.LocalMatch
                     case "Retry": b.onClick.AddListener(training.Retry); break;
                     case "Next": b.onClick.AddListener(training.NextLesson); break;
                     case "Catalogue": case "Course": case "Lessons": b.onClick.AddListener(training.Catalogue); break;
-                    case "Modes": b.onClick.AddListener(training.BackToModes); break;
+                    case "Modes":
+                        b.onClick.AddListener(training.BackToModes);
+                        if (ProgressionRuntime.Instance?.IsOffline == true && b.GetComponentInChildren<TMP_Text>() is TMP_Text label)
+                            label.text = "‹ VỀ SẢNH";
+                        break;
                     case "Settings": b.onClick.AddListener(() => SettingsOverlay.Open(training)); break;
-                    case "Touch": b.onClick.AddListener(training.ToggleTouch); break;
                     case "Resume": b.onClick.AddListener(() => training.SetPaused(false)); break;
                     case "Continue Practice": b.onClick.AddListener(Continue); break;
                     default:
@@ -121,7 +125,6 @@ namespace PickleVerse.LocalMatch
             status = Text("Feedback", practice, "", .07f, .745f, .65f, .84f, 18, Gold);
             Button("Course", practice, "BÀI TẬP", () => training.Catalogue(), .035f, .885f, .15f, .96f, false).gameObject.SetActive(false);
             EnsurePracticeNavigation();
-            Button("Touch", practice, "CẢM ỨNG", () => training.ToggleTouch(), .035f, .025f, .18f, .09f, false);
             results = Block("Exercise Results", safeArea, .23f, .13f, .77f, .89f, glass);
             resultTitle = Text("Title", results, "KẾT QUẢ", .07f, .79f, .93f, .95f, 34, Gold);
             resultBody = Text("Assessment", results, "", .07f, .30f, .93f, .77f, 19, White);
@@ -129,13 +132,10 @@ namespace PickleVerse.LocalMatch
             retry = Button("Retry", results, "LUYỆN LẠI", () => training.Retry(), .06f, .15f, .475f, .255f, false);
             next = Button("Next", results, "BÀI TIẾP THEO", () => training.NextLesson(), .525f, .15f, .94f, .255f, true);
             Button("Lessons", results, "DANH SÁCH BÀI", () => training.Catalogue(), .06f, .025f, .94f, .115f, false);
-            pausePanel = Block("Pause", safeArea, .36f, .40f, .64f, .60f, glass).gameObject;
-            Text("Paused", pausePanel.transform, "ĐÃ TẠM DỪNG", .05f, .52f, .95f, .94f, 22, White);
-            Button("Resume", pausePanel.transform, "TIẾP TỤC", () => training.SetPaused(false), .08f, .08f, .92f, .43f, true);
         }
         void Update()
         {
-            var area = Screen.safeArea;
+            var area = UiSafeArea.Area;
             var screen = new Vector2(Screen.width, Screen.height);
             if (safeArea && screen.x > 0 && screen.y > 0 && (area != lastSafe || screen != lastScreen))
             {
@@ -145,8 +145,6 @@ namespace PickleVerse.LocalMatch
                 safeArea.anchorMax = new Vector2(area.xMax / screen.x, area.yMax / screen.y);
                 safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
             }
-            if (pausePanel)
-                pausePanel.SetActive(training && training.Paused && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading);
         }
         void Pages(TrainingPhase phase)
         {

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace PickleVerse.Settings
 {
-    public enum CourtClockMode { Waiting, Serve, Rally, Timeout, Break, Finished }
+    public enum CourtClockMode { Waiting, Serve, Rally, Break, Finished }
 
     // Shared broadcast score display. Rules and networking stay in their own controllers.
     public sealed class MatchScoreboard : MonoBehaviour
@@ -48,11 +48,11 @@ namespace PickleVerse.Settings
             bounced = hasBounced;
             if (changed)
             {
-                Set(phase, mode == CourtClockMode.Serve ? "GIAO BÓNG" : mode == CourtClockMode.Rally ? (hasBounced ? "BÓNG ĐÃ NẢY" : "CHỜ BÓNG NẢY") : mode == CourtClockMode.Timeout ? "HỘI Ý" : mode == CourtClockMode.Break ? "NGHỈ GIỮA GAME" : mode == CourtClockMode.Finished ? "KẾT THÚC" : "CHUẨN BỊ");
+                Set(phase, mode == CourtClockMode.Serve ? "GIAO BÓNG" : mode == CourtClockMode.Rally ? (hasBounced ? "BÓNG ĐÃ NẢY" : "CHỜ BÓNG NẢY") : mode == CourtClockMode.Break ? "NGHỈ GIỮA GAME" : mode == CourtClockMode.Finished ? "KẾT THÚC" : "CHUẨN BỊ");
                 tenth = -1;
             }
             Set(serviceDetail, detail);
-            bool countdown = mode == CourtClockMode.Serve || mode == CourtClockMode.Timeout;
+            bool countdown = mode == CourtClockMode.Serve;
             int tick = countdown ? Mathf.CeilToInt(Mathf.Max(0, seconds) * 10) : -2;
             if (tick == tenth)
                 return;
@@ -63,7 +63,7 @@ namespace PickleVerse.Settings
                 Color color = seconds <= 3 ? (Color)new Color32(255, 153, 119, 255) : ScreenUiTheme.Gold;
                 clock.color = color;
                 clockFill.color = color;
-                clockFill.fillAmount = Mathf.Clamp01(seconds / (mode == CourtClockMode.Timeout ? 60 : 10));
+                clockFill.fillAmount = Mathf.Clamp01(seconds / 10);
             }
             else
             {

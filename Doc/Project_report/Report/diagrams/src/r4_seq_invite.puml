@@ -1,0 +1,58 @@
+@startuml r4_seq_invite
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Host
+actor Friend
+boundary ":MultiplayerApp" as App
+control ":RoomInvitationsController" as C
+control ":RoomInvitationService" as S
+entity ":LobbyRepository" as R
+entity ":GameRepository" as G
+Host -> App : CreateCustomAsync()
+activate App
+App -> C : Presence(request)
+activate C
+C -> S : Touch(player, presence)
+S -> R : RegisterRoom(presence, now, ttl)
+deactivate C
+App -> C : Friends()
+activate C
+C -> S : List(player)
+S -> G : InvitableFriends(player)
+C --> App : friends in the lobby
+deactivate C
+Host -> App : invite friend
+App -> C : Send(request)
+activate C
+C -> S : Send(host, friend, room)
+activate S
+S -> G : CanInvite(host, friend)
+alt friend not in the lobby, blocked or room full
+  S --> C : error with reason
+else else
+  S -> R : StoreInvitation(host, friend, stored, now, 60 s)
+  S --> C : invitation id
+end
+deactivate S
+C --> App : ApiResponse
+deactivate C
+deactivate App
+loop every 3 s while in the lobby
+  Friend -> C : Presence(request)
+  activate C
+  C -> S : Touch(friend, presence)
+  S -> R : InvitationIds(friend, now)
+  C --> Friend : pending invitation
+  deactivate C
+end
+Friend -> C : Respond(id, accept)
+activate C
+C -> S : Respond(friend, id, accept)
+S -> R : Respond(friend, id, "ACCEPTED", now)
+C --> Friend : room session and region
+deactivate C
+@enduml

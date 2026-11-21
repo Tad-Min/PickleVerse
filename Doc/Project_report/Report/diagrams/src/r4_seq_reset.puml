@@ -1,0 +1,43 @@
+@startuml r4_seq_reset
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Administrator as Admin
+boundary ":UsersPage" as W
+control ":ProgressResetController" as C
+control ":ProgressResetService" as S
+entity ":GameRepository" as G
+Admin -> W : choose groups (LEARNING, RANKING, MISSIONS, ECONOMY)
+activate W
+W -> C : Preview(player, request)
+activate C
+C -> S : Preview(player, groups)
+activate S
+S -> G : ResetPreview(player, groups)
+S --> C : ResetPreview with the profile revision
+deactivate S
+C --> W : impact preview
+deactivate C
+Admin -> W : confirm with a reason
+W -> C : Reset(player, request)
+activate C
+C -> S : Execute(actor, player, request)
+activate S
+S -> G : Command(player, requestId)
+alt profile revision changed since the preview
+  S --> C : error 409 preview_again
+else else
+  S -> G : ResetLearning(player)
+  S -> G : ResetMissions(player)
+  S -> G : ResetCosmetics(player)
+  S -> G : AddAudit(actor, reset)
+  S --> C : ResetReceipt (same receipt on retry)
+end
+deactivate S
+C --> W : ApiResponse
+deactivate C
+deactivate W
+@enduml

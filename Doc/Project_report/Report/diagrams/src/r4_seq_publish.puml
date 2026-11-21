@@ -1,0 +1,46 @@
+@startuml r4_seq_publish
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Administrator as Admin
+boundary ":CmsPage" as W
+control ":ContentController" as C
+control ":ContentService" as S
+entity ":GameRepository" as G
+Admin -> W : edit lesson draft
+activate W
+W -> C : Save(id, draft, expectedVersion)
+activate C
+C -> S : Save(actor, id, draft, expectedVersion)
+activate S
+S -> G : Lock(lesson)
+S -> G : ContentLesson(id)
+alt stored version differs from expectedVersion
+  S --> C : error 409 reload_before_saving
+else else
+  S --> C : LessonDraft (version + 1)
+end
+deactivate S
+C --> W : ApiResponse
+deactivate C
+Admin -> W : Publish
+W -> C : Publish(id)
+activate C
+C -> S : Publish(actor, id, true)
+activate S
+S -> G : ContentLessons()
+alt a prerequisite is not published
+  S --> C : error prerequisite_unpublished
+else else
+  S -> G : AddContent(catalogSnapshot)
+  S --> C : LessonDraft (PUBLISHED)
+end
+deactivate S
+C --> W : ApiResponse
+deactivate C
+deactivate W
+note over G : the next catalogue request of a game client\nreturns the new catalogue version
+@enduml

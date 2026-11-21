@@ -1,3 +1,4 @@
+using Entities.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -11,7 +12,7 @@ public partial class Friendrequest
 
     public Guid Receiverid { get; set; }
 
-    public string Status { get; set; } = null!;
+    public FriendRequestStatus Status { get; set; } = FriendRequestStatus.Pending;
 
     public DateTime Createdat { get; set; }
 

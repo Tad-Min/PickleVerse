@@ -1,189 +1,245 @@
-import React from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '../../../api/adminApi';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { apiClient } from '../../../api/client';
+import { AnalyticsReport } from '../../../types/api';
+import { BarChart3 } from 'lucide-react';
+import { PageHeader } from '../../../shared/ui/PageHeader';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
-import { Activity, Flame, Info, RotateCw } from 'lucide-react';
+  btnPrimary, card, fieldLabel, inputClass, sectionTitle, tableCard, tableHead, tableText, th, td, rowHover,
+} from '../../../shared/ui/adminStyles';
 
-export const Analytics: React.FC = () => {
-  const {
-    data: heatmaps = [],
-    isLoading,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ['admin-ai-heatmap'],
-    queryFn: () => adminApi.getAiTechniqueErrorHeatmap(),
+const today = new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10);
+const monthAgo = new Date(Date.now() + 7 * 3600000 - 29 * 86400000).toISOString().slice(0, 10);
+const rate = (value?: number | null) => (value == null ? 'Chưa đủ dữ liệu' : (value * 100).toFixed(1) + '%');
+const seconds = (value?: number | null) => (value == null ? 'Chưa có dữ liệu' : value.toFixed(1) + ' giây');
+
+const statTile = 'bg-card border border-border rounded-xl p-5 shadow-sm';
+
+export function Analytics() {
+  const [from, setFrom] = useState(monthAgo);
+  const [to, setTo] = useState(today);
+  const report = useQuery({
+    queryKey: ['admin-analytics-report', from, to],
+    queryFn: async () =>
+      (await apiClient.get<AnalyticsReport>('/api/Admin/analytics/report', { params: { from, to } })).data,
+    enabled: !!from && !!to && from <= to,
   });
-
-  // Calculate color intensity for heatmap cell
-  const getCellColor = (count: number) => {
-    if (count === 0) return 'bg-slate-900 text-slate-500 border-slate-800';
-    if (count < 10) return 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40';
-    if (count < 25) return 'bg-amber-950/40 text-amber-400 border-amber-800/40 font-semibold';
-    return 'bg-rose-950/60 text-rose-400 border-rose-800/60 font-bold animate-pulse';
-  };
-
-  const chartData = heatmaps.map((h) => ({
-    name: h.techniqueName,
-    errors: h.totalErrorsCount,
-  }));
-
-  const COLORS = ['#4F46E5', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'];
+  const data = report.data;
+  const errorMessage =
+    (report.error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+    (report.error as Error)?.message;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-display text-foreground tracking-tight">
-            Bản đồ nhiệt Lỗi Kỹ thuật AI (Technique-Error Heatmap)
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Dữ liệu tổng hợp từ engine phân tích telemetry: Phát hiện các điểm nghẽn kỹ thuật người chơi mắc lỗi nhiều nhất
-          </p>
-        </div>
+      <PageHeader
+        icon={BarChart3}
+        title="Thống kê người chơi và ghép trận"
+        subtitle="Theo dõi người chơi đăng nhập, tỷ lệ quay lại, bài luyện tập và tình trạng ghép trận"
+      />
 
-        <button
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-border rounded-lg text-xs font-semibold text-foreground transition-colors self-start sm:self-auto"
-        >
-          <RotateCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-accent' : ''}`} />
-          <span>Làm mới phân tích</span>
+      {/* Date range toolbar */}
+      <form
+        className="bg-card border border-border rounded-xl p-4 flex flex-col md:flex-row md:items-end gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          report.refetch();
+        }}
+      >
+        <label className={`${fieldLabel} md:w-56`}>
+          Từ ngày (Việt Nam)
+          <input className={inputClass} type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} required />
+        </label>
+        <label className={`${fieldLabel} md:w-56`}>
+          Đến ngày
+          <input className={inputClass} type="date" value={to} min={from} max={today} onChange={(e) => setTo(e.target.value)} required />
+        </label>
+        <button className={`${btnPrimary} md:ml-auto`} disabled={report.isFetching}>
+          {report.isFetching ? 'Đang tính…' : 'Làm mới'}
         </button>
-      </div>
+      </form>
 
-      {/* Info Alert Box */}
-      <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-start gap-3 text-xs text-indigo-300">
-        <Info className="w-5 h-5 flex-shrink-0 text-indigo-400 mt-0.5" />
-        <div className="space-y-1">
-          <div className="font-semibold text-indigo-200">Cách đọc Bản đồ nhiệt AI:</div>
-          <div>
-            Các ô có màu <strong className="text-rose-400">Đỏ / Cam</strong> cảnh báo kỹ thuật có tỷ lệ sai sót cao (ví dụ: giao bóng quá trễ, dink bóng bổng hoặc bước chân vào Non-Volley Zone). Ban huấn luyện nên tăng cường các bài tập Drills tương ứng trong mục CMS.
-          </div>
-        </div>
-      </div>
+      {report.error && (
+        <p role="alert" className="text-xs text-rose-600">
+          {errorMessage}
+        </p>
+      )}
 
-      {/* Heatmap Matrix Grid */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-rose-400" />
-            <h2 className="text-base font-bold font-display text-foreground">
-              Ma trận Phân tích Lỗi theo 5 Kỹ thuật Cốt lõi
-            </h2>
-          </div>
+      {data && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            {data.timeZone} · {data.from} → {data.to}
+          </p>
 
-          {/* Legend */}
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-slate-900 border border-slate-700 inline-block"></span>
-              <span>0 lỗi</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-emerald-950/60 border border-emerald-800 inline-block"></span>
-              <span>1 - 9 (Thấp)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-amber-950/60 border border-amber-800 inline-block"></span>
-              <span>10 - 24 (Vừa)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-rose-950/80 border border-rose-800 inline-block"></span>
-              <span>$\ge 25$ (Cao)</span>
-            </div>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="py-16 text-center text-muted-foreground text-xs">
-            <div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
-            <div>Đang tổng hợp dữ liệu telemetry từ AI Engine...</div>
-          </div>
-        ) : heatmaps.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground text-xs">
-            Chưa có đủ mẫu telemetry để kết xuất ma trận nhiệt.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {heatmaps.map((tech) => (
-              <div
-                key={tech.techniqueId}
-                className="bg-slate-900/50 border border-border rounded-xl p-4 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="text-xs font-bold text-foreground font-display mb-1 flex items-center justify-between">
-                    <span className="truncate" title={tech.techniqueName}>{tech.techniqueName}</span>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mb-3">
-                    Tổng lỗi ghi nhận: <strong className="text-accent">{tech.totalErrorsCount}</strong>
-                  </div>
-
-                  {/* Breakdown items */}
-                  <div className="space-y-2">
-                    {tech.errorBreakdown.length === 0 ? (
-                      <div className="text-[11px] text-muted-foreground italic">Không có lỗi chi tiết</div>
-                    ) : (
-                      tech.errorBreakdown.map((err, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-2 rounded-lg border text-xs flex items-center justify-between ${getCellColor(
-                            err.count
-                          )}`}
-                          title={`${tech.techniqueName} - ${err.errorType}: ${err.count} lần`}
-                        >
-                          <span className="text-[11px] truncate max-w-[120px]">{err.errorType}</span>
-                          <span className="font-mono text-xs">{err.count}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-border/50 text-right">
-                  <span className="text-[10px] text-muted-foreground">Technique #{tech.techniqueId}</span>
-                </div>
+          {/* Summary tiles */}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              ['Đăng ký trong khoảng', data.summary.totalUsers],
+              ['DAU hôm nay', data.summary.activeUsersToday],
+              ['Trận hoàn tất trong khoảng', data.summary.totalMatchesPlayed],
+              ['Giờ hoạt động trong khoảng', (data.summary.totalPlayTimeSeconds / 3600).toFixed(2)],
+            ].map(([label, value]) => (
+              <div className={statTile} key={label}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                <p className="mt-2 text-2xl font-bold font-display text-foreground">{value}</p>
               </div>
             ))}
           </div>
-        )}
-      </div>
 
-      {/* Aggregate Errors Chart */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-4">
-        <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-accent" />
-          <h2 className="text-base font-bold font-display text-foreground">
-            Phân bổ Tổng Số Lỗi theo Kỹ thuật
-          </h2>
-        </div>
+          {/* Daily chart */}
+          <section className={card}>
+            <h2 className={sectionTitle}>Người chơi đăng nhập theo ngày</h2>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">{data.dauDefinition}</p>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.daily}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#DEDEE3" />
+                  <XAxis dataKey="day" stroke="#686868" fontSize={11} />
+                  <YAxis allowDecimals={false} stroke="#686868" fontSize={11} />
+                  <Tooltip />
+                  <Area dataKey="players" name="Người chơi" stroke="#2563EB" fill="#DBEAFE" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
 
-        <div className="h-72 w-full pt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-              <XAxis dataKey="name" stroke="#94A3B8" fontSize={12} tickLine={false} />
-              <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: '0.5rem', color: '#F8FAFC' }}
-                cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-              />
-              <Bar dataKey="errors" radius={[6, 6, 0, 0]}>
-                {chartData.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+          {/* Retention */}
+          <section className={tableCard}>
+            <div className="p-4 border-b border-border">
+              <h2 className={sectionTitle}>Tỷ lệ quay lại</h2>
+              <p className="text-xs text-muted-foreground mt-1">{data.retentionDefinition}</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className={tableText}>
+                <thead className={tableHead}>
+                  <tr>
+                    <th className={th}>Ngày đăng nhập đầu</th>
+                    <th className={th}>Số người</th>
+                    <th className={th}>D1</th>
+                    <th className={th}>D7</th>
+                    <th className={th}>D30</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {data.retention.map((c) => (
+                    <tr key={c.day} className={rowHover}>
+                      <td className={`${td} text-foreground`}>{c.day}</td>
+                      <td className={`${td} font-mono`}>{c.players}</td>
+                      <td className={`${td} font-mono`}>{rate(c.d1)}</td>
+                      <td className={`${td} font-mono`}>{rate(c.d7)}</td>
+                      <td className={`${td} font-mono`}>{rate(c.d30)}</td>
+                    </tr>
+                  ))}
+                  {!data.retention.length && (
+                    <tr>
+                      <td colSpan={5} className="py-8 px-4 text-center text-muted-foreground">
+                        Chưa có cohort trong khoảng này.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Lessons */}
+          <section className={tableCard}>
+            <div className="p-4 border-b border-border">
+              <h2 className={sectionTitle}>Bài luyện tập phổ biến</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Tỷ lệ vượt qua = số lượt đạt yêu cầu / số lượt bắt đầu. Các lượt chưa kết thúc vẫn được tính trong mẫu số.
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className={tableText}>
+                <thead className={tableHead}>
+                  <tr>
+                    <th className={th}>Bài</th>
+                    <th className={th}>Người chơi</th>
+                    <th className={th}>Bắt đầu</th>
+                    <th className={th}>Kết thúc</th>
+                    <th className={th}>Vượt qua</th>
+                    <th className={th}>Tỷ lệ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {data.lessons.map((l) => (
+                    <tr key={l.lessonId} className={rowHover}>
+                      <td className={`${td} text-foreground font-medium`}>{l.title}</td>
+                      <td className={`${td} font-mono`}>{l.players}</td>
+                      <td className={`${td} font-mono`}>{l.starts}</td>
+                      <td className={`${td} font-mono`}>{l.finished}</td>
+                      <td className={`${td} font-mono`}>{l.passed}</td>
+                      <td className={`${td} font-mono font-bold text-primary`}>{rate(l.completionRate)}</td>
+                    </tr>
+                  ))}
+                  {!data.lessons.length && (
+                    <tr>
+                      <td colSpan={6} className="py-8 px-4 text-center text-muted-foreground">
+                        Chưa có dữ liệu bài luyện tập.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Matchmaking */}
+          <section className={card}>
+            <h2 className={sectionTitle}>Tình trạng ghép trận</h2>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Nhật ký cập nhật từ hàng đợi bền. Một lượt giữ kết quả ghép đầu tiên; hủy sau khi ghép được thống kê riêng.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
+              {[
+                ['Lượt tìm', data.matchmaking.searches],
+                ['Đang chờ', data.matchmaking.searching],
+                ['Ghép người thật', data.matchmaking.matched],
+                ['Bot dự phòng', data.matchmaking.botFallback],
+                ['Hủy trước ghép', data.matchmaking.cancelled],
+                ['Hết thời gian chờ', data.matchmaking.timedOut],
+                ['Hủy sau ghép', data.matchmaking.cancelledAfterAssignment],
+                ['Chờ trung bình', seconds(data.matchmaking.averageWaitSeconds)],
+                ['P95 chờ', seconds(data.matchmaking.p95WaitSeconds)],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg border border-border bg-background p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                  <p className="mt-1 text-sm font-bold text-foreground">{value}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Error heatmap */}
+          <section className={card}>
+            <h2 className={sectionTitle}>Bản đồ nhiệt lỗi được hệ thống ghi nhận</h2>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Đây là kết quả luật phân tích; chất lượng coaching cần nghiệm thu độc lập với chuyên gia.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {data.errors.map((t) => (
+                <div className="rounded-lg border border-border bg-background p-4" key={t.techniqueId}>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t.techniqueName} <span className="text-primary">· {t.totalErrorsCount}</span>
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    {t.errorBreakdown.map((e) => (
+                      <p key={e.errorType} className="flex justify-between text-xs text-muted-foreground">
+                        <span>{e.errorType}</span>
+                        <span className="font-mono font-semibold text-foreground">{e.count}</span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <p className="text-xs text-muted-foreground">{data.timeDefinition}</p>
+        </>
+      )}
     </div>
   );
-};
+}

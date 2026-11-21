@@ -1,0 +1,56 @@
+@startuml r3_cerd_feed
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+  --
+  PlayerName
+}
+entity "POST" as POST {
+  * PostId
+  --
+  Body
+  Audience
+  CreatedAt
+  EditedAt
+}
+entity "VIDEO" as VIDEO {
+  * MediaId
+  --
+  Bytes
+  Ready
+}
+entity "COMMENT" as COMMENT {
+  * CommentId
+  --
+  Body
+  CreatedAt
+}
+entity "MATCH" as MATCH {
+  * MatchId
+}
+entity "CONVERSATION" as CONVERSATION {
+  * ConversationId
+  --
+  UpdatedAt
+}
+entity "MESSAGE" as MESSAGE {
+  * MessageId
+  --
+  ClientMessageId
+  Body
+  CreatedAt
+}
+PLAYER_PROFILE ||--o{ POST : "writes"
+POST ||--|| VIDEO : "attaches"
+POST }o--|| MATCH : "shares replay"
+PLAYER_PROFILE }o--o{ POST : "likes"
+POST }o--o{ PLAYER_PROFILE : "excludes"
+POST ||--o{ COMMENT : "on post"
+PLAYER_PROFILE ||--o{ COMMENT : "comments"
+PLAYER_PROFILE }o--o{ CONVERSATION : "member of (ReadThrough)"
+CONVERSATION ||--o{ MESSAGE : "contains"
+PLAYER_PROFILE ||--o{ MESSAGE : "sends"
+@enduml

@@ -16,7 +16,7 @@ public sealed class ServerSettings
     {
         public RewardBundle Bundle() => new(Coins, Gems, Xp);
     }
-    public sealed record ProgressionSettings(int WinXp, int LossXp, RewardSettings DailyBonus, RewardSettings WeeklyBonus,
+    public sealed record ProgressionSettings(int LossXp, RewardSettings DailyBonus, RewardSettings WeeklyBonus,
         int BotWinReward, int BotLossReward, int OnlineWinReward, int OnlineLossReward);
 
     public SmtpSettings Smtp { get; }
@@ -34,6 +34,8 @@ public sealed class ServerSettings
         Dedicated = configuration.GetSection("DedicatedServer").Get<Entities.Configuration.DedicatedServerSettings>() ?? new();
         if (Dedicated.Enabled && (Dedicated.ServiceKey.Length < 32 || Dedicated.LeaseSeconds < 30 || Dedicated.LeaseSeconds > 120))
             throw new InvalidOperationException("DedicatedServer requires a service key of at least 32 characters and a 30–120 second lease.");
+        if (Dedicated.MaxConcurrentMatches is < 1 or > Entities.Configuration.DedicatedServerSettings.MaximumConcurrentMatches)
+            throw new InvalidOperationException("DedicatedServer:MaxConcurrentMatches must be between 1 and 500.");
         int Number(string key, int minimum, int maximum)
         {
             if (!int.TryParse(configuration[key], out int value) || value < minimum || value > maximum)
@@ -54,7 +56,7 @@ public sealed class ServerSettings
         OnlineMatch = new(Number("OnlineMatch:DisconnectTimeoutSeconds", 2, 3600), Number("OnlineMatch:HeartbeatSeconds", 1, 3599));
         if (OnlineMatch.HeartbeatSeconds >= OnlineMatch.DisconnectTimeoutSeconds)
             throw new InvalidOperationException("OnlineMatch:HeartbeatSeconds must be less than OnlineMatch:DisconnectTimeoutSeconds.");
-        Progression = new(Number("Progression:winXp", 0, int.MaxValue), Number("Progression:lossXp", 0, int.MaxValue),
+        Progression = new(Number("Progression:lossXp", 0, int.MaxValue),
             Reward("Progression:dailyBonus"), Reward("Progression:weeklyBonus"),
             Number("Progression:matchRewards:botWinReward", 0, int.MaxValue), Number("Progression:matchRewards:botLossReward", 0, int.MaxValue),
             Number("Progression:matchRewards:onlineWinReward", 0, int.MaxValue), Number("Progression:matchRewards:onlineLossReward", 0, int.MaxValue));
@@ -66,7 +68,6 @@ public sealed class ServerSettings
         hybridTelemetryEnabled = HybridAi.IngestEnabled,
         hybridCoachingEnabled = HybridAi.CoachingEnabled,
         dedicatedServerEnabled = Dedicated.Enabled,
-        winXp = Progression.WinXp,
         lossXp = Progression.LossXp,
         dailyBonus = Progression.DailyBonus.Bundle(),
         weeklyBonus = Progression.WeeklyBonus.Bundle(),

@@ -1,8 +1,0 @@
-stateDiagram-v2
-    %% GAME-SM08 - Replay player
-    %% Source definition: My project/Assets/Scripts/Replays/ReplayView.cs:20
-    Loading --> Playing: Start
-    Playing --> Paused: Playbutton
-    Paused --> Playing: Playbutton
-    Playing --> Ended: Playback reachesduration
-    Ended --> Playing: Playbutton

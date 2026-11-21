@@ -1,0 +1,12 @@
+@startuml r4_sm_account
+!include _style.iuml
+[*] --> ACTIVE : register
+ACTIVE --> SUSPENDED : applySanction [type = suspension] / revokeSessions()
+ACTIVE --> BANNED : applySanction [type = ban] / revokeSessions()
+SUSPENDED --> BANNED : applySanction [type = ban]
+SUSPENDED --> ACTIVE : expire [suspension end reached]
+SUSPENDED --> ACTIVE : revokeSanction
+SUSPENDED --> ACTIVE : reviewAppeal [accepted]
+BANNED --> ACTIVE : revokeSanction
+BANNED --> ACTIVE : reviewAppeal [accepted]
+@enduml

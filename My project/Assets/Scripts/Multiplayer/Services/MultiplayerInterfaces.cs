@@ -24,16 +24,16 @@ namespace PickleVerse.Multiplayer.Services
         bool Busy { get; }
         bool Searching { get; }
         string PlayerId { get; }
-        string DisplayName { get; set; }
         string Notice { get; }
         string Elapsed { get; }
         string RoomCode { get; }
         List<RoomMember> Members();
     }
 
-    /// <summary>Photon session boundary. Views never call this adapter directly.</summary>
-    public interface IMultiplayerBackend : IMultiplayerState
+    /// <summary>Photon room operations used by the room service.</summary>
+    public interface IRoomBackend : IMultiplayerState
     {
+        string DisplayName { set; }
         Task PlayAsync(string profile);
         Task SwitchRoomAsync(PlayMode mode, bool custom);
         Task JoinRoomAsync(string code);
@@ -42,10 +42,15 @@ namespace PickleVerse.Multiplayer.Services
         Task KickAsync(string playerId);
         Task StartCustomAsync();
         Task LeaveRoomAsync();
+        Task ExecuteAsync(Func<Task> action);
+        void SetNotice(string message);
+    }
+
+    public interface IMatchmakingBackend : IMultiplayerState
+    {
         Task FindAsync();
         Task CancelSearchAsync();
         Task ExecuteAsync(Func<Task> action);
-        void SetNotice(string message);
     }
 
     public interface IRoomService

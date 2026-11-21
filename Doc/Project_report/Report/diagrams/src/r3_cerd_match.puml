@@ -1,0 +1,37 @@
+@startuml r3_cerd_match
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+entity "PLAYER_PROFILE" as PLAYER_PROFILE {
+  * PlayerId
+}
+entity "MATCH" as MATCH {
+  * MatchId
+  --
+  Mode
+  Status
+  AuthorityMode
+}
+entity "MATCH_GAME" as MATCH_GAME {
+  * GameNumber
+  --
+  TeamAScore
+  TeamBScore
+}
+entity "RATING_CHANGE" as RATING_CHANGE {
+  --
+  BeforeElo
+  AfterElo
+  Delta
+}
+entity "REPLAY" as REPLAY {
+  --
+  ObjectKey
+}
+PLAYER_PROFILE }o--o{ MATCH : "participates (Team, Outcome)"
+MATCH ||--o{ MATCH_GAME : "consists of"
+MATCH ||--o{ RATING_CHANGE : "changes rating"
+PLAYER_PROFILE ||--o{ RATING_CHANGE : "receives"
+MATCH ||--|| REPLAY : "recorded as"
+@enduml

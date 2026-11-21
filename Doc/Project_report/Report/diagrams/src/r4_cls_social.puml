@@ -1,0 +1,77 @@
+@startuml r4_cls_social
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class SocialLobbyMenu <<MonoBehaviour>> {
+    + OpenFeed() : void
+    + OpenInbox() : void
+    + OpenDirect(player, name, friend) : void
+    - Compose(post) : void
+    - SavePost(token) : Task
+    - SendDirect() : Task
+    - PlayVideo(post, token) : Task
+  }
+  class SocialLobbyConnection {
+    + Ready : bool
+    + Run() : Task
+    + Invoke(method, args) : Task
+  }
+  class SocialTransport <<static>> {
+    + UploadVideo(file, progress, token) : Task<Guid>
+    + ConnectLobby(token) : Task<ClientWebSocket>
+  }
+}
+package "Web API" {
+  class SocialContentController <<ApiController>> {
+    + Feed(before) : SocialPage<SocialPostItem>
+    + Create(input) / Edit(post, input) / Delete(post)
+    + Like(post, input) / Comment(post, input)
+    + Upload() : SocialMediaReceipt
+    + Playback(post) / Video(post, playback)
+    + Inbox(offset) / Messages(conversation, before)
+    + Read(conversation, input) / Send(input)
+  }
+  class SocialHub <<SignalR Hub>> {
+    + Presence() : Task
+    + Whisper(recipient, body) : Task
+  }
+  interface ISocialContentService
+  interface ISocialDirectService
+  interface ISocialMediaService
+  interface ISocialSessionService
+  class SocialContentService
+  class SocialDirectService
+  class SocialMediaService {
+    + MaxVideoBytes = 250000000
+    + Upload(actor, stream, length, token)
+    + Open(viewer, post, range, token)
+    + Cleanup(token)
+  }
+  class SocialSessionService
+  class SocialPresenceRepository <<Redis>>
+  class SocialMediaCleanup <<BackgroundService>>
+  interface IUnitOfWork
+  class GameRepository
+}
+SocialLobbyMenu --> SocialLobbyConnection
+SocialLobbyMenu --> SocialTransport
+SocialLobbyMenu ..> SocialContentController : HTTPS JSON
+SocialTransport ..> SocialContentController : MP4 upload
+SocialLobbyConnection ..> SocialHub : WebSocket (SignalR JSON)
+SocialContentController --> ISocialContentService
+SocialContentController --> ISocialDirectService
+SocialContentController --> ISocialMediaService
+SocialContentController --> ISocialSessionService
+SocialHub --> ISocialDirectService
+SocialHub --> ISocialSessionService
+SocialContentService ..|> ISocialContentService
+SocialDirectService ..|> ISocialDirectService
+SocialMediaService ..|> ISocialMediaService
+SocialSessionService ..|> ISocialSessionService
+SocialSessionService --> SocialPresenceRepository
+SocialMediaCleanup --> ISocialMediaService
+SocialContentService --> IUnitOfWork
+SocialDirectService --> IUnitOfWork
+SocialMediaService --> IUnitOfWork
+IUnitOfWork --> GameRepository
+@enduml

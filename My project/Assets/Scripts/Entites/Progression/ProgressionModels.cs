@@ -91,12 +91,14 @@ namespace PickleVerse.Progression
     {
         public int own, opponent;
         public bool completed;
+        public int? teamAStartSide;
         public GameScore() { }
-        public GameScore(int own, int opponent, bool completed)
+        public GameScore(int own, int opponent, bool completed, int? teamAStartSide = null)
         {
             this.own = own;
             this.opponent = opponent;
             this.completed = completed;
+            this.teamAStartSide = teamAStartSide;
         }
     }
     [Serializable]
@@ -112,7 +114,9 @@ namespace PickleVerse.Progression
         public int ownElo = 100, opponentElo = 100, eloDelta, gamesWon, gamesLost, points, validReturns, validServes;
         public List<OpponentInfo> opponents = new List<OpponentInfo>();
         public List<GameScore> scores = new List<GameScore>();
-        public bool Ranked => kind == MatchKind.RankedSingles || kind == MatchKind.RankedBot;
+        public const string DoublesStandardRating = "doubles-elo-v2", DoublesLegacyRating = "doubles-legacy-v1";
+        public bool Ranked => kind == MatchKind.RankedSingles || kind == MatchKind.RankedBot
+            || kind == MatchKind.MatchedDoubles && (ratingPolicyVersion == DoublesStandardRating || ratingPolicyVersion == DoublesLegacyRating);
         public bool Bot => kind == MatchKind.BotPractice || kind == MatchKind.RankedBot;
         public bool Eligible => kind != MatchKind.Custom;
         public string KindLabel => kind == MatchKind.BotPractice ? "Đấu máy" : kind == MatchKind.RankedBot ? "Xếp hạng · Máy" : kind == MatchKind.RankedSingles ? "Xếp hạng · 1v1" : kind == MatchKind.MatchedDoubles ? "Tìm trận · 2v2" : "Phòng riêng";
@@ -121,8 +125,7 @@ namespace PickleVerse.Progression
     [Serializable]
     public sealed class PlayerProfile
     {
-        [NonSerialized]
-        public bool online;
+        public const int LevelXpStep = 10;
         public int version = 1;
         public string id, playerName, avatarId = "initial";
         public long createdUtcTicks, totalXp, coins, gems, wins, losses;
@@ -139,7 +142,7 @@ namespace PickleVerse.Progression
         public MatchResult pendingMatch;
         public TrainingProfile training = new TrainingProfile();
         public DailyStreakData dailyStreak;
-        public long NextLevelXp => (long)level * (online ? 200 : 10);
+        public long NextLevelXp => (long)level * LevelXpStep;
         public double WinRate => wins + losses == 0 ? 0 : 100d * wins / (wins + losses);
     }
 }

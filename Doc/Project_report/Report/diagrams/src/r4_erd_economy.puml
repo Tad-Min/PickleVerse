@@ -1,0 +1,117 @@
+@startuml r4_erd_economy
+!include _style.iuml
+hide circle
+hide empty members
+skinparam linetype ortho
+left to right direction
+entity "Currencies" as Currencies {
+  * CurrencyId : SERIAL <<PK>>
+  --
+  * CurrencyName : VARCHAR(254)
+  * Description : VARCHAR(254)
+}
+entity "PlayerCurrencies" as PlayerCurrencies {
+  * PlayerId : UUID <<PK, FK>>
+  * CurrencyId : INT <<PK, FK>>
+  --
+  * Amount : INT
+}
+entity "CurrencyTransactions" as CurrencyTransactions {
+  * TransactionId : BIGSERIAL <<PK>>
+  --
+  * PlayerId : UUID <<FK>>
+  * CurrencyId : INT <<FK>>
+  * CommandId : VARCHAR(64)
+  * Delta : BIGINT
+  * BalanceAfter : BIGINT
+  * Reason : VARCHAR(80)
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "Cosmetics" as Cosmetics {
+  * CosmeticId : SERIAL <<PK>>
+  --
+  * CurrencyId : INT <<FK>>
+  * ItemCode : VARCHAR(50)
+  * CosmeticName : VARCHAR(254)
+  * Description : VARCHAR(254)
+  * Price : INT
+  * Type : VARCHAR(25)
+  * Config : JSONB
+}
+entity "CosmeticPrices" as CosmeticPrices {
+  * CosmeticId : INT <<PK, FK>>
+  * CurrencyId : INT <<PK, FK>>
+  --
+  * Price : INT
+}
+entity "PlayerCosmetics" as PlayerCosmetics {
+  * PlayerId : UUID <<PK, FK>>
+  * CosmeticId : INT <<PK, FK>>
+  --
+  * Equipped : BOOLEAN
+}
+entity "Missions" as Missions {
+  * MissionId : SERIAL <<PK>>
+  --
+  * MissionName : VARCHAR(254)
+  * Description : VARCHAR(254)
+  * Type : VARCHAR(25)
+  * Target : INT
+  * Reward : JSONB
+  Code : VARCHAR(50)
+  * Config : JSONB
+}
+entity "PlayerMissions" as PlayerMissions {
+  * PlayerId : UUID <<PK, FK>>
+  * MissionId : INT <<PK, FK>>
+  * PeriodKey : VARCHAR(8) <<PK>>
+  --
+  * Progress : INT
+  * IsClaimed : BOOLEAN
+  ClaimedAt : TIMESTAMPTZ
+  * CurrentStreak : INT
+}
+entity "Achievements" as Achievements {
+  * AchievementId : SERIAL <<PK>>
+  --
+  * AchievementCode : VARCHAR(50)
+  * AchievementName : VARCHAR(254)
+  * Description : VARCHAR(254)
+  * Type : VARCHAR(25)
+  * Target : INT
+  * Reward : JSONB
+}
+entity "PlayerAchievements" as PlayerAchievements {
+  * PlayerId : UUID <<PK, FK>>
+  * AchievementId : INT <<PK, FK>>
+  --
+  * Progress : INT
+  * IsClaimed : BOOLEAN
+  ClaimedAt : TIMESTAMPTZ
+}
+entity "ProgressRewardGrants" as ProgressRewardGrants {
+  * PlayerId : UUID <<PK, FK>>
+  * RewardKey : VARCHAR(100) <<PK>>
+  --
+  * Details : JSONB
+  * CreatedAt : TIMESTAMPTZ
+}
+entity "PlayerProfiles" as PlayerProfiles {
+  * UserId : UUID <<PK, FK>>
+  --
+}
+PlayerProfiles ||--o{ PlayerCurrencies : "PlayerId"
+Currencies ||--o{ PlayerCurrencies : "CurrencyId"
+PlayerProfiles ||--o{ CurrencyTransactions : "PlayerId"
+Currencies ||--o{ CurrencyTransactions : "CurrencyId"
+Currencies ||--o{ Cosmetics : "CurrencyId"
+Cosmetics ||--o{ CosmeticPrices : "CosmeticId"
+Currencies ||--o{ CosmeticPrices : "CurrencyId"
+PlayerProfiles ||--o{ PlayerCosmetics : "PlayerId"
+Cosmetics ||--o{ PlayerCosmetics : "CosmeticId"
+PlayerProfiles ||--o{ PlayerMissions : "PlayerId"
+Missions ||--o{ PlayerMissions : "MissionId"
+PlayerProfiles ||--o{ PlayerAchievements : "PlayerId"
+Achievements ||--o{ PlayerAchievements : "AchievementId"
+PlayerProfiles ||--o{ ProgressRewardGrants : "PlayerId"
+@enduml

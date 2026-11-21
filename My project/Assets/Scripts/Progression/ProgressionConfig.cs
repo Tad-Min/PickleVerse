@@ -6,7 +6,7 @@ namespace PickleVerse.Progression
     [CreateAssetMenu(menuName = "PickleVerse/Progression Config")]
     public sealed class ProgressionConfig : ScriptableObject
     {
-        public int winXp = 10, lossXp = 5;
+        public int lossXp = 5;
         public RewardBundle dailyBonus = new RewardBundle(200, 0, 20), weeklyBonus = new RewardBundle(1000, 0, 50);
         public List<ProgressDefinition> definitions = new List<ProgressDefinition>();
         public void SetDefaults()

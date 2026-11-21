@@ -10,5 +10,7 @@ namespace Services.Interfaces
         Task<Guid> FinishMatchAsync(FinishMatchRequest request);
         Task<List<MatchItemDto>> GetMyMatchHistoryAsync(Guid playerId, int take = 20);
         Task<bool> ReportPlayerAsync(Guid reporterId, ReportPlayerRequest request);
+        Task<List<ReportTargetDto>> ReportTargets(Guid player, Guid match);
+        Task<MatchDetail> Detail(Guid player, Guid match);
     }
 }

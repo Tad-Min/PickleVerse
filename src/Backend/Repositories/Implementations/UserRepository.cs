@@ -32,9 +32,10 @@ namespace Repositories.Implementations
                 .FirstOrDefaultAsync(u => u.Userid == userId);
         }
 
-        public async Task<List<User>> GetPagedUsersAsync(string? search, string? status, int page, int pageSize)
+        public async Task<List<User>> GetPagedUsersAsync(string? search, UserStatus? status, int page, int pageSize)
         {
             var query = _context.Users
+                .Include(u => u.Verificationemails).AsSplitQuery()
                 .Include(u => u.Role)
                 .Include(u => u.Playerprofile)
                 .AsQueryable();
@@ -46,9 +47,9 @@ namespace Repositories.Implementations
                                          (u.Playerprofile != null && u.Playerprofile.Playername.ToLower().Contains(term)));
             }
 
-            if (!string.IsNullOrWhiteSpace(status))
+            if (status.HasValue)
             {
-                var s = status.ToUpper();
+                var s = status.Value;
                 query = query.Where(u => u.Status == s);
             }
 
@@ -59,7 +60,7 @@ namespace Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<int> GetTotalUsersCountAsync(string? search, string? status)
+        public async Task<int> GetTotalUsersCountAsync(string? search, UserStatus? status)
         {
             var query = _context.Users.AsQueryable();
 
@@ -70,9 +71,9 @@ namespace Repositories.Implementations
                                          (u.Playerprofile != null && u.Playerprofile.Playername.ToLower().Contains(term)));
             }
 
-            if (!string.IsNullOrWhiteSpace(status))
+            if (status.HasValue)
             {
-                var s = status.ToUpper();
+                var s = status.Value;
                 query = query.Where(u => u.Status == s);
             }
 
@@ -152,7 +153,7 @@ namespace Repositories.Implementations
             .Where(t => t.Userid == userId && !t.Isrevoked).ExecuteUpdateAsync(s => s.SetProperty(t => t.Isrevoked, true));
 
         public Task<bool> IsAuthVersionValidAsync(Guid userId, int version) => _context.Users
-            .AsNoTracking().AnyAsync(u => u.Userid == userId && u.Authversion == version && u.Status == "ACTIVE");
+            .AsNoTracking().AnyAsync(u => u.Userid == userId && u.Authversion == version && u.Status == UserStatus.Active);
 
         public async Task LockUserAsync(Guid userId)
         {

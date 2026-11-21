@@ -25,8 +25,8 @@ public sealed class GameCatalogService : IGameCatalogService
         catalog.definitions.AddRange(stored.definitions);
         catalog.lessons = stored.lessons;
         catalog.cosmetics = stored.cosmetics;
-        TrainingCurriculum.Configure(catalog.lessons);
         catalog.version = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(GameJson.Write(catalog))))[..16].ToLowerInvariant();
+        await _unitOfWork.Game.SaveCatalog(catalog.version, GameJson.Write(catalog), DateTime.UtcNow);
         return catalog;
     }
 }

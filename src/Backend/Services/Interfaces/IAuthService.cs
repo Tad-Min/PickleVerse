@@ -14,6 +14,6 @@ namespace Services.Interfaces
         Task<bool> LogoutAsync(Guid userId, string refreshToken);
         Task<ResendOtpResponse> ForgotPasswordAsync(ForgotPasswordRequest request);
         Task ResetPasswordAsync(ResetPasswordRequest request);
-        Task<bool> ValidateSessionAsync(Guid userId, int version);
+        Task<bool> ValidateSessionAsync(Guid userId, int version, string scope = "game");
     }
 }

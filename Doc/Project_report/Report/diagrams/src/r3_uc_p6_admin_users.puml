@@ -1,0 +1,26 @@
+@startuml r3_uc_p6_admin_users
+!include _style.iuml
+left to right direction
+actor Administrator as Admin
+rectangle "P6 Admin: Users and Moderation" {
+  usecase "UC-47 Sign In to Admin Portal" as UC47
+  usecase "UC-48 Search User Accounts" as UC48
+  usecase "UC-49 Assign Role" as UC49
+  usecase "UC-50 Verify Email Manually" as UC50
+  usecase "UC-51 Apply Sanction" as UC51
+  usecase "UC-52 Revoke Sanction" as UC52
+  usecase "UC-53 Reset Player Progress" as UC53
+  usecase "UC-54 Review Player Report" as UC54
+  usecase "UC-55 Review Appeal" as UC55
+}
+Admin -- UC47
+Admin -- UC48
+Admin -- UC51
+Admin -- UC52
+Admin -- UC53
+Admin -- UC54
+Admin -- UC55
+UC49 .> UC48 : <<extend>>
+UC50 .> UC48 : <<extend>>
+UC51 .> UC54 : <<extend>>
+@enduml

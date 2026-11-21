@@ -53,7 +53,7 @@ namespace PickleVerse.Multiplayer
         {
             var ids = new HashSet<string>();
             int[] counts = new int[2];
-            if (members.Exists(p => p.bot) && (custom || mode != PlayMode.Singles || HumanCount != 1))
+            if (members.Exists(p => p.bot) && (custom || HumanCount == 0))
                 return false;
             foreach (var p in members)
             {

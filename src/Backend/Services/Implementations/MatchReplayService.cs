@@ -38,7 +38,7 @@ public sealed class MatchReplayService : IMatchReplayService
         if (!trustedServer && await _unitOfWork.Game.IsDedicated(match))
             throw new AppException("Replay trận dedicated do máy chủ ghi.", HttpStatusCode.Forbidden);
         var access=await _unitOfWork.Game.ReplayWriter(player, match) ?? throw Missing();
-        if(access.Status is not ("PLAYING" or "FINISHED"))throw Missing();
+        if(access.Status is not (MatchStatus.Playing or MatchStatus.Finished))throw Missing();
         if (!access.writer)
             throw new AppException("Chỉ máy điều phối được ghi replay chung của trận.", HttpStatusCode.Forbidden);
         return access.started;
@@ -73,9 +73,9 @@ public sealed class MatchReplayService : IMatchReplayService
     {
         var matches=await _unitOfWork.Game.ReplayMatches(player, admin);
         var headers = await Task.WhenAll(matches.Select(LoadManifest));
-        var ready = headers.Where(h => h?.chunks.Count > 0).Select(h => h!).ToList();
-        foreach (var header in ready) await Index(Guid.Parse(header.matchId));
-        return ready;
+        var available = headers.OfType<ReplayMetadata>().Where(h => h.chunks.Count > 0 || !admin && !h.complete).ToList();
+        foreach (var header in available.Where(h => h.chunks.Count > 0)) await Index(Guid.Parse(header.matchId));
+        return available;
     }
     public async Task<ReplayMetadata> Read(Guid player, Guid match, bool admin = false)
     {

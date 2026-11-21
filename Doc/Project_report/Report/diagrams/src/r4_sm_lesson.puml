@@ -1,0 +1,9 @@
+@startuml r4_sm_lesson
+!include _style.iuml
+[*] --> DRAFT : createLesson
+DRAFT --> DRAFT : save [expected version matches] / incrementVersion()
+DRAFT --> PUBLISHED : publish [prerequisites published] / createCatalogSnapshot()
+PUBLISHED --> UNPUBLISHED : unpublish [no published dependants]
+UNPUBLISHED --> PUBLISHED : publish [prerequisites published]
+PUBLISHED --> PUBLISHED : save / keepLiveCopy()
+@enduml

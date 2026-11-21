@@ -4,49 +4,93 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%; /* #0F172A */
-    --foreground: 210 40% 98%;
-    --card: 217 33% 17%;       /* #1E293B */
-    --card-foreground: 210 40% 98%;
-    --primary: 243 75% 59%;     /* #4F46E5 */
+    --background: 240 13% 95%; /* #F2F2F4 */
+    --foreground: 0 0% 22%;    /* #383838 */
+    --card: 0 0% 100%;         /* #FFFFFF */
+    --card-foreground: 0 0% 22%;
+    --primary: 221 83% 53%;    /* #2563EB */
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 25% 27%;   /* #334155 */
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 16% 47%; /* #94A3B8 */
-    --accent: 187 92% 43%;      /* #06B6D4 */
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 243 75% 59%;
+    --secondary: 240 13% 95%;
+    --secondary-foreground: 0 0% 22%;
+    --muted: 240 13% 95%;
+    --muted-foreground: 0 0% 41%; /* #686868 */
+    --accent: 221 83% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 90%;     /* #E4E4E9 */
+    --input: 240 10% 90%;
+    --ring: 221 83% 53%;
     --radius: 0.5rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.18);
+  }
+
+  :focus-visible {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
   }
 }
 
 body {
-  background-color: #0F172A;
-  color: #F8FAFC;
+  background-color: #F2F2F4;
+  background-image:
+    radial-gradient(900px 420px at 100% -8%, rgba(37, 99, 235, 0.09), transparent 62%),
+    radial-gradient(700px 360px at -6% 108%, rgba(37, 99, 235, 0.06), transparent 60%);
+  background-attachment: fixed;
+  color: #383838;
   font-family: 'Inter', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Số liệu căn đều cho bảng và thẻ thống kê */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Khung chờ tải dữ liệu */
+.skeleton {
+  background: linear-gradient(90deg, #ECECF0 25%, #F6F6F9 37%, #ECECF0 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0F172A;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #CFCFD6;
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #A3A3AD;
+  background-clip: content-box;
 }

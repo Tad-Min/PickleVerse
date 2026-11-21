@@ -1,0 +1,77 @@
+@startuml r4_cls_account
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class AccountScreen <<MonoBehaviour>> {
+    - panel : AccountPanelView
+    + SignIn() : void
+    + Register() : void
+    + VerifyCode() : void
+    + RequestPasswordReset() : void
+  }
+  class AccountService {
+    + Profile : BackendPlayerProfile
+    + IsSignedIn : bool
+    + AccessScope : SessionAccessScope
+    + IsRestricted : bool
+    + RegisterAsync(email, password, confirm) : Task
+    + VerifyEmailAsync(email, code) : Task<ApiMessage>
+    + ResendOtpAsync(email) : Task<ResendOtpResponse>
+    + LoginAsync(email, password) : Task
+    + ForgotPasswordAsync(email) : Task<ResendOtpResponse>
+    + ResetPasswordAsync(email, code, password) : Task<ApiMessage>
+    + LogoutAsync() : Task
+  }
+  class ApiClient {
+    + SendAsync<T>(method, path, body, token) : Task<T>
+  }
+}
+package "Web API" {
+  class AuthController <<ApiController>> {
+    + Register(RegisterRequest) : IActionResult
+    + VerifyEmail(VerifyEmailRequest) : IActionResult
+    + Login(LoginRequest) : IActionResult
+    + RefreshToken(RefreshRequest) : IActionResult
+    + ResendOtp(ResendOtpRequest) : IActionResult
+    + ForgotPassword(ForgotPasswordRequest) : IActionResult
+    + ResetPassword(ResetPasswordRequest) : IActionResult
+    + Logout() : IActionResult
+  }
+  interface IAuthService {
+    + RegisterAsync(RegisterRequest) : Task<AuthResponse>
+    + VerifyEmailAsync(VerifyEmailRequest) : Task<bool>
+    + ResendOtpAsync(ResendOtpRequest) : Task<ResendOtpResponse>
+    + LoginAsync(LoginRequest) : Task<AuthResponse>
+    + RefreshTokenAsync(RefreshRequest) : Task<AuthResponse>
+    + LogoutAsync(Guid userId) : Task<bool>
+    + ForgotPasswordAsync(ForgotPasswordRequest) : Task<ResendOtpResponse>
+    + ResetPasswordAsync(ResetPasswordRequest) : Task
+    + ValidateSessionAsync(Guid userId, int version, string scope) : Task<bool>
+  }
+  class AuthService {
+    - unitOfWork : IUnitOfWork
+    - emailSender : IEmailSender
+    - settings : ServerSettings
+    - HashRefreshToken(token) : string
+  }
+  interface IEmailSender {
+    + SendAsync(to, subject, body) : Task
+  }
+  class SmtpEmailSender
+  interface IUnitOfWork {
+    + Users : IUserRepository
+    + Profiles : IPlayerProfileRepository
+    + SaveChangesAsync() : Task<int>
+    + BeginTransactionAsync() : Task
+    + CommitTransactionAsync() : Task
+  }
+}
+AccountScreen --> AccountService
+AccountService --> ApiClient
+ApiClient ..> AuthController : HTTP JSON
+AuthController --> IAuthService
+AuthService ..|> IAuthService
+AuthService --> IUnitOfWork
+AuthService --> IEmailSender
+SmtpEmailSender ..|> IEmailSender
+@enduml

@@ -1,0 +1,48 @@
+@startuml r4_seq_login
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Visitor
+boundary ":AccountScreen" as UI
+control ":AccountService" as AS
+control ":AuthController" as C
+control ":AuthService" as S
+entity ":IUserRepository" as UR
+entity ":GameRepository" as G
+control ":GameController" as GC
+Visitor -> UI : SignIn()
+activate UI
+UI -> AS : LoginAsync(email, password)
+activate AS
+AS -> C : Login(request)
+activate C
+C -> S : LoginAsync(request)
+activate S
+S -> UR : GetByEmailAsync(email)
+alt wrong email or password
+  S --> C : error invalid_credentials
+else email not verified
+  S --> C : error email_not_verified
+else else
+  S -> G : EffectiveRestriction(user)
+  S -> UR : AddRefreshTokenAsync(hash)
+  S -> G : RecordLogin(user)
+  S --> C : AuthResponse (access 2 h, refresh 14 d, scope game or appeals)
+end
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : session
+deactivate AS
+opt scope = game
+  UI -> GC : State()
+  activate GC
+  GC --> UI : GameSnapshot (profile, catalog, inventory)
+  deactivate GC
+end
+UI --> Visitor : Menu, Decisions and Appeals or error message
+deactivate UI
+@enduml

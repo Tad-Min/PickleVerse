@@ -132,8 +132,8 @@ namespace PickleVerse.FrontEnd
             string message = coachingError ?? (coachingLoading ? "Đang tải góp ý…" : coaching?.status == "processing" || coaching?.status == "pending"
                 ? "Buổi chơi mới đang được tổng hợp. Bạn vẫn có thể xem góp ý trước đó." : "Luyện tập đều đặn để nhận góp ý phù hợp với bạn.");
             var analysis = coaching?.analysis;
-            if (analysis?.findings != null && analysis.findings.Count > 0)
-                message += "\n" + string.Join("\n", analysis.findings.Select(f => f.tip).Distinct().Take(2));
+            if (analysis != null)
+                message = CoachingAnalysisText.Describe(analysis);
             if (analysis?.tier?.status == "ready")
                 message += "\nMức kỹ năng gợi ý: " + (analysis.tier.tier == "beginner" ? "Cơ bản" : analysis.tier.tier == "intermediate" ? "Trung cấp" : "Nâng cao");
             Text("Body", row, message, 14, White, new Vector2(.025f, .04f), new Vector2(.97f, .70f), Vector2.zero, Vector2.zero);

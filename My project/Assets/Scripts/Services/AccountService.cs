@@ -16,7 +16,10 @@ namespace PickleVerse.Services
         public int OtpLifetimeMinutes { get; private set; }
         public int OtpResendCooldownSeconds { get; private set; }
         public bool IsSignedIn => !string.IsNullOrEmpty(accessToken) && Profile != null;
+        public SessionAccessScope AccessScope { get; private set; } = SessionAccessScope.Game;
+        public bool IsRestricted => IsSignedIn && AccessScope == SessionAccessScope.Appeals;
         public int SessionVersion => generation;
+        public string SessionNotice { get; private set; }
         public event Action Changed;
         public Func<Task> BeforeSessionEnd { get; set; }
         public AccountService(ApiClient api)
@@ -64,11 +67,13 @@ namespace PickleVerse.Services
             int attempt = generation;
             var result = await api.SendAsync<AuthResponse>("POST", "api/Auth/login", new LoginRequest { Email = email, Password = password }, cancellation: cancellation);
             ValidateTokens(result);
-            var profile = await api.SendAsync<BackendPlayerProfile>("GET", "api/Profiles/me", token: result.AccessToken, cancellation: cancellation);
+            var profile = result.AccessScope == SessionAccessScope.Appeals ? result.Profile :
+                await api.SendAsync<BackendPlayerProfile>("GET", "api/Profiles/me", token: result.AccessToken, cancellation: cancellation);
             CheckGeneration(attempt);
             ValidateProfile(profile);
             accessToken = result.AccessToken;
             refreshToken = result.RefreshToken;
+            AccessScope = result.AccessScope;
             Profile = profile;
             Changed?.Invoke();
         }
@@ -105,20 +110,53 @@ namespace PickleVerse.Services
                     Clear();
             }
         }
-        public void Clear()
+        public void Clear(string notice = null)
         {
             generation++;
+            SessionNotice = notice;
             accessToken = refreshToken = null;
             Profile = null;
+            AccessScope = SessionAccessScope.Game;
             refreshTask = null;
             Changed?.Invoke();
         }
+        public Task<ApiMessage> CheckSessionAsync(CancellationToken cancellation = default) =>
+            SendAuthorizedAsync<ApiMessage>("GET", "api/Auth/session", cancellation: cancellation);
+
+        void EndInvalidSession() => Clear("Phiên đăng nhập đã hết hiệu lực hoặc tài khoản đã đăng nhập trên thiết bị khác. Vui lòng đăng nhập lại.");
         public async Task<T> SendAuthorizedAsync<T>(string method, string path, object body = null, CancellationToken cancellation = default)
         {
             int version = generation;
             var result = await AuthorizedAsync<T>(method, path, body, cancellation);
             CheckGeneration(version);
             return result;
+        }
+        internal async Task<T> WithAccessTokenAsync<T>(Func<string, Task<T>> send, CancellationToken cancellation)
+        {
+            if (!IsSignedIn) throw new ApiException(401, "Vui lòng đăng nhập để tiếp tục.");
+            int version = generation;
+            string token = accessToken;
+            try
+            {
+                var result = await send(token);
+                CheckGeneration(version);
+                return result;
+            }
+            catch (ApiException error) when (error.StatusCode == 401)
+            {
+                CheckGeneration(version);
+                if (token == accessToken)
+                {
+                    if (refreshTask == null || refreshTask.IsCompleted)
+                        refreshTask = RefreshCoreAsync(version);
+                    await refreshTask;
+                }
+                CheckGeneration(version);
+                cancellation.ThrowIfCancellationRequested();
+                var result = await send(accessToken);
+                CheckGeneration(version);
+                return result;
+            }
         }
         async Task<T> AuthorizedAsync<T>(string method, string path, object body, CancellationToken cancellation)
         {
@@ -151,7 +189,7 @@ namespace PickleVerse.Services
                 catch (ApiException retryError) when (retryError.StatusCode == 401)
                 {
                     CheckGeneration(version);
-                    Clear();
+                    EndInvalidSession();
                     throw;
                 }
             }
@@ -165,11 +203,14 @@ namespace PickleVerse.Services
                 ValidateTokens(result);
                 accessToken = result.AccessToken;
                 refreshToken = result.RefreshToken;
+                bool changed = AccessScope != result.AccessScope;
+                AccessScope = result.AccessScope;
+                if (changed) Changed?.Invoke();
             }
             catch (ApiException error) when (error.StatusCode == 401 || error.StatusCode == 403)
             {
                 if (version == generation)
-                    Clear();
+                    EndInvalidSession();
                 throw;
             }
         }

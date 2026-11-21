@@ -1,0 +1,56 @@
+@startuml r4_seq_reset_pwd
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Visitor
+boundary ":AccountScreen" as UI
+control ":AccountService" as AS
+control ":AuthController" as C
+control ":AuthService" as S
+entity ":IUserRepository" as UR
+control ":PasswordRecoveryMailQueue" as Q
+control ":SmtpEmailSender" as M
+Visitor -> UI : RequestPasswordReset()
+activate UI
+UI -> AS : ForgotPasswordAsync(email)
+activate AS
+AS -> C : ForgotPassword(request)
+activate C
+C -> S : ForgotPasswordAsync(request)
+activate S
+S -> UR : GetByEmailAsync(email)
+opt account exists
+  S -> UR : SavePasswordResetAsync(challenge)
+  S -> Q : TryEnqueue(email, code)
+end
+S --> C : same reply for known and unknown email
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : code sent
+deactivate AS
+Q ->> M : SendPasswordResetCodeAsync(email, code)
+Visitor -> UI : RequestPasswordReset()
+UI -> AS : ResetPasswordAsync(email, code, password)
+activate AS
+AS -> C : ResetPassword(request)
+activate C
+C -> S : ResetPasswordAsync(request)
+activate S
+S -> UR : GetPasswordResetAsync(user)
+alt code valid and fewer than 5 failed attempts
+  S -> UR : RevokeAllRefreshTokensAsync(user)
+  S --> C : success (new BCrypt hash, AuthVersion + 1)
+else else
+  S --> C : error invalid_reset_code
+end
+deactivate S
+C --> AS : ApiResponse
+deactivate C
+AS --> UI : result
+deactivate AS
+deactivate UI
+@enduml

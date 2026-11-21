@@ -1,3 +1,4 @@
+using Entities.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ public partial class User
 
     public int Roleid { get; set; }
 
-    public string Status { get; set; } = null!;
+    public UserStatus Status { get; set; } = UserStatus.Active;
 
     public DateTime Createdat { get; set; }
 

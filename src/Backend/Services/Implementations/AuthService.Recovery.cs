@@ -14,7 +14,26 @@ public sealed partial class AuthService
     string RecoveryHash(Guid user, Guid challenge, string token) => Convert.ToHexString(HMACSHA256.HashData(
         Encoding.UTF8.GetBytes(SigningKey), Encoding.UTF8.GetBytes($"password-reset:{user:D}:{challenge:D}:{token}")));
 
-    public Task<bool> ValidateSessionAsync(Guid userId, int version) => unitOfWork.Users.IsAuthVersionValidAsync(userId, version);
+    public async Task<bool> ValidateSessionAsync(Guid userId, int version, string scope = "game")
+    {
+        if (scope is not ("game" or "appeals") || PickleVerse.Multiplayer.RankedBotAccounts.Contains(userId.ToString("N"))) return false;
+        await using var tx = await unitOfWork.Game.BeginTransactionAsync();
+        await unitOfWork.Users.LockUserAsync(userId);
+        var user = await unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null) return false;
+        await ReconcileRestriction(user);
+        bool valid = user.Authversion == version && (scope == "game" ? user.Status == UserStatus.Active : user.Status != UserStatus.Active);
+        await unitOfWork.SaveChangesAsync(); await tx.CommitAsync(); return valid;
+    }
+
+    async Task ReconcileRestriction(Entities.Models.User user)
+    {
+        if (!await unitOfWork.Game.HasSanctionHistory(user.Userid)) return;
+        var status = await unitOfWork.Game.EffectiveRestriction(user.Userid, UtcNow);
+        if (status == user.Status) return;
+        user.Status = status; user.Authversion++;
+        await unitOfWork.Users.RevokeAllRefreshTokensAsync(user.Userid);
+    }
 
     public async Task<ResendOtpResponse> ForgotPasswordAsync(ForgotPasswordRequest request)
     {
