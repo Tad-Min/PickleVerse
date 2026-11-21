@@ -7,7 +7,7 @@ services:
     environment:
       DedicatedServer__Enabled: "true"
       DedicatedServer__ServiceKey: "${PKV_GAME_SERVER_KEY:?Set PKV_GAME_SERVER_KEY in the ignored .env file}"
-      DedicatedServer__Protocol: "19"
+      DedicatedServer__Protocol: "22"
       DedicatedServer__MaxConcurrentMatches: "${PKV_GAME_REPLICAS:-1}"
       DedicatedServer__LeaseSeconds: "45"
       HybridAi__IngestEnabled: "true"

@@ -313,6 +313,15 @@ namespace PickleVerse.LocalMatch
             previousBodyPosition = transform.position;
             PreviousPaddlePosition = paddleFace.position;
         }
+        public void CancelNetworkSwing()
+        {
+            if (!Swinging) return;
+            Swinging = false;
+            contactConsumed = true;
+            contactConfirmed = false;
+            Play(locomotionName);
+            Sample(0);
+        }
         public void Reaction(bool won, bool matchOver = false)
         {
             Swinging = false;

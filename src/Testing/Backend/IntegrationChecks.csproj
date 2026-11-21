@@ -10,6 +10,7 @@
     <Compile Include="../../../My project/Assets/Scripts/Services/Api/ApiClient.cs" Link="ClientContracts/ApiClient.cs" />
     <Compile Include="../../../My project/Assets/Scripts/Services/Utilities/ApiUrl.cs" Link="ClientContracts/ApiUrl.cs" />
     <Compile Include="../../../My project/Assets/Scripts/Multiplayer/DedicatedAdmission.cs" Link="ClientContracts/DedicatedAdmission.cs" />
+    <Compile Include="../../../My project/Assets/Scripts/Multiplayer/DedicatedPlayerSessions.cs" Link="ClientContracts/DedicatedPlayerSessions.cs" />
     <Compile Include="../../../My project/Assets/Scripts/Progression/QuickCoachingRules.cs" Link="ClientContracts/QuickCoachingRules.cs" />
   </ItemGroup>
 </Project>

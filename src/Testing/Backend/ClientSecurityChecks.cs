@@ -19,12 +19,25 @@ static class ClientSecurityChecks
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         byte[] Token(long expires, string matchId, string playerId)
         {
-            return DedicatedToken.Create(secret, matchId, playerId, lease, Guid.NewGuid().ToString("N"), expires);
+            return DedicatedToken.Create(secret, matchId, playerId, lease, Guid.NewGuid().ToString("N"), expires, 7);
         }
         var valid = Token(now + 120, match, player);
-        Check(valid.Length == 105 && valid.Length <= 128, "signed ticket fits Fusion 2.1.3 transport limit");
+        Check(valid.Length == 109 && valid.Length <= 128, "signed ticket fits Fusion 2.1.3 transport limit");
         Check(Convert.FromBase64String(Convert.ToBase64String(valid)).SequenceEqual(valid), "HTTP base64 preserves all connection token bytes");
         Check(DedicatedAdmission.Verify(valid, secret, match, lease, now)?.playerId == player, "backend signature accepted by actual Unity admission verifier");
+        Check(DedicatedAdmission.Verify(valid, secret, match, lease, now)?.authVersion == 7, "login epoch is signed and preserved by the Unity verifier");
+        var changedVersion = (byte[])valid.Clone(); changedVersion[76] ^= 1;
+        Check(DedicatedAdmission.Verify(changedVersion, secret, match, lease, now) == null, "login epoch cannot be forged");
+        Check(DedicatedAdmission.ConnectionIdentity(player, 7) != DedicatedAdmission.ConnectionIdentity(player, 8), "new logins use distinct Photon identities during takeover");
+        var sessions = new DedicatedPlayerSessions();
+        Check(sessions.TryAdmit(player, 7, 1, out var previous) && previous == null, "first authenticated peer is admitted");
+        Check(!sessions.TryAdmit(player, 7, 2, out _) && !sessions.TryAdmit(player, 6, 2, out _), "duplicate and stale connected sessions are rejected");
+        Check(sessions.TryAdmit(player, 8, 2, out previous) && previous.Peer == 1, "new login takes over exactly the previous peer");
+        sessions.RemovePeer(1);
+        Check(sessions.Find(player)?.Peer == 2, "late disconnect from the old device preserves the new connection");
+        Check(sessions.TakeExpired(player, 7) == null && sessions.Find(player)?.Peer == 2, "late heartbeat response cannot disconnect the replacement");
+        Check(sessions.TakeExpired(player, 8)?.Peer == 2 && sessions.Find(player) == null, "revoked epoch disconnects its current peer");
+        Check(sessions.TryAdmit(player, 8, 3, out _), "ordinary reconnect can reuse the current login after disconnect");
         Check(DedicatedAdmission.Verify(valid, new string('b', 64), match, lease, now) == null, "wrong service key rejected");
         Check(DedicatedAdmission.Verify(valid, secret, Guid.NewGuid().ToString("N"), lease, now) == null, "ticket cannot cross matches");
         Check(DedicatedAdmission.Verify(valid, secret, match, "different-lease", now) == null, "ticket cannot cross allocations");

@@ -35,18 +35,19 @@ namespace PickleVerse.Multiplayer
             PrepareDedicated(roster);
             Callbacks.Admission = admission;
             var result = await Runner.StartGame(new StartGameArgs { GameMode = GameMode.Server,
-                SessionName = session, PlayerCount = roster.HumanCount, IsVisible = false, Address = NetAddress.Any(port),
+                // Leave transport seats for authenticated takeovers while the previous peers are still connected.
+                SessionName = session, PlayerCount = roster.HumanCount * 2, IsVisible = false, Address = NetAddress.Any(port),
                 Config = ConfigForSession(true),
                 CustomPhotonAppSettings = Settings(region), SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });
             if (!result.Ok) throw new InvalidOperationException("Không khởi động được máy chủ Fusion: " + result.ShutdownReason);
             sessionName = session; sessionRegion = region;
         }
-        public async Task JoinDedicatedAsync(string session, string region, string player, string token, MatchRoster roster, CancellationToken cancellation = default)
+        public async Task JoinDedicatedAsync(string session, string region, string player, string token, int authVersion, MatchRoster roster, CancellationToken cancellation = default)
         {
             PrepareDedicated(roster); Runner.ProvideInput = true;
             Callbacks.Input = (runner, input) => input.Set(NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == runner && p.IsLocalHuman)?.CaptureDedicatedInput() ?? default);
             var result = await Runner.StartGame(new StartGameArgs { GameMode = GameMode.Client, SessionName = session,
-                EnableClientSessionCreation = false, AuthValues = new Photon.Realtime.AuthenticationValues(player),
+                EnableClientSessionCreation = false, AuthValues = new Photon.Realtime.AuthenticationValues(DedicatedAdmission.ConnectionIdentity(player, authVersion)),
                 ConnectionToken = Convert.FromBase64String(token), CustomPhotonAppSettings = Settings(region),
                 Config = ConfigForSession(true), StartGameCancellationToken = cancellation,
                 SceneManager = Runner.gameObject.AddComponent<PhotonSceneManager>(), Scene = DedicatedCourtScene() });

@@ -13,7 +13,9 @@ namespace API.Controllers;
 public sealed class DedicatedController(IDedicatedServerService server) : ControllerBase
 {
     [Authorize, HttpPost("ticket")]
-    public Task<DedicatedTicket> Ticket(DedicatedCommand request) => server.Ticket(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!), request);
+    public Task<DedicatedTicket> Ticket(DedicatedCommand request) => server.Ticket(
+        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!), request,
+        int.Parse(User.FindFirstValue("auth_version")!, System.Globalization.CultureInfo.InvariantCulture));
 }
 
 [ApiController]

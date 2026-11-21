@@ -78,6 +78,8 @@ namespace PickleVerse.FrontEnd
                     Message(pendingLoginFailure is ApiException failure ? failure.Message : "Chưa thể vào sảnh. Vui lòng thử lại.", true);
                     pendingLoginFailure = null;
                 }
+                else if (!string.IsNullOrEmpty(account.SessionNotice))
+                    Message(account.SessionNotice, true);
                 RefreshVisibility();
             }
             StartCoroutine(ApplyScopeAfterSceneReady());

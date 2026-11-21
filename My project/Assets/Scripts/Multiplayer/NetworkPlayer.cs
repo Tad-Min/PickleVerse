@@ -67,6 +67,9 @@ namespace PickleVerse.Multiplayer
         struct Move { public uint sequence; public Vector2 axes; public bool run, swinging; public float dt; }
         readonly List<Move> predicted = new List<Move>();
         LocalShotInput shotInput = new LocalShotInput();
+        readonly ShotRequestHistory predictedShots = new ShotRequestHistory();
+        readonly ShotRequestHistory receivedShots = new ShotRequestHistory();
+        string authoritativeShotId = "";
         string inputFeedback = "";
         int activeShotMask;
         int pendingShotMask;
@@ -241,7 +244,17 @@ namespace PickleVerse.Multiplayer
                 pendingShotMask = shotInput.CommittedMask;
                 pendingShot = local;
                 var intent = BotMatchGameplayService.FromLocal(local);
-                ShotServerRpc((int)intent.kind, intent.attack, intent.crossCourt, LocalAxes(), LocalRun());
+                string requestId = Guid.NewGuid().ToString("N");
+                if (!IsServer)
+                {
+                    var match = NetworkMatch.Instance;
+                    Vector3 ball = match.Body ? match.Body.position : match.Ball.position;
+                    float delay = PickleVerse.LocalMatch.PaddleContact.Anticipation(Actor, local, ball, match.Ball.velocity, out var predictedBall);
+                    predictedShots.Add(requestId);
+                    Actor.RenderNetworkSwing(local, predictedBall, delay, 0);
+                    SetActiveShotKeys();
+                }
+                ShotServerRpc((int)intent.kind, intent.attack, intent.crossCourt, LocalAxes(), LocalRun(), requestId, Frame.motionEpoch);
             }
             if (!string.IsNullOrEmpty(shotInput.Feedback) && shotInput.Feedback != inputFeedback)
             {
@@ -383,16 +396,21 @@ namespace PickleVerse.Multiplayer
             serverAxes = Vector2.ClampMagnitude(worldMovement, 1) * -CourtEnd;
             serverRun = run;
         }
-        void ShotFrom(int kind, bool attack, bool crossCourt, Vector2 axes, bool run)
+        void ShotFrom(int kind, bool attack, bool crossCourt, Vector2 axes, bool run, string requestId, int epoch)
         {
+            if (epoch != Frame.motionEpoch || !receivedShots.Add(requestId)) return;
             if (kind < 1 || kind > (int)ShotKind.Punch || !CanMove() || !Actor || float.IsNaN(axes.x) || float.IsNaN(axes.y) || float.IsInfinity(axes.x) || float.IsInfinity(axes.y))
+            {
+                RejectShotClientRpc(requestId, epoch);
                 return;
+            }
             // Select the contact pose against the same movement snapshot as the shot.
             // Later movement packets update locomotion without cancelling this strike.
             serverAxes = Vector2.ClampMagnitude(axes, 1);
             serverRun = run;
             Actor.ObserveMovement(serverAxes * -CourtEnd, run);
-            NetworkMatch.Instance?.TrySwing(this, new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt });
+            if (NetworkMatch.Instance?.TrySwing(this, new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt }, requestId) != true)
+                RejectShotClientRpc(requestId, epoch);
         }
         void Reconcile(PlayerFrame old, PlayerFrame frame)
         {
@@ -429,6 +447,7 @@ namespace PickleVerse.Multiplayer
         void ResetActor(Vector3 position, int end)
         {
             poseEvents.Clear();
+            predictedShots.Clear();
             transform.position = position;
             transform.rotation = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
             if (!Actor)
@@ -459,12 +478,14 @@ namespace PickleVerse.Multiplayer
             ResetActor(position, end);
             Actor.RefreshPose();
         }
-        public void BeginSwing(ShotIntent intent, Vector3 predictedBall, float contactDelay = -1)
+        public bool BeginSwing(ShotIntent intent, Vector3 predictedBall, float contactDelay = -1, string requestId = "")
         {
             if (!IsServer || !Actor || !Actor.Swing(BotMatchGameplayService.ToLocal(intent), predictedBall, contactDelay))
-                return;
+                return false;
+            authoritativeShotId = requestId;
             SetActiveShotKeys();
-            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall, Actor.ContactDelay, Runner.SimulationTime);
+            SwingClientRpc((int)intent.kind, intent.attack, intent.crossCourt, predictedBall, Actor.ContactDelay, Runner.SimulationTime, requestId, Frame.motionEpoch);
+            return true;
         }
         void SetActiveShotKeys()
         {
@@ -480,7 +501,7 @@ namespace PickleVerse.Multiplayer
                 return;
             Vector3 contact = position ?? Actor.paddleFace.position;
             Actor.ConsumeContact(volley, contact, successful);
-            ContactClientRpc(volley, contact, successful, velocity, Runner.SimulationTime, (byte)Actor.LastContactGrade);
+            ContactClientRpc(volley, contact, successful, velocity, Runner.SimulationTime, (byte)Actor.LastContactGrade, authoritativeShotId, Frame.motionEpoch);
         }
         public void SplitStep()
         {

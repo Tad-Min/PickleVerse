@@ -151,7 +151,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet build src/Testing/Backend/IntegrationChecks.csproj --configuration Release
-          for check in client-security api-contract schema status-enums content training-sync progress-reset moderation analytics expert-review room-invitations dedicated ranked-doubles social-content hybrid; do
+          for check in client-security api-contract schema status-enums content training-sync progress-reset moderation single-session analytics expert-review room-invitations dedicated ranked-doubles social-content hybrid; do
             dotnet run --project src/Testing/Backend --configuration Release --no-build -- "--check-$check"
           done
 
@@ -190,7 +190,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: src/Frontend
+          sparse-checkout: |
+            src/Frontend
+            src/Testing/Frontend
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
@@ -201,6 +203,7 @@ jobs:
         run: |
           npm ci
           npm run type-check
+          npm run test:session
 
   validate:
     name: Validate .NET, FastAPI and admin web

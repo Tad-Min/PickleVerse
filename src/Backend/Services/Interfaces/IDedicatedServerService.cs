@@ -7,7 +7,7 @@ namespace Services.Interfaces;
 public interface IDedicatedServerService
 {
     bool Authenticate(string key);
-    Task<DedicatedTicket> Ticket(Guid player, DedicatedCommand request);
+    Task<DedicatedTicket> Ticket(Guid player, DedicatedCommand request, int authVersion);
     Task<DedicatedAllocation?> Poll(string workerId, int protocol);
     Task<DedicatedHeartbeat> Renew(DedicatedCommand request, bool ready, string worker);
     Task Acknowledge(DedicatedCommand request, string worker);

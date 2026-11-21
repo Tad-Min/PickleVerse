@@ -21,6 +21,8 @@ static class PasswordRecoveryChecks
         await Call(a => a.RegisterAsync(new() { Email = email, Password = original, ConfirmPassword = original }));
         check(await Call(a => a.VerifyEmailAsync(new() { Email = email, Token = mail.Verification })), "verify fixture account");
         var signedIn = await Call(a => a.LoginAsync(new() { Email = email, Password = original }));
+        int signedInVersion = int.Parse(new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().ReadJwtToken(signedIn.AccessToken)
+            .Claims.Single(c => c.Type == "auth_version").Value);
         var user = signedIn.Profile!.UserId;
         var unknown = await Call(a => a.ForgotPasswordAsync(new() { Email = "unknown@pickleverse.invalid" }));
         check(mail.ResetCount == 0, "unknown email never sends recovery mail");
@@ -47,7 +49,7 @@ static class PasswordRecoveryChecks
         var race = await Task.WhenAll(Reset(current), Reset(current));
         check(race.Count(ok => ok) == 1, "concurrent resets consume the challenge once");
         check(!await Reset(current), "consumed recovery code cannot be replayed");
-        check(!await Call(a => a.ValidateSessionAsync(user, 0)) && await Call(a => a.ValidateSessionAsync(user, 1)), "old access-token version revoked");
+        check(!await Call(a => a.ValidateSessionAsync(user, signedInVersion)) && await Call(a => a.ValidateSessionAsync(user, signedInVersion + 1)), "old access-token version revoked");
         check(!(await Call(a => a.RefreshTokenAsync(new() { RefreshToken = signedIn.RefreshToken! }))).Success, "all old refresh tokens revoked");
         check(!(await Call(a => a.LoginAsync(new() { Email = email, Password = original }))).Success, "old password rejected");
         check((await Call(a => a.LoginAsync(new() { Email = email, Password = replacement }))).Success, "new password signs in");

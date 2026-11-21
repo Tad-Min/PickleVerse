@@ -976,6 +976,19 @@ namespace PickleVerse.Multiplayer
             await LeaveRoomAsync();
             SetState(FlowState.Menu, "Đã đăng xuất.");
         }
+        public async Task DisconnectExpiredSessionAsync()
+        {
+            closing = true;
+            try
+            {
+                CancelLocal();
+                SetState(FlowState.Menu, "Phiên đăng nhập đã kết thúc.");
+                await LeaveMatchAsync();
+                await StopBrowser();
+                await LeaveAttachedRoomAsync();
+            }
+            finally { closing = false; }
+        }
         public void CourtLoaded()
         {
             SetState(FlowState.Connecting, "Chờ mọi người tải xong sân…");

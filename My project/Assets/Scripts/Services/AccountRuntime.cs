@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using PickleVerse.Services.Api;
 using UnityEngine;
 
@@ -10,6 +12,8 @@ namespace PickleVerse.Services
         public AccountService Account { get; private set; }
         internal ApiClient Api { get; private set; }
         public BackendApiSettings Settings { get; private set; }
+        bool checkingSession;
+        double nextSessionCheck;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
         {
@@ -44,6 +48,28 @@ namespace PickleVerse.Services
             transport.Settings = Settings;
             Api = new ApiClient(transport);
             Account = new AccountService(Api);
+        }
+        void Update()
+        {
+            if (!Account.IsSignedIn || checkingSession || Time.realtimeSinceStartupAsDouble < nextSessionCheck)
+                return;
+            nextSessionCheck = Time.realtimeSinceStartupAsDouble + 3;
+            _ = CheckSession();
+        }
+        async Task CheckSession()
+        {
+            checkingSession = true;
+            try { await Account.CheckSessionAsync(); }
+            catch (Exception error) when (error is ApiException || error is OperationCanceledException) { }
+            finally { checkingSession = false; }
+        }
+        void OnApplicationFocus(bool focused)
+        {
+            if (focused) nextSessionCheck = 0;
+        }
+        void OnApplicationPause(bool paused)
+        {
+            if (!paused) nextSessionCheck = 0;
         }
         void OnDestroy()
         {

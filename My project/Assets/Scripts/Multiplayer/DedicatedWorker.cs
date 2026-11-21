@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -26,7 +27,12 @@ namespace PickleVerse.Multiplayer
             public MatchRoster roster;
         }
         Allocation job;
-        [Serializable] sealed class HeartbeatReply { public string stopOperationId, reason; }
+        [Serializable] sealed class PlayerSession { public string playerId; public int authVersion; }
+        [Serializable] sealed class HeartbeatReply
+        {
+            public string stopOperationId, reason;
+            public PlayerSession[] expiredSessions;
+        }
         sealed class ServerApiFailure : IOException
         {
             public readonly long Status;
@@ -38,7 +44,8 @@ namespace PickleVerse.Multiplayer
         PhotonSession session;
         readonly Dictionary<string, CoachingSession> telemetry = new Dictionary<string, CoachingSession>();
         readonly HashSet<string> usedNonces = new HashSet<string>();
-        readonly HashSet<string> pendingAdmissions = new HashSet<string>();
+        readonly Dictionary<string, SemaphoreSlim> admissionGates = new Dictionary<string, SemaphoreSlim>();
+        readonly DedicatedPlayerSessions playerSessions = new DedicatedPlayerSessions();
         readonly string workerId = Guid.NewGuid().ToString("N");
         public LocalReplayRepository Replays { get; private set; }
         public string ReplayWriter => job.replayWriter;
@@ -73,16 +80,22 @@ namespace PickleVerse.Multiplayer
                     await MarkHealthy();
                     if (job == null || job.leaseId == abandonedLease) { job = null; await Task.Delay(1000); continue; }
                     if (job.protocol != Services.MultiplayerSceneConfiguration.ProtocolVersion) throw new InvalidOperationException("Protocol mismatch.");
-                    fenced = false; handlingStop = false; results = null; telemetry.Clear(); usedNonces.Clear(); pendingAdmissions.Clear();
+                    fenced = false; handlingStop = false; results = null; telemetry.Clear(); usedNonces.Clear(); admissionGates.Clear(); playerSessions.Clear();
                     session = PhotonSession.Create("Dedicated Fusion Server"); session.PrepareDedicated(job.roster);
                     var app = MultiplayerApp.Ensure(); app.AttachDedicatedServer(session, job.roster);
                     session.PeerJoined += (runner, peer) =>
                     {
                         var claims = Claims(runner.GetPlayerConnectionToken(peer));
-                        string rejected = claims == null ? "invalid-ticket" : !usedNonces.Add(claims.nonce) ? "used-ticket" : runner.GetPlayerUserId(peer) != claims.playerId ? "identity-mismatch" : app.ClientIdentities.Values.Contains(claims.playerId) ? "duplicate-player" : null;
+                        string rejected = claims == null ? "invalid-ticket" : !usedNonces.Add(claims.nonce) ? "used-ticket" :
+                            runner.GetPlayerUserId(peer) != DedicatedAdmission.ConnectionIdentity(claims.playerId, claims.authVersion) ? "identity-mismatch" : null;
                         if (rejected != null) { Debug.LogWarning("[Dedicated] Admission rejected: " + rejected); runner.Disconnect(peer); return; }
-                        if (!pendingAdmissions.Add(claims.playerId)) { runner.Disconnect(peer); return; }
-                        _ = Admit(runner, peer, claims.playerId, job.leaseId);
+                        if (!admissionGates.TryGetValue(claims.playerId, out var gate))
+                            admissionGates[claims.playerId] = gate = new SemaphoreSlim(1, 1);
+                        _ = Admit(runner, peer, claims, job.leaseId, gate);
+                    };
+                    session.PeerLeft += (runner, peer) =>
+                    {
+                        if (session?.Runner == runner) playerSessions.RemovePeer((ulong)peer.RawEncoded);
                     };
                     _ = Heartbeat(job.leaseId);
                     ushort port = ushort.TryParse(Environment.GetEnvironmentVariable("PKV_GAME_PORT"), out var configured) ? configured : (ushort)3669;
@@ -156,14 +169,23 @@ namespace PickleVerse.Multiplayer
             var claims = DedicatedAdmission.Verify(token, serviceKey, job.matchId, job.leaseId, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             return claims != null && !usedNonces.Contains(claims.nonce) && job.roster.members.Any(m => m.id == claims.playerId && !m.bot) ? claims : null;
         }
-        async Task Admit(Fusion.NetworkRunner runner, Fusion.PlayerRef peer, string player, string lease)
+        async Task Admit(Fusion.NetworkRunner runner, Fusion.PlayerRef peer, DedicatedAdmission.Claims claims, string lease, SemaphoreSlim gate)
         {
+            await gate.WaitAsync();
             try
             {
-                await Post<JToken>("admission", new { LeaseId = lease, PlayerId = Guid.ParseExact(player, "N") });
                 if (fenced || job?.leaseId != lease || !runner || !runner.ActivePlayers.Contains(peer)) return;
+                string player = claims.playerId;
+                await Post<JToken>("admission", new { LeaseId = lease, PlayerId = Guid.ParseExact(player, "N"), AuthVersion = claims.authVersion }, timeout: 4);
+                if (fenced || job?.leaseId != lease || !runner || !runner.ActivePlayers.Contains(peer)) return;
+                var existing = playerSessions.Find(player);
+                if (existing != null && !runner.ActivePlayers.Any(p => (ulong)p.RawEncoded == existing.Peer))
+                    playerSessions.RemovePeer(existing.Peer);
+                if (!playerSessions.TryAdmit(player, claims.authVersion, (ulong)peer.RawEncoded, out var previous))
+                { runner.Disconnect(peer); return; }
                 var app = MultiplayerApp.Instance;
-                app.RegisterDedicatedPeer(peer, player);
+                app.RegisterDedicatedPeer(peer, player, previous);
+                if (previous != null) Debug.Log($"[Dedicated] Device takeover match={job.matchId} player={player} version={claims.authVersion}");
                 Debug.Log($"[Dedicated] Admitted match={job.matchId} worker={workerId} peers={app.ClientIdentities.Count}/{job.roster.HumanCount}");
             }
             catch (Exception error)
@@ -171,7 +193,7 @@ namespace PickleVerse.Multiplayer
                 if (runner && runner.ActivePlayers.Contains(peer)) runner.Disconnect(peer);
                 Debug.LogWarning("[Dedicated] Admission denied (" + error.GetType().Name + ").");
             }
-            finally { if (job?.leaseId == lease) pendingAdmissions.Remove(player); }
+            finally { gate.Release(); }
         }
         object Command() => new { LeaseId = job.leaseId, MatchId = job.matchId };
         async Task Heartbeat(string lease)
@@ -182,9 +204,11 @@ namespace PickleVerse.Multiplayer
             {
                 try
                 {
-                    var reply = await Post<HeartbeatReply>("heartbeat", new { LeaseId = lease, Live = NetworkMatch.Instance?.LiveStatus() }, timeout: 4);
+                    var sessions = playerSessions.Snapshot().Select(p => new { PlayerId = p.Player, AuthVersion = p.AuthVersion }).ToArray();
+                    var reply = await Post<HeartbeatReply>("heartbeat", new { LeaseId = lease, Live = NetworkMatch.Instance?.LiveStatus(), Sessions = sessions }, timeout: 4);
                     if (job?.leaseId != lease || fenced) return;
                     renewBy = Time.realtimeSinceStartupAsDouble + renewalWindowSeconds;
+                    ExpireSessions(reply);
                     await HandleOperation(reply);
                     await MarkHealthy();
                     await Task.Delay(5000);
@@ -203,6 +227,20 @@ namespace PickleVerse.Multiplayer
                     }
                     return;
                 }
+            }
+        }
+        void ExpireSessions(HeartbeatReply reply)
+        {
+            if (reply?.expiredSessions == null || !session?.Runner) return;
+            foreach (var expired in reply.expiredSessions)
+            {
+                if (expired == null || !Guid.TryParse(expired.playerId, out var player)) continue;
+                var current = playerSessions.TakeExpired(player.ToString("N"), expired.authVersion);
+                if (current == null) continue;
+                NetworkMatch.Instance?.ReserveDisconnected(current.Peer);
+                MultiplayerApp.Instance.RemoveClientIdentity(current.Peer);
+                session.Runner.Disconnect(Fusion.PlayerRef.FromEncoded((int)current.Peer));
+                Debug.Log($"[Dedicated] Expired login disconnected match={job.matchId} player={current.Player}");
             }
         }
         async Task HandleOperation(HeartbeatReply reply)

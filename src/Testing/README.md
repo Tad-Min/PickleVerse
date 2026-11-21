@@ -8,6 +8,7 @@ Mã kiểm thử hiện được nhóm theo môi trường chạy. Các assembly
 src/Testing/
   Backend/                 IntegrationChecks của .NET
   AiService/               pytest cho FastAPI, coaching và model
+  Frontend/                Kiểm tra phiên đăng nhập qua Axios adapter
   Unity/EditMode/          Các assembly NUnit và file .meta của Unity
   Sync-UnityTests.ps1      Đồng bộ test Unity trước khi chạy
 ```
@@ -28,6 +29,14 @@ Chạy `python -m pytest -q` từ `src/AiService` như trước. `pyproject.toml
 Chạy `./src/Testing/Sync-UnityTests.ps1` sau khi clone và sau khi sửa test Unity. Script đồng bộ mã và GUID `.meta` sang `My project/Assets/PickleVerse.Testing.Generated`. Thư mục này là bản sinh tự động, đã loại khỏi Git. Mở **Window → General → Test Runner → EditMode** trong Unity Editor để chạy. Thay đổi test ở `src/Testing/Unity/EditMode` rồi đồng bộ lại. Các script smoke và probe Editor hiện có vẫn dùng các điểm chạy cũ.
 
 Web admin hiện có `npm run type-check` và `npm run build` trong `src/Frontend`. Có thể bổ sung bộ test trình duyệt sau khi thống nhất phạm vi E2E.
+
+`npm run test:session` trong `src/Frontend` kiểm tra interceptor Axios thật: lỗi 401 đến muộn từ phiên cũ giữ nguyên phiên mới; lỗi 401 của phiên hiện tại xóa credential và chuyển về đăng nhập. Không gọi mạng.
+
+`--check-single-session` kiểm tra đăng nhập đồng thời, thu hồi JWT/refresh token, logout đến muộn, cạnh tranh login/refresh và endpoint HTTP `GET /api/Auth/session`. Endpoint cần JWT và được miễn hạn mức đăng nhập vì client gọi định kỳ. Các ca `--check-dedicated` và `--check-client-security` kiểm tra epoch trong vé HMAC, admission, heartbeat và callback cũ sau takeover. CI chạy các bộ kiểm tra này.
+
+Tính năng đăng nhập một nơi dùng `users.authversion` hiện có, không đổi schema. Client Unity kiểm tra phiên mỗi 3 giây và khi ứng dụng trở lại; web kiểm tra mỗi 5 giây. Dedicated kiểm tra phiên trong heartbeat mỗi 5 giây và ngay khi admission. Thiết bị mới tự resume `pendingMatch`; phiên cũ ngắt kết nối mà không gửi lệnh bỏ cuộc. Trận giữ thời hạn reconnect 30 giây hiện tại. Khi triển khai, cập nhật đồng bộ API, Unity client và Dedicated **protocol 22** để đồng bộ cả vé vào trận và sự kiện cú đánh.
+
+Online giữ cơ chế chọn tổ hợp và nhả phím để gửi cú đánh. Client phát animation ngay khi nhả; mỗi yêu cầu có mã riêng để bỏ qua animation xác nhận đã phát. Server kiểm tra cú đánh, xác nhận chạm bóng hoặc từ chối; client không tự ghi nhận hit hay đổi tỷ số. Sự kiện từ lượt cũ được chặn theo `motionEpoch`. `ShotRequestHistoryTests` kiểm tra nhận trùng và phản hồi cũ; các ca `SinglesMatchTests`/`TouchControlsTests` bảo vệ cơ chế nhả phím hiện tại.
 
 ## Kiểm thử nhiều trận Fusion
 

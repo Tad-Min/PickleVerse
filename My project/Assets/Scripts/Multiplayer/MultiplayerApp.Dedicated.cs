@@ -15,6 +15,7 @@ namespace PickleVerse.Multiplayer
     {
         [Serializable] sealed class DedicatedTicket
         {
+            public int authVersion;
             public DedicatedTicketState state;
             public string session, region, connectionToken;
             public MatchRoster roster;
@@ -49,7 +50,7 @@ namespace PickleVerse.Multiplayer
             SceneLoading.BeginExternal("MultiplayerCourt");
             try
             {
-                await session.JoinDedicatedAsync(ticket.session, ticket.region, PlayerId, ticket.connectionToken, Roster, cancellation);
+                await session.JoinDedicatedAsync(ticket.session, ticket.region, PlayerId, ticket.connectionToken, ticket.authVersion, Roster, cancellation);
                 if (!IsCurrent() || Match != session) throw new OperationCanceledException();
                 if (reconnecting)
                     await PhotonSession.WaitAsync(() => !IsCurrent() || Match != session || !session.Runner || !session.Runner.IsRunning ||
@@ -133,7 +134,6 @@ namespace PickleVerse.Multiplayer
             else await ReturnToRoomAsync(message);
             _ = RefreshDisconnectedResultAsync(matchId);
         }
-#if UNITY_SERVER
         public void AttachDedicatedServer(PhotonSession session, MatchRoster roster)
         {
             clientIdentities.Clear();
@@ -141,15 +141,24 @@ namespace PickleVerse.Multiplayer
             Match = session;
             session.PeerLeft += (runner, peer) =>
             {
+                if (Match != session) return;
                 NetworkMatch.Instance?.ReserveDisconnected((ulong)peer.RawEncoded);
                 RemoveClientIdentity((ulong)peer.RawEncoded);
             };
         }
-        public void RegisterDedicatedPeer(Fusion.PlayerRef peer, string player)
+        public void RegisterDedicatedPeer(Fusion.PlayerRef peer, string player, DedicatedPlayerSessions.Connection previous = null)
         {
+            if (Match?.Runner == null || !Match.Runner.IsServer)
+                throw new InvalidOperationException("Only the dedicated server can admit a player.");
+            if (previous != null)
+            {
+                // Reserve before assigning the new peer. A late disconnect cannot pause the replacement.
+                NetworkMatch.Instance?.ReserveDisconnected(previous.Peer);
+                RemoveClientIdentity(previous.Peer);
+                Match.Runner.Disconnect(Fusion.PlayerRef.FromEncoded((int)previous.Peer));
+            }
             clientIdentities[(ulong)peer.RawEncoded] = player;
             PeerConnected?.Invoke((ulong)peer.RawEncoded);
         }
-#endif
     }
 }

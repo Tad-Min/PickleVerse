@@ -130,6 +130,12 @@ try
         Console.WriteLine($"SUCCESS: {checks} moderation/auth/appeal checks; disposable database removed.");
         return;
     }
+    if (args.Contains("--check-single-session"))
+    {
+        await SingleSessionChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} single-session checks; disposable database removed.");
+        return;
+    }
     if (args.Contains("--check-progress-reset"))
     {
         await ProgressResetChecks.Run(options, Check);
@@ -351,8 +357,10 @@ try
         user.Status = UserStatus.Suspended;
         await context.SaveChangesAsync();
     }
-    Check((await Login(email)).AccessScope == SessionScope.Appeals, "suspended login receives only appeal access");
-    Check((await Refresh(beforeBan.RefreshToken!)).AccessScope == SessionScope.Appeals, "manually suspended fixture cannot refresh into game access");
+    var restrictedLogin = await Login(email);
+    Check(restrictedLogin.AccessScope == SessionScope.Appeals, "suspended login receives only appeal access");
+    Check(!(await Refresh(beforeBan.RefreshToken!)).Success, "new restricted login revokes the old game refresh token");
+    Check((await Refresh(restrictedLogin.RefreshToken!)).AccessScope == SessionScope.Appeals, "manually suspended fixture cannot refresh into game access");
 
     // Force one real unique-key collision; PostgreSQL sequence increments survive a rollback.
     using (var context = new PickleVerseContext(options))

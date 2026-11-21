@@ -71,6 +71,11 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [DisableRateLimiting]
+        [HttpGet("session")]
+        public IActionResult Session() => Ok(new MessageResponse { Message = "Phiên đăng nhập đang hoạt động." });
+
+        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {

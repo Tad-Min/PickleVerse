@@ -186,6 +186,8 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
             { await unitOfWork.RollbackTransactionAsync(); return Failure("Email hoặc mật khẩu không chính xác.", "invalid_credentials"); }
             var rejected = await RejectIneligibleUserAsync(user);
             if (rejected != null) { await unitOfWork.RollbackTransactionAsync(); return rejected; }
+            user.Authversion = checked(user.Authversion + 1);
+            await unitOfWork.Users.RevokeAllRefreshTokensAsync(user.Userid);
             if (user.Role?.Rolename == "Player") await unitOfWork.Game.RecordLogin(user.Userid, UtcNow);
             var refresh = NewRefreshToken(user.Userid);
             await unitOfWork.Users.AddRefreshTokenAsync(refresh.Entity);
@@ -243,13 +245,23 @@ public sealed partial class AuthService(IUnitOfWork unitOfWork, IProfileService 
 
     public async Task<bool> LogoutAsync(Guid userId, string refreshToken)
     {
-        var token = await unitOfWork.Users.GetRefreshTokenAsync(HashRefreshToken(refreshToken));
-        if (token != null && token.Userid == userId)
+        await unitOfWork.BeginTransactionAsync();
+        try
         {
-            await unitOfWork.Users.RevokeRefreshTokenAsync(token);
-            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.Users.LockUserAsync(userId);
+            var token = await unitOfWork.Users.GetRefreshTokenAsync(HashRefreshToken(refreshToken));
+            // A delayed logout from a replaced device cannot end the current login.
+            if (token != null && token.Userid == userId && !token.Isrevoked && token.Expiresat > UtcNow)
+            {
+                var user = await unitOfWork.Users.GetByIdAsync(userId);
+                if (user != null)
+                    user.Authversion = checked(user.Authversion + 1);
+                await unitOfWork.Users.RevokeAllRefreshTokensAsync(userId);
+            }
+            await unitOfWork.CommitTransactionAsync();
+            return true;
         }
-        return true;
+        catch { await unitOfWork.RollbackTransactionAsync(); throw; }
     }
 
     (string Raw, Refreshtoken Entity) NewRefreshToken(Guid userId)
