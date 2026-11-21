@@ -16,7 +16,7 @@ if ($Build) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 $checks = @{
-    auth = ''; schema = '--check-schema'; recovery = '--check-password-recovery'; social = '--check-online-social';
+    auth = ''; schema = '--check-schema'; recovery = '--check-password-recovery'; single_session = '--check-single-session'; social = '--check-online-social';
     invitations = '--check-room-invitations'; hybrid = '--check-hybrid'; multiplayer = '--check-online-multiplayer';
     catalog = '--check-catalog-text'; participant = '--check-normalized-participants'; match_columns = '--check-match-columns'; dedicated = '--check-dedicated'
 }

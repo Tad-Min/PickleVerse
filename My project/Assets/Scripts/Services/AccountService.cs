@@ -19,6 +19,7 @@ namespace PickleVerse.Services
         public SessionAccessScope AccessScope { get; private set; } = SessionAccessScope.Game;
         public bool IsRestricted => IsSignedIn && AccessScope == SessionAccessScope.Appeals;
         public int SessionVersion => generation;
+        public string SessionNotice { get; private set; }
         public event Action Changed;
         public Func<Task> BeforeSessionEnd { get; set; }
         public AccountService(ApiClient api)
@@ -109,15 +110,20 @@ namespace PickleVerse.Services
                     Clear();
             }
         }
-        public void Clear()
+        public void Clear(string notice = null)
         {
             generation++;
+            SessionNotice = notice;
             accessToken = refreshToken = null;
             Profile = null;
             AccessScope = SessionAccessScope.Game;
             refreshTask = null;
             Changed?.Invoke();
         }
+        public Task<ApiMessage> CheckSessionAsync(CancellationToken cancellation = default) =>
+            SendAuthorizedAsync<ApiMessage>("GET", "api/Auth/session", cancellation: cancellation);
+
+        void EndInvalidSession() => Clear("Phiên đăng nhập đã hết hiệu lực hoặc tài khoản đã đăng nhập trên thiết bị khác. Vui lòng đăng nhập lại.");
         public async Task<T> SendAuthorizedAsync<T>(string method, string path, object body = null, CancellationToken cancellation = default)
         {
             int version = generation;
@@ -183,7 +189,7 @@ namespace PickleVerse.Services
                 catch (ApiException retryError) when (retryError.StatusCode == 401)
                 {
                     CheckGeneration(version);
-                    Clear();
+                    EndInvalidSession();
                     throw;
                 }
             }
@@ -204,7 +210,7 @@ namespace PickleVerse.Services
             catch (ApiException error) when (error.StatusCode == 401 || error.StatusCode == 403)
             {
                 if (version == generation)
-                    Clear();
+                    EndInvalidSession();
                 throw;
             }
         }

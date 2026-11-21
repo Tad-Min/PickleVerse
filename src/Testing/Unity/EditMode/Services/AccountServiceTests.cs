@@ -264,6 +264,55 @@ namespace PickleVerse.Tests.Services
         }
 
         [Test]
+        public async Task SessionHeartbeatClearsReplacedCredentialsWithoutSendingLogout()
+        {
+            var paths = new System.Collections.Generic.List<string>();
+            var fake = new FakeTransport { Handler = (m, p, j, t, c) =>
+            {
+                paths.Add(p);
+                return Task.FromResult(p == "api/Auth/login" ? Ok(Tokens()) : p == "api/Profiles/me" ? Ok(Profile()) : new ApiHttpResponse(401, "{}"));
+            }};
+            var account = new AccountService(new ApiClient(fake));
+            await account.LoginAsync("a@example.invalid", "example-only");
+            bool closed = false;
+            account.BeforeSessionEnd = () => { closed = true; return Task.CompletedTask; };
+            try { await account.CheckSessionAsync(); Assert.Fail(); } catch (ApiException) { }
+            Assert.That(account.IsSignedIn, Is.False);
+            Assert.That(account.SessionNotice, Does.Contain("thiết bị khác"));
+            Assert.That(paths, Does.Contain("api/Auth/session"));
+            Assert.That(paths, Does.Not.Contain("api/Auth/logout"));
+            Assert.That(closed, Is.False);
+        }
+
+        [Test]
+        public async Task SessionHeartbeatConnectionFailurePreservesCredentials()
+        {
+            var fake = new FakeTransport { Handler = (m, p, j, t, c) => Task.FromResult(
+                p == "api/Auth/login" ? Ok(Tokens()) : p == "api/Profiles/me" ? Ok(Profile()) : new ApiHttpResponse(503, "{}")) };
+            var account = new AccountService(new ApiClient(fake));
+            await account.LoginAsync("a@example.invalid", "example-only");
+            try { await account.CheckSessionAsync(); Assert.Fail(); } catch (ApiException) { }
+            Assert.That(account.IsSignedIn, Is.True);
+            Assert.That(account.SessionNotice, Is.Null);
+        }
+
+        [Test]
+        public async Task LateHeartbeatFromOldLoginCannotClearTheNewLogin()
+        {
+            var oldResponse = new TaskCompletionSource<ApiHttpResponse>();
+            var fake = new FakeTransport { Handler = (m, p, j, t, c) => p == "api/Auth/session" ? oldResponse.Task :
+                Task.FromResult(p == "api/Auth/login" ? Ok(Tokens()) : Ok(Profile())) };
+            var account = new AccountService(new ApiClient(fake));
+            await account.LoginAsync("a@example.invalid", "example-only");
+            var heartbeat = account.CheckSessionAsync();
+            await account.LoginAsync("b@example.invalid", "example-only");
+            oldResponse.SetResult(new ApiHttpResponse(401, "{}"));
+            try { await heartbeat; Assert.Fail(); } catch (OperationCanceledException) { }
+            Assert.That(account.IsSignedIn, Is.True);
+            Assert.That(account.SessionNotice, Is.Null);
+        }
+
+        [Test]
         public async Task LogoutRevokesTheRotatedRefreshToken()
         {
             int logouts = 0; string revoked = null;

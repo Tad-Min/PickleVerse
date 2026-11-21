@@ -5,8 +5,8 @@ namespace PickleVerse.Multiplayer.Services
 {
     public static class MultiplayerSceneConfiguration
     {
-        public const ushort ProtocolVersion = 20;
-        public const string Release = "20261116-p20";
+        public const ushort ProtocolVersion = 22;
+        public const string Release = "20261121-p22";
         public const string RoomPath = "Assets/Scenes/UI/PlayMultiplayer.unity";
         public const string CourtPath = "Assets/Scenes/MultiplayerCourt.unity";
         public const string LobbyPath = "Assets/Scenes/PhotonLobby.unity";

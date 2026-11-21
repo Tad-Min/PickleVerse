@@ -343,21 +343,21 @@ namespace PickleVerse.Multiplayer
                 MultiplayerApp.Instance.MatchStarted();
             }
         }
-        public void TrySwing(NetworkPlayer player, ShotIntent intent)
+        public bool TrySwing(NetworkPlayer player, ShotIntent intent, string requestId = "")
         {
             if (!IsServer || !Started || Paused || Finished || BetweenGames || !player.Connected || player.Actor.Swinging)
-                return;
+                return false;
             if (intent.attack && intent.crossCourt)
-                return;
+                return false;
             bool serve = Rules.waitingServe && player.Team == Rules.servingTeam && player.Index == Rules.serverIndex && intent.kind == ShotKind.Groundstroke;
             if (Rules.waitingServe && !serve || !Rules.live && !serve)
-                return;
+                return false;
             if (serve)
                 intent.kind = ShotKind.Serve;
             var local = BotMatchGameplayService.ToLocal(intent);
             Vector3 beforeAssist = player.Actor.transform.position;
             float delay = PaddleContact.Anticipation(player.Actor, local, ballPosition, ballVelocity, out var predicted);
-            player.BeginSwing(intent, predicted, delay);
+            if (!player.BeginSwing(intent, predicted, delay, requestId)) return false;
             if (player.Actor.Swinging)
             {
                 var evidence = CoachingAttempt(player, local.kind.ToString());
@@ -371,6 +371,7 @@ namespace PickleVerse.Multiplayer
             }
             if (serve)
                 releasedServe = false;
+            return true;
         }
         void BeginRally()
         {

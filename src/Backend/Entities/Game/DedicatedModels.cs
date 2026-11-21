@@ -19,6 +19,7 @@ public sealed class DedicatedAllocation
 }
 public sealed class DedicatedTicket
 {
+    public int AuthVersion { get; set; }
     public DedicatedAllocationStatus State { get; set; } = DedicatedAllocationStatus.Pending;
     public string Session { get; set; } = "";
     public string Region { get; set; } = "";
@@ -27,6 +28,7 @@ public sealed class DedicatedTicket
 }
 public sealed class DedicatedCommand
 {
+    public List<DedicatedPlayerSession> Sessions { get; set; } = [];
     public string MatchId { get; set; } = "";
     public string LeaseId { get; set; } = "";
     public Guid? OperationId { get; set; }
@@ -34,13 +36,20 @@ public sealed class DedicatedCommand
 }
 public sealed class DedicatedHeartbeat
 {
+    public List<DedicatedPlayerSession> ExpiredSessions { get; set; } = [];
     public Guid? StopOperationId { get; set; }
     public string? Reason { get; set; }
 }
 public sealed class DedicatedAdmissionCommand
 {
+    public int AuthVersion { get; set; }
     public string LeaseId { get; set; } = "";
     public Guid PlayerId { get; set; }
+}
+public sealed class DedicatedPlayerSession
+{
+    public Guid PlayerId { get; set; }
+    public int AuthVersion { get; set; }
 }
 public sealed class DedicatedLiveState
 {

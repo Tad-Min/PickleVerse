@@ -64,7 +64,7 @@ static class DedicatedChecks
             await Call((g,_) => g.StartOnline(Guid.Parse(request.HostPlayerId), request));
         }
         Task<DedicatedAllocation?> Poll(string id) => Call((_,s)=>s.Poll(id, settings.Dedicated.Protocol));
-        Task<DedicatedTicket> Ticket(OnlineMatchRequest match) => Call((_,s)=>s.Ticket(Guid.Parse(match.HostPlayerId),new(){MatchId=match.Roster.matchId}));
+        Task<DedicatedTicket> Ticket(OnlineMatchRequest match) => Call((_,s)=>s.Ticket(Guid.Parse(match.HostPlayerId),new(){MatchId=match.Roster.matchId}, 0));
         async Task<DedicatedAllocation> Take(OnlineMatchRequest match)
         {
             var reserved = await leases.ReadMatch(match.Roster.matchId);
@@ -112,6 +112,25 @@ static class DedicatedChecks
         var ticket=await Ticket(first);
         check(DedicatedAdmission.Verify(Convert.FromBase64String(ticket.ConnectionToken),key,job.MatchId,job.LeaseId,DateTimeOffset.UtcNow.ToUnixTimeSeconds())?.playerId==first.HostPlayerId,
             "database allocation issues a ticket accepted by the actual Unity verifier");
+        await Call(async (_,s) => { await s.AuthorizeAdmission(new() { LeaseId = job.LeaseId, PlayerId = owner, AuthVersion = 0 }, worker); return true; });
+        await using (var db = new PickleVerseContext(options))
+            await db.Users.Where(u => u.Userid == owner).ExecuteUpdateAsync(update => update.SetProperty(u => u.Authversion, 1));
+        await Reject(() => Ticket(first), HttpStatusCode.Unauthorized, "an in-flight ticket request cannot borrow the replacement login epoch");
+        await Reject(() => Call(async (_,s) => { await s.AuthorizeAdmission(new() { LeaseId = job.LeaseId, PlayerId = owner, AuthVersion = 0 }, worker); return true; }),
+            HttpStatusCode.Forbidden, "an already signed ticket cannot enter after its login is replaced");
+        var replacement = await Call((_,s) => s.Ticket(owner, new() { MatchId = job.MatchId }, 1));
+        check(replacement.AuthVersion == 1 && DedicatedAdmission.Verify(Convert.FromBase64String(replacement.ConnectionToken), key, job.MatchId, job.LeaseId,
+            DateTimeOffset.UtcNow.ToUnixTimeSeconds())?.authVersion == 1, "replacement device gets a signed ticket for its login epoch");
+        await Call(async (_,s) => { await s.AuthorizeAdmission(new() { LeaseId = job.LeaseId, PlayerId = owner, AuthVersion = 1 }, worker); return true; });
+        var expired = await Call((_,s) => s.Renew(new() { LeaseId = job.LeaseId, Sessions = [new() { PlayerId = owner, AuthVersion = 0 }] }, false, worker));
+        check(expired.ExpiredSessions.Count == 1 && expired.ExpiredSessions[0].PlayerId == owner && expired.ExpiredSessions[0].AuthVersion == 0,
+            "heartbeat fences a replaced login while preserving its reconnect reservation");
+        var active = await Call((_,s) => s.Renew(new() { LeaseId = job.LeaseId, Sessions = [new() { PlayerId = owner, AuthVersion = 1 }] }, false, worker));
+        check(active.ExpiredSessions.Count == 0, "heartbeat preserves the replacement session");
+        await Reject(() => Call((_,s) => s.Renew(new() { LeaseId = job.LeaseId, Sessions = [new() { PlayerId = Guid.NewGuid(), AuthVersion = 0 }] }, false, worker)),
+            HttpStatusCode.BadRequest, "heartbeat cannot check sessions outside its assigned roster");
+        check((await Call((g,_) => g.Read(owner))).player.pendingMatch?.id == job.MatchId,
+            "login takeover preserves the pending match for the replacement device");
         var results=await Results(first);
         await Reject(()=>Call((g,_)=>g.ReportOnline(owner,new(){RequestId=Guid.NewGuid().ToString("N"),Result=results[0].result})),HttpStatusCode.Forbidden,"dedicated rejects a client reporting its own result");
         await Reject(()=>Call((g,_)=>g.LeaveOnline(owner,new(){MatchId=job.MatchId,RequestId=Guid.NewGuid().ToString("N")})),HttpStatusCode.Forbidden,"dedicated client leave API cannot finalize the official result");

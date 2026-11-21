@@ -44,8 +44,8 @@ namespace PickleVerse.Multiplayer
             if (!match || match.Paused) return;
             Actor.RenderNetworkPose(owner ? predictedVelocity : frame.velocity, owner ? LocalRun() : frame.running,
                 Time.deltaTime, CanMove(), (IsLocalHuman ? LocalAxes() : frame.movement) * -CourtEnd);
-            // Swing and contact are authoritative events, including for the local player's predicted root.
-            // Present them on the same timeline as the interpolated ball.
+            // Remote swings and confirmed contacts follow the interpolated ball. The local
+            // swing has already started from input and must not wait for this render timeline.
             PresentPoseEvents(Runner.RemoteRenderTime);
         }
 
@@ -55,21 +55,26 @@ namespace PickleVerse.Multiplayer
                 poseEvents.Dequeue().present(renderTime);
         }
 
-        void ScheduleSwing(int kind, bool attack, bool crossCourt, Vector3 predictedBall, float delay, double started)
+        void ScheduleSwing(int kind, bool attack, bool crossCourt, Vector3 predictedBall, float delay, double started, string requestId, int epoch)
         {
+            if (epoch != Frame.motionEpoch || IsLocalHuman && predictedShots.Contains(requestId)) return;
             var intent = BotMatchGameplayService.ToLocal(new ShotIntent { kind = (ShotKind)kind, attack = attack, crossCourt = crossCourt });
             poseEvents.Enqueue((started, renderTime =>
             {
+                if (epoch != Frame.motionEpoch) return;
                 Actor.RenderNetworkSwing(intent, predictedBall, delay, (float)(renderTime - started));
                 SetActiveShotKeys();
             }));
         }
 
-        void ScheduleContact(bool volley, Vector3 position, bool successful, Vector3 velocity, double time, byte grade)
+        void ScheduleContact(bool volley, Vector3 position, bool successful, Vector3 velocity, double time, byte grade, string requestId, int epoch)
         {
+            if (epoch != Frame.motionEpoch) return;
             poseEvents.Enqueue((time, _ =>
             {
-                Actor.ConsumeContact(volley, position, successful, (HitGrade)grade, preserveSwingTiming: true);
+                if (epoch != Frame.motionEpoch) return;
+                if (!IsLocalHuman || !predictedShots.Contains(requestId) || predictedShots.Current == requestId)
+                    Actor.ConsumeContact(volley, position, successful, (HitGrade)grade, preserveSwingTiming: true);
                 if (successful)
                     NetworkMatch.Instance?.PresentContact(position, velocity, time);
             }));

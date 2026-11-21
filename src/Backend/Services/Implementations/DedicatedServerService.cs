@@ -38,8 +38,10 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
         if (allocation == null) throw Error("Phiên máy chủ đã hết hiệu lực.", HttpStatusCode.Gone);
         return allocation;
     }
-    public async Task<DedicatedTicket> Ticket(Guid player, DedicatedCommand request)
+    public async Task<DedicatedTicket> Ticket(Guid player, DedicatedCommand request, int authVersion)
     {
+        if (!await unit.Users.IsAuthVersionValidAsync(player, authVersion))
+            throw Error("Phiên đăng nhập đã hết hiệu lực.", HttpStatusCode.Unauthorized);
         if (!settings.Dedicated.Enabled) throw Error("Chế độ máy chủ riêng chưa bật.", HttpStatusCode.ServiceUnavailable);
         if (!Guid.TryParse(request.MatchId, out var match)) throw Error("Mã trận không hợp lệ.", HttpStatusCode.BadRequest);
         var record = await unit.Game.Match(m => m.Matchid == match && m.Gamematchplayers.Any(p => p.Playerid == player));
@@ -57,11 +59,11 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
         if (allocation.State == DedicatedAllocationStatus.Reserved)
             allocation = await leases.Activate(allocation.MatchId, settings.Dedicated.LeaseSeconds)
                 ?? throw Error("Máy chủ đã mất chỗ giữ cho trận.", HttpStatusCode.Gone);
-        var ticket = new DedicatedTicket { State = allocation.State, Session = allocation.Session, Region = allocation.Region, Roster = allocation.Roster };
+        var ticket = new DedicatedTicket { State = allocation.State, Session = allocation.Session, Region = allocation.Region, Roster = allocation.Roster, AuthVersion = authVersion };
         if (allocation.State == DedicatedAllocationStatus.Ready)
         {
             ticket.ConnectionToken = Convert.ToBase64String(DedicatedToken.Create(settings.Dedicated.ServiceKey, allocation.MatchId,
-                player.ToString("N"), allocation.LeaseId, Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow.AddMinutes(2).ToUnixTimeSeconds()));
+                player.ToString("N"), allocation.LeaseId, Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow.AddMinutes(2).ToUnixTimeSeconds(), authVersion));
         }
         return ticket;
     }
@@ -74,6 +76,11 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
     public async Task<DedicatedHeartbeat> Renew(DedicatedCommand request, bool ready, string worker)
     {
         var allocation = await Guard(request.LeaseId, worker);
+        if (request.Sessions == null || request.Sessions.Count > allocation.Roster.HumanCount ||
+            request.Sessions.Any(s => s == null || s.AuthVersion < 0 ||
+                !allocation.Roster.members.Any(m => !m.bot && Guid.TryParse(m.id, out var id) && id == s.PlayerId)) ||
+            request.Sessions.Select(s => s.PlayerId).Distinct().Count() != request.Sessions.Count)
+            throw Error("Danh sách phiên người chơi không hợp lệ.", HttpStatusCode.BadRequest);
         if (!await leases.Renew(allocation.LeaseId, worker, ready ? DedicatedAllocationStatus.Ready : null, settings.Dedicated.LeaseSeconds))
             throw Error("Phiên máy chủ đã hết hiệu lực.", HttpStatusCode.Gone);
         var match = Guid.Parse(allocation.MatchId);
@@ -90,11 +97,17 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
             live.ObservedAt = DateTime.UtcNow;
             await leases.SaveLive(allocation.MatchId, live);
         }
+        var reply = new DedicatedHeartbeat();
+        foreach (var session in request.Sessions)
+            if (!await unit.Users.IsAuthVersionValidAsync(session.PlayerId, session.AuthVersion))
+                reply.ExpiredSessions.Add(session);
         var op = await unit.Game.DedicatedOperation(Guid.Parse(allocation.MatchId));
-        if (op == null || op.AcknowledgedAt != null) return new();
+        if (op == null || op.AcknowledgedAt != null) return reply;
         await unit.Game.BindOperation(op.OperationId, request.LeaseId);
         await game.InterruptDedicated(op.MatchId);
-        return new() { StopOperationId = op.OperationId, Reason = op.Reason };
+        reply.StopOperationId = op.OperationId;
+        reply.Reason = op.Reason;
+        return reply;
     }
     public async Task Acknowledge(DedicatedCommand request, string worker)
     {
@@ -109,7 +122,8 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
     {
         var allocation = await Guard(request.LeaseId, worker);
         if (!allocation.Roster.members.Any(m => !m.bot && Guid.TryParse(m.id, out var id) && id == request.PlayerId)
-            || !await unit.Game.CanAdmitDedicated(Guid.Parse(allocation.MatchId), request.PlayerId))
+            || !await unit.Game.CanAdmitDedicated(Guid.Parse(allocation.MatchId), request.PlayerId)
+            || !await unit.Users.IsAuthVersionValidAsync(request.PlayerId, request.AuthVersion))
             throw Error("Quyền vào trận không còn hiệu lực.", HttpStatusCode.Forbidden);
     }
     public async Task Complete(DedicatedCompletion request, string worker)

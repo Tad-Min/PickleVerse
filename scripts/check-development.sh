@@ -9,6 +9,7 @@ dotnet run --project src/Testing/Backend --no-build -- --check-api-contract
 dotnet run --project src/Testing/Backend --no-build -- --check-schema
 dotnet run --project src/Testing/Backend --no-build
 dotnet run --project src/Testing/Backend --no-build -- --check-password-recovery
+dotnet run --project src/Testing/Backend --no-build -- --check-single-session
 dotnet run --project src/Testing/Backend --no-build -- --check-online-social
 dotnet run --project src/Testing/Backend --no-build -- --check-room-invitations
 dotnet run --project src/Testing/Backend --no-build -- --check-dedicated

@@ -59,7 +59,13 @@ namespace PickleVerse.FrontEnd
             var app = MultiplayerApp.Instance;
             if (app)
             {
-                try { await app.SignOutFromLobbyAsync(); }
+                try
+                {
+                    if (AccountRuntime.Ensure().Account.IsSignedIn)
+                        await app.SignOutFromLobbyAsync();
+                    else
+                        await app.DisconnectExpiredSessionAsync();
+                }
                 catch (System.Exception error) { Debug.LogWarning("[Authentication] Session cleanup: " + error.GetType().Name); }
             }
             if (quitting || !this) return;
