@@ -48,6 +48,7 @@ public sealed class DedicatedAdmissionCommand
 }
 public sealed class DedicatedPlayerSession
 {
+    [System.Text.Json.Serialization.JsonConverter(typeof(DedicatedPlayerIdJsonConverter))]
     public Guid PlayerId { get; set; }
     public int AuthVersion { get; set; }
 }

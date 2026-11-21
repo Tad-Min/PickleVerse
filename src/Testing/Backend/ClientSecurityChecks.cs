@@ -38,6 +38,14 @@ static class ClientSecurityChecks
         Check(sessions.TakeExpired(player, 7) == null && sessions.Find(player)?.Peer == 2, "late heartbeat response cannot disconnect the replacement");
         Check(sessions.TakeExpired(player, 8)?.Peer == 2 && sessions.Find(player) == null, "revoked epoch disconnects its current peer");
         Check(sessions.TryAdmit(player, 8, 3, out _), "ordinary reconnect can reuse the current login after disconnect");
+        string heartbeatJson = Newtonsoft.Json.JsonConvert.SerializeObject(sessions.CreateHeartbeat(lease, null));
+        var heartbeat = System.Text.Json.JsonSerializer.Deserialize<DedicatedCommand>(heartbeatJson,
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!;
+        Check(heartbeat.Sessions.Single().PlayerId == Guid.ParseExact(player, "N") &&
+            heartbeat.Sessions.Single().AuthVersion == 8, "actual Unity heartbeat preserves the player and login epoch in the API DTO");
+        using (var heartbeatDocument = System.Text.Json.JsonDocument.Parse(heartbeatJson))
+            Check(heartbeatDocument.RootElement.GetProperty("Sessions")[0].GetProperty("PlayerId").GetString() == Guid.ParseExact(player, "N").ToString("D"),
+                "Unity heartbeat emits canonical JSON GUIDs instead of compact roster strings");
         Check(DedicatedAdmission.Verify(valid, new string('b', 64), match, lease, now) == null, "wrong service key rejected");
         Check(DedicatedAdmission.Verify(valid, secret, Guid.NewGuid().ToString("N"), lease, now) == null, "ticket cannot cross matches");
         Check(DedicatedAdmission.Verify(valid, secret, match, "different-lease", now) == null, "ticket cannot cross allocations");

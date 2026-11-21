@@ -204,8 +204,8 @@ namespace PickleVerse.Multiplayer
             {
                 try
                 {
-                    var sessions = playerSessions.Snapshot().Select(p => new { PlayerId = p.Player, AuthVersion = p.AuthVersion }).ToArray();
-                    var reply = await Post<HeartbeatReply>("heartbeat", new { LeaseId = lease, Live = NetworkMatch.Instance?.LiveStatus(), Sessions = sessions }, timeout: 4);
+                    var reply = await Post<HeartbeatReply>("heartbeat",
+                        playerSessions.CreateHeartbeat(lease, NetworkMatch.Instance?.LiveStatus()), timeout: 4);
                     if (job?.leaseId != lease || fenced) return;
                     renewBy = Time.realtimeSinceStartupAsDouble + renewalWindowSeconds;
                     ExpireSessions(reply);

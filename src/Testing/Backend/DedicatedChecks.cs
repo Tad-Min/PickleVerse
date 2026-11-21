@@ -113,6 +113,22 @@ static class DedicatedChecks
         check(DedicatedAdmission.Verify(Convert.FromBase64String(ticket.ConnectionToken),key,job.MatchId,job.LeaseId,DateTimeOffset.UtcNow.ToUnixTimeSeconds())?.playerId==first.HostPlayerId,
             "database allocation issues a ticket accepted by the actual Unity verifier");
         await Call(async (_,s) => { await s.AuthorizeAdmission(new() { LeaseId = job.LeaseId, PlayerId = owner, AuthVersion = 0 }, worker); return true; });
+        var connectedSessions = new DedicatedPlayerSessions();
+        connectedSessions.TryAdmit(owner.ToString("N"), 0, 2, out _);
+        string nativeHeartbeat = Newtonsoft.Json.JsonConvert.SerializeObject(connectedSessions.CreateHeartbeat(job.LeaseId,
+            new { scoreA = 0, scoreB = 0, gamesA = 0, gamesB = 0, players = job.Roster.members.Select(m => new { id = m.id, connected = true }).ToArray() }));
+        foreach (bool compact in new[] { false, true })
+        {
+            for (int cycle = 0; cycle < 3; cycle++)
+            {
+                string wire = compact ? nativeHeartbeat.Replace(owner.ToString("D"), owner.ToString("N")) : nativeHeartbeat;
+                var bound = System.Text.Json.JsonSerializer.Deserialize<Entities.Game.DedicatedCommand>(wire,
+                    new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!;
+                var renewed = await Call((_,s) => s.Renew(bound, false, worker));
+                check(renewed.ExpiredSessions.Count == 0 && (await leases.ReadMatch(job.MatchId)) != null,
+                    (compact ? "deployed compact" : "current Unity") + " heartbeat renews after admission and court spawn, cycle " + cycle);
+            }
+        }
         await using (var db = new PickleVerseContext(options))
             await db.Users.Where(u => u.Userid == owner).ExecuteUpdateAsync(update => update.SetProperty(u => u.Authversion, 1));
         await Reject(() => Ticket(first), HttpStatusCode.Unauthorized, "an in-flight ticket request cannot borrow the replacement login epoch");

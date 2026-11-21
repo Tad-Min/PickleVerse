@@ -79,6 +79,24 @@ static class ApiContractChecks
             Check(response.StatusCode == HttpStatusCode.BadRequest && body.RootElement.GetProperty("code").GetString() == "validation_failed"
                 && body.RootElement.TryGetProperty("errors", out _), "automatic model validation uses ApiResponse and field errors");
         }
+        var heartbeatPlayer = Guid.NewGuid();
+        var workerSessions = new PickleVerse.Multiplayer.DedicatedPlayerSessions();
+        workerSessions.TryAdmit(heartbeatPlayer.ToString("N"), 7, 2, out _);
+        string workerHeartbeat = Newtonsoft.Json.JsonConvert.SerializeObject(workerSessions.CreateHeartbeat("fixture-lease", null));
+        foreach (var (format, wire) in new[] {
+            ("canonical", workerHeartbeat),
+            ("deployed compact", workerHeartbeat.Replace(heartbeatPlayer.ToString("D"), heartbeatPlayer.ToString("N"))) })
+        {
+            using var response = await http.PostAsync("api/contract/dedicated-heartbeat", new StringContent(wire, Encoding.UTF8, "application/json"));
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Check(response.StatusCode == HttpStatusCode.OK, format + " Unity worker heartbeat binds without HTTP 400");
+            var session = json.RootElement.GetProperty("data").GetProperty("sessions")[0];
+            Check(session.GetProperty("playerId").GetGuid() == heartbeatPlayer && session.GetProperty("authVersion").GetInt32() == 7,
+                format + " heartbeat retains the authenticated player and login epoch");
+        }
+        using (var response = await http.PostAsync("api/contract/dedicated-heartbeat",
+            new StringContent(workerHeartbeat.Replace(heartbeatPlayer.ToString("D"), "not-a-player"), Encoding.UTF8, "application/json")))
+            Check(response.StatusCode == HttpStatusCode.BadRequest, "malformed heartbeat player IDs still return HTTP 400");
         using (var request = new HttpRequestMessage(HttpMethod.Get, "api/contract/admin"))
         {
             request.Headers.Add("X-Contract-User", "member");
@@ -138,6 +156,7 @@ public sealed class ContractController : ControllerBase
     [Authorize, HttpGet("authorized")] public IActionResult Authorized() => Ok(new ContractDto());
     [Authorize(Roles = "Admin"), HttpGet("admin")] public IActionResult Admin() => Ok(new ContractDto());
     [HttpPost("validate")] public IActionResult Validate(ContractInput input) => Ok(input);
+    [HttpPost("dedicated-heartbeat")] public IActionResult DedicatedHeartbeat(Entities.Game.DedicatedCommand input) => Ok(input);
     [FileResponse, HttpGet("file")] public IActionResult Download() => File(Encoding.UTF8.GetBytes("{\"recording\":true}"), "application/json", "fixture.json");
 }
 

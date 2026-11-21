@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,6 +19,17 @@ namespace PickleVerse.Multiplayer
         readonly Dictionary<string, Connection> players = new Dictionary<string, Connection>();
         public Connection Find(string player) => players.TryGetValue(player, out var value) ? value : null;
         public Connection[] Snapshot() => players.Values.ToArray();
+        public object CreateHeartbeat(string leaseId, object live) => new
+        {
+            LeaseId = leaseId,
+            Live = live,
+            // JSON GUIDs use the D form expected by the API, while roster IDs stay N.
+            Sessions = players.Values.Select(p => new
+            {
+                PlayerId = Guid.ParseExact(p.Player, "N"),
+                AuthVersion = p.AuthVersion
+            }).ToArray()
+        };
         public bool TryAdmit(string player, int authVersion, ulong peer, out Connection previous)
         {
             previous = Find(player);
