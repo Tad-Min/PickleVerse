@@ -30,7 +30,11 @@ namespace PickleVerse.Multiplayer
             else if (kind == "contact" && a.Count == 12)
                 ScheduleContact(a[0].Value<bool>(), V(a, 1), a[4].Value<bool>(), V(a, 5), a[8].Value<double>(), a[9].Value<byte>(), a[10].Value<string>(), a[11].Value<int>());
             else if (kind == "shot-rejected" && a.Count == 2 && a[1].Value<int>() == Frame.motionEpoch && predictedShots.RejectCurrent(a[0].Value<string>()))
-                Actor.CancelNetworkSwing();
+            {
+                // A rejected prediction is a whiff: close contact but finish recovery.
+                // Server latency must not let another press restart the current strike.
+                if (Actor.Swinging) Actor.MissContact();
+            }
             else if (kind == "split" && a.Count == 0)
                 poseEvents.Enqueue((double.NegativeInfinity, _ => Actor.SplitStep()));
             else if (kind == "react" && a.Count == 2)

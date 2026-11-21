@@ -45,10 +45,12 @@ namespace PickleVerse.LocalMatch
             Selection = SelectionKeys = "";
             SelectionMask = 0;
         }
-        public bool Tick(int mask, bool cancel, bool serve, out ShotIntent intent, double? observedTime = null)
+        public bool Tick(int mask, bool cancel, bool serve, out ShotIntent intent, double? observedTime = null, bool blocked = false)
         {
             intent = default;
-            if (cancel)
+            // Discard busy input rather than queuing it. A key pressed while blocked
+            // must be released before it can start another selection.
+            if (cancel || blocked)
                 Cancel();
             if (mask == 0 && (locked || (previous & 7) == 0))
             {

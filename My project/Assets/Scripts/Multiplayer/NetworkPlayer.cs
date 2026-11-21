@@ -225,7 +225,7 @@ namespace PickleVerse.Multiplayer
                 TickShot(mask | tap, cancel, serve);
             TickShot(mask, cancel, serve);
         }
-        public bool TouchShotsEnabled => IsSpawned && IsLocalHuman && Actor && CanMove() && !InputBlocked();
+        public bool TouchShotsEnabled => IsSpawned && IsLocalHuman && Actor && !Actor.Swinging && CanMove() && !InputBlocked();
         public bool TouchServing => IsSpawned && NetworkMatch.Instance && NetworkMatch.Instance.IsSpawned && NetworkMatch.Instance.WaitingServe &&
             NetworkMatch.Instance.ServerTeam == Team && NetworkMatch.Instance.ServerIndex == Index;
         public void CommitTouchShot(int mask)
@@ -239,7 +239,7 @@ namespace PickleVerse.Multiplayer
         }
         void TickShot(int mask, bool cancel, bool serve)
         {
-            if (shotInput.Tick(mask, cancel, serve, out var local))
+            if (shotInput.Tick(mask, cancel, serve, out var local, blocked: Actor.Swinging))
             {
                 pendingShotMask = shotInput.CommittedMask;
                 pendingShot = local;

@@ -38,6 +38,8 @@ Tính năng đăng nhập một nơi dùng `users.authversion` hiện có, khôn
 
 Online giữ cơ chế chọn tổ hợp và nhả phím để gửi cú đánh. Client phát animation ngay khi nhả; mỗi yêu cầu có mã riêng để bỏ qua animation xác nhận đã phát. Server kiểm tra cú đánh, xác nhận chạm bóng hoặc từ chối; client không tự ghi nhận hit hay đổi tỷ số. Sự kiện từ lượt cũ được chặn theo `motionEpoch`. `ShotRequestHistoryTests` kiểm tra nhận trùng và phản hồi cũ; các ca `SinglesMatchTests`/`TouchControlsTests` bảo vệ cơ chế nhả phím hiện tại.
 
+Trong lúc `MatchActor.Swinging`, input online bị bỏ qua cho đến hết cả động tác và phần hồi vợt; phím giữ từ lúc đang đánh phải được nhả trước khi chọn cú mới. Mobile không bắt đầu gesture đánh trong thời gian này. Prediction bị server từ chối đóng cửa sổ chạm bóng và chạy hết động tác như đánh trượt. `NetworkShotLockTests` kiểm tra luồng `NetworkPlayer.TickShot` thực khi spam J, tổ hợp phím và giao bóng, bảo đảm không phát thêm prediction/RPC hoặc mở lại cửa sổ chạm bóng.
+
 Heartbeat Dedicated dùng UUID dạng D (36 ký tự) khi gửi sessions[].playerId; ID trong roster vẫn giữ dạng N (32 ký tự). API đọc cả D và N cho trường này để tương thích các worker protocol 22 đã triển khai. --check-api-contract kiểm tra HTTP model binding bằng payload Unity thực và payload worker cũ; --check-dedicated kiểm tra gia hạn lặp sau admission/spawn. Không cần đổi schema hoặc build lại client cho bản sửa GUID này.
 
 ## Kiểm thử nhiều trận Fusion

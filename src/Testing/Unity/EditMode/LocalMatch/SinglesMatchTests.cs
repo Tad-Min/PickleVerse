@@ -44,6 +44,45 @@ namespace PickleVerse.Tests
         [Test] public void ThreeKeysCancelWithoutAnySwing() { var input=new ShotInput();input.Tick(11,false,false,out _);Assert.IsFalse(input.Tick(0,false,false,out _)); }
         [Test] public void BackspaceOrLostFocusCannotFireOnRelease() { var input=new ShotInput();input.Tick(1,false,false,out _);input.Cancel();Assert.IsFalse(input.Tick(0,false,false,out _)); }
         [Test] public void ServeDoesNotAcceptDropCombo() { var input=new ShotInput();input.Tick(3,false,true,out _);Assert.IsFalse(input.Tick(0,false,true,out _)); }
+        [TestCase(1, false)] [TestCase(3, false)] [TestCase(9, false)] [TestCase(17, false)]
+        [TestCase(1, true)] [TestCase(9, true)] [TestCase(17, true)]
+        public void PressDuringSwingCannotCommitAfterRecovery(int mask, bool serve)
+        {
+            var input = new ShotInput();
+            Assert.IsFalse(input.Tick(mask, false, serve, out _, blocked: true));
+            Assert.That(input.SelectionMask, Is.Zero);
+            Assert.IsFalse(input.Tick(mask, false, serve, out _));
+            Assert.IsFalse(input.Tick(mask & 24, false, serve, out _));
+            Assert.IsFalse(input.Tick(0, false, serve, out _));
+            Assert.IsFalse(input.Tick(mask, false, serve, out _));
+            Assert.IsTrue(input.Tick(mask & 24, false, serve, out _));
+            Assert.That(input.CommittedMask, Is.EqualTo(mask));
+        }
+        [Test] public void FreshPressImmediatelyAfterRecoveryStillCommitsOnRelease()
+        {
+            var input = new ShotInput();
+            Assert.IsFalse(input.Tick(0, false, false, out _, blocked: true));
+            Assert.IsFalse(input.Tick(1, false, false, out _));
+            Assert.IsTrue(input.Tick(0, false, false, out var shot));
+            Assert.That(shot.kind, Is.EqualTo(ShotKind.Drive));
+        }
+        [Test] public void BusyReleaseDiscardsAnAlreadySelectedShot()
+        {
+            var input = new ShotInput();
+            input.Tick(1, false, false, out _);
+            Assert.IsFalse(input.Tick(0, false, false, out _, blocked: true));
+            Assert.IsFalse(input.Tick(0, false, false, out _));
+            Assert.That(input.SelectionMask, Is.Zero);
+        }
+        [Test] public void IgnoredComboDoesNotProduceInvalidInputFeedback()
+        {
+            var input = new ShotInput();
+            Assert.IsFalse(input.Tick(7, false, false, out _, blocked: true));
+            Assert.That(input.Feedback, Is.Empty);
+            Assert.IsFalse(input.Tick(0, false, false, out _, blocked: true));
+            Assert.IsFalse(input.Tick(1, false, false, out _));
+            Assert.IsTrue(input.Tick(0, false, false, out _));
+        }
         [Test] public void BallisticShotLandsAtRequestedSpot() { var from=new Vector3(1,.8f,-5);var target=new Vector3(-1,.037f,4.5f);var p=from;var v=BallFlight.Launch(from,target,2.2f);Vector3 previous=p;for(int i=0;i<1000&&p.y>.037f;i++){previous=p;BallFlight.Integrate(ref p,ref v,.002f);}Assert.Less(Vector2.Distance(new Vector2(p.x,p.z),new Vector2(target.x,target.z)),.025f); }
     }
 }

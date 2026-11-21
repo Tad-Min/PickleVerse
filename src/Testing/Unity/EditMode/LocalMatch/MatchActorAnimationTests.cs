@@ -65,5 +65,24 @@ namespace PickleVerse.Tests
             Assert.That(actor.CurrentClip, Is.EqualTo("PKV_Serve_FH_Underhand"));
             Assert.That(actor.SwingTime, Is.EqualTo(.01f).Within(.0001f));
         }
+
+        [TestCase(ShotKind.Serve)]
+        [TestCase(ShotKind.Drive)]
+        public void RejectedPredictionClosesContactButFinishesRecovery(ShotKind kind)
+        {
+            var shot = new ShotIntent(kind);
+            actor.RenderNetworkSwing(shot, Vector3.forward, shot.ContactDelay, .1f);
+            actor.MissContact();
+            actor.RenderNetworkPose(Vector3.zero, false, shot.ContactDelay - .1f);
+            Assert.That(actor.Swinging, Is.True);
+            Assert.That(actor.ContactActive, Is.False);
+            Assert.That(actor.Swing(new ShotIntent(ShotKind.Drive), Vector3.forward), Is.False);
+
+            actor.RenderNetworkPose(Vector3.zero, false, actor.SwingDuration - actor.SwingTime - .01f);
+            Assert.That(actor.Swinging, Is.True, "A rejection must not shorten recovery.");
+            actor.RenderNetworkPose(Vector3.zero, false, .02f);
+            Assert.That(actor.Swinging, Is.False);
+            Assert.That(actor.Swing(new ShotIntent(ShotKind.Drive), Vector3.forward), Is.True);
+        }
     }
 }
