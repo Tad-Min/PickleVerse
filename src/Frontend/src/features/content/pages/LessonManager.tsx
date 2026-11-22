@@ -50,22 +50,31 @@ export function LessonManager() {
     if (current) { setConfig({ ...blank(), ...current.draft }); setOrder(current.order); }
   }, [current]);
   const update = <K extends keyof TrainingConfig>(key: K, value: TrainingConfig[K]) => setConfig(old => ({ ...old, [key]: value }));
-  const action = useMutation({ mutationFn: async (kind: 'save' | 'publish' | 'unpublish') => {
-    if (kind === 'save' && !current) {
+  // "Xuất bản": lưu nội dung hiện tại rồi xuất bản ngay (tạo mới nếu chưa có bài).
+  const action = useMutation({ mutationFn: async (kind: 'publish' | 'unpublish') => {
+    if (kind === 'unpublish') {
+      await apiClient.post(`/api/Admin/cms/lessons/${current!.lessonId}/unpublish`, { expectedVersion: current!.version });
+      return kind;
+    }
+    let lessonId = current?.lessonId;
+    if (!current) {
       const result = await apiClient.post<{ lessonId: number }>('/api/Admin/cms/lessons', { code: config.id, lessonName: config.title,
         description: config.explanation, requiredLevel: config.requiredLevel, order, config });
-      setSelected(result.data.lessonId);
-    } else if (current) {
-      const route = `/api/Admin/cms/lessons/${current.lessonId}`;
-      if (kind === 'save') await apiClient.put(route, { expectedVersion: current.version, order, config });
-      else await apiClient.post(`${route}/${kind}`, { expectedVersion: current.version });
+      lessonId = result.data.lessonId;
+      setSelected(lessonId);
+    } else {
+      await apiClient.put(`/api/Admin/cms/lessons/${current.lessonId}`, { expectedVersion: current.version, order, config });
     }
+    // Lấy phiên bản mới nhất sau khi lưu rồi xuất bản.
+    const fresh = (await query.refetch()).data?.find(x => x.lessonId === lessonId);
+    if (!fresh) throw new Error('Không tìm thấy bài học sau khi lưu.');
+    await apiClient.post(`/api/Admin/cms/lessons/${lessonId}/publish`, { expectedVersion: fresh.version });
     return kind;
   }, onSuccess: async kind => {
-    setFeedback(kind === 'save' ? 'Đã lưu bản nháp. Xuất bản để đưa thay đổi vào game.' : kind === 'publish' ? 'Đã xuất bản bài học.' : 'Đã gỡ bài khỏi danh mục mới.');
+    setFeedback(kind === 'publish' ? 'Đã xuất bản bài học và đưa thay đổi vào game.' : 'Đã gỡ bài khỏi danh mục mới.');
     await client.invalidateQueries({ queryKey: ['cms-lessons'] });
   }, onError: error => setFeedback(axios.isAxiosError(error) ? error.response?.data?.message || error.message : String(error)) });
-  const submit = (event: FormEvent) => { event.preventDefault(); action.mutate('save'); };
+  const submit = (event: FormEvent) => { event.preventDefault(); action.mutate('publish'); };
   const numeric: [keyof Pick<TrainingConfig, 'trials'|'required'|'reward'|'xp'|'requiredLevel'|'targetRadius'|'targetDepth'>, string, number, number, number][] = [
     ['trials','Số lượt',1,200,1], ['required','Số lượt đạt tối thiểu',1,200,1], ['reward','Thưởng TOKENPAD',0,100000,1],
     ['xp','Thưởng XP',0,10000,1], ['requiredLevel','Cấp độ tối thiểu',1,1000,1], ['targetRadius','Bán kính đích (m)',.3,2,.05],
@@ -78,13 +87,6 @@ export function LessonManager() {
       <aside className={`${card} space-y-3 lg:sticky lg:top-6`}>
         <div className="flex items-center justify-between gap-2">
           <h2 className={sectionTitle}>Danh mục ({query.data?.length ?? 0})</h2>
-          <button
-            type="button"
-            className={btnGhost}
-            onClick={() => { setSelected(null); setConfig(blank()); setFeedback(''); }}
-          >
-            Tạo bài
-          </button>
         </div>
         {query.isLoading && <p className="text-xs text-muted-foreground">Đang tải…</p>}
         {query.isError && (
@@ -298,12 +300,9 @@ export function LessonManager() {
               Gỡ xuất bản
             </button>
           )}
-          {current && (
-            <button className={btnGhost} type="button" disabled={action.isPending} onClick={() => action.mutate('publish')}>
-              Xuất bản bản đã lưu
-            </button>
-          )}
-          <button className={btnPrimary} disabled={action.isPending}>Lưu bản nháp</button>
+          <button className={btnPrimary} disabled={action.isPending}>
+            {action.isPending ? 'Đang xuất bản…' : 'Xuất bản'}
+          </button>
         </div>
       </form>
     </section>
