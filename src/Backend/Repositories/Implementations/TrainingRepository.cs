@@ -18,10 +18,12 @@ namespace Repositories.Implementations
 
         public async Task<List<Lesson>> GetAllLessonsWithDrillsAsync()
         {
+            // Chỉ trả bài học đã xuất bản và các bài tập đã có cấu hình xuất bản; bản nháp không hiện cho người chơi.
             return await _context.Lessons
-                .Include(l => l.Lessondrills)
+                .Where(l => l.PublishStatus == Entities.Enums.ContentPublishStatus.Published)
+                .Include(l => l.Lessondrills.Where(ld => ld.Drill.Config != null).OrderBy(ld => ld.SortOrder).ThenBy(ld => ld.Drillid))
                     .ThenInclude(ld => ld.Drill)
-                .OrderBy(l => l.Lessonid)
+                .OrderBy(l => l.SortOrder).ThenBy(l => l.Lessonid)
                 .ToListAsync();
         }
 

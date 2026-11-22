@@ -268,14 +268,6 @@ public partial class PickleVerseContext : DbContext
             entity.Property(e => e.Lessonname)
                 .HasMaxLength(254)
                 .HasColumnName("lessonname");
-            entity.Property(e => e.Reward)
-                .HasDefaultValueSql("'{\"Exp\": 0, \"Currency\": 0}'::jsonb")
-                .HasColumnType("jsonb")
-                .HasColumnName("reward");
-            entity.Property(e => e.Target).HasColumnName("target");
-            entity.Property(e => e.Type)
-                .HasMaxLength(25)
-                .HasColumnName("type");
         });
 
         modelBuilder.Entity<Lessondrill>(entity =>

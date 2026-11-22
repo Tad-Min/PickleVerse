@@ -142,11 +142,16 @@ public partial class PickleVerseContext
         {
             entity.Property(e => e.Code).HasColumnName("code");
             entity.Property(e => e.SortOrder).HasColumnName("sortorder");
-            entity.Property(e => e.Config).HasColumnName("config").HasColumnType("jsonb").HasDefaultValueSql("'{}'::jsonb");
         });
         modelBuilder.Entity<Drill>(entity =>
         {
             entity.Property(e => e.Code).HasColumnName("code");
+            entity.Property(e => e.Config).HasColumnName("config").HasColumnType("jsonb");
+            entity.Property(e => e.DraftConfig).HasColumnName("draftconfig").HasColumnType("jsonb");
+        });
+        modelBuilder.Entity<Lessondrill>(entity =>
+        {
+            entity.Property(e => e.SortOrder).HasColumnName("sortorder");
         });
         modelBuilder.Entity<Playerlessondrill>(entity =>
         {

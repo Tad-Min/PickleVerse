@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, ShieldAlert, X } from 'lucide-react';
 import { PageHeader } from '../../../shared/ui/PageHeader';
+import { DateField } from '../../../shared/ui/DateField';
 import { apiClient } from '../../../api/client';
 import { adminApi } from '../../../api/adminApi';
 import { AdminReportDto, ReviewReportRequest, SanctionAppeal, SanctionDecision } from '../../../types/api';
@@ -401,13 +402,12 @@ export function Moderation() {
                 {restriction === UserStatus.Suspended ? (
                   <label className="block space-y-1 text-xs font-medium text-foreground">
                     Ngày hết đình chỉ
-                    <input
+                    <DateField
                       className={field}
-                      type="date"
                       required
                       min={todayDate()}
                       value={until}
-                      onChange={(e) => setUntil(e.target.value)}
+                      onChange={setUntil}
                     />
                   </label>
                 ) : (

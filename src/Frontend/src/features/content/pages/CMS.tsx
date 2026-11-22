@@ -1,23 +1,21 @@
 import { TechniqueReferences } from './TechniqueReferences';
 import { LessonManager } from './LessonManager';
-import { DrillManager } from './DrillManager';
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { adminApi } from '../../../api/adminApi';
 import { CreateCosmeticRequest, CreateMissionRequest } from '../../../types/api';
-import { BookOpen, Target, ShoppingBag, Award, CheckCircle2, AlertCircle, X, FolderKanban } from 'lucide-react';
+import { BookOpen, ShoppingBag, Award, CheckCircle2, AlertCircle, X, FolderKanban } from 'lucide-react';
 import { PageHeader } from '../../../shared/ui/PageHeader';
 import {
   btnPrimary, btnTab, card, fieldLabel, inputClass, notice, sectionTitle, toolbar,
 } from '../../../shared/ui/adminStyles';
 
-type CmsTab = 'LESSON' | 'DRILL' | 'COSMETIC' | 'MISSION';
+type CmsTab = 'LESSON' | 'COSMETIC' | 'MISSION';
 
 const TABS: { key: CmsTab; label: string; icon: React.ElementType }[] = [
-  { key: 'LESSON', label: '1. Thêm Bài học', icon: BookOpen },
-  { key: 'DRILL', label: '2. Thêm Bài tập', icon: Target },
-  { key: 'COSMETIC', label: '3. Đăng bán Vật phẩm (Cửa hàng)', icon: ShoppingBag },
-  { key: 'MISSION', label: '4. Tạo Nhiệm vụ', icon: Award },
+  { key: 'LESSON', label: '1. Bài học & Bài tập', icon: BookOpen },
+  { key: 'COSMETIC', label: '2. Đăng bán Vật phẩm (Cửa hàng)', icon: ShoppingBag },
+  { key: 'MISSION', label: '3. Tạo Nhiệm vụ', icon: Award },
 ];
 
 const emptyCosmetic = (): CreateCosmeticRequest => ({
@@ -97,7 +95,6 @@ export const CMS: React.FC = () => {
       </div>
 
       {activeTab === 'LESSON' && <LessonManager />}
-      {activeTab === 'DRILL' && <DrillManager />}
 
       {/* Cosmetic */}
       {activeTab === 'COSMETIC' && (

@@ -73,20 +73,6 @@ namespace API.Controllers
         }
 
         // W02 - Content CMS
-        [HttpPost("cms/lessons")]
-        public async Task<IActionResult> CreateLesson([FromBody] CreateLessonRequest request)
-        {
-            var id = await _adminService.CreateLessonAsync(request);
-            return Ok(new { lessonId = id, message = "Tạo bài học mới thành công!" });
-        }
-
-        [HttpPost("cms/drills")]
-        public async Task<IActionResult> CreateDrill([FromBody] CreateDrillRequest request)
-        {
-            var id = await _adminService.CreateDrillAsync(request);
-            return Ok(new { drillId = id, message = "Tạo bài tập Drill mới thành công!" });
-        }
-
         [HttpPost("cms/cosmetics")]
         public async Task<IActionResult> CreateCosmetic([FromBody] CreateCosmeticRequest request)
         {

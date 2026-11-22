@@ -58,10 +58,10 @@ public sealed partial class GameRepository
     public async Task<List<PopularLesson>> PopularLessons(DateTime from,DateTime through)
     {
         var data=await db.TrainingSessionRecords.AsNoTracking().Where(s=>s.CreatedAt>=from && s.CreatedAt<through && HumanPlayers.Any(u=>u.Userid==s.PlayerId))
-            .GroupBy(x=>x.LessonId).Select(g=>new{Lesson=g.Key,Starts=g.Count(),Finished=g.Count(x=>x.Completed),
+            .GroupBy(x=>x.DrillId).Select(g=>new{Drill=g.Key,Lesson=g.Max(x=>x.LessonId),Starts=g.Count(),Finished=g.Count(x=>x.Completed),
                 Passed=g.Count(x=>x.Completed && EF.Functions.JsonContains(x.Data,"{\"passed\":true}")),Players=g.Select(x=>x.PlayerId).Distinct().Count()}).ToListAsync();
-        var ids=data.Select(x=>x.Lesson).ToArray();var lessons=await db.Lessons.AsNoTracking().Where(l=>ids.Contains(l.Lessonid)).ToDictionaryAsync(l=>l.Lessonid);
-        return data.Select(x=>new PopularLesson{LessonId=x.Lesson,Code=lessons[x.Lesson].Code??"",Title=lessons[x.Lesson].Lessonname,
+        var ids=data.Select(x=>x.Drill).ToArray();var drills=await db.Drills.AsNoTracking().Where(d=>ids.Contains(d.Drillid)).ToDictionaryAsync(d=>d.Drillid);
+        return data.Select(x=>new PopularLesson{LessonId=x.Lesson,DrillId=x.Drill,Code=drills[x.Drill].Code??"",Title=drills[x.Drill].Drillname,
             Starts=x.Starts,Finished=x.Finished,Passed=x.Passed,Players=x.Players,CompletionRate=x.Starts==0?0:(double)x.Passed/x.Starts})
             .OrderByDescending(x=>x.Starts).ThenBy(x=>x.Code).ToList();
     }

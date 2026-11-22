@@ -32,7 +32,6 @@ public partial class PickleVerseContext
         model.Entity<DedicatedOperationRecord>().HasOne<Gamematch>().WithMany().HasForeignKey(x => x.MatchId);
         model.Entity<Lesson>().Property(x => x.PublishStatus).HasColumnName("publishstatus")
             .HasConversion(v => StatusWire.Format(v), v => StatusWire.Parse<ContentPublishStatus>(v));
-        model.Entity<Lesson>().Property(x => x.DraftConfig).HasColumnName("draftconfig").HasColumnType("jsonb");
         model.Entity<Lesson>().Property(x => x.ContentVersion).HasColumnName("contentversion");
         model.Entity<Playerprofile>().Property(x => x.LearningEpoch).HasColumnName("learningepoch");
         model.Entity<Playerprofile>().Property(x => x.LearningResetAt).HasColumnName("learningresetat");

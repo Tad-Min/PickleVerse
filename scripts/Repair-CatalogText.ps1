@@ -19,7 +19,7 @@ function IsCorrupt([string]$Expression) {
     return "(position('?' in $Expression) > 0 OR position(chr(65533) in $Expression) > 0)"
 }
 function AddRepair([string]$Table, [string]$KeyColumn, [string]$Key,
-    [System.Collections.IDictionary]$Text, [System.Collections.IDictionary]$JsonText) {
+    [System.Collections.IDictionary]$Text, [System.Collections.IDictionary]$JsonText, [string[]]$JsonColumns = @('config')) {
     $assignments = [System.Collections.Generic.List[string]]::new()
     $conditions = [System.Collections.Generic.List[string]]::new()
     foreach ($column in $Text.Keys) {
@@ -30,15 +30,18 @@ function AddRepair([string]$Table, [string]$KeyColumn, [string]$Key,
         $assignments.Add("$column = CASE WHEN $bad THEN $(SqlLiteral $value) ELSE $column END")
     }
     if ($JsonText.Count -gt 0) {
-        $expression = 'config'
-        foreach ($field in $JsonText.Keys) {
-            $value = [string]$JsonText[$field]
-            if ($value -match '[?\uFFFD]') { throw "Corrupt canonical JSON in $Table/$Key/$field" }
-            $bad = IsCorrupt "(config->>$(SqlLiteral $field))"
-            $conditions.Add($bad)
-            $expression += " || (CASE WHEN $bad THEN jsonb_build_object($(SqlLiteral $field), $(SqlLiteral $value)::text) ELSE '{}'::jsonb END)"
+        # Bài tập lưu cấu hình ở hai cột (config đã xuất bản, draftconfig đang soạn); sửa cả hai.
+        foreach ($jsonColumn in $JsonColumns) {
+            $expression = $jsonColumn
+            foreach ($field in $JsonText.Keys) {
+                $value = [string]$JsonText[$field]
+                if ($value -match '[?\uFFFD]') { throw "Corrupt canonical JSON in $Table/$Key/$field" }
+                $bad = IsCorrupt "($jsonColumn->>$(SqlLiteral $field))"
+                $conditions.Add($bad)
+                $expression += " || (CASE WHEN $bad THEN jsonb_build_object($(SqlLiteral $field), $(SqlLiteral $value)::text) ELSE '{}'::jsonb END)"
+            }
+            $assignments.Add("$jsonColumn = $expression")
         }
-        $assignments.Add("config = $expression")
     }
     $updates.Add("UPDATE $Table SET $($assignments -join ', ') WHERE $KeyColumn = $(SqlLiteral $Key) AND ($($conditions -join ' OR '));")
     if (!$counts.ContainsKey($Table)) { $counts[$Table] = 0 }
@@ -63,13 +66,13 @@ foreach ($line in [System.IO.File]::ReadAllLines($source, $utf8)) {
             AddRepair $table 'Code' $values[0] ([ordered]@{MissionName=$values[1]; Description=$values[2]}) ([ordered]@{title=$config.title})
         }
         'Lessons' {
-            if ($values.Count -ne 6) { throw 'Unexpected lesson seed format.' }
-            $config = $values[5] | ConvertFrom-Json
-            AddRepair $table 'Code' $values[0] ([ordered]@{LessonName=$values[1]; Description=$values[2]}) ([ordered]@{title=$config.title; explanation=$config.explanation; coaching=$config.coaching})
+            if ($values.Count -ne 4) { throw 'Unexpected lesson seed format.' }
+            AddRepair $table 'Code' $values[0] ([ordered]@{LessonName=$values[1]; Description=$values[2]}) @{}
         }
         'Drills' {
-            if ($values.Count -ne 4) { throw 'Unexpected drill seed format.' }
-            AddRepair $table 'Code' $values[0] ([ordered]@{DrillName=$values[1]; Description=$values[2]}) @{}
+            if ($values.Count -ne 6) { throw 'Unexpected drill seed format.' }
+            $config = $values[3] | ConvertFrom-Json
+            AddRepair $table 'Code' $values[0] ([ordered]@{DrillName=$values[1]; Description=$values[2]}) ([ordered]@{title=$config.title; explanation=$config.explanation; coaching=$config.coaching}) @('config', 'draftconfig')
         }
         'Techniques' {
             if ($values.Count -ne 2) { throw 'Unexpected technique seed format.' }

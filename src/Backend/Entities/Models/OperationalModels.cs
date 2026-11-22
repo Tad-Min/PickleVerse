@@ -112,12 +112,20 @@ public partial class Lesson
 {
     public string? Code { get; set; }
     public int SortOrder { get; set; }
-    public string Config { get; set; } = "{}";
 }
 
 public partial class Drill
 {
     public string? Code { get; set; }
+    /// <summary>Cấu hình đã xuất bản (null nếu bài tập chưa từng xuất bản).</summary>
+    public string? Config { get; set; }
+    /// <summary>Cấu hình đang soạn.</summary>
+    public string? DraftConfig { get; set; }
+}
+
+public partial class Lessondrill
+{
+    public int SortOrder { get; set; }
 }
 
 public partial class Playerlessondrill

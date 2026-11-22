@@ -31,7 +31,6 @@ public sealed class DedicatedOperationRecord
 public partial class Lesson
 {
     public ContentPublishStatus PublishStatus { get; set; } = ContentPublishStatus.Published;
-    public string? DraftConfig { get; set; }
     public long ContentVersion { get; set; } = 1;
 }
 

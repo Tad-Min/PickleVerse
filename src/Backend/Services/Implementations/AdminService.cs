@@ -116,9 +116,6 @@ namespace Services.Implementations
             }
         }
 
-        public Task<int> CreateLessonAsync(CreateLessonRequest request) => _content.Create(request);
-        public Task<int> CreateDrillAsync(CreateDrillRequest request) => _content.UpdateDrill(request);
-
         public async Task<int> CreateCosmeticAsync(CreateCosmeticRequest request)
         {
             try

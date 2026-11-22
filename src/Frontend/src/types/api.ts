@@ -72,22 +72,6 @@ export interface BanUserRequest {
 }
 
 // W02 - Content CMS
-export interface CreateLessonRequest {
-  lessonName: string;
-  description: string;
-  requiredLevel: number;
-  order: number;
-}
-
-export interface CreateDrillRequest {
-  lessonId: number;
-  techniqueId: number;
-  drillName: string;
-  description: string;
-  target: number;
-  order: number;
-}
-
 export interface CreateCosmeticRequest {
   itemCode: string;
   cosmeticName: string;
@@ -189,6 +173,6 @@ export interface AnalyticsReport {
   timeZone: string; from: string; to: string; dauDefinition: string; retentionDefinition: string; timeDefinition: string;
   summary: AdminAnalyticsResponse; daily: { day: string; players: number }[];
   retention: { day: string; players: number; d1?: number | null; d7?: number | null; d30?: number | null }[];
-  lessons: { lessonId: number; code: string; title: string; starts: number; finished: number; passed: number; players: number; completionRate: number }[];
+  lessons: { lessonId: number; drillId: number; code: string; title: string; starts: number; finished: number; passed: number; players: number; completionRate: number }[];
   matchmaking: QueueHealth; errors: AiTechniqueErrorHeatmapDto[];
 }

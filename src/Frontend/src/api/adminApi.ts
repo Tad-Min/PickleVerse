@@ -10,8 +10,6 @@ import {
   AuthResponse,
   BanUserRequest,
   CreateCosmeticRequest,
-  CreateDrillRequest,
-  CreateLessonRequest,
   CreateMissionRequest,
   LoginRequest,
   PlayerAuthResponse,
@@ -83,18 +81,6 @@ export const adminApi = {
   },
 
   // W02 - Content CMS
-  createLesson: async (data: CreateLessonRequest): Promise<{ lessonId: number; message: string }> => {
-    if (isMockMode) return mockAdminApi.createLesson(data);
-    const res = await apiClient.post<{ lessonId: number; message: string }>('/api/Admin/cms/lessons', data);
-    return res.data;
-  },
-
-  createDrill: async (data: CreateDrillRequest): Promise<{ drillId: number; message: string }> => {
-    if (isMockMode) return mockAdminApi.createDrill(data);
-    const res = await apiClient.post<{ drillId: number; message: string }>('/api/Admin/cms/drills', data);
-    return res.data;
-  },
-
   createCosmetic: async (data: CreateCosmeticRequest): Promise<{ cosmeticId: number; message: string }> => {
     if (isMockMode) return mockAdminApi.createCosmetic(data);
     const res = await apiClient.post<{ cosmeticId: number; message: string }>('/api/Admin/cms/cosmetics', data);

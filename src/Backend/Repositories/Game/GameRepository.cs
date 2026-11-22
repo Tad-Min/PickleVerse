@@ -133,7 +133,11 @@ public sealed partial class GameRepository(PickleVerseContext db) : IAppActivity
             await db.Database.OpenConnectionAsync();
         var achievements = await db.Achievements.AsNoTracking().OrderBy(a => a.Achievementid).ToListAsync();
         var missions = await db.Missions.AsNoTracking().Where(m => m.Code != null).OrderBy(m => m.Missionid).Select(m => m.Config).ToListAsync();
-        var lessons = await db.Lessons.AsNoTracking().Where(l => l.Code != null && l.PublishStatus == ContentPublishStatus.Published).OrderBy(l => l.SortOrder).ThenBy(l => l.Lessonid).Select(l => l.Config).ToListAsync();
+        // Danh mục gửi cho game là danh sách phẳng các bài tập đã xuất bản, theo thứ tự bài học rồi thứ tự bài tập.
+        var lessons = await db.Lessondrills.AsNoTracking()
+            .Where(ld => ld.Lesson.Code != null && ld.Lesson.PublishStatus == ContentPublishStatus.Published && ld.Drill.Code != null && ld.Drill.Config != null)
+            .OrderBy(ld => ld.Lesson.SortOrder).ThenBy(ld => ld.Lessonid).ThenBy(ld => ld.SortOrder).ThenBy(ld => ld.Drillid)
+            .Select(ld => ld.Drill.Config!).ToListAsync();
         var cosmetics = await db.Cosmetics.AsNoTracking().Where(c => c.Itemcode.StartsWith("paddle.")).OrderBy(c => c.Cosmeticid).Select(c => c.Config).ToListAsync();
         return new GameCatalog {
             definitions = achievements.Select(a => new ProgressDefinition(a.Achievementcode, a.Achievementname, ProgressScope.Achievement,

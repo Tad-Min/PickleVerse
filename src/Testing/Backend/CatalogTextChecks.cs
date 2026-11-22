@@ -10,7 +10,8 @@ static class CatalogTextChecks
         var sql = new PostgresCommands(context);var sqlData = new UnitOfWork(context);
         // Keep administrator edits to valid text, thresholds and rewards while repairing damaged text.
         await sql.Run("""
-            UPDATE lessons SET config=jsonb_set(jsonb_set(config,'{reward}','987'),'{explanation}','"Bài tập riêng đã chỉnh"') WHERE code='drive';
+            UPDATE drills SET config=jsonb_set(jsonb_set(config,'{reward}','987'),'{explanation}','"Bài tập riêng đã chỉnh"'),
+                draftconfig=jsonb_set(jsonb_set(draftconfig,'{reward}','987'),'{explanation}','"Bài tập riêng đã chỉnh"') WHERE code='drive';
             UPDATE missions SET target=321,config=jsonb_set(config,'{target}','321') WHERE code='D.Serve10';
             """);
         async Task<string> Snapshot() => (await sql.Query("""
@@ -26,9 +27,10 @@ static class CatalogTextChecks
             """, r => r.GetString(0))).Single();
         string before = await Snapshot();
         await sql.Run("""
-            UPDATE lessons SET lessonname='??',description='??',config=config||'{"title":"??","coaching":"??"}'::jsonb;
-            UPDATE lessons SET config=config||'{"explanation":"??"}'::jsonb WHERE code<>'drive';
-            UPDATE drills SET drillname='??',description='??';
+            UPDATE lessons SET lessonname='??',description='??';
+            UPDATE drills SET drillname='??',description='??',config=config||'{"title":"??","coaching":"??"}'::jsonb,
+                draftconfig=draftconfig||'{"title":"??","coaching":"??"}'::jsonb;
+            UPDATE drills SET config=config||'{"explanation":"??"}'::jsonb,draftconfig=draftconfig||'{"explanation":"??"}'::jsonb WHERE code<>'drive';
             UPDATE techniques SET description='??';
             UPDATE missions SET missionname='??',description='??',config=config||'{"title":"??"}'::jsonb;
             UPDATE achievements SET achievementname='??',description='??';
