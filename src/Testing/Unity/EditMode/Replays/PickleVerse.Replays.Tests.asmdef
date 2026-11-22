@@ -1,6 +1,6 @@
 {
   "name": "PickleVerse.Replays.Tests",
-  "references": ["PickleVerse.Replays", "PickleVerse.Entites", "PickleVerse.Progression"],
+  "references": ["PickleVerse.Replays", "PickleVerse.Entites", "PickleVerse.Progression", "PickleVerse.Services"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

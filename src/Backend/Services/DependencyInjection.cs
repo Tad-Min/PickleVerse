@@ -58,6 +58,18 @@ public static class DependencyInjection
         services.AddScoped<IRoomInvitationService>(sp => sp.GetRequiredService<RoomInvitationService>());
         services.AddScoped<MatchReplayService>();
         services.AddScoped<IMatchReplayService>(sp => sp.GetRequiredService<MatchReplayService>());
+        services.AddScoped<IReplayLaunchService, ReplayLaunchService>();
+        var payos = configuration.GetSection("PayOs").Get<PayOsSettings>() ?? new();
+        payos.Validate();
+        services.AddSingleton(payos);
+        services.AddScoped<IMembershipService, MembershipService>();
+        services.AddScoped<IPayOsGateway, PayOsGateway>();
+        services.AddHttpClient(PayOsGateway.ClientName, client =>
+        {
+            client.BaseAddress = new Uri("https://api-merchant.payos.vn/");
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.MaxResponseContentBufferSize = 128 * 1024;
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         services.AddScoped<HybridCoachingService>();
         services.AddScoped<IHybridCoachingService>(sp => sp.GetRequiredService<HybridCoachingService>());
         services.AddSingleton(sp => sp.GetRequiredService<ServerSettings>().HybridAi);

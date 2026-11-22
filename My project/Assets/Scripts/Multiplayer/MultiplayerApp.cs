@@ -60,12 +60,14 @@ namespace PickleVerse.Multiplayer
         bool startingSearch;
         [Serializable]
         sealed class RankedSearchTicket { public double remainingSeconds; public bool roomReady; public PickleVerse.Services.Api.RankedSearchState state; public string matchId, session, hostPlayerId, region; public MatchRoster roster; }
+        RankedSearchTicket initialDoublesAssignment;
         double assignmentObserved;
         string lastPartyMatch = "";
         GameObject StatePrefab => Resources.Load<GameObject>("Photon/Session State");
         public bool ReadyCheckActive => stagingRequest != null && State == FlowState.Connecting && readyTicket?.phase == "PREPARING";
         public bool ReadyCheckAccepted => readyTicket?.accepted == true;
-        public bool SearchClockVisible => (State == FlowState.Delay || State == FlowState.Searching) && stagingRequest == null;
+        bool InSearchQueue => State == FlowState.Delay || State == FlowState.Searching;
+        public bool SearchClockVisible => InSearchQueue && assignmentObserved == 0 && stagingRequest == null;
         public bool ReadyCheckBusy => savingReady;
         public int ReadyConfirmationSeconds => ProgressionRuntime.Instance.Snapshot.catalog.matchmaking.readyConfirmationSeconds;
         public float ReadySeconds => ReadyCheckActive ? Mathf.Max(0, (float)(serverReadyUntil - Time.realtimeSinceStartupAsDouble)) : 0;
@@ -103,6 +105,7 @@ namespace PickleVerse.Multiplayer
         }
         public async Task PlayAsync(string profile)
         {
+            RequirePaidPlay();
             navigation.Open();
             int page = navigation.Epoch;
             await InitializeAsync(profile);
@@ -119,6 +122,7 @@ namespace PickleVerse.Multiplayer
         public Task SwitchRoomAsync(PlayMode mode, bool custom) => roomOperations.Run(() => SwitchRoomCoreAsync(mode, custom));
         async Task SwitchRoomCoreAsync(PlayMode mode, bool custom)
         {
+            RequirePaidPlay();
             if (State != FlowState.WaitingRoom)
                 throw new InvalidOperationException("Hủy tìm trận trước khi đổi phòng.");
             if (mode != PlayMode.Singles && mode != PlayMode.Doubles)
@@ -159,42 +163,75 @@ namespace PickleVerse.Multiplayer
         public Task JoinRoomAsync(string code, string region) => roomOperations.Run(() => JoinRoomCoreAsync(code, region));
         async Task JoinRoomCoreAsync(string code, string region)
         {
+            RequirePaidPlay();
             if (Searching)
                 throw new InvalidOperationException("Hủy tìm trận trước.");
+            if (string.IsNullOrWhiteSpace(code))
+                throw new InvalidOperationException("Nhập mã phòng trước.");
+            string name = code.Trim().ToUpperInvariant();
+            if (Room?.Code == name && Room.Runner && Room.Runner.IsRunning)
+            {
+                SetNotice("Bạn đang ở trong phòng này.");
+                return;
+            }
             int generation = operation, page = navigation.Epoch;
+            bool CanSwitch() => generation == operation && navigation.IsCurrent(page) && !Searching;
             await InitializeAsync(PlayerId);
-            if (generation != operation || !navigation.IsCurrent(page))
+            if (!CanSwitch())
                 return;
-            await LeaveAttachedRoomAsync();
-            if (generation != operation || !navigation.IsCurrent(page))
-                return;
-            var session = PhotonSession.Create("Photon Party");
-            try
+            if (string.IsNullOrWhiteSpace(region))
             {
-                await session.JoinAsync(code.Trim().ToUpperInvariant(), PlayerId, string.IsNullOrEmpty(region) ? Settings.photonRegion : region, true);
-                if (generation != operation || !navigation.IsCurrent(page))
+                var client = new RoomInvitationClient(AccountRuntime.Ensure().Account);
+                try { region = (await client.JoinInfoAsync(name)).Region; }
+                catch (PickleVerse.Services.Api.ApiException e) when (e.StatusCode == 404 || e.StatusCode == 0 || e.StatusCode >= 500)
                 {
-                    await session.LeaveAsync();
+                    // Hosts that have not published presence can still be reached by code in the configured region.
+                }
+            }
+            string targetRegion = string.IsNullOrWhiteSpace(region) ? Settings.photonRegion : region.Trim().ToLowerInvariant();
+            SetNotice("Đang kết nối tới phòng…");
+            const int attempts = 3;
+            for (int attempt = 0; attempt < attempts; attempt++)
+            {
+                if (attempt > 0) await Task.Delay(350 * attempt);
+                if (!CanSwitch()) return;
+                var session = PhotonSession.Create("Photon Party");
+                try
+                {
+                    await session.JoinAsync(name, PlayerId, targetRegion, true);
+                    if (!CanSwitch()) return;
+                    if (!session.Data.party || session.Data.phase != "idle")
+                        throw new InvalidOperationException("Phòng đang tìm hoặc đang chơi.");
+                    var member = Self();
+                    member.group = session.Id;
+                    await session.ReserveAsync(new List<RoomMember> { member });
+                    if (!CanSwitch()) return;
+                    // Keep the existing room until the target host has confirmed the new seat.
+                    await LeaveAttachedRoomAsync();
+                    if (!CanSwitch()) return;
+                    if (!session.Runner || !session.Runner.IsRunning || session.Data.phase == "closed")
+                        throw new InvalidOperationException("Chủ phòng đã đóng phòng.");
+                    Mode = session.Data.mode;
+                    AttachRoom(session);
+                    SetState(FlowState.WaitingRoom, "Đã tham gia phòng.");
+                    RoomChanged();
                     return;
                 }
-                if (!session.Data.party || session.Data.phase != "idle")
-                    throw new InvalidOperationException("Phòng đang tìm hoặc đang chơi.");
-                await session.ReserveAsync(new List<RoomMember> { Self() });
-                if (generation != operation || !navigation.IsCurrent(page))
+                catch (PhotonJoinException error) when (attempt + 1 < attempts && error.CanRetryRoom)
                 {
-                    await session.LeaveAsync();
-                    return;
+                    // Photon can report the previous open/capacity state while a peer is leaving.
                 }
-                Mode = session.Data.mode;
-                AttachRoom(session);
-                SetState(FlowState.WaitingRoom, "Đã tham gia phòng.");
-                RoomChanged();
+                finally
+                {
+                    if (Room != session) await session.LeaveAsync();
+                }
             }
-            catch
-            {
-                await session.LeaveAsync();
-                throw;
-            }
+        }
+
+        static void RequirePaidPlay()
+        {
+            if (ProgressionRuntime.Instance?.HasMembership != true)
+                throw new InvalidOperationException(ProgressionRuntime.MembershipRequiredMessage);
         }
         void AttachRoom(PhotonSession session)
         {
@@ -271,7 +308,7 @@ namespace PickleVerse.Multiplayer
                 lastPartyMatch = data.matchSession;
                 _ = Safe(FollowPartyMatchAsync(data.matchSession, Room.Region, operation));
             }
-            if (data.phase == "idle" && SearchClockVisible && !IsCaptain)
+            if (data.phase == "idle" && InSearchQueue && !IsCaptain)
                 _ = Safe(CancelSearchAsync());
             Changed?.Invoke();
         }
@@ -371,6 +408,8 @@ namespace PickleVerse.Multiplayer
                     return;
                 }
                 rankedBotDeadline = Time.realtimeSinceStartupAsDouble + ticket.remainingSeconds;
+                if (Mode == PlayMode.Doubles && ticket.state == PickleVerse.Services.Api.RankedSearchState.Matched)
+                    initialDoublesAssignment = ticket;
                 SetState(FlowState.Searching, "Đang tìm đối thủ trực tuyến…");
             }
             catch
@@ -415,7 +454,8 @@ namespace PickleVerse.Multiplayer
             // party's Changed event. Reconcile that initial state on the next frame too.
             if (Room != null && !Custom && !IsCaptain && Room.Data.phase == "searching" && State == FlowState.WaitingRoom && !startingSearch && !working)
                 await Safe(BeginQueueAsync(false));
-            if ((State == FlowState.Delay || State == FlowState.Searching) && !working && !startingSearch && clock.CanSubmit(Time.realtimeSinceStartupAsDouble))
+            if (InSearchQueue && !working && !startingSearch && clock.Running &&
+                (Mode == PlayMode.Doubles || clock.CanSubmit(Time.realtimeSinceStartupAsDouble)))
                 await Safe(SearchStepAsync(operation));
             if (State == FlowState.Connecting && !working && !courtLoading)
             {
@@ -437,13 +477,18 @@ namespace PickleVerse.Multiplayer
             {
                 if (generation != operation || string.IsNullOrEmpty(rankedSearchId) || State == FlowState.Connecting)
                     return;
-                var ticket = await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST", "api/Game/ranked/poll", new { SearchId = Guid.Parse(rankedSearchId) });
+                var ticket = initialDoublesAssignment;
+                initialDoublesAssignment = null;
+                ticket ??= await AccountRuntime.Ensure().Account.SendAuthorizedAsync<RankedSearchTicket>("POST", "api/Game/ranked/poll", new { SearchId = Guid.Parse(rankedSearchId) });
                 if (generation != operation)
                     return;
                 if (ticket.state == PickleVerse.Services.Api.RankedSearchState.Matched)
                 {
                     if (assignmentObserved == 0)
+                    {
                         assignmentObserved = Time.realtimeSinceStartupAsDouble;
+                        SetNotice("Đã ghép trận • Đang kết nối người chơi…");
+                    }
                     if (Time.realtimeSinceStartupAsDouble - assignmentObserved > 45)
                     {
                         await CancelSearchAsync();
@@ -857,6 +902,7 @@ namespace PickleVerse.Multiplayer
         {
             operation++;
             startingSearch = false;
+            initialDoublesAssignment = null;
             clock.Stop();
         }
         async Task StopBrowser()

@@ -25,6 +25,8 @@ namespace PickleVerse.Multiplayer
         public int PollSeconds = 3;
     }
     [Serializable]
+    public sealed class RoomJoinInfo { public string Region = ""; }
+    [Serializable]
     public sealed class InvitableFriend
     {
         public string Id = "", Name = "", Status = "offline";

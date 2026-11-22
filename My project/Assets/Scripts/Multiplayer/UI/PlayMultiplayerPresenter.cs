@@ -123,7 +123,7 @@ namespace PickleVerse.Multiplayer.UI
                 else if (launchAction == RoomLaunchAction.Join)
                 {
                     await MultiplayerApp.Instance.ExecuteAsync(() => MultiplayerApp.Instance.JoinRoomAsync(launchCode, launchRegion));
-                    if (!string.IsNullOrEmpty(state.RoomCode))
+                    if (state.RoomCode == launchCode)
                         launchAction = RoomLaunchAction.None;
                 }
             }

@@ -44,11 +44,26 @@ namespace PickleVerse.FrontEnd
         HomeLobbyPresentation home;
         PickleVerse.Audio.MusicUI music;
         bool portraitView;
+#if !UNITY_SERVER
+        UnityEngine.UI.Button membershipButton;
+        TMP_Text membershipLabel;
+#endif
         void Awake()
         {
             canvas = GetComponent<Canvas>();
             scaler = GetComponent<UnityEngine.UI.CanvasScaler>();
             home = FindAnyObjectByType<HomeLobbyPresentation>();
+#if !UNITY_SERVER
+            if (safe)
+            {
+                membershipButton = ArenaForms.Action("Membership", safe, "GÓI THÀNH VIÊN", false,
+                    () => MembershipPanel.Show(), ArenaGlyph.Star, 18);
+                membershipLabel = membershipButton.GetComponentInChildren<TMP_Text>();
+                membershipLabel.enableAutoSizing = true;
+                membershipLabel.fontSizeMin = 12;
+                membershipLabel.fontSizeMax = 18;
+            }
+#endif
             var progression = GetComponent<PlayerProgressionMenu>();
             if (progression && progression.editButton)
                 progression.editButton.gameObject.SetActive(false);
@@ -79,6 +94,7 @@ namespace PickleVerse.FrontEnd
         }
         void OnEnable()
         {
+            ProgressionRuntime.Instance?.DiscoverMembership();
             PickleVerse.Audio.MusicUI.MenuLayoutRequested += ArrangeMusicWidget;
             if (!music)
                 music = FindAnyObjectByType<PickleVerse.Audio.MusicUI>(FindObjectsInactive.Include);
@@ -153,6 +169,16 @@ namespace PickleVerse.FrontEnd
             bool portrait = Screen.height > Screen.width;
             if (scaler && !Mathf.Approximately(scaler.matchWidthOrHeight, portrait ? 0 : 1))
                 scaler.matchWidthOrHeight = portrait ? 0 : 1;
+#if !UNITY_SERVER
+            bool showMembership = membershipButton && ProgressionRuntime.Instance?.IsAuthenticated == true;
+            if (membershipButton && membershipButton.gameObject.activeSelf != showMembership)
+            {
+                membershipButton.gameObject.SetActive(showMembership);
+                force = true;
+            }
+            if (showMembership)
+                membershipLabel.text = ProgressionRuntime.Instance.HasMembership ? "THÀNH VIÊN" : "GÓI THÀNH VIÊN";
+#endif
             Vector2 size = safe.rect.size;
             bool touch = Application.isMobilePlatform || Touchscreen.current != null;
             // Tiles can be added at runtime (the signed-in "!" appeals tile), so lay out what is visible.
@@ -201,7 +227,21 @@ namespace PickleVerse.FrontEnd
                 r.offsetMax = new Vector2(-14, 0);
             }
             float walletWidth = Mathf.Min(portrait ? size.x - pad * 2 : size.x * .43f, Mathf.Max(396, 200 * dp));
-            Place(wallet, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-pad, portrait ? -headHeight - 30 : -18), new Vector2(walletWidth, Mathf.Max(56, target * .86f)));
+            float walletHeight = Mathf.Max(56, target * .86f);
+            float walletTop = portrait ? -headHeight - 30 : -18;
+#if !UNITY_SERVER
+            if (showMembership)
+            {
+                bool secondRow = portrait || size.x - profileWidth - pad * 2 < 440;
+                float available = size.x - pad * 2 - (secondRow ? 0 : profileWidth + gap);
+                float memberWidth = Mathf.Min(Mathf.Max(196, 120 * dp), available * .38f);
+                walletWidth = Mathf.Min(walletWidth, available - memberWidth - 10);
+                walletTop = secondRow ? -headHeight - 30 : -18;
+                Place((RectTransform)membershipButton.transform, Vector2.one, Vector2.one,
+                    new Vector2(-pad - walletWidth - 10, walletTop), new Vector2(memberWidth, walletHeight));
+            }
+#endif
+            Place(wallet, Vector2.one, Vector2.one, new Vector2(-pad, walletTop), new Vector2(walletWidth, walletHeight));
             Place(play, new Vector2(0, 0), new Vector2(0, .5f), new Vector2(pad, bottom + dockHeight * .5f), new Vector2(playWidth, playHeight));
             // Match the reference: head over the upper-left corner, grip ending
             // inside the card near the lower mint trim; ball floats above the head.

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
@@ -14,12 +15,29 @@ namespace PickleVerse.Replays
         public static string PlayerId, MatchId;
         public static Action Return;
         public static long? SocialPostId { get; private set; }
+        public static Task<IOnlineReplayRepository> ExternalRepository { get; private set; }
+        public static TaskCompletionSource<bool> PresentationReady { get; private set; }
+        public static bool IsExternal => ExternalRepository != null;
         public static void Select(string player, string match, Action onReturn = null, long? socialPostId = null)
         {
+            ClearExternal();
             PlayerId = player;
             MatchId = match;
             Return = onReturn;
             SocialPostId = socialPostId;
+        }
+        public static void SelectExternal(string match, Task<IOnlineReplayRepository> repository, Action onReturn)
+        {
+            Select("", match, onReturn);
+            ExternalRepository = repository;
+            PresentationReady = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+        public static void ClearExternal()
+        {
+            if (ExternalRepository?.Status == TaskStatus.RanToCompletion && ExternalRepository.Result is IDisposable disposable)
+                disposable.Dispose();
+            PresentationReady?.TrySetCanceled();
+            ExternalRepository = null; PresentationReady = null;
         }
         public static void Close()
         {
@@ -27,6 +45,7 @@ namespace PickleVerse.Replays
             Return = null;
             PlayerId = MatchId = null;
             SocialPostId = null;
+            ClearExternal();
             if (callback != null)
                 callback();
             else SceneManager.LoadScene("Menu");
@@ -37,6 +56,7 @@ namespace PickleVerse.Replays
             PlayerId = MatchId = null;
             SocialPostId = null;
             Return = null;
+            ClearExternal();
         }
     }
     public sealed class ReplayView : MonoBehaviour
@@ -56,16 +76,20 @@ namespace PickleVerse.Replays
         float nextLabelUpdate;
         Button[] rateButtons;
         Slider seek;
+        TaskCompletionSource<bool> presentationReady;
         public double Playhead => playhead;
         public float PlaybackSpeed => speed;
         public bool IsPlaying => playing;
         public int CachedFrames => (current?.frames.Count ?? 0) + (next?.frames.Count ?? 0);
         async void Start()
         {
-            BuildControls();
-            repository = ReplayLaunch.SocialPostId.HasValue ? new OnlineReplayRepository(ReplayLaunch.SocialPostId) : ReplayStorage.Repository;
+            var external = ReplayLaunch.ExternalRepository;
+            presentationReady = ReplayLaunch.PresentationReady;
             try
             {
+                BuildControls();
+                repository = external != null ? await external : ReplayLaunch.SocialPostId.HasValue ? new OnlineReplayRepository(ReplayLaunch.SocialPostId) : ReplayStorage.Repository;
+                if (!this) return;
                 metadata = repository is IOnlineReplayRepository online ? await online.ReadAsync(ReplayLaunch.PlayerId, ReplayLaunch.MatchId) : repository.Read(ReplayLaunch.PlayerId, ReplayLaunch.MatchId);
                 if (!this)
                     return;
@@ -186,6 +210,7 @@ namespace PickleVerse.Replays
                     timeLabel.text = $"{TimeSpan.FromSeconds(playhead):mm\\:ss}  /  {TimeSpan.FromSeconds(metadata.duration):mm\\:ss}";
                 }
                 seek.SetValueWithoutNotify((float)playhead);
+                presentationReady?.TrySetResult(true);
             }
             catch (Exception e)
             {
@@ -221,6 +246,7 @@ namespace PickleVerse.Replays
         }
         void Error(Exception e)
         {
+            presentationReady?.TrySetException(e);
             playing = false;
             if (label)
                 label.text = "Không thể xem replay\n" + e.Message;
@@ -278,7 +304,8 @@ namespace PickleVerse.Replays
             var safe = Rect("Safe Area", canvas.transform, Vector2.zero, Vector2.one);
             safe.gameObject.AddComponent<UiSafeArea>();
             var header = Panel("Replay Header", safe, new Vector2(.03f, .86f), new Vector2(.97f, .97f));
-            var back = Button("Back", header, "‹  LỊCH SỬ ĐẤU", new Vector2(.015f, .13f), new Vector2(.20f, .87f), ReplayLaunch.Close);
+            Button("Back", header, ReplayLaunch.IsExternal ? "‹  QUAY LẠI" : "‹  LỊCH SỬ ĐẤU",
+                new Vector2(.015f, .13f), new Vector2(.20f, .87f), ReplayLaunch.Close);
             Text("Mode", header, "XEM LẠI TRẬN ĐẤU", new Vector2(.22f, .21f), new Vector2(.47f, .79f), 18).color = ScreenUiTheme.Gold;
             label = Text("Status", header, "Đang mở bản ghi…", new Vector2(.49f, .12f), new Vector2(.97f, .88f), 16);
             var dock = Panel("Playback Dock", safe, new Vector2(.03f, .035f), new Vector2(.97f, .17f));
@@ -345,6 +372,7 @@ namespace PickleVerse.Replays
         }
         void OnDestroy()
         {
+            presentationReady?.TrySetCanceled();
             if (actors != null)
                 foreach (var actor in actors)
                     if (actor)

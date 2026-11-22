@@ -66,7 +66,7 @@ namespace PickleVerse.LocalMatch
             try
             {
                 await savingProgression;
-                var snapshot = await ProgressionRuntime.Instance.StartBotAsync(kind, startRequestId);
+                var snapshot = await ProgressionRuntime.Instance.StartBotAsync(kind, startRequestId, botDifficulty);
                 if (!this)
                     return;
                 progressionResult = JsonConvert.DeserializeObject<MatchResult>(JsonConvert.SerializeObject(snapshot.player.pendingMatch));

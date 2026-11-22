@@ -1,4 +1,5 @@
 using Entities.Models;
+using Entities.Exceptions;
 using PickleVerse.Progression;
 using PickleVerse.Multiplayer;
 
@@ -10,6 +11,8 @@ public sealed partial class OnlineGameService
     {
         if (request.Kind != MatchKind.BotPractice)
             throw Bad("Rank phải tìm trận online và chờ đủ 6 phút để được cấp đối thủ dự phòng.");
+        if (request.Difficulty is < 0 or > 3) throw Bad("Độ khó bot không hợp lệ.");
+        if (request.Difficulty == 3 && !s.hasMembership) throw new ForbiddenException(MembershipService.UnlockMessage);
         if (s.Player.pendingMatch is { } pending)
         {
             if (!pending.Bot)

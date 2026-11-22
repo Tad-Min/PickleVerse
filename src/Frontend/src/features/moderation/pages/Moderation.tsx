@@ -6,6 +6,7 @@ import { apiClient } from '../../../api/client';
 import { adminApi } from '../../../api/adminApi';
 import { AdminReportDto, ReviewReportRequest, SanctionAppeal, SanctionDecision } from '../../../types/api';
 import { AppealStatus, ReportStatus, UserStatus, appealStatusLabel, reportStatusLabel } from '../../../types/status';
+import { ReplayLaunchDialog } from '../ReplayLaunchDialog';
 
 const field = 'w-full p-2.5 bg-background border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary';
 const primaryBtn = 'px-4 py-1.5 text-xs font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg shadow-sm disabled:opacity-40';
@@ -26,16 +27,6 @@ const errorText = (e: unknown) =>
   (e as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
   (e as Error)?.message ||
   'Không thực hiện được yêu cầu.';
-
-async function replay(match: string) {
-  const { data } = await apiClient.get(`/api/Replays/${match}`, { responseType: 'blob' });
-  const url = URL.createObjectURL(data);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `replay-${match}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 // Ngày theo giờ địa phương (không đổi sang UTC để tránh lệch ngày).
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -66,6 +57,7 @@ export function Moderation() {
   const [appeal, setAppeal] = useState<SanctionAppeal | null>(null);
   const [appealStatus, setAppealStatus] = useState<AppealStatus>(AppealStatus.Accepted);
   const [appealReason, setAppealReason] = useState('');
+  const [replayMatch, setReplayMatch] = useState<string | null>(null);
 
   const reports = useQuery({ queryKey: ['admin-reports', filter], queryFn: () => adminApi.getReports(filter || undefined) });
   const appeals = useQuery({
@@ -118,7 +110,7 @@ export function Moderation() {
     setAppealStatus(AppealStatus.Accepted);
   };
 
-  const runReplay = (matchId: string) => replay(matchId).catch((e) => setNotice({ type: 'error', text: errorText(e) }));
+  const runReplay = (matchId: string) => setReplayMatch(matchId);
 
   return (
     <div className="space-y-6">
@@ -195,7 +187,7 @@ export function Moderation() {
                     <div className="font-mono text-[11px] text-muted-foreground">{r.matchId}</div>
                     {r.replayUrl && (
                       <button className={`${smallBtn} mt-1.5`} onClick={() => runReplay(r.matchId)}>
-                        Tải replay
+                        Xem replay
                       </button>
                     )}
                   </td>
@@ -266,7 +258,7 @@ export function Moderation() {
                         </div>
                         {d?.reportMatchId && (
                           <button className={`${smallBtn} mt-1.5`} onClick={() => runReplay(d.reportMatchId!)}>
-                            Tải bằng chứng trận
+                            Xem replay bằng chứng
                           </button>
                         )}
                       </td>
@@ -483,6 +475,7 @@ export function Moderation() {
           </form>
         </div>
       )}
+      {replayMatch && <ReplayLaunchDialog key={replayMatch} matchId={replayMatch} onClose={() => setReplayMatch(null)} />}
     </div>
   );
 }

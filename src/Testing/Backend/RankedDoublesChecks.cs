@@ -156,6 +156,24 @@ static class RankedDoublesChecks
         await Start(fullTicket, fullSearches);
         foreach (var member in fullTicket.roster!.members) await Report(Result(fullTicket.roster, member));
 
+        foreach (bool twoParties in new[] { false, true })
+        {
+            string region = Region();
+            var players = await Players(400, 405, 415, 420);
+            var searches = players.Select((id, index) => (id, search: Search(region,
+                twoParties ? players.Skip(index / 2 * 2).Take(2).ToArray() : null))).ToArray();
+            await Task.WhenAll(searches.Select(x => Begin(x.id, x.search)));
+            var tickets = await Task.WhenAll(searches.Select(x => Poll(x.id, x.search)));
+            var roster = tickets[0].roster;
+            bool keepTeams = !twoParties || roster != null && players.Chunk(2)
+                .All(pair => roster.Find(pair[0].ToString("N")).team == roster.Find(pair[1].ToString("N")).team);
+            check(roster is { Count: 4, HumanCount: 4 } && roster.IsValid() &&
+                tickets.All(t => t.state == MatchmakingSearchStatus.Matched && t.matchId == tickets[0].matchId) && keepTeams,
+                twoParties ? "two simultaneously queued parties are joined immediately and kept together" :
+                    "four simultaneously queued solo players get the same match before the bot deadline");
+            await Game(g => g.CancelRankedSearch(searches[0].id, searches[0].search));
+        }
+
         var active = new List<RankedSearchTicket> { soloTicket };
         for (int i = 0; i < 3; i++)
         {

@@ -48,6 +48,15 @@ static class RedisChecks
         var qb = Ticket();
         var one = await Call(s => s.BeginRankedSearch(a, qa));
         check(one.state == MatchmakingSearchStatus.Searching && one.remainingSeconds == 360, "a single player waits in the Redis queue with a server deadline");
+        var queuedAt = (await TestRedis.State.Active(a))!.lastSeen;
+        clock.Now = clock.Now.AddSeconds(1);
+        await Call(s => s.PollRankedSearch(a, qa));
+        check((await TestRedis.State.Active(a))!.lastSeen == queuedAt,
+            "a recent search poll leaves the candidate stable for concurrent match assignment");
+        clock.Now = clock.Now.AddSeconds(4);
+        await Call(s => s.PollRankedSearch(a, qa));
+        check((await TestRedis.State.Active(a))!.lastSeen == clock.Now.ToUnixTimeMilliseconds(),
+            "the next heartbeat renews the queue lease before it can expire");
         var pair = await Call(s => s.BeginRankedSearch(b, qb));
         var polls = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Call(s => s.PollRankedSearch(a, qa))));
         check(pair.state == MatchmakingSearchStatus.Matched && polls.All(p => p.matchId == pair.matchId && p.session == pair.session) && pair.roster!.IsValid(), "concurrent polling produces one shared match/session and consumes each queue seat once");

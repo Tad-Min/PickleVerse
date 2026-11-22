@@ -60,6 +60,7 @@ public sealed class OnlineInventory
 public sealed class GameSnapshot
 {
     public long revision;
+    public bool hasMembership;
     public long learningEpoch;
     public string? experienceChoice;
     public bool isMale;
@@ -102,6 +103,8 @@ public sealed class MatchStartRequest
     [StringLength(64, MinimumLength = 8)]
     public string RequestId { get; set; } = "";
     public MatchKind Kind { get; set; } = MatchKind.BotPractice;
+    [Range(0, 3)]
+    public int Difficulty { get; set; } = 1;
 }
 public sealed class MatchFinishRequest
 {

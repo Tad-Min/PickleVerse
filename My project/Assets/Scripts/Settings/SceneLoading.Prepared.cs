@@ -41,6 +41,7 @@ namespace PickleVerse.Settings
             var token = lifetime.Token;
             int version = flowVersion;
             Task preparation = null;
+            bool replay = scene == "Replay";
             double deadline = Time.realtimeSinceStartupAsDouble + 90;
             try
             {
@@ -49,14 +50,14 @@ namespace PickleVerse.Settings
                 while (!loading.isDone) { token.ThrowIfCancellationRequested(); await Task.Yield(); }
                 if (!view) throw new InvalidOperationException("Loading screen is missing.");
                 view.Begin(scene);
-                Set(0, "Đang chuẩn bị đăng nhập");
+                Set(0, replay ? "Đang chuẩn bị replay" : "Đang chuẩn bị đăng nhập");
                 SuspendPreparedInput();
                 // Give Loading a rendered frame before starting network work and destination activation.
                 await Task.Yield();
                 await Task.Yield();
 
                 float preparationProgress = 0;
-                string message = "Đang đăng nhập tài khoản";
+                string message = replay ? "Đang xác nhận vé xem replay" : "Đang đăng nhập tài khoản";
                 preparation = prepare(token, (amount, text) =>
                 {
                     if (float.IsNaN(amount) || float.IsInfinity(amount)) return;
@@ -75,7 +76,7 @@ namespace PickleVerse.Settings
                     if (preparation.IsFaulted || preparation.IsCanceled) await preparation;
                     if (tracked.isDone && !inputSuspended) { SuspendPreparedInput(); inputSuspended = true; }
                     Set(.03f + .27f * preparationProgress + .5f * Mathf.Clamp01(tracked.progress / .9f),
-                        preparation.IsCompleted ? "Đang tải sảnh và nhân vật" : message);
+                        preparation.IsCompleted ? (replay ? "Đang tải sân và nhân vật" : "Đang tải sảnh và nhân vật") : message);
                     await Task.Yield();
                 }
                 await preparation;
@@ -92,7 +93,7 @@ namespace PickleVerse.Settings
                     var unload = SceneManager.UnloadSceneAsync(loadingScene);
                     while (unload != null && !unload.isDone) { token.ThrowIfCancellationRequested(); await Task.Yield(); }
                 }
-                Set(.8f, "Đang chuẩn bị hình ảnh sảnh");
+                Set(.8f, replay ? "Đang chuẩn bị hình ảnh replay" : "Đang chuẩn bị hình ảnh sảnh");
                 await WarmPrepared(scene, remainsReady, deadline, token);
                 if (remainsReady != null && !remainsReady()) throw new InvalidOperationException("Session changed before reveal.");
                 flow = StartCoroutine(Finish());
@@ -117,7 +118,7 @@ namespace PickleVerse.Settings
                     {
                         failed?.Invoke(error);
                         if (view) view.group.alpha = 1;
-                        Set(progress, "Đang trở lại đăng nhập");
+                        Set(progress, replay ? "Đang quay lại" : "Đang trở lại đăng nhập");
                         var back = SceneManager.LoadSceneAsync(fallbackScene, LoadSceneMode.Single);
                         while (back != null && !back.isDone) await Task.Yield();
                     }
@@ -157,11 +158,11 @@ namespace PickleVerse.Settings
                     token.ThrowIfCancellationRequested();
                     if (remainsReady != null && !remainsReady()) throw new InvalidOperationException("Session changed during warm-up.");
                     if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Render warm-up timed out.");
-                    Set(.82f + .14f * gate.Progress, "Đang ổn định hình ảnh sảnh");
+                    Set(.82f + .14f * gate.Progress, scene == "Replay" ? "Đang ổn định hình ảnh replay" : "Đang ổn định hình ảnh sảnh");
                     await Task.Yield();
                 }
                 LocalRenderReady = true;
-                Set(.97f, "Sảnh đã sẵn sàng");
+                Set(.97f, scene == "Replay" ? "Replay đã sẵn sàng" : "Sảnh đã sẵn sàng");
             }
             finally
             {

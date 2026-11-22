@@ -39,6 +39,7 @@ namespace PickleVerse.Progression
     public sealed class OnlineGameSnapshot
     {
         public long revision;
+        public bool hasMembership;
         public long learningEpoch;
         public string experienceChoice;
         public bool isMale;

@@ -48,6 +48,7 @@ namespace PickleVerse.FrontEnd
         async void Check()
         {
             if (quitting || navigating || SceneManager.GetActiveScene().name == SceneName) return;
+            if (WebReplayLauncher.OwnsNavigation) return;
             // Authentication and Menu warm-up share an opaque Loading scene. The
             // prepared transition owns rollback until both account and game data are ready.
             if (SceneLoading.IsPreparedTransition && SceneLoading.Destination == "Menu") return;

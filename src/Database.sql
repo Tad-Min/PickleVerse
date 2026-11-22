@@ -92,6 +92,23 @@ CREATE TABLE PlayerProfiles (
     LifetimeHigherRatedWins BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT FK_PlayerProfiles_Users FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
+
+CREATE TABLE MembershipOrders (
+    OrderCode BIGINT PRIMARY KEY CHECK (OrderCode BETWEEN 1 AND 9007199254740991),
+    PlayerId UUID NOT NULL REFERENCES PlayerProfiles(UserId) ON DELETE CASCADE,
+    PaymentLinkId VARCHAR(64) NOT NULL UNIQUE,
+    CheckoutUrl VARCHAR(512) NOT NULL,
+    AmountVnd INT NOT NULL CHECK (AmountVnd > 0),
+    EliteTokenBonus INT NOT NULL CHECK (EliteTokenBonus >= 0),
+    Status VARCHAR(16) NOT NULL CHECK (Status IN ('PENDING', 'PAID', 'CANCELLED', 'EXPIRED')),
+    CreatedAt TIMESTAMPTZ NOT NULL,
+    ExpiresAt TIMESTAMPTZ NOT NULL CHECK (ExpiresAt > CreatedAt),
+    PaidAt TIMESTAMPTZ,
+    LastCheckedAt TIMESTAMPTZ,
+    CHECK ((Status = 'PAID') = (PaidAt IS NOT NULL))
+);
+CREATE UNIQUE INDEX membershiporders_one_pending_idx ON MembershipOrders(PlayerId) WHERE Status = 'PENDING';
+CREATE INDEX membershiporders_member_idx ON MembershipOrders(PlayerId, PaidAt) WHERE PaidAt IS NOT NULL;
 --#endregion
 
 --#region Social-Friendships

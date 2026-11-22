@@ -54,6 +54,10 @@ static class RoomInvitationChecks
         }
         await Host();
         await Guest();
+        check((await Call(s => s.JoinInfo(" invite12 "))).Region == "asia",
+            "entering a room code resolves the live host's Photon region");
+        check((await Call(s => s.JoinInfo("UNKNOWN0"))).Region == "",
+            "an unpublished room can still be attempted in the client's configured region");
         await Rejected(() => Call(s => s.Publish(c, new() { SessionId = Guid.NewGuid().ToString("N"), State = "lobby", RoomCode = host.RoomCode, Region = "asia", Mode = 2, IsHost = true, Members = [c.ToString("N")] })), HttpStatusCode.Forbidden, "another account cannot overwrite a live room registration");
         var friends = await Call(s => s.List(a, "Bình", 0));
         check(friends.Players.Length == 1 && friends.Players[0].Id == b.ToString("N") && friends.Players[0].CanInvite, "search lists only accepted friends available in the lobby with Vietnamese names");
@@ -105,6 +109,9 @@ static class RoomInvitationChecks
         host.Members = [];
         await Host();
         check((await Guest()).Invitations.Length == 0, "closed rooms stop showing their pending invitations");
+        check((await Call(s => s.JoinInfo("INVITE12"))).Region == "", "a room code cannot resolve to an old host registration");
+        await Rejected(() => Call(s => s.Respond(b, accepted.Id, true)), HttpStatusCode.Conflict,
+            "retrying a previously accepted invitation checks that the original room is still open");
         await Rejected(() => Call(s => s.Respond(b, invitation.Id, true)), HttpStatusCode.Conflict, "cannot accept after the sender closes the room");
         host.RoomCode = "INVITE12";
         host.IsHost = true;

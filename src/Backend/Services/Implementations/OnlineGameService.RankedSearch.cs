@@ -67,17 +67,27 @@ public sealed partial class OnlineGameService
     public async Task<RankedSearchTicket> PollRankedSearch(Guid id, RankedSearchRequest request)
     {
         var entry = await matchmaking.Get(id, request.SearchId, false);
-        if(entry.state==MatchmakingSearchStatus.Searching && entry.lastSeen<Milliseconds-matchmaking.QueueLeaseSeconds*1000L)
-        {
-            var before=GameJson.Write(entry);entry.state=MatchmakingSearchStatus.TimedOut;await matchmaking.Compare([before],[entry]);
-            throw Conflict("Lượt tìm trận đã hết hạn. Hãy tìm trận lại.");
-        }
+        long now = Milliseconds;
+        long staleBefore = now - matchmaking.QueueLeaseSeconds * 1000L;
+        // Leave a stable snapshot for matching while four clients are polling at once.
+        // Refresh well before the lease expires so liveness still works with missed polls.
+        long refreshBefore = now - Math.Min(5000L, matchmaking.QueueLeaseSeconds * 1000L / 3);
         for (int retry = 0; retry < 8; retry++)
         {
-            var before = GameJson.Write(entry);
-            entry.lastSeen = Milliseconds;
-            if (await matchmaking.Compare([before], [entry]))
+            if (entry.lastSeen > refreshBefore)
                 break;
+            var before = GameJson.Write(entry);
+            bool expired = entry.state == MatchmakingSearchStatus.Searching && entry.lastSeen < staleBefore;
+            if (expired)
+                entry.state = MatchmakingSearchStatus.TimedOut;
+            else
+                entry.lastSeen = now;
+            if (await matchmaking.Compare([before], [entry]))
+            {
+                if (expired)
+                    throw Conflict("Lượt tìm trận đã hết hạn. Hãy tìm trận lại.");
+                break;
+            }
             entry = await matchmaking.Get(id, request.SearchId, false);
         }
         if (entry.state != MatchmakingSearchStatus.Searching)
@@ -86,8 +96,8 @@ public sealed partial class OnlineGameService
                 throw Conflict("Lượt ghép trận đã bị hủy hoặc hết hạn.");
             return await QueueTicket(entry);
         }
-        var candidates = (await matchmaking.Candidates(entry, Milliseconds - matchmaking.QueueLeaseSeconds * 1000L)).Where(x => x.entry.state == MatchmakingSearchStatus.Searching && x.entry.mode == entry.mode && x.entry.region == entry.region
-            && x.entry.protocol == entry.protocol && x.entry.lastSeen >= Milliseconds - matchmaking.QueueLeaseSeconds * 1000L).ToList();
+        var candidates = (await matchmaking.Candidates(entry, staleBefore)).Where(x => x.entry.state == MatchmakingSearchStatus.Searching && x.entry.mode == entry.mode && x.entry.region == entry.region
+            && x.entry.protocol == entry.protocol && x.entry.lastSeen >= staleBefore).ToList();
         var groups = candidates.GroupBy(x => x.entry.group).Select(g => g.OrderBy(x => x.entry.playerId, StringComparer.Ordinal).ToList())
             .Where(g => g.Count == g[0].entry.party.Length && g.Select(x => x.entry.playerId).SequenceEqual(g[0].entry.party)
                 && g.All(x => x.entry.party.SequenceEqual(g[0].entry.party))).OrderBy(g => g.Min(x => x.entry.started)).ToList();
@@ -97,7 +107,6 @@ public sealed partial class OnlineGameService
         var seats = new List<(string raw, QueueEntry entry)>(own);
         var teams = new Dictionary<string, int> { [own[0].entry.group] = 0 };
         int cap = entry.mode;
-        long now = Milliseconds;
         long fallbackAt = now - settings.Matchmaking.BotFallbackSeconds * 1000L;
         bool Fill(int at, int a, int b, int target)
         {

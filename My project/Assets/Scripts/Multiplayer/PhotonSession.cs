@@ -9,6 +9,25 @@ using UnityEngine;
 
 namespace PickleVerse.Multiplayer
 {
+    sealed class PhotonJoinException : InvalidOperationException
+    {
+        public PhotonJoinException(ShutdownReason reason) : base(MessageFor(reason)) => Reason = reason;
+        public ShutdownReason Reason { get; }
+        public bool CanRetryRoom => Reason is ShutdownReason.GameClosed or ShutdownReason.GameIsFull or ShutdownReason.GameNotFound;
+
+        static string MessageFor(ShutdownReason reason) => reason switch
+        {
+            ShutdownReason.GameNotFound => "Không tìm thấy phòng Photon. Hãy kiểm tra mã phòng hoặc xin lời mời mới.",
+            ShutdownReason.GameClosed => "Phòng đang tìm trận hoặc đang thi đấu. Hãy thử lại khi chủ phòng quay về phòng chờ.",
+            ShutdownReason.GameIsFull => "Phòng đã đủ người. Hãy chọn phòng khác hoặc chờ có chỗ trống.",
+            ShutdownReason.MaxCcuReached => "Photon đang đạt giới hạn người chơi kết nối. Vui lòng thử lại sau.",
+            ShutdownReason.IncompatibleConfiguration => "Cấu hình Photon của hai máy không tương thích. Hãy kiểm tra bản game đang dùng.",
+            ShutdownReason.InvalidRegion => "Vùng Photon của phòng hiện không khả dụng. Hãy nhờ chủ phòng tạo phòng mới.",
+            ShutdownReason.PhotonCloudTimeout or ShutdownReason.ConnectionTimeout => "Quá thời gian kết nối phòng Photon. Vui lòng thử lại.",
+            _ => "Không vào được phòng Photon (" + reason + "). Vui lòng thử lại."
+        };
+    }
+
     [Serializable]
     public sealed class PhotonMessage { public uint target; public string kind, payload; }
     public interface IPhotonMessageTarget { void ReceivePhotonMessage(PlayerRef source, string kind, string payload); }
@@ -210,7 +229,10 @@ namespace PickleVerse.Multiplayer
                 CustomPhotonAppSettings = Settings(region)
             });
             if (!result.Ok)
-                throw new InvalidOperationException("Không vào được phòng Photon. Vui lòng thử lại hoặc chọn phòng khác.");
+            {
+                Debug.LogWarning($"[Photon] Join failed room={name} region={region} reason={result.ShutdownReason}");
+                throw new PhotonJoinException(result.ShutdownReason);
+            }
             sessionName = Runner.SessionInfo.Name;
             sessionRegion = Runner.SessionInfo.Region;
             await WaitAsync(() => Lobby, "Chưa nhận được trạng thái phòng Photon.");
@@ -255,11 +277,10 @@ namespace PickleVerse.Multiplayer
             }
             finally
             {
-                if (runner)
-                {
+                if (!ReferenceEquals(runner, null))
                     sessions.Remove(runner);
+                if (runner)
                     UnityEngine.Object.Destroy(runner.gameObject);
-                }
                 Lobby = null;
             }
         }

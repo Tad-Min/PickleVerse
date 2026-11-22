@@ -25,6 +25,7 @@ namespace PickleVerse.Multiplayer
         public RoomInvitation[] Invitations = Array.Empty<RoomInvitation>();
         public int PollSeconds = 3;
     }
+    public sealed class RoomJoinInfo { public string Region = ""; }
     [Serializable]
     public sealed class InvitableFriend
     {

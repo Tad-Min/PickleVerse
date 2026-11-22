@@ -50,13 +50,15 @@ public sealed partial class OnlineGameService : IOnlineGameService, IGameTrainin
         public OnlineInventory inventory = new();
         public GameCatalog catalog = new();
         public long revision, beforeCoins, beforeElite;
+        public bool hasMembership;
         public bool trainingChanged;
         public Dictionary<(ProgressScope,string,string),(int,bool,int)> missionRows = [];
         public HashSet<string> bonusCommands = [];
         public PlayerProfile Player => state.player;
         public ProgressionEngine Engine => new(catalog.Rules());
         public GameSnapshot Snapshot() => new() { player = Player, inventory = inventory, catalog = catalog, isMale = profile.Ismale, revision = revision,
-            tutorial = state.tutorial, learningEpoch = profile.LearningEpoch, experienceChoice = profile.ExperienceChoice };
+            tutorial = state.tutorial, learningEpoch = profile.LearningEpoch, experienceChoice = profile.ExperienceChoice,
+            hasMembership = hasMembership };
     }
     DateTime Now => clock.GetUtcNow().UtcDateTime;
     static AppException Bad(string message) => new(message, HttpStatusCode.BadRequest);
@@ -67,6 +69,7 @@ public sealed partial class OnlineGameService : IOnlineGameService, IGameTrainin
         var profile = await _unitOfWork.Game.LockProfile(id)
             ?? throw new AppException("Không tìm thấy hồ sơ.", HttpStatusCode.NotFound);
         var s = new Session { profile=profile, catalog=catalog };
+        s.hasMembership = await _unitOfWork.Game.HasMembership(id);
         var p = s.Player;
         p.id = id.ToString("N");
         p.playerName = profile.Playername;

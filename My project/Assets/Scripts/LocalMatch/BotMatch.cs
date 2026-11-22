@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using PickleVerse.Rules;
 using PickleVerse.Settings;
 using PickleVerse.Audio;
+using PickleVerse.Progression;
 
 namespace PickleVerse.LocalMatch
 {
@@ -94,6 +95,8 @@ namespace PickleVerse.LocalMatch
             if (!human || !bot)
                 return;
             botDifficulty = BotMatchLaunchSettings.Difficulty;
+            if (botDifficulty == 3 && ProgressionRuntime.Instance?.HasMembership != true)
+                botDifficulty = 1;
             TotalHits = TotalRallies = LongestRally = 0;
             RallyLog.Clear();
             Paused = false;
@@ -708,7 +711,9 @@ namespace PickleVerse.LocalMatch
         }
         public void SetDifficulty(int level)
         {
-            botDifficulty = Mathf.Clamp(level, 0, 3);
+            int difficulty = Mathf.Clamp(level, 0, 3);
+            if (difficulty == 3 && ProgressionRuntime.Instance?.HasMembership != true) return;
+            botDifficulty = difficulty;
         }
         public bool IsGameplay => true;
         public bool IsPaused => Paused;

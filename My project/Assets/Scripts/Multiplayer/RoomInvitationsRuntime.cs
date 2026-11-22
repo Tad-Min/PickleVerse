@@ -101,10 +101,14 @@ namespace PickleVerse.Multiplayer
         {
             var app = MultiplayerApp.Instance;
             var room = app?.Room;
+            bool available = Available;
+            if (!available || room == null || !room.Runner || !room.Runner.IsRunning ||
+                room.Data.phase != "idle" || !room.Runner.SessionInfo.IsOpen)
+                room = null;
             return new LobbyPresenceRequest
             {
                 SessionId = sessionId,
-                State = Available ? "lobby" : "busy",
+                State = available ? "lobby" : "busy",
                 RoomCode = room?.Code ?? "",
                 Region = room?.Region ?? "",
                 IsHost = room?.IsHost == true,

@@ -127,7 +127,20 @@ try
     if (args.Contains("--check-moderation"))
     {
         await ModerationChecks.Run(options, Check);
+        await ReplayLaunchChecks.Run(options, Check);
         Console.WriteLine($"SUCCESS: {checks} moderation/auth/appeal checks; disposable database removed.");
+        return;
+    }
+    if (args.Contains("--check-replay-launch"))
+    {
+        await ReplayLaunchChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} Admin replay launch checks; disposable database and Redis keys removed.");
+        return;
+    }
+    if (args.Contains("--check-membership"))
+    {
+        await MembershipChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} membership, PayOS and mode permission checks; disposable database and Redis keys removed.");
         return;
     }
     if (args.Contains("--check-single-session"))
@@ -482,6 +495,22 @@ static class UnityFixture
             await using var context = new PickleVerseContext(options);
             string email = $"unity-smoke-{Guid.NewGuid():N}@example.invalid";
             var (user, password) = await RegisterVerifiedAsync(context, email);
+            // These accounts exercise paid modes on the local development instance without charging PayOS.
+            await using var membershipContext = new PickleVerseContext(options);
+            var now = DateTime.UtcNow;
+            membershipContext.MembershipOrders.Add(new Entities.Models.MembershipOrder
+            {
+                OrderCode = Random.Shared.NextInt64(1, 9007199254740991),
+                PlayerId = user.Userid,
+                PaymentLinkId = "photon-fixture-" + user.Userid.ToString("N"),
+                CheckoutUrl = "https://example.invalid/photon-fixture",
+                AmountVnd = MembershipService.PriceVnd,
+                CreatedAt = now,
+                ExpiresAt = now.AddMinutes(15),
+                Status = Entities.Models.MembershipOrder.Paid,
+                PaidAt = now
+            });
+            await membershipContext.SaveChangesAsync();
             await System.Text.Json.JsonSerializer.SerializeAsync(output, new
             {
                 email, password, userId = user.Userid, playerName = user.Playerprofile!.Playername

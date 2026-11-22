@@ -13,6 +13,7 @@ import { Matches } from './features/matches';
 import { Moderation } from './features/moderation';
 import { Analytics } from './features/analytics';
 import { ExpertReview } from './features/analytics/pages/ExpertReview';
+import { PaymentReturn } from './features/membership/PaymentReturn';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,7 @@ export const App: React.FC = () => (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/membership/payment" element={<PaymentReturn />} />
           <Route path="/login" element={isMockMode ? <Navigate to="/" replace /> : <Login />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>

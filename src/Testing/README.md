@@ -46,7 +46,7 @@ Heartbeat Dedicated dùng UUID dạng D (36 ký tự) khi gửi sessions[].playe
 
 ## Kiểm thử nhiều trận Fusion
 
-Chạy `--check-dedicated` để kiểm tra bốn người tìm 2v2 riêng, hủy và tìm lại, cùng 500 reservation trên Redis. Dùng build Windows Development cùng phiên bản protocol với Linux Dedicated để kiểm thử Fusion thật. `--provision-photon-fixtures <thư-mục> <số-người>` tạo tài khoản test trên PostgreSQL PickleVerse cục bộ và lưu thông tin đăng nhập trong `artifacts`.
+Chạy `--check-dedicated` để kiểm tra bốn người tìm 2v2 riêng, hủy và tìm lại, cùng 500 reservation trên Redis. Dùng build Windows Development cùng phiên bản protocol với Linux Dedicated để kiểm thử Fusion thật. `--provision-photon-fixtures <thư-mục> <số-người>` tạo tài khoản test có quyền thành viên trên PostgreSQL PickleVerse cục bộ và lưu thông tin đăng nhập trong `artifacts`. Quyền này chỉ dùng để kiểm thử và không tạo giao dịch PayOS.
 
 Dùng `docker-compose.yml` cùng `docker-compose.functional-local.yml` và profile `dedicated` để chạy nhiều worker trên máy dev. Đặt `PKV_GAME_SERVER_IMAGE` theo image Linux Dedicated đã build và `PKV_GAME_REPLICAS` theo số worker đang nghiệm thu.
 

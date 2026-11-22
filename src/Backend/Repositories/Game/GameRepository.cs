@@ -29,6 +29,7 @@ public sealed partial class GameRepository(PickleVerseContext db) : IAppActivity
     public Task Lock(string key) => db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({key},0))");
     public async Task CheckSchema(CancellationToken cancellationToken)
     {
+        await db.MembershipOrders.Select(order => order.OrderCode).Take(1).ToListAsync(cancellationToken);
         await db.Matchscores.OrderBy(score => score.Matchid).Select(score => score.Teamastartside).Take(1).ToListAsync(cancellationToken);
         await db.Set<SocialPost>().OrderBy(post => post.PostId).Select(post => post.PostId).Take(1).ToListAsync(cancellationToken);
         await db.Set<SocialMessage>().OrderBy(message => message.MessageId).Select(message => message.MessageId).Take(1).ToListAsync(cancellationToken);

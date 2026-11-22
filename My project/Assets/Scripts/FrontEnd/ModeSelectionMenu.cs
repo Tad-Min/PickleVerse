@@ -1,5 +1,7 @@
 using System.Collections;
 using PickleVerse.LocalMatch;
+using PickleVerse.Progression;
+using PickleVerse.Settings;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -35,16 +37,71 @@ namespace PickleVerse.FrontEnd
         Coroutine reveal;
         static readonly Color Accent = new Color(.79f, .96f, .45f);
         static readonly Color Border = new Color(.22f, .34f, .39f);
+#if !UNITY_SERVER
+        GameObject onlineLock, roomLock, adaptiveLock;
+#endif
+        static bool Member => ProgressionRuntime.Instance?.HasMembership == true;
 
         void Start()
         {
             SelectedDifficulty = BotMatchLaunchSettings.Difficulty;
+            if (SelectedDifficulty == 3 && !Member) SelectedDifficulty = 1;
             SelectedNight = BotMatchLaunchSettings.Night;
             SelectedVenue = BotMatchLaunchSettings.Venue;
             if (roomJoinCode)
                 roomJoinCode.onSubmit.AddListener(_ => JoinPrivateRoom());
             ApplySafeArea();
+#if !UNITY_SERVER
+            foreach (var button in modePage.GetComponentsInChildren<UnityEngine.UI.Button>(true))
+            {
+                if (button.name == "MultiplayerMode") onlineLock = LockBadge((RectTransform)button.transform, 48);
+                if (button.name == "PrivateRoomMode") roomLock = LockBadge((RectTransform)button.transform, 48);
+            }
+            if (difficultyButtons.Length > 3 && difficultyButtons[3])
+                adaptiveLock = LockBadge((RectTransform)difficultyButtons[3].transform, 32);
+#endif
+            ProgressionRuntime.Changed += RefreshMembership;
+            RefreshMembership();
             ShowModes();
+        }
+
+        void OnDestroy() => ProgressionRuntime.Changed -= RefreshMembership;
+
+#if !UNITY_SERVER
+        static GameObject LockBadge(RectTransform parent, float size)
+        {
+            var badge = ArenaForms.Inset("Membership Lock", parent);
+            ArenaForms.Pin(badge, Vector2.one, Vector2.one, new Vector2(-10, -10), Vector2.one * size);
+            var icon = ArenaForms.Icon("Lock", badge, ArenaGlyph.Lock, ScreenUiTheme.Gold, .10f);
+            ArenaForms.Fill(icon.rectTransform, Vector2.zero, Vector2.one, 7, 7, 7, 7);
+            foreach (var graphic in badge.GetComponentsInChildren<UnityEngine.UI.Graphic>(true))
+                graphic.raycastTarget = false;
+            return badge.gameObject;
+        }
+#endif
+
+        void RefreshMembership()
+        {
+            bool locked = !Member;
+#if !UNITY_SERVER
+            if (onlineLock) onlineLock.SetActive(locked);
+            if (roomLock) roomLock.SetActive(locked);
+            if (adaptiveLock) adaptiveLock.SetActive(locked);
+#endif
+            if (locked && SelectedDifficulty == 3)
+            {
+                SelectedDifficulty = 1;
+                if (IsBotSetup) RefreshChoices();
+            }
+        }
+
+        bool RequireMembership()
+        {
+            if (Member) return true;
+#if !UNITY_SERVER
+            MembershipPanel.Show(locked: true);
+#endif
+            return false;
         }
 
         void Update()
@@ -110,13 +167,14 @@ namespace PickleVerse.FrontEnd
 
         public void OpenMultiplayer()
         {
+            if (Loading || !RequireMembership()) return;
             PickleVerse.Multiplayer.UI.RoomLaunchRequest.Clear();
             OpenRoomScene("Đang mở phòng multiplayer…");
         }
 
         public void OpenRooms()
         {
-            if (Loading || !roomPage)
+            if (Loading || !roomPage || !RequireMembership())
                 return;
             IsBotSetup = false;
             IsRoomSetup = true;
@@ -141,14 +199,14 @@ namespace PickleVerse.FrontEnd
         }
         void CreateRoom(PickleVerse.Multiplayer.PlayMode mode)
         {
-            if (Loading)
+            if (Loading || !RequireMembership())
                 return;
             PickleVerse.Multiplayer.UI.RoomLaunchRequest.Create(mode);
             OpenRoomScene("Đang tạo phòng " + (mode == PickleVerse.Multiplayer.PlayMode.Singles ? "1v1" : "2v2") + "…");
         }
         public void JoinPrivateRoom()
         {
-            if (Loading)
+            if (Loading || !RequireMembership())
                 return;
             if (!roomJoinCode || string.IsNullOrWhiteSpace(roomJoinCode.text))
             {
@@ -210,7 +268,9 @@ namespace PickleVerse.FrontEnd
         {
             if (Loading)
                 return;
-            SelectedDifficulty = Mathf.Clamp(level, 0, 3);
+            int difficulty = Mathf.Clamp(level, 0, 3);
+            if (difficulty == 3 && !RequireMembership()) return;
+            SelectedDifficulty = difficulty;
             RefreshChoices();
         }
 
@@ -304,6 +364,7 @@ namespace PickleVerse.FrontEnd
         {
             if (Loading || !IsBotSetup)
                 return;
+            if (SelectedDifficulty == 3 && !RequireMembership()) return;
             if (!Application.CanStreamedLevelBeLoaded("BotMatch"))
             {
                 subtitle.text = "Chưa tìm thấy sân BotMatch trong bản ván.";

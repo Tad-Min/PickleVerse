@@ -49,6 +49,7 @@ namespace PickleVerse.Progression
             instance = null;
             shuttingDown = false;
             Changed = null;
+            MembershipChanged = null;
             Quitting = null;
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -161,8 +162,8 @@ namespace PickleVerse.Progression
         public Task<OnlineGameSnapshot> StartTrainingAsync(string id, bool retry) => StartTrainingResilient(id, retry);
         public Task<OnlineGameSnapshot> SaveTrainingAsync(TrainingAttempt attempt, bool completed, string requestId) =>
             SaveTrainingResilient(attempt, completed, requestId);
-        public Task<OnlineGameSnapshot> StartBotAsync(MatchKind kind, string requestId) =>
-            CommandAsync("match/bot/start", new { RequestId = requestId, Kind = kind });
+        public Task<OnlineGameSnapshot> StartBotAsync(MatchKind kind, string requestId, int difficulty) =>
+            CommandAsync("match/bot/start", new { RequestId = requestId, Kind = kind, Difficulty = difficulty });
         public Task<OnlineGameSnapshot> FinishBotAsync(MatchResult result, string requestId) =>
             CommandAsync("match/bot/complete", new { RequestId = requestId, Result = result });
         public Task<OnlineGameSnapshot> SetTutorialAsync(string key, string requestId) => key == "completed"
@@ -193,6 +194,7 @@ namespace PickleVerse.Progression
         void Update()
         {
             TickOfflineSync();
+            TickMembership();
             if (Ready && AppActivityRuntime.Instance)
                 player.activeSeconds = Math.Max(player.activeSeconds, AppActivityRuntime.Instance.Seconds);
         }

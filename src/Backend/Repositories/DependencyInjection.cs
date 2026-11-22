@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddSingleton<LobbyRepository>();
         services.AddSingleton<DedicatedLeaseRepository>();
         services.AddSingleton<SocialPresenceRepository>();
+        services.AddSingleton<ReplayLaunchRepository>();
         services.AddScoped<GameRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
