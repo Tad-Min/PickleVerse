@@ -56,7 +56,7 @@ export function ProgressResetDialog({ user, onClose, onDone }: { user: AdminUser
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 !m-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-label="Đặt lại tiến trình"

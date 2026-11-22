@@ -37,6 +37,22 @@ async function replay(match: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// Ngày theo giờ địa phương (không đổi sang UTC để tránh lệch ngày).
+const pad = (n: number) => String(n).padStart(2, '0');
+const todayDate = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+const defaultUntil = () => todayDate();
+
+// Ghép ngày người dùng chọn với giờ hiện tại (giờ địa phương), trả về ISO.
+const untilWithCurrentTime = (date: string) => {
+  const [y, m, d] = date.split('-').map(Number);
+  const now = new Date();
+  return new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
+};
+
+
 export function Moderation() {
   const client = useQueryClient();
   const [filter, setFilter] = useState<ReportStatus | ''>(ReportStatus.Pending);
@@ -44,8 +60,8 @@ export function Moderation() {
   const [status, setStatus] = useState<ReviewReportRequest['status']>(ReportStatus.Accepted);
   const [reason, setReason] = useState('');
   const [sanction, setSanction] = useState(false);
-  const [restriction, setRestriction] = useState<UserStatus.Banned | UserStatus.Suspended>(UserStatus.Banned);
-  const [until, setUntil] = useState('');
+  const [restriction, setRestriction] = useState<UserStatus.Banned | UserStatus.Suspended>(UserStatus.Suspended);
+  const [until, setUntil] = useState(defaultUntil);
   const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [appeal, setAppeal] = useState<SanctionAppeal | null>(null);
   const [appealStatus, setAppealStatus] = useState<AppealStatus>(AppealStatus.Accepted);
@@ -93,7 +109,7 @@ export function Moderation() {
     setReason('');
     setSanction(false);
     setStatus(ReportStatus.Accepted);
-    setUntil('');
+    setUntil(defaultUntil());
   };
 
   const openAppeal = (item: SanctionAppeal) => {
@@ -313,11 +329,17 @@ export function Moderation() {
 
       {/* Report review dialog */}
       {selected && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 !m-0 z-50 bg-slate-900/30 backdrop-blur-[2px] flex items-center justify-center p-4">
           <form
             className="bg-card border border-border rounded-xl shadow-lg p-6 space-y-4 w-full max-w-xl max-h-[90vh] overflow-auto"
             onSubmit={(e) => {
               e.preventDefault();
+              if (restriction === UserStatus.Suspended && sanction && status === ReportStatus.Accepted) {
+                if (!until || until < todayDate()) {
+                  setNotice({ type: 'error', text: 'Thời hạn đình chỉ phải từ hôm nay trở đi.' });
+                  return;
+                }
+              }
               review.mutate({
                 reporterId: selected.reporterId,
                 reportedPlayerId: selected.reportedPlayerId,
@@ -327,7 +349,7 @@ export function Moderation() {
                 banReportedPlayer: sanction && status === ReportStatus.Accepted,
                 banReason: reason,
                 restriction,
-                bannedUntil: until ? new Date(until).toISOString() : null,
+                bannedUntil: restriction === UserStatus.Suspended && until ? untilWithCurrentTime(until) : null,
               });
             }}
           >
@@ -339,7 +361,7 @@ export function Moderation() {
               <select className={field} value={status} onChange={(e) => setStatus(e.target.value as ReviewReportRequest['status'])}>
                 <option value={ReportStatus.Checking}>Đang xem xét</option>
                 <option value={ReportStatus.Accepted}>Chấp nhận tố cáo</option>
-                <option value={ReportStatus.Declined}>Bác tố cáo</option>
+                <option value={ReportStatus.Declined}>Từ chối tố cáo</option>
               </select>
             </label>
 
@@ -372,20 +394,30 @@ export function Moderation() {
                     value={restriction}
                     onChange={(e) => setRestriction(e.target.value as UserStatus.Banned | UserStatus.Suspended)}
                   >
-                    <option value={UserStatus.Banned}>Khóa tài khoản</option>
-                    <option value={UserStatus.Suspended}>Đình chỉ</option>
+                    <option value={UserStatus.Suspended}>Đình chỉ tài khoản</option>
+                    <option value={UserStatus.Banned}>Cấm tài khoản</option>
                   </select>
                 </label>
-                <label className="block space-y-1 text-xs font-medium text-foreground">
-                  Thời hạn
-                  <input
-                    className={field}
-                    type="datetime-local"
-                    required={restriction === UserStatus.Suspended}
-                    value={until}
-                    onChange={(e) => setUntil(e.target.value)}
-                  />
-                </label>
+                {restriction === UserStatus.Suspended ? (
+                  <label className="block space-y-1 text-xs font-medium text-foreground">
+                    Ngày hết đình chỉ
+                    <input
+                      className={field}
+                      type="date"
+                      required
+                      min={todayDate()}
+                      value={until}
+                      onChange={(e) => setUntil(e.target.value)}
+                    />
+                  </label>
+                ) : (
+                  <div className="space-y-1 text-xs font-medium text-foreground">
+                    <span>Thời hạn</span>
+                    <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2.5 text-rose-600">
+                      Cấm vĩnh viễn
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -403,7 +435,7 @@ export function Moderation() {
 
       {/* Appeal review dialog */}
       {appeal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 !m-0 z-50 bg-slate-900/30 backdrop-blur-[2px] flex items-center justify-center p-4">
           <form
             className="bg-card border border-border rounded-xl shadow-lg p-6 space-y-4 w-full max-w-xl"
             onSubmit={(e) => {

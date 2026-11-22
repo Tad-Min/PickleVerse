@@ -38,5 +38,5 @@ export const tone = {
 export const notice = (type: 'success' | 'error') =>
   `p-3.5 rounded-xl flex items-center justify-between text-xs font-medium border ${type === 'success' ? tone.emerald : tone.rose}`;
 
-export const modalOverlay = 'fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in';
+export const modalOverlay = 'fixed inset-0 !m-0 z-50 bg-slate-900/30 backdrop-blur-[2px] flex items-center justify-center p-4 animate-fade-in';
 export const modalCard = 'bg-card border border-border rounded-2xl shadow-lift p-6 space-y-4 w-full max-w-xl max-h-[90vh] overflow-auto animate-fade-up';

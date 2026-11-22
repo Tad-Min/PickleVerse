@@ -341,7 +341,7 @@ export const Users: React.FC = () => {
 
       {/* MODAL 1: Role Assignment */}
       {activeModal === 'ROLE' && selectedUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 !m-0 bg-slate-900/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-card border border-border rounded-xl p-6 shadow-2xl relative">
             <h3 className="text-base font-bold text-foreground font-display mb-2">Gán Vai trò</h3>
             <p className="text-xs text-muted-foreground mb-4">
@@ -401,7 +401,7 @@ export const Users: React.FC = () => {
 
       {/* MODAL 2: Ban User */}
       {(activeModal === 'BAN' || activeModal === 'UNBAN') && selectedUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 !m-0 bg-slate-900/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-card border border-border rounded-xl p-6 shadow-2xl relative">
             <h3 className="text-base font-bold text-foreground font-display mb-1 text-rose-600">{activeModal === 'UNBAN' ? 'Thu hồi hạn chế tài khoản' : 'Khóa / đình chỉ tài khoản'}</h3>
             <p className="text-xs text-muted-foreground mb-4">
