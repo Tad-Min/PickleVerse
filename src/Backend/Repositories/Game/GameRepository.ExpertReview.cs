@@ -9,7 +9,7 @@ public sealed partial class GameRepository
     IQueryable<ReviewableTrainingSession> ReviewableTraining() =>
         from telemetry in db.AiTelemetrySessions.AsNoTracking()
         join attempt in db.TrainingSessionRecords on telemetry.SessionId equals attempt.AttemptId
-        join lesson in db.Lessons on attempt.LessonId equals lesson.Lessonid
+        join drill in db.Drills on attempt.DrillId equals drill.Drillid
         join player in db.Playerprofiles on telemetry.PlayerId equals player.Userid
         where telemetry.SessionType == "training" && attempt.Completed && attempt.PlayerId == telemetry.PlayerId
             && HumanPlayers.Any(u => u.Userid == telemetry.PlayerId && !u.Email.EndsWith("@example.invalid"))
@@ -18,7 +18,7 @@ public sealed partial class GameRepository
         select new ReviewableTrainingSession
         {
             BatchId = telemetry.BatchId, SessionId = telemetry.SessionId, PlayerId = telemetry.PlayerId,
-            PlayerName = player.Playername, LessonTitle = lesson.Lessonname, CatalogVersion = attempt.CatalogVersion, CompletedAt = telemetry.CreatedAt,
+            PlayerName = player.Playername, LessonTitle = drill.Drillname, CatalogVersion = attempt.CatalogVersion, CompletedAt = telemetry.CreatedAt,
             ReviewedVersion = db.ExpertReviews.Where(r => r.BatchId == telemetry.BatchId).Max(r => (long?)r.Version) ?? 0
         };
 

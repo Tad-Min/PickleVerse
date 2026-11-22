@@ -11,12 +11,6 @@ public partial class Lesson
 
     public string Description { get; set; } = null!;
 
-    public string Type { get; set; } = null!;
-
-    public int Target { get; set; }
-
-    public string Reward { get; set; } = null!;
-
     public virtual ICollection<Lessondrill> Lessondrills { get; set; } = new List<Lessondrill>();
 
 

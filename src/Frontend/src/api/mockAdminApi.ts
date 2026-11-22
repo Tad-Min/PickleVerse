@@ -7,8 +7,6 @@ import {
   AuthResponse,
   BanUserRequest,
   CreateCosmeticRequest,
-  CreateDrillRequest,
-  CreateLessonRequest,
   CreateMissionRequest,
   LoginRequest,
   MatchItemDto,
@@ -41,8 +39,6 @@ let reports: AdminReportDto[] = [
   { reporterId: 'player-002', reporterName: 'LinhSmash', reportedPlayerId: 'player-001', reportedPlayerName: 'MinhNguyen', matchId: 'match-2026-01', reason: 'Va chạm không chủ ý', status: 'DECLINED', createdAt: makeDate(4), replayUrl: null },
 ];
 
-let nextLessonId = 8;
-let nextDrillId = 24;
 let nextCosmeticId = 12;
 let nextMissionId = 16;
 
@@ -101,8 +97,6 @@ export const mockAdminApi = {
     return waitForDemo({ message: 'Đã xác thực email demo.' });
   },
 
-  createLesson: async (data: CreateLessonRequest) => waitForDemo({ lessonId: nextLessonId++, message: `Đã tạo bài học “${data.lessonName}” trong phiên demo.` }),
-  createDrill: async (data: CreateDrillRequest) => waitForDemo({ drillId: nextDrillId++, message: `Đã tạo bài tập “${data.drillName}” trong phiên demo.` }),
   createCosmetic: async (data: CreateCosmeticRequest) => waitForDemo({ cosmeticId: nextCosmeticId++, message: `Đã tạo vật phẩm “${data.cosmeticName}” trong phiên demo.` }),
   createMission: async (data: CreateMissionRequest) => waitForDemo({ missionId: nextMissionId++, message: `Đã tạo nhiệm vụ “${data.missionName}” trong phiên demo.` }),
 

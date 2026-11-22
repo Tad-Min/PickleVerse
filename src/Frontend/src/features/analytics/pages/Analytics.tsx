@@ -5,6 +5,7 @@ import { apiClient } from '../../../api/client';
 import { AnalyticsReport } from '../../../types/api';
 import { BarChart3 } from 'lucide-react';
 import { PageHeader } from '../../../shared/ui/PageHeader';
+import { DateField } from '../../../shared/ui/DateField';
 import {
   btnPrimary, card, fieldLabel, inputClass, sectionTitle, tableCard, tableHead, tableText, th, td, rowHover,
 } from '../../../shared/ui/adminStyles';
@@ -49,11 +50,11 @@ export function Analytics() {
       >
         <label className={`${fieldLabel} md:w-56`}>
           Từ ngày (Việt Nam)
-          <input className={inputClass} type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} required />
+          <DateField className={inputClass} value={from} max={to} onChange={setFrom} required />
         </label>
         <label className={`${fieldLabel} md:w-56`}>
           Đến ngày
-          <input className={inputClass} type="date" value={to} min={from} max={today} onChange={(e) => setTo(e.target.value)} required />
+          <DateField className={inputClass} value={to} min={from} max={today} onChange={setTo} required />
         </label>
         <button className={`${btnPrimary} md:ml-auto`} disabled={report.isFetching}>
           {report.isFetching ? 'Đang tính…' : 'Làm mới'}
@@ -165,7 +166,7 @@ export function Analytics() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {data.lessons.map((l) => (
-                    <tr key={l.lessonId} className={rowHover}>
+                    <tr key={l.drillId} className={rowHover}>
                       <td className={`${td} text-foreground font-medium`}>{l.title}</td>
                       <td className={`${td} font-mono`}>{l.players}</td>
                       <td className={`${td} font-mono`}>{l.starts}</td>

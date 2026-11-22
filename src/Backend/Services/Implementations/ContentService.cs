@@ -9,6 +9,11 @@ using Services.Interfaces;
 
 namespace Services.Implementations;
 
+/// <summary>
+/// Quản trị nội dung luyện tập. Bài học là nhóm; mỗi bài học chứa nhiều bài tập (Drill).
+/// Bài tập là đơn vị người chơi luyện và mang toàn bộ cấu hình (TrainingDrill).
+/// Xuất bản theo từng bài học: mọi bài tập đang soạn của bài học được áp dụng cùng lúc.
+/// </summary>
 public sealed class ContentService(IUnitOfWork unit) : IContentService
 {
     public async Task<List<TechniqueReferenceDto>> References()
@@ -34,53 +39,100 @@ public sealed class ContentService(IUnitOfWork unit) : IContentService
     }
     static AppException Bad(string text) => new(text, HttpStatusCode.BadRequest);
     static AppException Missing() => new("Không tìm thấy bài học.", HttpStatusCode.NotFound);
-    static AdminLessonContent View(Lesson lesson) => new() { LessonId = lesson.Lessonid, Code = lesson.Code!, Status = lesson.PublishStatus,
-        Version = lesson.ContentVersion, Order = lesson.SortOrder, Draft = GameJson.Read<TrainingDrill>(lesson.DraftConfig ?? lesson.Config),
-        Published = lesson.PublishStatus == ContentPublishStatus.Draft ? null : GameJson.Read<TrainingDrill>(lesson.Config) };
+    static AppException MissingDrill() => new("Không tìm thấy bài tập trong bài học.", HttpStatusCode.NotFound);
 
-    public async Task<List<AdminLessonContent>> Lessons() => (await unit.Game.ContentLessons()).Select(View).ToList();
+    static AdminDrillContent DrillView(Lessondrill link)
+    {
+        var drill = link.Drill;
+        var draft = GameJson.Read<TrainingDrill>(drill.DraftConfig ?? drill.Config!);
+        var published = drill.Config == null ? null : GameJson.Read<TrainingDrill>(drill.Config);
+        return new AdminDrillContent { DrillId = drill.Drillid, Code = drill.Code!, Order = link.SortOrder, Draft = draft, Published = published,
+            HasChanges = published == null || GameJson.Write(draft) != GameJson.Write(published) };
+    }
+    static AdminLessonContent View(Lesson lesson, IEnumerable<Lessondrill> links) => new() { LessonId = lesson.Lessonid, Code = lesson.Code!,
+        Name = lesson.Lessonname, Description = lesson.Description, Status = lesson.PublishStatus, Version = lesson.ContentVersion, Order = lesson.SortOrder,
+        Drills = links.OrderBy(l => l.SortOrder).ThenBy(l => l.Drillid).Select(DrillView).ToList() };
+
+    public async Task<List<AdminLessonContent>> Lessons() => (await unit.Game.ContentLessons()).Select(l => View(l, l.Lessondrills)).ToList();
     public async Task<AdminLessonContent> Get(int lessonId) => (await Lessons()).SingleOrDefault(l => l.LessonId == lessonId) ?? throw Missing();
 
-    public async Task<int> Create(CreateLessonRequest request)
+    public async Task<int> CreateLesson(CreateLessonRequest request)
     {
         if (!Regex.IsMatch(request.Code ?? "", "^[a-z][a-z0-9-]{1,49}$")) throw Bad("Mã bài học chỉ gồm chữ thường, số và dấu gạch ngang.");
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 254 || (request.Description ?? "").Length > 254) throw Bad("Tên hoặc mô tả bài học không hợp lệ.");
         await using var tx = await unit.Game.BeginTransactionAsync();
         await unit.Game.Lock("content-code:" + request.Code);
         if (await unit.Game.LessonCodeExists(request.Code!)) throw new AppException("Mã bài học đã tồn tại.", HttpStatusCode.Conflict);
-        var config = request.Config ?? new TrainingDrill { skill = TrainingSkill.Serve, masks = [1], prerequisites = [], tier = 0, trials = 8, required = 6, reward = 150, xp = 5 };
-        config.id = request.Code!; config.title = request.LessonName; config.explanation = request.Description;
-        config.coaching ??= request.Description; config.requiredLevel = request.RequiredLevel;
-        Basic(config);
-        int technique = await unit.Game.TechniqueId(config.skill.ToString()) ?? throw Bad("Kỹ thuật chưa được runtime hỗ trợ.");
-        var lesson = new Lesson { Code = config.id, Lessonname = config.title, Description = config.explanation, Type = config.skill.ToString(),
-            Target = config.required, Config = GameJson.Write(config), DraftConfig = GameJson.Write(config), SortOrder = request.Order,
-            PublishStatus = ContentPublishStatus.Draft, Reward = GameJson.Write(new RewardBundle(config.reward, 0, config.xp)) };
-        unit.Game.AddContent(lesson, new Drill { Code = config.id, Drillname = config.title, Description = config.explanation, Techniqueid = technique });
+        var lesson = new Lesson { Code = request.Code, Lessonname = request.Name.Trim(), Description = request.Description?.Trim() ?? "",
+            SortOrder = request.Order, PublishStatus = ContentPublishStatus.Draft, ContentVersion = 1 };
+        unit.Game.AddLesson(lesson);
         await unit.SaveChangesAsync(); await tx.CommitAsync(); return lesson.Lessonid;
     }
 
-    public async Task<int> UpdateDrill(CreateDrillRequest request)
+    public async Task<AdminLessonContent> SaveLesson(int lessonId, SaveLessonRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 254 || (request.Description ?? "").Length > 254) throw Bad("Tên hoặc mô tả bài học không hợp lệ.");
         await using var tx = await unit.Game.BeginTransactionAsync();
-        var lesson = await unit.Game.ContentLesson(request.LessonId) ?? throw Missing();
-        var link = await unit.Game.ContentDrill(lesson.Lessonid) ?? throw Bad("Bài học chưa có cấu hình drill.");
-        var draft = GameJson.Read<TrainingDrill>(lesson.DraftConfig ?? lesson.Config);
-        draft.title = request.DrillName; draft.explanation = request.Description; draft.required = request.Target;
-        Basic(draft);
-        if (request.TechniqueId != link.Drill.Techniqueid) throw Bad("Hãy đổi mẫu kỹ thuật trong cấu hình bài học.");
-        lesson.DraftConfig = GameJson.Write(draft); lesson.ContentVersion++;
-        await unit.SaveChangesAsync(); await tx.CommitAsync(); return link.Drillid;
+        var lesson = await unit.Game.ContentLesson(lessonId) ?? throw Missing();
+        Expected(lesson, request.ExpectedVersion);
+        lesson.Lessonname = request.Name.Trim(); lesson.Description = request.Description?.Trim() ?? ""; lesson.SortOrder = request.Order; lesson.ContentVersion++;
+        await unit.SaveChangesAsync(); await tx.CommitAsync();
+        return View(lesson, await unit.Game.ContentDrills(lessonId));
     }
 
-    public async Task<AdminLessonContent> Save(int lessonId, SaveLessonContent request)
+    public async Task<AdminLessonContent> AddDrill(int lessonId, SaveDrillRequest request)
+    {
+        var config = request.Config;
+        if (!Regex.IsMatch(config?.id ?? "", "^[a-z][a-z0-9-]{1,49}$")) throw Bad("Mã bài tập chỉ gồm chữ thường, số và dấu gạch ngang.");
+        await using var tx = await unit.Game.BeginTransactionAsync();
+        await unit.Game.Lock("content-code:" + config!.id);
+        var lesson = await unit.Game.ContentLesson(lessonId) ?? throw Missing();
+        Expected(lesson, request.ExpectedVersion);
+        if (await unit.Game.DrillCodeExists(config.id)) throw new AppException("Mã bài tập đã tồn tại.", HttpStatusCode.Conflict);
+        config.coaching ??= config.explanation;
+        Basic(config);
+        int technique = await unit.Game.TechniqueId(config.skill.ToString()) ?? throw Bad("Kỹ thuật chưa được runtime hỗ trợ.");
+        var drill = new Drill { Code = config.id, Techniqueid = technique, Drillname = config.title, Description = config.explanation,
+            DraftConfig = GameJson.Write(config), Config = null };
+        unit.Game.AddDrill(lesson, drill, config.required, request.Order);
+        lesson.ContentVersion++;
+        await unit.SaveChangesAsync(); await tx.CommitAsync();
+        return View(lesson, await unit.Game.ContentDrills(lessonId));
+    }
+
+    public async Task<AdminLessonContent> SaveDrill(int lessonId, int drillId, SaveDrillRequest request)
     {
         await using var tx = await unit.Game.BeginTransactionAsync();
         var lesson = await unit.Game.ContentLesson(lessonId) ?? throw Missing();
         Expected(lesson, request.ExpectedVersion);
-        if (request.Config.id != lesson.Code) throw Bad("Không được thay mã bài học đã tạo.");
+        var links = await unit.Game.ContentDrills(lessonId);
+        var link = links.SingleOrDefault(l => l.Drillid == drillId) ?? throw MissingDrill();
+        if (request.Config.id != link.Drill.Code) throw Bad("Không được thay mã bài tập đã tạo.");
         Basic(request.Config);
-        lesson.DraftConfig = GameJson.Write(request.Config); lesson.SortOrder = request.Order; lesson.ContentVersion++;
-        await unit.SaveChangesAsync(); await tx.CommitAsync(); return View(lesson);
+        link.Drill.DraftConfig = GameJson.Write(request.Config); link.SortOrder = request.Order; lesson.ContentVersion++;
+        await unit.SaveChangesAsync(); await tx.CommitAsync();
+        return View(lesson, links);
+    }
+
+    public async Task<AdminLessonContent> DeleteDrill(int lessonId, int drillId, long expectedVersion)
+    {
+        await using var tx = await unit.Game.BeginTransactionAsync();
+        var lesson = await unit.Game.ContentLesson(lessonId) ?? throw Missing();
+        Expected(lesson, expectedVersion);
+        var links = await unit.Game.ContentDrills(lessonId);
+        var link = links.SingleOrDefault(l => l.Drillid == drillId) ?? throw MissingDrill();
+        if (lesson.PublishStatus == ContentPublishStatus.Published && link.Drill.Config != null)
+            throw Bad("Hãy gỡ xuất bản bài học trước khi xóa bài tập đã xuất bản.");
+        if (await unit.Game.DrillHasPlayerData(drillId)) throw Bad("Bài tập đã có dữ liệu luyện tập của người chơi nên không thể xóa.");
+        var code = link.Drill.Code!;
+        var others = (await unit.Game.ContentLessons()).SelectMany(l => l.Lessondrills).Where(l => l.Drillid != drillId);
+        if (others.Any(l => GameJson.Read<TrainingDrill>(l.Drill.DraftConfig ?? l.Drill.Config!).prerequisites.Contains(code)
+            || l.Drill.Config != null && GameJson.Read<TrainingDrill>(l.Drill.Config).prerequisites.Contains(code)))
+            throw Bad("Có bài tập khác đang dùng bài này làm điều kiện mở khóa.");
+        unit.Game.RemoveDrill(link);
+        lesson.ContentVersion++;
+        await unit.SaveChangesAsync(); await tx.CommitAsync();
+        return View(lesson, links.Where(l => l.Drillid != drillId));
     }
 
     public async Task<AdminLessonContent> Publish(int lessonId, ContentVersionRequest request, bool publish)
@@ -89,34 +141,43 @@ public sealed class ContentService(IUnitOfWork unit) : IContentService
         await unit.Game.Lock("content-publish");
         var lesson = await unit.Game.ContentLesson(lessonId) ?? throw Missing();
         Expected(lesson, request.ExpectedVersion);
+        var links = await unit.Game.ContentDrills(lessonId);
         if (publish)
         {
-            var draft = GameJson.Read<TrainingDrill>(lesson.DraftConfig ?? lesson.Config);
-            Basic(draft);
-            var published = (await unit.Game.ContentLessons()).Where(l => l.PublishStatus == ContentPublishStatus.Published && l.Lessonid != lessonId)
-                .Select(l => GameJson.Read<TrainingDrill>(l.Config)).Append(draft).ToArray();
-            ValidateGraph(published);
-            var link = await unit.Game.ContentDrill(lessonId) ?? throw Bad("Bài học chưa có drill liên kết.");
-            int technique = await unit.Game.TechniqueId(draft.skill.ToString()) ?? throw Bad("Kỹ thuật chưa được hỗ trợ.");
-            var reference=Guid.TryParse(draft.referenceId,out var referenceId)?await unit.Game.Reference(referenceId):
-                string.IsNullOrEmpty(draft.referenceId)?await unit.Game.LatestReference(technique):null;
-            if(reference==null || reference.TechniqueId!=technique)throw Bad("Phiên bản dữ liệu tham chiếu không khớp kỹ thuật.");
-            draft.referenceId=reference.ReferenceId.ToString("D");draft.reference=GameJson.Read<TrainingReferenceData>(reference.Data);
-            lesson.Config = GameJson.Write(draft); lesson.Lessonname = draft.title; lesson.Description = draft.explanation;
-            lesson.Type = draft.skill.ToString(); lesson.Target = draft.required; lesson.Reward = GameJson.Write(new RewardBundle(draft.reward, 0, draft.xp));
-            link.Target = draft.required; link.Drill.Techniqueid = technique; link.Drill.Drillname = draft.title; link.Drill.Description = draft.explanation;
+            if (links.Count == 0) throw Bad("Bài học cần có ít nhất một bài tập trước khi xuất bản.");
+            var drafts = new List<(Lessondrill link, TrainingDrill draft, int technique)>();
+            foreach (var link in links)
+            {
+                var draft = GameJson.Read<TrainingDrill>(link.Drill.DraftConfig ?? link.Drill.Config!);
+                Basic(draft);
+                int technique = await unit.Game.TechniqueId(draft.skill.ToString()) ?? throw Bad("Kỹ thuật chưa được hỗ trợ.");
+                var reference = Guid.TryParse(draft.referenceId, out var referenceId) ? await unit.Game.Reference(referenceId) :
+                    string.IsNullOrEmpty(draft.referenceId) ? await unit.Game.LatestReference(technique) : null;
+                if (reference == null || reference.TechniqueId != technique) throw Bad("Phiên bản dữ liệu tham chiếu không khớp kỹ thuật.");
+                draft.referenceId = reference.ReferenceId.ToString("D"); draft.reference = GameJson.Read<TrainingReferenceData>(reference.Data);
+                drafts.Add((link, draft, technique));
+            }
+            var others = (await unit.Game.PublishedDrillConfigs(lessonId)).Select(c => GameJson.Read<TrainingDrill>(c));
+            ValidateGraph(others.Concat(drafts.Select(d => d.draft)).ToArray());
+            foreach (var (link, draft, technique) in drafts)
+            {
+                link.Drill.Config = GameJson.Write(draft); link.Drill.DraftConfig = link.Drill.Config;
+                link.Drill.Techniqueid = technique; link.Drill.Drillname = draft.title; link.Drill.Description = draft.explanation;
+                link.Target = draft.required;
+            }
             lesson.PublishStatus = ContentPublishStatus.Published;
         }
         else
         {
-            var dependents = (await unit.Game.ContentLessons()).Where(l => l.PublishStatus == ContentPublishStatus.Published && l.Lessonid != lessonId)
-                .Select(l => GameJson.Read<TrainingDrill>(l.Config));
-            if (dependents.Any(d => d.prerequisites.Contains(lesson.Code))) throw Bad("Hãy gỡ các bài đang phụ thuộc trước.");
-            if (!dependents.Any()) throw Bad("Phải giữ ít nhất một bài học xuất bản.");
+            var dependents = (await unit.Game.PublishedDrillConfigs(lessonId)).Select(c => GameJson.Read<TrainingDrill>(c)).ToList();
+            var codes = links.Select(l => l.Drill.Code!).ToHashSet();
+            if (dependents.Any(d => d.prerequisites.Any(codes.Contains))) throw Bad("Hãy gỡ các bài đang phụ thuộc trước.");
+            if (dependents.Count == 0) throw Bad("Phải giữ ít nhất một bài học xuất bản.");
             lesson.PublishStatus = ContentPublishStatus.Unpublished;
         }
         lesson.ContentVersion++;
-        await unit.SaveChangesAsync(); await tx.CommitAsync(); return View(lesson);
+        await unit.SaveChangesAsync(); await tx.CommitAsync();
+        return View(lesson, links);
     }
 
     static void Expected(Lesson lesson, long version)
@@ -131,7 +192,7 @@ public sealed class ContentService(IUnitOfWork unit) : IContentService
             || d.xp is < 0 or > 10000 || d.requiredLevel is < 1 or > 1000 || !float.IsFinite(d.targetRadius) || d.targetRadius is < .3f or > 2f
             || !float.IsFinite(d.targetDepth) || d.targetDepth < 0 || d.targetDepth > 6.4f || d.masks == null || d.masks.Length is < 1 or > 24
             || d.prerequisites == null || d.prerequisites.Length > 30 || d.prerequisites.Distinct().Count() != d.prerequisites.Length)
-            throw Bad("Cấu hình bài học không hợp lệ. Hãy kiểm tra mục tiêu, số lượt, phần thưởng và vùng đích.");
+            throw Bad("Cấu hình bài tập không hợp lệ. Hãy kiểm tra mục tiêu, số lượt, phần thưởng và vùng đích.");
         int[] masks = d.skill switch { TrainingSkill.Serve or TrainingSkill.Drive => [1,9,17], TrainingSkill.Dink => [2,10,18],
             TrainingSkill.Volley => [4,12,20], TrainingSkill.Drop or TrainingSkill.Approach => [3], TrainingSkill.Reset => [6],
             TrainingSkill.Smash => [5], TrainingSkill.Footwork => [1,17], TrainingSkill.DoublesCover => [4,20],
@@ -139,9 +200,9 @@ public sealed class ContentService(IUnitOfWork unit) : IContentService
         if (d.masks.Any(m => !masks.Contains(m))) throw Bad("Tổ hợp điều khiển không khớp mẫu kỹ thuật.");
         if (d.alternateTargets && d.skill != TrainingSkill.Serve) throw Bad("Luân phiên ô giao chỉ áp dụng cho bài giao bóng.");
     }
-    public static void ValidateGraph(TrainingDrill[] lessons)
+    public static void ValidateGraph(TrainingDrill[] drills)
     {
-        var all = lessons.ToDictionary(d => d.id); var visiting = new HashSet<string>(); var visited = new HashSet<string>();
+        var all = drills.ToDictionary(d => d.id); var visiting = new HashSet<string>(); var visited = new HashSet<string>();
         void Visit(string id)
         {
             if (visited.Contains(id)) return;

@@ -27,6 +27,7 @@ public sealed class RetentionCohort
 public sealed class PopularLesson
 {
     public int LessonId { get; set; }
+    public int DrillId { get; set; }
     public string Code { get; set; } = "";
     public string Title { get; set; } = "";
     public int Starts { get; set; }

@@ -402,28 +402,6 @@ namespace Entities.DTOs
         public int Count { get; set; }
     }
 
-    public class CreateLessonRequest
-    {
-        [Required] public string Code { get; set; } = "";
-        public PickleVerse.Progression.TrainingDrill? Config { get; set; }
-        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
-        public string LessonName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int RequiredLevel { get; set; } = 1;
-        public int Order { get; set; } = 1;
-    }
-
-    public class CreateDrillRequest
-    {
-        public int LessonId { get; set; }
-        public int TechniqueId { get; set; }
-        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
-        public string DrillName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Target { get; set; } = 10;
-        public int Order { get; set; } = 1;
-    }
-
     public class CreateCosmeticRequest
     {
         [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]

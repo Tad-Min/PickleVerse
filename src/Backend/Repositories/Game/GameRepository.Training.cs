@@ -10,9 +10,9 @@ public sealed partial class GameRepository
     public async Task<TrainingProfile> Training(Guid player)
     {
         long epoch = await LearningEpoch(player);
-        var records = await db.Playerlessondrills.AsNoTracking().Where(p => p.Playerid == player && p.LessonDrill.Lesson.Code != null)
-            .OrderBy(p => p.LessonDrill.Lesson.SortOrder).ThenBy(p => p.Lessonid)
-            .Select(p => new { Code = p.LessonDrill.Lesson.Code!, Row = p }).ToListAsync();
+        var records = await db.Playerlessondrills.AsNoTracking().Where(p => p.Playerid == player && p.LessonDrill.Drill.Code != null)
+            .OrderBy(p => p.LessonDrill.Lesson.SortOrder).ThenBy(p => p.Lessonid).ThenBy(p => p.LessonDrill.SortOrder).ThenBy(p => p.Drillid)
+            .Select(p => new { Code = p.LessonDrill.Drill.Code!, Row = p }).ToListAsync();
         var training = new TrainingProfile { lessons = records.Select(p => new TrainingLessonRecord { id = p.Code,
             attempts = p.Row.Attempts, retries = p.Row.Retries, completions = p.Row.Completions, bestStars = p.Row.Score,
             trials = p.Row.Trials, successes = p.Row.Successes, seconds = p.Row.Seconds, bestAccuracy = p.Row.BestAccuracy,
@@ -20,12 +20,12 @@ public sealed partial class GameRepository
         var active = await db.TrainingSessionRecords.AsNoTracking().Where(s => s.PlayerId == player && s.IsCurrent && s.ProgressEpoch == epoch).Select(s => s.Data).SingleOrDefaultAsync();
         if (active != null) { training.active = GameJson.Read<TrainingAttempt>(active); training.lastLesson = training.active.lessonId; }
         var completed = await (from session in db.TrainingSessionRecords.AsNoTracking()
-            join lesson in db.Lessons on session.LessonId equals lesson.Lessonid
+            join drill in db.Drills on session.DrillId equals drill.Drillid
             where session.PlayerId == player && session.Completed && session.ProgressEpoch == epoch
             orderby session.Sequence
-            select new { session.AttemptId, session.LessonId, session.Data, lesson.Code }).ToListAsync();
+            select new { session.AttemptId, session.DrillId, session.Data, drill.Code }).ToListAsync();
         training.completedAttempts = completed.Select(s => s.AttemptId.ToString("N")).ToList();
-        foreach (var group in completed.GroupBy(s => s.LessonId))
+        foreach (var group in completed.GroupBy(s => s.DrillId))
             foreach (var row in group.TakeLast(8))
                 training.lessons.FirstOrDefault(l => l.id == row.Code)?.accuracyHistory.Add((float)GameJson.Read<TrainingAttempt>(row.Data).Accuracy);
         return training;
@@ -35,9 +35,9 @@ public sealed partial class GameRepository
         foreach (var row in training.lessons)
             await db.Database.ExecuteSqlInterpolatedAsync($"""
                 INSERT INTO playerlessondrills(playerid,lessonid,drillid,score,isclaimedreward,attempts,retries,completions,trials,successes,seconds,bestaccuracy,errors)
-                SELECT {player},l.lessonid,ld.drillid,{row.bestStars},{row.bestStars > 0},{row.attempts},{row.retries},{row.completions},
+                SELECT {player},ld.lessonid,ld.drillid,{row.bestStars},{row.bestStars > 0},{row.attempts},{row.retries},{row.completions},
                     {row.trials},{row.successes},{row.seconds},{row.bestAccuracy},{GameJson.Write(row.errors)}::jsonb
-                FROM lessons l JOIN lessondrills ld USING(lessonid) JOIN drills d USING(drillid) WHERE l.code={row.id} AND d.code=l.code
+                FROM lessondrills ld JOIN drills d ON d.drillid=ld.drillid WHERE d.code={row.id}
                 ON CONFLICT(playerid,lessonid,drillid) DO UPDATE SET score=EXCLUDED.score,isclaimedreward=EXCLUDED.isclaimedreward,
                     attempts=EXCLUDED.attempts,retries=EXCLUDED.retries,completions=EXCLUDED.completions,trials=EXCLUDED.trials,
                     successes=EXCLUDED.successes,seconds=EXCLUDED.seconds,bestaccuracy=EXCLUDED.bestaccuracy,errors=EXCLUDED.errors
@@ -62,7 +62,7 @@ public sealed partial class GameRepository
             .SetProperty(x => x.Fingerprint, x => fingerprint ?? x.Fingerprint));
     public Task RecordLesson(Guid player, string code, int stars, bool claimed) => db.Database.ExecuteSqlInterpolatedAsync($"""
         INSERT INTO playerlessondrills(playerid,lessonid,drillid,score,isclaimedreward)
-        SELECT {player},l.lessonid,d.drillid,{stars},{claimed} FROM lessons l JOIN drills d ON d.code=l.code WHERE l.code={code}
+        SELECT {player},ld.lessonid,d.drillid,{stars},{claimed} FROM drills d JOIN lessondrills ld ON ld.drillid=d.drillid WHERE d.code={code}
         ON CONFLICT(playerid,lessonid,drillid) DO UPDATE SET score=GREATEST(playerlessondrills.score,EXCLUDED.score),
             isclaimedreward=playerlessondrills.isclaimedreward OR EXCLUDED.isclaimedreward
         """);
@@ -72,9 +72,10 @@ public sealed partial class GameRepository
         ON CONFLICT(playerid,techniqueid) DO UPDATE SET totalattempts=EXCLUDED.totalattempts,totalerrors=EXCLUDED.totalerrors,lastupdatedat=EXCLUDED.lastupdatedat
         """);
     public sealed record LessonLink(int lesson, string code, int drill, int technique);
-    public Task<List<LessonLink>> LessonLinks(string? code = null) => (from l in db.Lessons join d in db.Drills on l.Code equals d.Code
-        where l.Code != null && (code == null || l.Code == code)
-        select new LessonLink(l.Lessonid, l.Code!, d.Drillid, d.Techniqueid)).ToListAsync();
+    /// <summary>Liên kết (bài học, bài tập) cho mỗi bài tập có mã; mã bài tập là mã mà game dùng để nhận diện bài luyện.</summary>
+    public Task<List<LessonLink>> LessonLinks(string? code = null) => (from d in db.Drills join ld in db.Lessondrills on d.Drillid equals ld.Drillid
+        where d.Code != null && (code == null || d.Code == code)
+        select new LessonLink(ld.Lessonid, d.Code!, d.Drillid, d.Techniqueid)).ToListAsync();
     public Task<DrillDto?> RecommendedDrill(string code) => (from drill in db.Drills
         join ld in db.Lessondrills on drill.Drillid equals ld.Drillid
         where drill.Code == code orderby ld.Lessonid
