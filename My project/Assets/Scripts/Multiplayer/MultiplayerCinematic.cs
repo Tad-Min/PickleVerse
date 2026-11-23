@@ -95,7 +95,7 @@ namespace PickleVerse.Multiplayer
             next = MatchPresentationUi.Button("Continue", safeArea, font, "THOÁT TRẬN  →", new Vector2(.36f, .075f), new Vector2(.64f, .15f), true);
             next.onClick.AddListener(() =>
             {
-                if (OutcomeReady)
+                if (OutcomeReady && ui.resultScreen)
                     ui.resultScreen.Open();
             });
             overlay.gameObject.SetActive(false);

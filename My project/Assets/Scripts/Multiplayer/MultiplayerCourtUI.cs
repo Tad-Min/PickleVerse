@@ -60,10 +60,6 @@ namespace PickleVerse.Multiplayer
         void Awake()
         {
             Instance = this;
-            resultScreen = GetComponent<MultiplayerResultScreen>();
-            if (!resultScreen)
-                resultScreen = gameObject.AddComponent<MultiplayerResultScreen>();
-            resultScreen.Configure(this);
         }
         public void ShowAnnouncement(string title, string detail, float duration, AnnouncementTone tone = AnnouncementTone.Neutral)
         {

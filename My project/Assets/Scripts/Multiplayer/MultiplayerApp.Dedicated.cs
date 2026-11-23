@@ -125,6 +125,25 @@ namespace PickleVerse.Multiplayer
             }
             if (!IsCurrent()) return;
 
+            // The worker may have ended before the last Photon snapshot reached this client.
+            if (!fromMenu)
+            {
+                if (SavedMatchResult(matchId) == null)
+                {
+                    using var resultTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    try { await ProgressionRuntime.Instance.ReloadAsync(resultTimeout.Token); }
+                    catch (Exception error) when (error is ApiException or InvalidOperationException or OperationCanceledException) { }
+                }
+                if (!IsCurrent()) return;
+                if (SavedMatchResult(matchId)?.outcome is MatchOutcome.Won or MatchOutcome.Lost)
+                {
+                    SceneLoading.CancelExternal();
+                    ShowResult(matchId, "Trận đã kết thúc.");
+                    if (ResultScreen) ResultScreen.Open();
+                    return;
+                }
+            }
+
             const string message = "Không thể kết nối lại trận. Kết quả sẽ được cập nhật khi máy chủ xử lý xong.";
             if (fromMenu && SceneManager.GetActiveScene().name == "Menu")
             {

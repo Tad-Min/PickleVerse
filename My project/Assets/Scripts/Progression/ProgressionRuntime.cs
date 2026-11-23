@@ -114,10 +114,12 @@ namespace PickleVerse.Progression
             if (!Ready)
                 await ReloadAsync();
         }
-        public async Task ReloadAsync()
+        public Task ReloadAsync() => ReloadAsync(default);
+
+        public async Task ReloadAsync(System.Threading.CancellationToken cancellation)
         {
             if (account.IsRestricted) throw new PickleVerse.Services.Api.ApiException(403, "Tài khoản đang bị hạn chế. Hãy xem quyết định hoặc gửi khiếu nại.", "account_restricted");
-            var state = await account.SendAuthorizedAsync<OnlineGameSnapshot>("GET", "api/Game/state");
+            var state = await account.SendAuthorizedAsync<OnlineGameSnapshot>("GET", "api/Game/state", cancellation: cancellation);
             ApplySnapshot(state);
         }
         void ApplySnapshot(OnlineGameSnapshot state)

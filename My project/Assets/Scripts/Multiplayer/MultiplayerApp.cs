@@ -335,7 +335,7 @@ namespace PickleVerse.Multiplayer
             }
             if (!Custom && data.phase == "searching" && !IsCaptain && State == FlowState.WaitingRoom && !startingSearch)
                 _ = Safe(BeginQueueAsync(false));
-            if (Custom && data.matchSession.Length > 0 && data.matchSession != lastPartyMatch && !working && !joining && (Match == null || !IsCaptain && Match.Id != data.matchSession))
+            if (Custom && State != FlowState.Results && data.matchSession.Length > 0 && data.matchSession != lastPartyMatch && !working && !joining && (Match == null || !IsCaptain && Match.Id != data.matchSession))
             {
                 lastPartyMatch = data.matchSession;
                 _ = Safe(FollowPartyMatchAsync(data.matchSession, Room.Region, operation));
@@ -373,7 +373,7 @@ namespace PickleVerse.Multiplayer
                 RoomInvitationsRuntime.Instance?.RoomPresenceChanged();
                 // A guest reading the summary of a finished match keeps it until they choose
                 // VỀ PHÒNG CHỜ or VỀ MENU; only the party that the host closed is left now.
-                if (State == FlowState.Results && Match != null)
+                if (State == FlowState.Results)
                 {
                     if (room != null)
                         await room.LeaveAsync();
@@ -743,11 +743,15 @@ namespace PickleVerse.Multiplayer
             };
             session.Stopped += reason =>
             {
-                // A dedicated server leaves on purpose once the finished result is persisted.
-                // That planned stop is the normal end of the match, not a lost connection.
                 if (Match == session && !closing && !quitting && !reconnecting && stagingRequest == null)
-                    _ = Safe(State == FlowState.InMatch ? ReconnectAsync(session)
-                        : ReturnToRoomAsync(State == FlowState.Results ? "Trận đã kết thúc." : "Mất kết nối Photon."));
+                {
+                    if (State == FlowState.Results)
+                        _ = Safe(KeepFinishedResultAsync());
+                    else if (State == FlowState.InMatch)
+                        _ = Safe(ReconnectAsync(session));
+                    else
+                        _ = Safe(ReturnToRoomAsync("Mất kết nối Photon."));
+                }
             };
             connectingUntil = Time.realtimeSinceStartupAsDouble + 30;
             MatchChanged();
@@ -932,21 +936,6 @@ namespace PickleVerse.Multiplayer
                 reconnecting = false;
             }
         }
-        async Task RefreshDisconnectedResultAsync(string matchId)
-        {
-            var account = AccountRuntime.Ensure().Account;
-            int version = account.SessionVersion;
-            for (int i = 0; i < 12 && this && account.IsSignedIn && account.SessionVersion == version; i++)
-            {
-                try
-                {
-                    await ProgressionRuntime.Instance.ReloadAsync();
-                    if (ProgressionRuntime.Instance.Player.pendingMatch?.id != matchId) return;
-                }
-                catch { }
-                await Task.Delay(5000);
-            }
-        }
         void CancelLocal()
         {
             operation++;
@@ -1049,11 +1038,13 @@ namespace PickleVerse.Multiplayer
             await Task.Delay(300);
             await ReturnToRoomAsync("Bạn đã rời trận.");
         }
-        public Task ReturnToModeSelectionAsync() => navigation.ReturnAsync(CancelLocal, CancelSearchAsync, LeaveMatchAsync, LeaveRoomAsync, () =>
+        public Task ReturnToModeSelectionAsync() => ReturnToLobbySceneAsync("ModeSelection");
+        internal Task ReturnFromResultToMenuAsync() => ReturnToLobbySceneAsync("Menu");
+        Task ReturnToLobbySceneAsync(string scene) => navigation.ReturnAsync(CancelLocal, CancelSearchAsync, LeaveMatchAsync, LeaveRoomAsync, () =>
         {
             OpenDefaultRoomOnLoad = false;
             SetState(FlowState.Menu, "Đã rời phòng.");
-            SceneManager.LoadScene("ModeSelection");
+            SceneManager.LoadScene(scene);
         });
         public async Task SignOutFromLobbyAsync()
         {
@@ -1088,10 +1079,6 @@ namespace PickleVerse.Multiplayer
                 Match.Lobby.Command("playing", "");
             SetState(FlowState.InMatch, "Trận đã bắt đầu.");
         }
-        public void ShowResult(string text)
-        {
-            SetState(FlowState.Results, text);
-        }
         public void SetNotice(string text)
         {
             Notice = text;
@@ -1099,6 +1086,11 @@ namespace PickleVerse.Multiplayer
         }
         void SetState(FlowState state, string text)
         {
+            if (state != FlowState.Results && ResultScreen)
+            {
+                ResultScreen.Close();
+                ResultScreen = null;
+            }
             State = state;
             SetNotice(text);
         }

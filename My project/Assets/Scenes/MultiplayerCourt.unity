@@ -6641,6 +6641,7 @@ GameObject:
   - component: {fileID: 727626535}
   - component: {fileID: 727626537}
   - component: {fileID: 727626536}
+  - component: {fileID: 748487076}
   m_Layer: 0
   m_Name: MultiplayerSummary
   m_TagString: Untagged
@@ -6831,7 +6832,6 @@ GameObject:
   - component: {fileID: 748487071}
   - component: {fileID: 748487070}
   - component: {fileID: 748487075}
-  - component: {fileID: 748487076}
   - component: {fileID: 748487077}
   - component: {fileID: 748487078}
   m_Layer: 0
@@ -7004,7 +7004,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 748487069}
+  m_GameObject: {fileID: 727626534}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5268fc9913e54424681e7ff30ab81a03, type: 3}

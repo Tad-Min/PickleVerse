@@ -108,8 +108,9 @@ namespace PickleVerse.EditorTools
             }
             if(ui.layout){ui.layout.leave=(RectTransform)ui.leave.transform;ui.layout.returnToRoom=(RectTransform)ui.returnToRoom.transform;ui.layout.ApplyInsets(0,0,0,0);}
             ui.leave.gameObject.SetActive(true);ui.returnToRoom.gameObject.SetActive(false);
-            ui.resultScreen=canvas.GetComponent<MultiplayerResultScreen>(); if(!ui.resultScreen) ui.resultScreen=canvas.AddComponent<MultiplayerResultScreen>();
-            ui.resultScreen.Configure(ui); EditorUtility.SetDirty(ui.resultScreen);
+            if (!ui.resultScreen)
+                ui.resultScreen = MultiplayerResultScreen.CreateTemplate(ui.transform, ui);
+            EditorUtility.SetDirty(ui.resultScreen);
             EditorUtility.SetDirty(ui);EditorUtility.SetDirty(announcements);
         }
         static void CopyHudNode(Transform source,Transform target,Dictionary<Object,Object> objects)

@@ -845,7 +845,9 @@ namespace PickleVerse.Multiplayer
             StadiumAudience.Rally(gameObject.scene, WinningTeam, true, true);
             replay?.Event("MatchEnd", Status.ToString());
             replay?.Finish(true);
-            MultiplayerApp.Instance.ShowResult(Status.ToString());
+            var app = MultiplayerApp.Instance;
+            if (app && app.Match?.Runner == Runner)
+                app.ShowResult(Roster.matchId, Status.ToString());
             MultiplayerCourtUI.Instance?.EnsureEndAnnouncement(Status.ToString());
         }
         void SoundEffect(int sound)

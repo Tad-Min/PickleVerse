@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PickleVerse.Progression;
 using PickleVerse.Replays;
 using PickleVerse.Services;
+using PickleVerse.Services.Api;
 using UnityEngine;
 
 namespace PickleVerse.Multiplayer
@@ -159,6 +161,59 @@ namespace PickleVerse.Multiplayer
                 return false;
             _ = Safe(PersistProgressionResultsAsync(json));
             return true;
+        }
+
+        internal MultiplayerResultScreen ResultScreen { get; private set; }
+
+        internal void ShowResult(string matchId, string text)
+        {
+#if !UNITY_SERVER
+            if (!ResultScreen)
+                ResultScreen = MultiplayerResultScreen.Create(this, matchId, MultiplayerCourtUI.Instance);
+#endif
+            SetState(FlowState.Results, text);
+        }
+
+        async Task KeepFinishedResultAsync()
+        {
+            // Fusion can remove the court as soon as the worker has stored the result.
+            var screen = ResultScreen;
+            if (screen)
+            {
+                screen.OpenAfterDisconnect();
+                _ = RefreshDisconnectedResultAsync(screen.MatchId, screen);
+            }
+            await LeaveMatchAsync();
+        }
+
+        static MatchResult SavedMatchResult(string matchId) => ProgressionRuntime.Exists
+            ? ProgressionRuntime.Instance.Player.history.Find(result => result.id == matchId) : null;
+
+        async Task RefreshDisconnectedResultAsync(string matchId, MultiplayerResultScreen screen = null)
+        {
+            var account = AccountRuntime.Ensure().Account;
+            int version = account.SessionVersion;
+            bool IsCurrent() => this && account.IsSignedIn && account.SessionVersion == version &&
+                (ReferenceEquals(screen, null) || screen && ResultScreen == screen);
+            var runtime = ProgressionRuntime.Instance;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(screen ? 20 : 60));
+            try
+            {
+                while (IsCurrent() && SavedMatchResult(matchId) == null)
+                {
+                    try
+                    {
+                        await runtime.ReloadAsync(timeout.Token);
+                        if (!screen && runtime.Player.pendingMatch?.id != matchId) return;
+                    }
+                    catch (Exception error) when (error is ApiException or InvalidOperationException) { }
+                    if (SavedMatchResult(matchId) == null)
+                        await Task.Delay(screen ? 1500 : 5000, timeout.Token);
+                }
+            }
+            catch (OperationCanceledException) { }
+            if (IsCurrent() && screen && SavedMatchResult(matchId) == null)
+                screen.ShowSyncFailure();
         }
         async Task ForfeitOnlineMatchAsync()
         {
