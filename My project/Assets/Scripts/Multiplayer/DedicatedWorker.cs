@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,6 +17,8 @@ namespace PickleVerse.Multiplayer
 {
     public sealed class DedicatedWorker : MonoBehaviour
     {
+        const int ReplayResultWaitMilliseconds = 2000;
+        static readonly TimeSpan ReplayUploadGrace = TimeSpan.FromSeconds(30);
         public static DedicatedWorker Instance { get; private set; }
         [Serializable] sealed class Allocation
         {
@@ -74,6 +75,8 @@ namespace PickleVerse.Multiplayer
         {
             while (!stopping)
             {
+                CancellationTokenSource replayLifetime = null;
+                Task replayUpload = Task.CompletedTask;
                 try
                 {
                     job = await Post<Allocation>("poll", new { });
@@ -108,6 +111,9 @@ namespace PickleVerse.Multiplayer
                     if (fenced) throw new IOException("Allocation interrupted during startup.");
                     await HandleOperation(await Retry(() => Post<HeartbeatReply>("ready", Command())));
                     Debug.Log($"[Dedicated] Session ready match={job.matchId} worker={workerId} players={job.roster.HumanCount}");
+                    replayLifetime = new CancellationTokenSource();
+                    var recordingFinished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    replayUpload = UploadReplay(job, recordingFinished.Task, replayLifetime.Token);
                     double courtUntil = Time.realtimeSinceStartupAsDouble + 115;
                     double until = Time.realtimeSinceStartupAsDouble + 7200;
                     double lastSample = 0;
@@ -130,20 +136,26 @@ namespace PickleVerse.Multiplayer
                         }
                         await Task.Delay(100);
                     }
-                    if (fenced || results == null) throw new InvalidOperationException("Lease lost or session timed out.");
-                    await Task.Delay(500);
-                    var recorder = NetworkMatch.Instance?.GetComponent<ReplayRecorder>();
+                    if (fenced || stopping || results == null) throw new InvalidOperationException("Lease lost or session timed out.");
+                    var matchAtEnd = NetworkMatch.Instance;
+                    var recorder = matchAtEnd ? matchAtEnd.GetComponent<ReplayRecorder>() : null;
                     if (recorder) { recorder.Finish(true); await recorder.Completion; }
+                    replayLifetime.CancelAfter(ReplayUploadGrace);
+                    recordingFinished.SetResult(true);
+                    // Publish the replay before result history when storage responds promptly.
+                    // A replay outage must not prevent scores or rewards from being finalized.
+                    await Task.WhenAny(replayUpload, Task.Delay(ReplayResultWaitMilliseconds));
+                    if (fenced || stopping) throw new InvalidOperationException("Lease lost before result submission.");
                     await Retry(() => Post<JToken>("complete", new { LeaseId = job.leaseId, Results = JArray.Parse(results) }));
                     foreach (var captured in telemetry.Values)
                     {
                         captured.closed = true;
                         foreach (var part in CoachingRuntime.Split(captured)) await Retry(() => Post<JToken>(job.leaseId + "/telemetry", part));
                     }
-                    await UploadReplay();
                     double deliveryDeadline = Time.realtimeSinceStartupAsDouble + 5;
                     while (NetworkMatch.Instance && !NetworkMatch.Instance.ResultsDelivered && Time.realtimeSinceStartupAsDouble < deliveryDeadline && !fenced)
                         await Task.Delay(100);
+                    await replayUpload;
                     Debug.Log($"[Dedicated] Session persisted match={job.matchId} worker={workerId}");
                 }
                 catch (Exception error)
@@ -155,6 +167,12 @@ namespace PickleVerse.Multiplayer
                 finally
                 {
                     fenced = true;
+                    if (replayLifetime != null)
+                    {
+                        replayLifetime.Cancel();
+                        await replayUpload;
+                        replayLifetime.Dispose();
+                    }
                     if (session != null) { try { await session.LeaveAsync(); } catch { } session = null; }
                     if (job != null)
                         try { await Post<JToken>("release", Command()); } catch (IOException) { }
@@ -258,26 +276,77 @@ namespace PickleVerse.Multiplayer
             try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "pickleverse-worker-alive"), "alive"); }
             catch (IOException) { }
         });
-        async Task UploadReplay()
+        async Task UploadReplay(Allocation allocation, Task recordingFinished, CancellationToken cancellation)
         {
-            var metadata = Replays.Read(job.replayWriter, job.matchId); if (metadata == null) return;
-            var chunks = metadata.chunks.ToArray(); metadata.complete = false;
-            await Retry(() => Post<JToken>(job.leaseId + "/replay", metadata));
-            for (int index = 0; index < chunks.Length; index++)
+            string route = allocation.leaseId + "/replay";
+            long observedRevision = -1;
+            int uploaded = 0;
+            bool headerSent = false;
+            try
             {
-                string json = JsonUtility.ToJson(Replays.ReadChunk(metadata, chunks[index]));
-                string data = await Task.Run(() =>
+                while (!fenced && !stopping)
                 {
-                    using (var bytes = new MemoryStream())
+                    cancellation.ThrowIfCancellationRequested();
+                    bool finished = recordingFinished.IsCompleted;
+                    long revision = Replays.Revision;
+                    if (finished || revision != observedRevision)
                     {
-                        using (var gzip = new GZipStream(bytes, System.IO.Compression.CompressionLevel.Fastest, true)) { byte[] raw = Encoding.UTF8.GetBytes(json); gzip.Write(raw, 0, raw.Length); }
-                        return Convert.ToBase64String(bytes.ToArray());
+                        var metadata = await Task.Run(() => Replays.Read(allocation.replayWriter, allocation.matchId), cancellation);
+                        observedRevision = revision;
+                        if (metadata?.chunks.Count > 0)
+                        {
+                            var chunks = metadata.chunks;
+                            metadata.chunks = new List<ReplayChunkInfo>();
+                            if (!headerSent)
+                            {
+                                metadata.complete = false;
+                                await PostReplay(route, metadata, cancellation);
+                                headerSent = true;
+                            }
+                            while (uploaded < chunks.Count)
+                            {
+                                var chunk = chunks[uploaded];
+                                string data = await Task.Run(() => Convert.ToBase64String(Replays.ReadCompressedChunk(metadata, chunk)), cancellation);
+                                await PostReplay(route + "/chunks/" + uploaded, new { Data = data }, cancellation);
+                                uploaded++;
+                            }
+                            if (finished)
+                            {
+                                metadata.complete = true;
+                                await PostReplay(route, metadata, cancellation);
+                            }
+                        }
+                        if (finished) return;
                     }
-                });
-                await Retry(() => Post<JToken>(job.leaseId + "/replay/chunks/" + index, new { Data = data }));
+                    if (Replays.Revision == observedRevision)
+                        await Task.WhenAny(recordingFinished, Task.Delay(200, cancellation));
+                }
             }
-            metadata.complete = true;
-            await Retry(() => Post<JToken>(job.leaseId + "/replay", metadata));
+            catch (OperationCanceledException)
+            {
+                if (!fenced && !stopping)
+                    Debug.LogWarning($"[Dedicated] Replay upload timed out match={allocation.matchId} chunks={uploaded}");
+            }
+            catch (Exception error)
+            {
+                Debug.LogWarning($"[Dedicated] Replay upload stopped match={allocation.matchId} chunks={uploaded}: {error.Message}");
+            }
+        }
+        async Task PostReplay(string route, object body, CancellationToken cancellation)
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                if (fenced || stopping) throw new OperationCanceledException();
+                try
+                {
+                    await Post<JToken>(route, body, timeout: 8, cancellation: cancellation);
+                    return;
+                }
+                catch (ServerApiFailure error) when (error.IsTransient)
+                {
+                    await Task.Delay(1000 * Math.Min(attempt + 1, 5), cancellation);
+                }
+            }
         }
         async Task<T> Retry<T>(Func<Task<T>> action)
         {
@@ -287,8 +356,9 @@ namespace PickleVerse.Multiplayer
                 catch when (attempt < 4 && !fenced) { await Task.Delay(1000 * (attempt + 1)); }
             }
         }
-        async Task<T> Post<T>(string route, object body, int timeout = 15)
+        async Task<T> Post<T>(string route, object body, int timeout = 15, CancellationToken cancellation = default)
         {
+            cancellation.ThrowIfCancellationRequested();
             using (var request = new UnityWebRequest(url + "/api/Server/" + route, "POST"))
             {
                 request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(body)));
@@ -296,7 +366,17 @@ namespace PickleVerse.Multiplayer
                 request.SetRequestHeader("Content-Type", "application/json"); request.SetRequestHeader("X-Game-Server-Key", serviceKey);
                 request.SetRequestHeader("X-Game-Worker", workerId);
                 request.SetRequestHeader("X-Game-Protocol", Services.MultiplayerSceneConfiguration.ProtocolVersion.ToString());
-                var pending = request.SendWebRequest(); while (!pending.isDone) await Task.Yield();
+                var pending = request.SendWebRequest();
+                while (!pending.isDone)
+                {
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        request.Abort();
+                        cancellation.ThrowIfCancellationRequested();
+                    }
+                    await Task.Yield();
+                }
+                cancellation.ThrowIfCancellationRequested();
                 if (request.result != UnityWebRequest.Result.Success) throw new ServerApiFailure(request.responseCode);
                 if (string.IsNullOrWhiteSpace(request.downloadHandler.text)) return default;
                 var envelope = JObject.Parse(request.downloadHandler.text); var data = envelope["data"];

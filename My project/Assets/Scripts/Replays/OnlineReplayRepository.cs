@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using PickleVerse.Services;
 using UnityEngine;
@@ -42,21 +43,25 @@ namespace PickleVerse.Replays
             Guard(player);
             return headers.TryGetValue(match, out var value) ? value : null;
         }
-        public async Task RefreshAsync()
+        public Task RefreshAsync() => RefreshAsync(default);
+        public async Task RefreshAsync(CancellationToken cancellation)
         {
             Guard(Account.Profile?.UserId.ToString("N"));
             int requestedSession = session;
-            var list = await Account.SendAuthorizedAsync<List<ReplayMetadata>>("GET", "api/Game/replays");
+            var list = await Account.SendAuthorizedAsync<List<ReplayMetadata>>("GET", "api/Game/replays", cancellation: cancellation);
+            cancellation.ThrowIfCancellationRequested();
             if (requestedSession != Account.SessionVersion) return;
             headers.Clear();
             foreach (var metadata in list)
                 headers[metadata.matchId] = metadata;
         }
-        public async Task<ReplayMetadata> ReadAsync(string player, string match)
+        public Task<ReplayMetadata> ReadAsync(string player, string match) => ReadAsync(player, match, default);
+        public async Task<ReplayMetadata> ReadAsync(string player, string match, CancellationToken cancellation)
         {
             Guard(player);
             int requestedSession = session;
-            var metadata = await Account.SendAuthorizedAsync<ReplayMetadata>("GET", Route(match));
+            var metadata = await Account.SendAuthorizedAsync<ReplayMetadata>("GET", Route(match), cancellation: cancellation);
+            cancellation.ThrowIfCancellationRequested();
             if (requestedSession == Account.SessionVersion) headers[match] = metadata;
             return metadata;
         }

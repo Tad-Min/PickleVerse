@@ -38,7 +38,6 @@ namespace PickleVerse.FrontEnd
         public bool IsOpen => opened;
         long listRevision;
         int menuRequest;
-        bool replayLoading, replayError;
         PickleVerse.Settings.UiListPages listPages;
         static readonly Color Ink = PickleVerse.Settings.LobbyPanelStyle.Background, Surface = PickleVerse.Settings.LobbyPanelStyle.Surface, Card = PickleVerse.Settings.LobbyPanelStyle.Card, Mint = PickleVerse.Settings.ScreenUiTheme.Mint, Lime = PickleVerse.Settings.ScreenUiTheme.Gold, White = PickleVerse.Settings.ScreenUiTheme.Text, Muted = PickleVerse.Settings.ScreenUiTheme.Muted;
 
@@ -82,6 +81,7 @@ namespace PickleVerse.FrontEnd
         }
         void OnDestroy()
         {
+            ResetHistoryReplayRequests(false);
             ProgressionRuntime.Changed -= ProgressionChanged;
             PickleVerse.Settings.FrontEndModalInput.Release(this);
         }
@@ -111,6 +111,8 @@ namespace PickleVerse.FrontEnd
                 UpdateCountdown();
                 if (view == View.Statistics)
                     RefreshStatisticsTime();
+                if (view == View.Career)
+                    CheckPendingHistoryReplays();
             }
         }
         public void OpenProfile()
@@ -154,40 +156,28 @@ namespace PickleVerse.FrontEnd
             int request = ++menuRequest;
             int accountVersion = AccountRuntime.Ensure().Account.SessionVersion;
             bool Current() => this && opened && menuRequest == request && AccountRuntime.Ensure().Account.SessionVersion == accountVersion;
-            replayLoading = next == View.Career && AccountRuntime.Ensure().Account.IsSignedIn;
-            replayError = false;
+            ResetHistoryReplayRequests(next == View.Career && AccountRuntime.Ensure().Account.IsSignedIn);
             if (next == View.Career) listRevision++;
             modal.SetAsLastSibling();
             ApplySafeArea();
             Refresh();
             modal.GetComponent<PickleVerse.Settings.UiModalPresentation>().Show();
             EventSystem.current?.SetSelectedGameObject(modal.Find("SafeArea/Window/Close").gameObject);
+            if (replayRequests != null)
+                replayRefresh = RefreshHistoryReplaysAsync();
             try
             {
                 await ProgressionRuntime.Instance.ReloadAsync();
-                if (Current() && replayLoading && ReplayStorage.Repository is IOnlineReplayRepository replays)
-                    await replays.RefreshAsync();
             }
             catch (Exception error)
             {
                 if (Current())
-                {
-                    replayError = replayLoading;
                     feedback.text = "Không tải được dữ liệu mới: " + error.Message;
-                }
-            }
-            finally
-            {
-                if (Current())
-                {
-                    replayLoading = false;
-                    if (next == View.Career) listRevision++;
-                    Refresh();
-                }
             }
         }
         public void Close()
         {
+            ResetHistoryReplayRequests(false);
             if (renameDialog) renameDialog.gameObject.SetActive(false);
             if (!modal)
                 return;
@@ -316,6 +306,7 @@ namespace PickleVerse.FrontEnd
             {
                 if (rebuild)
                 {
+                    historyReplayRows.Clear();
                     if (p.history.Count == 0)
                         AddMessage("Chưa có trận đấu", "Hoàn tất một trận để lưu đối thủ và tỷ số tại đây.");
                     foreach (var result in p.history)
@@ -421,9 +412,6 @@ namespace PickleVerse.FrontEnd
             button.targetGraphic = row.GetComponent<Image>();
             button.targetGraphic.raycastTarget = true;
             StyleButton(button, Card);
-            var replayLabel = replayLoading ? "Đang tải replay…" : replayError ? "Tải replay thất bại · Thử lại"
-                : ReplayStorage.Availability(result.playerId, result.id);
-            bool refreshReplay = replayError || replayLabel.StartsWith("Đang hoàn thiện replay", StringComparison.Ordinal);
             var replayRect = Panel("WatchReplay", row, Card);
             var replayControl = replayRect.GetComponent<Button>() ?? replayRect.gameObject.AddComponent<Button>();
             replayRect.anchorMin = new Vector2(.53f, 0);
@@ -434,15 +422,9 @@ namespace PickleVerse.FrontEnd
             // Panel is decorative by default; this child must intercept the row's Detail click.
             replayImage.raycastTarget = true;
             replayControl.targetGraphic = replayImage;
-            var replayButton = replayControl;
-            StyleButton(replayButton, Card);
-            replayButton.interactable = refreshReplay || replayLabel == "Xem replay";
-            Text("Label", replayRect, replayLabel, 13, Mint, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
-            replayButton.onClick.AddListener(() =>
-            {
-                if (refreshReplay) OpenCareer();
-                else PlayHistoryReplay(result);
-            });
+            StyleButton(replayControl, Card);
+            var replayLabel = Text("Label", replayRect, "", 13, Mint, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
+            BindHistoryReplay(result, replayControl, replayLabel);
             button.onClick.AddListener(() => OpenMatchDetail(result));
         }
         void PlayHistoryReplay(MatchResult result)

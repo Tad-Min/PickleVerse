@@ -15,6 +15,27 @@ namespace PickleVerse.Tests
         ReplayChunk Chunk(int count=2,double start=0)=>new ReplayChunk{frames=Enumerable.Range(0,count).Select(i=>new ReplayFrame{time=start+i/30d,ball=new float[]{1,2,3},scoreA=i,actors=new[]{new ReplayActorPose{root=new float[10],bones=new float[20],paddleVisible=true},new ReplayActorPose{root=new float[10],bones=new float[20]}}}).ToList(),events=new System.Collections.Generic.List<ReplayEvent>{new ReplayEvent{kind="Serve",time=start}}};
         [Test]public void CompressedRoundTripPreservesSnapshotsAndEvents(){repo.WriteChunk(meta,Chunk());meta.complete=true;repo.Save(meta);var m=repo.Read("Alpha","Match1");var c=repo.ReadChunk(m,m.chunks[0]);Assert.That(m.complete,Is.True);Assert.That(c.frames[1].scoreA,Is.EqualTo(1));Assert.That(c.frames[1].ball,Is.EqualTo(new float[]{1,2,3}));Assert.That(c.events[0].kind,Is.EqualTo("Serve"));}
         [Test]public void PartialRecordIsReadable(){repo.WriteChunk(meta,Chunk());Assert.That(repo.Read("Alpha","Match1").complete,Is.False);}
+        [Test]
+        public void ManifestRevisionExposesCommittedGzipForLiveUpload()
+        {
+            long initialRevision = repo.Revision;
+            repo.WriteChunk(meta, Chunk());
+            Assert.That(repo.Revision, Is.GreaterThan(initialRevision));
+            var snapshot = repo.Read("Alpha", "Match1");
+            var firstChunk = snapshot.chunks.Single();
+            var firstPayload = repo.ReadCompressedChunk(snapshot, firstChunk);
+            var persisted = File.ReadAllBytes(Path.Combine(dir, "Alpha", "Match1", firstChunk.file));
+            Assert.That(firstPayload, Is.EqualTo(persisted));
+
+            repo.WriteChunk(meta, Chunk(start: 2));
+            meta.complete = true;
+            repo.Save(meta);
+            var finished = repo.Read("Alpha", "Match1");
+            Assert.That(finished.complete, Is.True);
+            Assert.That(finished.chunks.Count, Is.EqualTo(2));
+            Assert.That(repo.ReadCompressedChunk(finished, finished.chunks[0]), Is.EqualTo(firstPayload));
+            Assert.Throws<InvalidDataException>(() => repo.ReadCompressedChunk(finished, new ReplayChunkInfo { file = "../escape.json.gz" }));
+        }
         [Test]public void RecoverChunkCommittedBeforeMetadata(){string initial=File.ReadAllText(Path.Combine(dir,"Alpha","Match1","metadata.json"));repo.WriteChunk(meta,Chunk());File.WriteAllText(Path.Combine(dir,"Alpha","Match1","metadata.json"),initial);repo.RecoverAndPrune("Alpha",new[]{"Match1"});Assert.That(repo.Read("Alpha","Match1").chunks.Count,Is.EqualTo(1));}
         [Test]public void MissingMetadataDoesNotCreateHistory(){Assert.That(repo.Read("Alpha","Legacy"),Is.Null);}
         [Test]public void UnsupportedVersionIsExplicit(){meta.version=42;repo.Save(meta);Assert.Throws<NotSupportedException>(()=>repo.Read("Alpha","Match1"));}

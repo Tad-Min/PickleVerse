@@ -1,4 +1,6 @@
+using System.IO.Compression;
 using System.Net;
+using System.Text;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Entities.Exceptions;
 using PickleVerse.Multiplayer;
 using PickleVerse.Progression;
+using PickleVerse.Replays;
 using Repositories.Context;
 using Services.Configuration;
 using Services.Implementations;
@@ -150,6 +153,44 @@ static class DedicatedChecks
         var results=await Results(first);
         await Reject(()=>Call((g,_)=>g.ReportOnline(owner,new(){RequestId=Guid.NewGuid().ToString("N"),Result=results[0].result})),HttpStatusCode.Forbidden,"dedicated rejects a client reporting its own result");
         await Reject(()=>Call((g,_)=>g.LeaveOnline(owner,new(){MatchId=job.MatchId,RequestId=Guid.NewGuid().ToString("N")})),HttpStatusCode.Forbidden,"dedicated client leave API cannot finalize the official result");
+
+        var recording = new ReplayMetadata
+        {
+            playerId = job.ReplayWriter, matchId = job.MatchId,
+            actors = job.Roster.members.Select(member => new ReplayActorInfo
+            {
+                id = member.id, team = member.team, name = member.name, visualId = "Male", bones = []
+            }).ToList()
+        };
+        async Task<ReplayMetadata> ReadReplay(Guid player)
+        {
+            await using var db = new PickleVerseContext(options);
+            var replays = new MatchReplayService(new UnitOfWork(db), TestReplayStorage.Shared, NullLogger<MatchReplayService>.Instance);
+            return await replays.Read(player, Guid.Parse(job.MatchId));
+        }
+        Entities.Game.ReplayChunkUpload ReplayPayload(double time)
+        {
+            var chunk = new ReplayChunk { frames = [new ReplayFrame
+            {
+                time = time, ball = [0, 1, 0],
+                actors = recording.actors.Select(_ => new ReplayActorPose { root = new float[10], bones = [] }).ToArray()
+            }] };
+            using var bytes = new MemoryStream();
+            using (var gzip = new GZipStream(bytes, CompressionLevel.Fastest, leaveOpen: true))
+            using (var writer = new StreamWriter(gzip, Encoding.UTF8))
+                writer.Write(GameJson.Write(chunk));
+            return new() { Data = Convert.ToBase64String(bytes.ToArray()) };
+        }
+        await Call((_, s) => s.SaveReplay(job.LeaseId, recording, worker));
+        var firstChunk = ReplayPayload(1);
+        var uploaded = await Call((_, s) => s.UploadReplay(job.LeaseId, 0, firstChunk, worker));
+        var retriedChunk = await Call((_, s) => s.UploadReplay(job.LeaseId, 0, firstChunk, worker));
+        check(uploaded.file == retriedChunk.file, "dedicated live chunk upload retries reuse the committed gzip bytes");
+        await Reject(() => ReadReplay(owner), HttpStatusCode.NotFound, "dedicated recording stays private during gameplay");
+        await Call((_, s) => s.UploadReplay(job.LeaseId, 1, ReplayPayload(3), worker));
+        recording.complete = true;
+        await Call((_, s) => s.SaveReplay(job.LeaseId, recording, worker));
+        await Reject(() => ReadReplay(owner), HttpStatusCode.NotFound, "a sealed dedicated replay waits for official result publication");
         await Task.WhenAll(Complete(job,results),Complete(job,results));
         var winner=await Call((g,_)=>g.Read(owner));
         check(winner.player.pendingMatch==null&&winner.player.coins==150&&winner.player.wins==1,"server completion grants the singles result exactly once");
@@ -158,6 +199,12 @@ static class DedicatedChecks
         var loser = await Call((g, _) => g.Read(Guid.Parse(first.Roster.members[1].id)));
         check(loser.player.level == 1 && loser.player.levelXp == 5 && loser.player.totalXp == 5,
             "a ranked loss at level one grants the configured loss XP");
+        foreach (var member in first.Roster.members)
+        {
+            var readyReplay = await ReadReplay(Guid.Parse(member.id));
+            check(readyReplay.complete && readyReplay.chunks.Count == 2 && readyReplay.duration == 3,
+                "both participants can read the full dedicated replay with the first completed history entry");
+        }
         await using(var db=new PickleVerseContext(options))
             check(await db.Ratingledgers.CountAsync(r=>r.Matchid==Guid.Parse(job.MatchId))==2,"dedicated singles commits one rating ledger row per participant");
         await leases.Release(job.LeaseId, worker);

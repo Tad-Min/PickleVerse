@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using UnityEngine;
 namespace PickleVerse.Replays
 {
@@ -17,7 +18,9 @@ namespace PickleVerse.Replays
     }
     public sealed class LocalReplayRepository : IReplayRepository
     {
+        long revision;
         public string Root { get; }
+        public long Revision => Interlocked.Read(ref revision);
         public LocalReplayRepository(string root)
         {
             Root = Path.GetFullPath(root);
@@ -36,7 +39,10 @@ namespace PickleVerse.Replays
                 return null;
             ReplayMetadata Parse(string file)
             {
-                var m = JsonUtility.FromJson<ReplayMetadata>(File.ReadAllText(file));
+                // A recorder can atomically replace the manifest while an uploader reads it.
+                using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                var m = JsonUtility.FromJson<ReplayMetadata>(reader.ReadToEnd());
                 if (m != null && m.version != 1)
                     throw new NotSupportedException("Phiên bản replay chưa được hỗ trợ: " + m.version);
                 if (m == null || m.playerId != playerId || m.matchId != matchId || m.actors == null || m.chunks == null)
@@ -67,6 +73,7 @@ namespace PickleVerse.Replays
             string dir = DirectoryFor(m.playerId, m.matchId);
             Directory.CreateDirectory(dir);
             Atomic(Path.Combine(dir, "metadata.json"), Encoding.UTF8.GetBytes(JsonUtility.ToJson(m)));
+            Interlocked.Increment(ref revision);
         }
         static void Atomic(string path, byte[] bytes)
         {
@@ -96,11 +103,16 @@ namespace PickleVerse.Replays
             m.duration = chunk.frames[chunk.frames.Count - 1].time;
             Save(m);
         }
+        string ChunkPath(ReplayMetadata m, ReplayChunkInfo chunk)
+        {
+            if (string.IsNullOrEmpty(chunk.file) || chunk.file != Path.GetFileName(chunk.file) || !chunk.file.EndsWith(".json.gz", StringComparison.Ordinal))
+                throw new InvalidDataException("Đường dẫn replay không hợp lệ.");
+            return Path.Combine(DirectoryFor(m.playerId, m.matchId), chunk.file);
+        }
+        public byte[] ReadCompressedChunk(ReplayMetadata m, ReplayChunkInfo chunk) => File.ReadAllBytes(ChunkPath(m, chunk));
         public ReplayChunk ReadChunk(ReplayMetadata m, ReplayChunkInfo chunk)
         {
-            if (chunk.file != Path.GetFileName(chunk.file) || !chunk.file.EndsWith(".json.gz", StringComparison.Ordinal))
-                throw new InvalidDataException("Đường dẫn replay không hợp lệ.");
-            using (var file = File.OpenRead(Path.Combine(DirectoryFor(m.playerId, m.matchId), chunk.file)))
+            using (var file = File.OpenRead(ChunkPath(m, chunk)))
             using (var gzip = new GZipStream(file, CompressionMode.Decompress))
             using (var reader = new StreamReader(gzip))
             {
@@ -164,20 +176,6 @@ namespace PickleVerse.Replays
         static void Reset()
         {
             repository = null;
-        }
-        public static string Availability(string player, string match)
-        {
-            try
-            {
-                var m = Repository.Read(player, match);
-                if (m == null) return "Chưa có replay";
-                if (!m.complete) return "Đang hoàn thiện replay · Làm mới";
-                return m.chunks.Count > 0 ? "Xem replay" : "Chưa có replay";
-            }
-            catch
-            {
-                return "Replay không đọc được";
-            }
         }
     }
 }
