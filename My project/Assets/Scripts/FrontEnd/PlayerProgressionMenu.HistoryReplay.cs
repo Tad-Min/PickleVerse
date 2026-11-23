@@ -15,7 +15,7 @@ namespace PickleVerse.FrontEnd
 {
     public sealed partial class PlayerProgressionMenu
     {
-        enum HistoryReplayState { Missing, Loading, Finishing, Ready, Failed }
+        enum HistoryReplayState { Missing, Loading, Finishing, Ready, Failed, RecordingFailed }
 
         sealed class HistoryReplayRow
         {
@@ -53,12 +53,12 @@ namespace PickleVerse.FrontEnd
                 if (state == HistoryReplayState.Ready)
                     PlayHistoryReplay(match);
                 else if (replayRequests != null && replayRefresh.IsCompleted &&
-                         (state == HistoryReplayState.Failed || state == HistoryReplayState.Finishing))
+                         (state == HistoryReplayState.Failed || state == HistoryReplayState.Finishing || state == HistoryReplayState.RecordingFailed))
                     replayRefresh = RefreshHistoryReplaysAsync(replayListFailed ? null : new[] { row });
             });
         }
 
-        // A recently finished match may have committed its score during replay upload recovery.
+        // Older workers and shared matches can publish replay after the score.
         static bool ExpectReplaySoon(MatchResult match) => !match.localForfeit && match.outcome != MatchOutcome.Interrupted
             && match.endedUtcTicks >= DateTime.UtcNow.AddMinutes(-2).Ticks;
 
@@ -67,9 +67,12 @@ namespace PickleVerse.FrontEnd
             if (replayRequests == null || !AccountRuntime.Ensure().Account.IsSignedIn) return HistoryReplayState.Missing;
             try
             {
-                var replay = ReplayStorage.Repository.Read(row.Match.playerId, row.Match.id);
+                var repository = ReplayStorage.Repository;
+                var replay = repository.Read(row.Match.playerId, row.Match.id);
                 if (replay?.complete == true)
                     return replay.chunks.Count > 0 ? HistoryReplayState.Ready : HistoryReplayState.Missing;
+                if (repository is OnlineReplayRepository online && online.FinalizedAvailability(row.Match.playerId, row.Match.id) is bool ready)
+                    return ready ? HistoryReplayState.Ready : HistoryReplayState.RecordingFailed;
                 if (replayLoading) return HistoryReplayState.Loading;
                 if (replayListFailed || row.LoadFailed) return HistoryReplayState.Failed;
                 return replay != null || ExpectReplaySoon(row.Match) ? HistoryReplayState.Finishing : HistoryReplayState.Missing;
@@ -83,13 +86,14 @@ namespace PickleVerse.FrontEnd
         void UpdateHistoryReplayButton(HistoryReplayRow row)
         {
             var state = GetHistoryReplayState(row);
-            row.Watch.interactable = state == HistoryReplayState.Ready || state == HistoryReplayState.Finishing || state == HistoryReplayState.Failed;
+            row.Watch.interactable = state != HistoryReplayState.Missing && state != HistoryReplayState.Loading;
             row.Label.text = state switch
             {
                 HistoryReplayState.Loading => "Đang tải replay…",
-                HistoryReplayState.Finishing => ExpectReplaySoon(row.Match) ? "Đang hoàn thiện replay…" : "Đang hoàn thiện replay · Làm mới",
+                HistoryReplayState.Finishing => ExpectReplaySoon(row.Match) ? "Đang hoàn thiện replay…" : "Replay chưa sẵn sàng · Làm mới",
                 HistoryReplayState.Ready => "Xem replay",
                 HistoryReplayState.Failed => "Tải replay thất bại · Thử lại",
+                HistoryReplayState.RecordingFailed => "Lưu replay thất bại · Kiểm tra lại",
                 _ => "Chưa có replay"
             };
         }
@@ -98,7 +102,8 @@ namespace PickleVerse.FrontEnd
         {
             if (replayRequests == null || !replayRefresh.IsCompleted || Time.realtimeSinceStartupAsDouble < nextReplayCheck) return;
             foreach (var row in historyReplayRows) UpdateHistoryReplayButton(row);
-            var pending = historyReplayRows.Where(row => ExpectReplaySoon(row.Match) && GetHistoryReplayState(row) != HistoryReplayState.Ready).ToArray();
+            var pending = historyReplayRows.Where(row => ExpectReplaySoon(row.Match) &&
+                GetHistoryReplayState(row) is HistoryReplayState.Finishing or HistoryReplayState.Failed).ToArray();
             if (pending.Length > 0 && AccountRuntime.Ensure().Account.IsSignedIn)
                 replayRefresh = RefreshHistoryReplaysAsync(pending);
         }

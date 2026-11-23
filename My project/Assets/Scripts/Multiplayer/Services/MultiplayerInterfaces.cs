@@ -20,6 +20,7 @@ namespace PickleVerse.Multiplayer.Services
         FlowState State { get; }
         PlayMode Mode { get; }
         bool Custom { get; }
+        bool CustomStartBlocked { get; }
         bool IsCaptain { get; }
         bool Busy { get; }
         bool Searching { get; }
@@ -38,7 +39,8 @@ namespace PickleVerse.Multiplayer.Services
         Task SwitchRoomAsync(PlayMode mode, bool custom);
         Task JoinRoomAsync(string code);
         Task UpdateNameAsync(string name);
-        Task SetTeamAsync(string playerId, int team);
+        void RequestPositionSwap(string id, string playerId, int roomEpoch);
+        void RespondToPositionSwap(string id, bool accepted);
         Task KickAsync(string playerId);
         Task StartCustomAsync();
         Task LeaveRoomAsync();
@@ -62,7 +64,8 @@ namespace PickleVerse.Multiplayer.Services
         Task SelectDoublesAsync();
         Task SelectCustomAsync(PlayMode mode);
         Task JoinAsync(string code);
-        Task SwapTeamAsync();
+        void RequestPositionSwap(string id, string playerId, int roomEpoch);
+        void RespondToPositionSwap(string id, bool accepted);
         Task KickAsync(string playerId);
         Task StartCustomAsync();
         Task LeaveAsync();

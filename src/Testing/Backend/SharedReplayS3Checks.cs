@@ -56,6 +56,7 @@ static class SharedReplayS3Checks
         using(var zip=new GZipStream(compressed,CompressionLevel.Fastest,true))zip.Write(Encoding.UTF8.GetBytes(GameJson.Write(chunk)));
         var bytes=compressed.ToArray();var hash=Convert.ToHexString(SHA256.HashData(bytes));
         var chunkKey=$"replays/{match:N}/000000-{hash}.json.gz";
+        var batchKeys = new List<string>();
         string route=$"api/Game/replays/{match:N}";
         HttpClient Client(Guid? id,string role="Player")
         {
@@ -79,6 +80,24 @@ static class SharedReplayS3Checks
             var responses=await Task.WhenAll(writer.PutAsync(route+"/chunks/0",Body(new ReplayChunkUpload{Data=Convert.ToBase64String(bytes)})),writer.PutAsync(route+"/chunks/0",Body(new ReplayChunkUpload{Data=Convert.ToBase64String(bytes)})));
             try { check(responses.All(r=>r.IsSuccessStatusCode),"concurrent HTTP upload retries succeed against real S3"); }
             finally {foreach(var response in responses)response.Dispose();}
+            var batch = new ReplayChunkBatchUpload { StartIndex = 1, Complete = true };
+            for (int index = 1; index <= ReplayChunkBatchUpload.MaxChunks; index++)
+            {
+                chunk.frames[0].time = index;
+                using var data = new MemoryStream();
+                using (var zip = new GZipStream(data, CompressionLevel.Fastest, true))
+                    zip.Write(Encoding.UTF8.GetBytes(GameJson.Write(chunk)));
+                var encoded = data.ToArray();
+                batchKeys.Add($"replays/{match:N}/{index:D6}-{Convert.ToHexString(SHA256.HashData(encoded))}.json.gz");
+                batch.Chunks.Add(new() { Data = Convert.ToBase64String(encoded) });
+            }
+            await using (var scope = app.Services.CreateAsyncScope())
+            {
+                var replays = scope.ServiceProvider.GetRequiredService<IMatchReplayService>();
+                var receipt = await replays.UploadDedicatedBatch(a, match, batch);
+                check(receipt.Complete && receipt.ChunkCount == batch.Chunks.Count + 1,
+                    "concurrent batch object writes and final manifest commit succeed against real S3");
+            }
             await sql.Run("UPDATE gamematches SET status='FINISHED',endedat=CURRENT_TIMESTAMP,sequence=nextval('gamematches_history_seq') WHERE matchid=@match",P("match",match));
             await MatchScoreStore.Save(db,match,[new(11,5,true),new(11,8,true)]);
             await sql.Run("UPDATE gamematchplayers SET finalizedat=CURRENT_TIMESTAMP,outcome=CASE WHEN team=0 THEN 'WIN' ELSE 'LOSE' END WHERE matchid=@match",P("match",match));
@@ -87,10 +106,16 @@ static class SharedReplayS3Checks
             using(var response=await viewer.GetAsync(route))
             {
                 response.EnsureSuccessStatusCode();var shared=GameJson.Read<Entities.DTOs.Common.ApiResponse<ReplayMetadata>>(await response.Content.ReadAsStringAsync()).Data!;
-                check(shared.playerId==a.ToString("N") && shared.chunks.Count==1 && shared.chunks[0].contentHash==hash,"other participant receives the same S3 manifest and recorder identity");
+                check(shared.playerId==a.ToString("N") && shared.complete && shared.chunks.Count==batch.Chunks.Count+1 && shared.chunks[0].contentHash==hash,"other participant receives the complete S3 manifest and recorder identity");
             }
             using(var response=await viewer.GetAsync(route+"/chunks/0"))
             {response.EnsureSuccessStatusCode();check(GameJson.Read<Entities.DTOs.Common.ApiResponse<ReplayChunkUpload>>(await response.Content.ReadAsStringAsync()).Data!.Data==Convert.ToBase64String(bytes),"authenticated viewer downloads the shared S3 chunk");}
+            using(var response=await viewer.GetAsync(route+"/chunks/"+batch.Chunks.Count))
+            {
+                response.EnsureSuccessStatusCode();
+                check(GameJson.Read<Entities.DTOs.Common.ApiResponse<ReplayChunkUpload>>(await response.Content.ReadAsStringAsync()).Data!.Data == batch.Chunks[^1].Data,
+                    "authenticated viewer can fetch the final segment sealed as a batch");
+            }
             using(var response=await stranger.GetAsync(route))check(response.StatusCode==HttpStatusCode.NotFound,"outsider HTTP request cannot read shared recording");
             using(var response=await admin.GetAsync($"api/Replays/{match:N}"))
             {response.EnsureSuccessStatusCode();check(response.Content.Headers.ContentType?.MediaType=="application/json" && GameJson.Read<ReplayMetadata>(await response.Content.ReadAsStringAsync()).matchId==match.ToString("N"),"admin evidence route serves the same manifest through authenticated API");}
@@ -100,6 +125,7 @@ static class SharedReplayS3Checks
         finally
         {
             await app.StopAsync();
+            foreach (var keyToDelete in batchKeys) await storage.DeleteFileAsync(keyToDelete);
             if(!await storage.DeleteFileAsync(chunkKey) || !await storage.DeleteFileAsync(MatchReplayService.ManifestKey(match)))throw new IOException("Could not clean up owned S3 test objects.");
         }
     }

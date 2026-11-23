@@ -38,20 +38,29 @@ public sealed class RoomInvitationService : IRoomInvitationService
     Task<bool> InMatch(Guid player) => _unitOfWork.Game.InMatch(player, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds));
     static int Capacity(Presence p) => p.Value.Custom ? 2 * p.Value.Mode : 2;
     static bool ValidCode(string code) => Regex.IsMatch(code, "^[A-Z0-9-]{6,64}$");
-    async Task<Presence?> Room(string code)
+    async Task<Presence?> Room(string code, bool resolveRegionDuringHandoff = false)
     {
         var room = await Read<Presence>("room:" + code);
         if (room == null || room.ExpiresAt <= Now)
             return null;
         var owner = await Online(room.PlayerId);
-        return owner != null && owner.Value.State == "lobby" && owner.Value.IsHost && owner.Value.RoomCode == code
-            && owner.Value.SessionId == room.Value.SessionId ? room : null;
+        if (owner != null && owner.Value.State == "lobby" && owner.Value.IsHost && owner.Value.RoomCode == code
+            && owner.Value.SessionId == room.Value.SessionId)
+            return room;
+        // Only code lookup can use the last known region while a remaining player
+        // publishes their promotion. Invites still require an active host registration.
+        if (resolveRegionDuringHandoff)
+            foreach (var member in room.Value.Members.Where(id => id != room.PlayerId))
+                if (await Online(member) is { } presence && presence.Value.State == "lobby"
+                    && presence.Value.RoomCode == code && presence.Value.Region == room.Value.Region)
+                    return room;
+        return null;
     }
     public async Task<RoomJoinInfo> JoinInfo(string code)
     {
         code = code.Trim().ToUpperInvariant();
         if (!ValidCode(code)) throw Bad("Mã phòng không hợp lệ.", HttpStatusCode.BadRequest);
-        return new() { Region = (await Room(code))?.Value.Region ?? "" };
+        return new() { Region = (await Room(code, resolveRegionDuringHandoff: true))?.Value.Region ?? "" };
     }
     public async Task<LobbyPresenceReply> Publish(Guid self, LobbyPresenceRequest input)
     {

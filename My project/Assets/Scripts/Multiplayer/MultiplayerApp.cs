@@ -37,6 +37,7 @@ namespace PickleVerse.Multiplayer
         public NetworkRunner Network => Match?.Runner;
         public MatchRoster Roster { get; private set; }
         public bool Custom => Room?.Data.custom ?? false;
+        public bool CustomStartBlocked => Custom && (Room.Data.phase != "idle" || Room.Data.positionSwap != null);
         public bool IsCaptain => Room == null || Room.IsHost;
         public bool CanChangeLocalProfile => Room == null && Match == null && !Searching && State != FlowState.InMatch && State != FlowState.Reconnecting;
         public bool Busy { get; private set; }
@@ -63,6 +64,8 @@ namespace PickleVerse.Multiplayer
         RankedSearchTicket initialDoublesAssignment;
         double assignmentObserved;
         string lastPartyMatch = "";
+        int partyAuthority, partyMemberCount;
+        bool partyWasSearching;
         GameObject StatePrefab => Resources.Load<GameObject>("Photon/Session State");
         public bool ReadyCheckActive => stagingRequest != null && State == FlowState.Connecting && readyTicket?.phase == "PREPARING";
         public bool ReadyCheckAccepted => readyTicket?.accepted == true;
@@ -209,8 +212,8 @@ namespace PickleVerse.Multiplayer
                     // Keep the existing room until the target host has confirmed the new seat.
                     await LeaveAttachedRoomAsync();
                     if (!CanSwitch()) return;
-                    if (!session.Runner || !session.Runner.IsRunning || session.Data.phase == "closed")
-                        throw new InvalidOperationException("Chủ phòng đã đóng phòng.");
+                    if (!session.Runner || !session.Runner.IsRunning)
+                        throw new InvalidOperationException("Phòng Photon đã ngắt kết nối.");
                     Mode = session.Data.mode;
                     AttachRoom(session);
                     SetState(FlowState.WaitingRoom, "Đã tham gia phòng.");
@@ -236,12 +239,16 @@ namespace PickleVerse.Multiplayer
         void AttachRoom(PhotonSession session)
         {
             Room = session;
+            partyAuthority = session.Data.authority;
+            partyMemberCount = session.Data.seats.Count;
+            partyWasSearching = session.Data.phase == "searching";
             session.Changed += RoomChanged;
             session.Stopped += reason =>
             {
                 if (Room == session && !closing)
                     _ = Safe(ClosePartyAsync("Mất kết nối phòng chờ."));
             };
+            RoomInvitationsRuntime.Instance?.RoomPresenceChanged();
         }
         RoomMember Self() => new RoomMember { id = PlayerId, name = DisplayName, gender = Gender, elo = ProgressionRuntime.Instance.Player.elo, team = 0, group = Room?.Id ?? PlayerId, paddleId = ProgressionRuntime.Instance.Snapshot.inventory.equippedPaddle };
         public List<RoomMember> Members() => Room == null ? new List<RoomMember> { Self() } : Room.Data.seats.Select(s => s.member).ToList();
@@ -254,12 +261,29 @@ namespace PickleVerse.Multiplayer
             await identity.InitializeAsync(PlayerId, Settings.environment);
             Changed?.Invoke();
         }
-        public Task SetTeamAsync(string id, int team)
+        PhotonRoomState PositionSwapLobby()
         {
-            if (!Custom || State != FlowState.WaitingRoom)
-                throw new InvalidOperationException("Chỉ đổi đội trong phòng riêng.");
-            Room.Lobby.Team(id, team);
-            return Task.CompletedTask;
+            if (!Custom || Room.Closing || !Room.Runner || !Room.Runner.IsRunning ||
+                !Room.Lobby || Room.Data.phase != "idle" || State != FlowState.WaitingRoom || Busy || navigation.Leaving)
+                throw new InvalidOperationException("Phòng hiện chưa thể đổi vị trí.");
+            return Room.Lobby;
+        }
+        public void RequestPositionSwap(string id, string playerId, int roomEpoch)
+        {
+            var lobby = PositionSwapLobby();
+            if (lobby.Data.positionEpoch != roomEpoch || playerId == PlayerId || !lobby.Data.seats.Any(seat => seat.member.id == playerId))
+                throw new InvalidOperationException("Vị trí người chơi đã thay đổi. Hãy chọn lại.");
+            if (lobby.Data.positionSwap != null)
+                throw new InvalidOperationException("Đang có yêu cầu đổi vị trí trong phòng.");
+            lobby.RequestPositionSwap(id, playerId, roomEpoch);
+        }
+        public void RespondToPositionSwap(string id, bool accepted)
+        {
+            var lobby = PositionSwapLobby();
+            var offer = lobby.Data.positionSwap;
+            if (offer == null || offer.id != id || offer.targetId != PlayerId)
+                throw new InvalidOperationException("Yêu cầu đổi vị trí đã hết hiệu lực.");
+            lobby.RespondToPositionSwap(id, accepted);
         }
         public Task KickAsync(string id)
         {
@@ -276,19 +300,13 @@ namespace PickleVerse.Multiplayer
         async Task LeaveAttachedRoomAsync()
         {
             if (Searching)
-                await CancelSearchAsync();
+                await Safe(CancelSearchAsync(notifyParty: false));
             var room = Room;
             if (room == null)
                 return;
-            // Our own close notification must not look like an unexpected host departure
-            // and cancel the mode switch that is deliberately leaving this party.
             room.Changed -= RoomChanged;
             Room = null;
-            if (room.IsHost && room.Lobby)
-            {
-                room.Lobby.Command("close", "");
-                await Task.Delay(300);
-            }
+            RoomInvitationsRuntime.Instance?.RoomPresenceChanged();
             await room.LeaveAsync();
         }
         void RoomChanged()
@@ -296,9 +314,23 @@ namespace PickleVerse.Multiplayer
             if (Room == null || closing)
                 return;
             var data = Room.Data;
-            if (data.phase == "closed" || Room.Rejected != null)
+            if (Room.Rejected != null)
             {
-                _ = Safe(ClosePartyAsync(data.notice.Length > 0 ? data.notice : Room.Rejected));
+                _ = Safe(ClosePartyAsync(Room.Rejected));
+                return;
+            }
+            bool changedHost = partyAuthority != data.authority;
+            bool memberLeft = partyMemberCount > data.seats.Count;
+            bool stoppedSearching = partyWasSearching && data.phase == "idle" && (changedHost || memberLeft || data.custom);
+            partyAuthority = data.authority;
+            partyMemberCount = data.seats.Count;
+            partyWasSearching = data.phase == "searching";
+            RoomInvitationsRuntime.Instance?.RoomPresenceChanged();
+
+            bool preparing = State == FlowState.Connecting && !courtLoading && Match?.IsDedicated != true && readyTicket?.phase != "PLAYING";
+            if (stoppedSearching && (InSearchQueue || preparing || joining && lastPartyMatch.Length > 0))
+            {
+                _ = Safe(CancelSearchAsync(notifyParty: false, message: data.notice.Length > 0 ? data.notice : "Đã hủy tìm trận."));
                 return;
             }
             if (!Custom && data.phase == "searching" && !IsCaptain && State == FlowState.WaitingRoom && !startingSearch)
@@ -309,8 +341,11 @@ namespace PickleVerse.Multiplayer
                 _ = Safe(FollowPartyMatchAsync(data.matchSession, Room.Region, operation));
             }
             if (data.phase == "idle" && InSearchQueue && !IsCaptain)
-                _ = Safe(CancelSearchAsync());
-            Changed?.Invoke();
+                _ = Safe(CancelSearchAsync(notifyParty: false));
+            if (changedHost && State == FlowState.WaitingRoom)
+                SetNotice(IsCaptain ? "Bạn là chủ phòng." : "Đã chuyển chủ phòng.");
+            else
+                Changed?.Invoke();
         }
         async Task FollowPartyMatchAsync(string name, string region, int generation)
         {
@@ -335,6 +370,7 @@ namespace PickleVerse.Multiplayer
             {
                 var room = Room;
                 Room = null;
+                RoomInvitationsRuntime.Instance?.RoomPresenceChanged();
                 // A guest reading the summary of a finished match keeps it until they choose
                 // VỀ PHÒNG CHỜ or VỀ MENU; only the party that the host closed is left now.
                 if (State == FlowState.Results && Match != null)
@@ -435,14 +471,26 @@ namespace PickleVerse.Multiplayer
         }
         public async Task StartCustomAsync()
         {
-            if (!Custom || !IsCaptain || State != FlowState.WaitingRoom)
+            var room = Room;
+            if (!Custom || !IsCaptain || State != FlowState.WaitingRoom || !room.Lobby || room.Closing)
                 return;
-            var members = Members();
-            if (!new MatchRoster { custom = true, mode = Mode, members = members }.IsValid())
-                throw new InvalidOperationException("Mỗi đội cần ít nhất một người và không quá sức chứa của chế độ.");
+            var members = room.Lobby.BeginCustomMatch();
             CancelLocal();
-            Room.Lobby.Command("search", "");
-            await CreateMatchAsync(true, operation);
+            int generation = operation;
+            SetState(FlowState.Connecting, "Đang chuẩn bị trận…");
+            try
+            {
+                await CreateMatchAsync(true, generation, members);
+            }
+            catch (Exception)
+            {
+                if (generation != operation || Room != room)
+                    return;
+                SetState(FlowState.WaitingRoom, "Chưa thể chuẩn bị trận.");
+                if (room.IsHost && room.Data.phase == "searching")
+                    room.Lobby.Command("idle", "");
+                throw;
+            }
         }
 #if !UNITY_SERVER
         async void Update()
@@ -608,13 +656,14 @@ namespace PickleVerse.Multiplayer
             var player = ProgressionRuntime.Instance.Player;
             return EloPolicy.PairingKeys(player.elo, player.rankLossStreak, expanded).Intersect(EloPolicy.PairingKeys(Int(session, "elo"), Int(session, "losses"), Bool(session, "expanded"))).Any();
         }
-        async Task CreateMatchAsync(bool custom, int generation)
+        async Task CreateMatchAsync(bool custom, int generation, List<RoomMember> customMembers = null)
         {
             var session = PhotonSession.Create("Photon Match");
             try
             {
-                await session.StartAsync("PKV-" + Guid.NewGuid().ToString("N"), PlayerId, Room?.Region ?? Settings.photonRegion, new PhotonRoomData { mode = Mode, custom = custom, expectedPlayers = custom ? Members().Count : 0, phase = "searching", night = PickleVerse.LocalMatch.BotMatchLaunchSettings.Night, venue = (CourtVenue)UnityEngine.Random.Range(0, 2) }, StatePrefab);
-                await session.ReserveAsync(Members());
+                await session.StartAsync("PKV-" + Guid.NewGuid().ToString("N"), PlayerId, Room?.Region ?? Settings.photonRegion, new PhotonRoomData { mode = Mode, custom = custom, expectedPlayers = customMembers?.Count ?? 0, phase = "searching", night = PickleVerse.LocalMatch.BotMatchLaunchSettings.Night, venue = (CourtVenue)UnityEngine.Random.Range(0, 2) }, StatePrefab);
+                if (generation == operation)
+                    await session.ReserveAsync(customMembers ?? Members());
                 if (generation != operation)
                 {
                     await session.LeaveAsync();
@@ -913,7 +962,7 @@ namespace PickleVerse.Multiplayer
                 await old.LeaveAsync();
         }
         public Task CancelSearchAsync() => CancelSearchAsync(notifyParty: true);
-        async Task CancelSearchAsync(bool notifyParty)
+        async Task CancelSearchAsync(bool notifyParty, string message = "Đã hủy tìm trận.")
         {
             if (closing) return;
             closing = true;
@@ -942,7 +991,7 @@ namespace PickleVerse.Multiplayer
                 {
                     lastPartyMatch = "";
                     closing = false;
-                    SetState(FlowState.WaitingRoom, "Đã hủy tìm trận.");
+                    SetState(FlowState.WaitingRoom, message);
                 }
             }
         }

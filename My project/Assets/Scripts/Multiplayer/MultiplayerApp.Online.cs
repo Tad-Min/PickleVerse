@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PickleVerse.Progression;
+using PickleVerse.Replays;
 using PickleVerse.Services;
 using UnityEngine;
 
@@ -115,10 +116,13 @@ namespace PickleVerse.Multiplayer
         public Task PersistProgressionResultsAsync(string json)
         {
             var results = JsonConvert.DeserializeObject<List<OnlineMatchResult>>(json);
-            var own = results?.SingleOrDefault(r => r.onlineId == PlayerId)?.result;
+            var entry = results?.SingleOrDefault(r => r.onlineId == PlayerId);
+            var own = entry?.result;
             if (own == null || own.id != Roster?.matchId)
                 throw new InvalidOperationException("Kết quả không thuộc trận hiện tại.");
             own.playerId = PlayerId;
+            if (Match?.IsDedicated == true && entry.replayReady.HasValue && ReplayStorage.Repository is OnlineReplayRepository replays)
+                replays.RecordFinalization(own.playerId, own.id, entry.replayReady.Value);
             if (!resultWrites.TryGetValue(own.id, out var task) || task.IsFaulted || task.IsCanceled)
             {
                 task = SaveOnlineResultAsync(own);

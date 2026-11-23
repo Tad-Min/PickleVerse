@@ -5,6 +5,7 @@ sealed class TestReplayStorage : IStorageService
 {
     public static readonly TestReplayStorage Shared = new();
     public readonly ConcurrentDictionary<string, byte[]> Objects = new();
+    public int ManifestWrites;
     public bool FailReads;
     public bool FailNextManifestWrite;
     public Task EnsureBucketExistsAsync() => Task.CompletedTask;
@@ -15,6 +16,7 @@ sealed class TestReplayStorage : IStorageService
         using var copy = new MemoryStream();
         await stream.CopyToAsync(copy);
         Objects[key] = copy.ToArray();
+        if (key.EndsWith("/manifest.json", StringComparison.Ordinal)) Interlocked.Increment(ref ManifestWrites);
     }
     public async Task<string> UploadFileAsync(Stream stream, string name, string type)
     { await PutFileAsync(stream, name, type); return name; }

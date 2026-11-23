@@ -9,6 +9,9 @@ namespace PickleVerse.Multiplayer
 {
     public sealed class PhotonRoomState : NetworkBehaviour, IPhotonMessageTarget
     {
+        public const int PositionRequestArrivalSeconds = 8;
+        const int PositionResponseSeconds = 20;
+
         [Networked]
         [Capacity(4096)]
         public string Payload { get; set; }
@@ -55,6 +58,11 @@ namespace PickleVerse.Multiplayer
             if (!HasStateAuthority)
                 return;
             var data = Data;
+            if (data.party)
+            {
+                UpdateParty(data);
+                return;
+            }
             if (data.authority != Runner.LocalPlayer.RawEncoded)
             {
                 data.authority = Runner.LocalPlayer.RawEncoded;
@@ -67,21 +75,41 @@ namespace PickleVerse.Multiplayer
             }
             CheckAllConnected();
         }
+        void UpdateParty(PhotonRoomData data)
+        {
+            int authority = Runner.LocalPlayer.RawEncoded;
+            bool changedHost = data.authority != authority;
+            // Player-left can arrive before this peer owns the room state. Reconcile against
+            // Fusion's committed players once the peer can write the shared room.
+            int removed = data.seats.RemoveAll(seat => seat.peer != 0 &&
+                !Runner.IsPlayerCommitted(PlayerRef.FromEncoded(seat.peer)));
+            if (changedHost || removed > 0)
+            {
+                if (data.custom)
+                    InvalidatePositions(data);
+                data.authority = authority;
+                data.phase = "idle";
+                data.matchSession = "";
+                data.notice = changedHost ? "Đã chuyển chủ phòng." : "Có người đã rời phòng.";
+                Save(data);
+            }
+            else if (data.positionSwap != null && ReachedTick(data.positionSwap.expiresAtTick))
+            {
+                ResolvePositionSwap(data, RoomPositionSwapStatus.Expired);
+                Save(data);
+            }
+        }
         public void PlayerGone(PlayerRef player)
         {
             if (!Object || !Object.IsValid || !HasStateAuthority)
                 return;
             var data = Data;
+            if (data.party)
+                return;
             var seat = data.seats.FirstOrDefault(s => s.peer == player.RawEncoded);
             if (seat == null)
                 return;
-            if (data.party)
-            {
-                data.seats.Remove(seat);
-                data.matchSession = "";
-                data.phase = "idle";
-            }
-            else if (data.phase == "ready" || data.phase == "loading")
+            if (data.phase == "ready" || data.phase == "loading")
             {
                 data.phase = "rejected";
                 data.notice = "Có người rời trận trước khi vào sân.";
@@ -95,15 +123,19 @@ namespace PickleVerse.Multiplayer
         void Send(string kind, object data) => PhotonSession.Find(Runner).Send(Object.StateAuthority, Object, kind, data);
         public void Reserve(string json) => Send("reserve", json);
         public void Command(string kind, string value) => Send("command", new[] { kind, value });
-        public void Team(string id, int team) => Send("team", new TeamCommand { id = id, team = team });
+        public void RequestPositionSwap(string id, string targetId, int epoch) =>
+            Send("position-swap", new PositionRequest { id = id, targetId = targetId, epoch = epoch, validUntilTick = DeadlineTick(PositionRequestArrivalSeconds) });
+        public void RespondToPositionSwap(string id, bool accepted) =>
+            Send("position-response", new PositionResponse { id = id, accepted = accepted });
         public void Kick(string id) => Send("kick", id);
         public void ExpandSearch(bool expanded)
         {
             if (HasStateAuthority && !Data.party)
                 Runner.SessionInfo.UpdateCustomProperties(new Dictionary<string, SessionProperty> { { "expanded", expanded } });
         }
-        [Serializable]
-        sealed class TeamCommand { public string id; public int team; }
+        sealed class PositionRequest { public string id, targetId; public int epoch, validUntilTick; }
+        sealed class PositionResponse { public string id; public bool accepted; }
+
         public void ReceivePhotonMessage(PlayerRef source, string kind, string payload)
         {
             if (kind == "reject")
@@ -114,6 +146,8 @@ namespace PickleVerse.Multiplayer
             }
             if (!HasStateAuthority)
                 return;
+            if (Data.party)
+                UpdateParty(Data);
             if (kind == "reserve")
                 ReserveFrom(JsonConvert.DeserializeObject<string>(payload), source);
             else if (kind == "command")
@@ -122,12 +156,10 @@ namespace PickleVerse.Multiplayer
                 if (command?.Length == 2)
                     CommandFrom(command[0], command[1], source);
             }
-            else if (kind == "team")
-            {
-                var command = JsonConvert.DeserializeObject<TeamCommand>(payload);
-                if (command != null)
-                    TeamFrom(command.id, command.team, source);
-            }
+            else if (kind == "position-swap")
+                RequestPositionSwapFrom(JsonConvert.DeserializeObject<PositionRequest>(payload), source);
+            else if (kind == "position-response")
+                RespondToPositionSwapFrom(JsonConvert.DeserializeObject<PositionResponse>(payload), source);
             else if (kind == "kick")
                 KickFrom(JsonConvert.DeserializeObject<string>(payload), source);
         }
@@ -188,7 +220,8 @@ namespace PickleVerse.Multiplayer
                 Save(data);
                 return;
             }
-            if (data.phase != "idle" && data.phase != "searching")
+            bool acceptsNewSeats = data.phase == "idle" || data.phase == "searching" && (!data.party || !data.custom);
+            if (!acceptsNewSeats)
             {
                 Reject(source, "Phòng đã bắt đầu xác nhận trận.");
                 return;
@@ -293,7 +326,7 @@ namespace PickleVerse.Multiplayer
             var data = Data;
             if (!data.seats.Any(s => s.peer == source.RawEncoded))
                 return;
-            if (kind == "cancel" && data.party)
+            if (kind == "cancel" && data.party && (!data.custom || data.phase == "searching"))
             {
                 data.phase = "idle";
                 data.matchSession = "";
@@ -303,11 +336,12 @@ namespace PickleVerse.Multiplayer
             }
             if (!Captain(source))
                 return;
-            if (kind == "search" && data.party)
+            if (kind == "search" && data.party && !data.custom)
             {
                 data.phase = "searching";
+                data.notice = "";
             }
-            else if (kind == "match" && data.party)
+            else if (kind == "match" && data.party && (!data.custom || data.phase == "searching"))
             {
                 data.matchSession = value;
             }
@@ -315,11 +349,7 @@ namespace PickleVerse.Multiplayer
             {
                 data.phase = "idle";
                 data.matchSession = "";
-            }
-            else if (kind == "close" && data.party)
-            {
-                data.phase = "closed";
-                data.notice = "Chủ phòng đã đóng nhóm.";
+                data.notice = "";
             }
             else if (kind == "load" && !data.party && data.phase == "ready")
                 data.phase = "loading";
@@ -328,27 +358,117 @@ namespace PickleVerse.Multiplayer
             else return;
             Save(data);
         }
-        void TeamFrom(string player, int team, PlayerRef source)
+        int DeadlineTick(int seconds) => (int?)TickTimer.CreateFromSeconds(Runner, seconds).TargetTick ?? Runner.Tick.Raw;
+        bool ReachedTick(int deadline) => unchecked(Runner.Tick.Raw - deadline) >= 0;
+
+        int CommittedSeat(PhotonRoomData data, string id) => data.seats.FindIndex(seat =>
+            seat.member.id == id && seat.peer != 0 && Runner.IsPlayerCommitted(PlayerRef.FromEncoded(seat.peer)));
+
+        void RequestPositionSwapFrom(PositionRequest request, PlayerRef source)
         {
             var data = Data;
-            if (!data.party || !data.custom || data.phase != "idle" || team < 0 || team > 1)
+            if (!data.party || !data.custom || data.phase != "idle" || request == null ||
+                !Guid.TryParseExact(request.id, "N", out _) || request.epoch != data.positionEpoch ||
+                ReachedTick(request.validUntilTick))
                 return;
-            var seat = data.seats.FirstOrDefault(s => s.member.id == player);
-            if (seat == null || (!Captain(source) && seat.peer != source.RawEncoded) || data.seats.Count(s => s != seat && s.member.team == team) >= (int)data.mode)
+            string sender = Runner.GetPlayerUserId(source);
+            int from = CommittedSeat(data, sender);
+            if (from < 0 || data.seats[from].peer != source.RawEncoded || sender == request.targetId ||
+                (data.positionSwap?.id == request.id && data.positionSwap.requesterId == sender) ||
+                (data.positionSwapResults?.TryGetValue(sender, out var previous) == true && previous.id == request.id))
                 return;
-            seat.member.team = team;
+            if (CommittedSeat(data, request.targetId) < 0)
+                RecordPositionResult(data, sender, request.id, RoomPositionSwapStatus.Unavailable);
+            else if (data.positionSwap != null)
+                RecordPositionResult(data, sender, request.id, RoomPositionSwapStatus.Busy);
+            else
+                data.positionSwap = new RoomPositionSwap
+                {
+                    id = request.id, requesterId = sender, targetId = request.targetId,
+                    expiresAtTick = DeadlineTick(PositionResponseSeconds)
+                };
             Save(data);
+        }
+
+        void RespondToPositionSwapFrom(PositionResponse response, PlayerRef source)
+        {
+            var data = Data;
+            var offer = data.positionSwap;
+            if (offer == null || data.phase != "idle" || response?.id != offer.id)
+                return;
+            int to = CommittedSeat(data, offer.targetId);
+            if (to < 0 || data.seats[to].peer != source.RawEncoded)
+                return;
+            int from = CommittedSeat(data, offer.requesterId);
+            if (from < 0)
+                ResolvePositionSwap(data, RoomPositionSwapStatus.Cancelled);
+            else if (!response.accepted)
+                ResolvePositionSwap(data, RoomPositionSwapStatus.Declined);
+            else
+            {
+                var requester = data.seats[from];
+                var target = data.seats[to];
+                // Each list index keeps its team. Swapping the entries also exchanges the order within each team.
+                (requester.member.team, target.member.team) = (target.member.team, requester.member.team);
+                (data.seats[from], data.seats[to]) = (target, requester);
+                ResolvePositionSwap(data, RoomPositionSwapStatus.Accepted);
+            }
+            Save(data);
+        }
+
+        static void RecordPositionResult(PhotonRoomData data, string requester, string id, RoomPositionSwapStatus status)
+        {
+            data.positionSwapResults ??= new Dictionary<string, RoomPositionSwapResult>();
+            data.positionSwapResults[requester] = new RoomPositionSwapResult { id = id, status = status };
+        }
+        static void ResolvePositionSwap(PhotonRoomData data, RoomPositionSwapStatus status)
+        {
+            var offer = data.positionSwap;
+            data.positionSwap = null;
+            RecordPositionResult(data, offer.requesterId, offer.id, status);
+        }
+        static void InvalidatePositions(PhotonRoomData data)
+        {
+            data.positionEpoch++;
+            if (data.positionSwap != null)
+                ResolvePositionSwap(data, RoomPositionSwapStatus.Cancelled);
+            if (data.positionSwapResults != null)
+                foreach (string playerId in data.positionSwapResults.Keys.ToArray())
+                    if (data.seats.All(seat => seat.member.id != playerId))
+                        data.positionSwapResults.Remove(playerId);
+        }
+
+        public List<RoomMember> BeginCustomMatch()
+        {
+            var data = Data;
+            if (!HasStateAuthority || !data.party || !data.custom)
+                throw new InvalidOperationException("Chỉ chủ phòng được bắt đầu trận.");
+            UpdateParty(data);
+            if (data.phase != "idle")
+                throw new InvalidOperationException("Phòng đang chuẩn bị trận.");
+            if (data.positionSwap != null)
+                throw new InvalidOperationException("Hãy chờ yêu cầu đổi vị trí kết thúc.");
+            var roster = data.Roster(Runner.SessionInfo.Region);
+            if (!roster.IsValid())
+                throw new InvalidOperationException("Mỗi đội cần ít nhất một người và không quá sức chứa của chế độ.");
+            data.positionEpoch++;
+            data.phase = "searching";
+            data.notice = "";
+            Save(data);
+            return roster.members;
         }
         void KickFrom(string player, PlayerRef source)
         {
             var data = Data;
-            if (!data.party || !Captain(source) || player == Runner.GetPlayerUserId(source))
+            if (!data.party || !Captain(source) || (data.custom && data.phase != "idle") || player == Runner.GetPlayerUserId(source))
                 return;
             var seat = data.seats.FirstOrDefault(s => s.member.id == player);
             if (seat == null)
                 return;
-            data.seats.Remove(seat);
             Reject(PlayerRef.FromEncoded(seat.peer), "Bạn đã được mời rời phòng.");
+            data.seats.Remove(seat);
+            if (data.custom)
+                InvalidatePositions(data);
             Save(data);
         }
     }

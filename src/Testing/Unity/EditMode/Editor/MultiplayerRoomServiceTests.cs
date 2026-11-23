@@ -28,6 +28,14 @@ namespace PickleVerse.Tests
         { Assert.IsFalse(RoomViewModel.CanStartCustom(new TestState(a,b))); }
         [Test] public void GuestCannotStartCustom()
         { var s=new TestState(1,2) { captain=false }; Assert.IsFalse(RoomViewModel.CanStartCustom(s)); Assert.AreEqual("Chờ chủ phòng",RoomViewModel.PlayLabel(s)); }
+        [Test]
+        public void CustomStartWaitsForPendingPositionSwap()
+        {
+            var state = new TestState(2, 2) { CustomStartBlocked = true };
+            Assert.That(RoomViewModel.CanStartCustom(state), Is.False);
+            state.CustomStartBlocked = false;
+            Assert.That(RoomViewModel.CanStartCustom(state), Is.True);
+        }
         [Test] public void AutomaticDoublesStillRequiresFourPlayers()
         { var s=new TestState(1,2); Assert.IsFalse(new MatchRoster { mode=PlayMode.Doubles,members=s.Members() }.IsValid()); }
         [TestCase(1,2)] [TestCase(2,1)] [TestCase(1,1)]
@@ -52,6 +60,7 @@ namespace PickleVerse.Tests
             public FlowState State=>FlowState.WaitingRoom;
             public PlayMode Mode=>PlayMode.Doubles;
             public bool Custom=>true;
+            public bool CustomStartBlocked { get; set; }
             public bool IsCaptain=>captain;
             public bool Busy=>false;
             public bool Searching=>false;

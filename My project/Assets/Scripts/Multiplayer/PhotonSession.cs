@@ -38,6 +38,17 @@ namespace PickleVerse.Multiplayer
         public int peer;
         public ReadyDecision decision;
     }
+    public sealed class RoomPositionSwap
+    {
+        public string id, requesterId, targetId;
+        public int expiresAtTick;
+    }
+    public enum RoomPositionSwapStatus { Accepted, Declined, Expired, Cancelled, Busy, Unavailable }
+    public sealed class RoomPositionSwapResult
+    {
+        public string id;
+        public RoomPositionSwapStatus status;
+    }
     [Serializable]
     public sealed class PhotonRoomData
     {
@@ -48,6 +59,12 @@ namespace PickleVerse.Multiplayer
         public int expectedPlayers;
         public MatchRoster assignment;
         public int authority, revision;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public int positionEpoch;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public RoomPositionSwap positionSwap;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, RoomPositionSwapResult> positionSwapResults;
         public List<PhotonSeat> seats = new List<PhotonSeat>();
         public MatchRoster Roster(string region) => new MatchRoster { matchId = matchId, mode = mode, custom = custom, night = night, venue = venue, region = region, members = seats.Select(s => s.member).ToList() };
     }
@@ -249,9 +266,25 @@ namespace PickleVerse.Multiplayer
         public async Task ReserveAsync(List<RoomMember> members)
         {
             Rejected = null;
-            Lobby.Reserve(JsonConvert.SerializeObject(members));
+            string reservation = JsonConvert.SerializeObject(members);
             string id = Runner.GetPlayerUserId(Runner.LocalPlayer);
-            await WaitAsync(() => Rejected != null || Data.seats.Any(s => s.member.id == id && s.peer == Runner.LocalPlayer.RawEncoded), "Phòng chưa xác nhận chỗ của bạn.");
+            var sentTo = PlayerRef.None;
+            await WaitAsync(() =>
+            {
+                if (Rejected != null)
+                    return true;
+                if (!Runner || !Runner.IsRunning || !Lobby || !Lobby.Object || !Lobby.Object.IsValid)
+                    throw new InvalidOperationException("Phòng Photon đã ngắt kết nối.");
+                if (Data.seats.Any(s => s.member.id == id && s.peer == Runner.LocalPlayer.RawEncoded))
+                    return true;
+                var authority = Lobby.Object.StateAuthority;
+                if (authority != PlayerRef.None && authority != sentTo)
+                {
+                    sentTo = authority;
+                    Lobby.Reserve(reservation);
+                }
+                return false;
+            }, "Phòng chưa xác nhận chỗ của bạn.");
             if (Rejected != null)
                 throw new InvalidOperationException(Rejected);
         }

@@ -24,6 +24,7 @@ namespace PickleVerse.Replays
         readonly long? socialPost;
         public OnlineReplayRepository(long? socialPost = null) => this.socialPost = socialPost;
         readonly Dictionary<string, ReplayMetadata> headers = new Dictionary<string, ReplayMetadata>();
+        (string Match, bool Ready)? latestFinalization;
         int session = -1;
         AccountService Account => AccountRuntime.Ensure().Account;
         void Guard(string player)
@@ -33,6 +34,7 @@ namespace PickleVerse.Replays
             if (session != Account.SessionVersion)
             {
                 headers.Clear();
+                latestFinalization = null;
                 session = Account.SessionVersion;
             }
         }
@@ -42,6 +44,16 @@ namespace PickleVerse.Replays
         {
             Guard(player);
             return headers.TryGetValue(match, out var value) ? value : null;
+        }
+        public void RecordFinalization(string player, string match, bool ready)
+        {
+            Guard(player);
+            latestFinalization = (match, ready);
+        }
+        public bool? FinalizedAvailability(string player, string match)
+        {
+            Guard(player);
+            return latestFinalization?.Match == match ? latestFinalization.Value.Ready : (bool?)null;
         }
         public Task RefreshAsync() => RefreshAsync(default);
         public async Task RefreshAsync(CancellationToken cancellation)

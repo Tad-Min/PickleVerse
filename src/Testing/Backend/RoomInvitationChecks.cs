@@ -131,6 +131,33 @@ static class RoomInvitationChecks
         invitation = await Send();
         clock.Now = clock.Now.AddSeconds(RoomInvitationService.PresenceSeconds + 1);
         check((await Call(s => s.List(a, "", 0))).Players.Single().Status == "offline", "presence leases expire after a client stops heartbeating");
+
+        var nextHost = new LobbyPresenceRequest
+        {
+            SessionId = guest.SessionId, State = "lobby", RoomCode = "MIGRATE8", Region = "eu", Mode = 2,
+            Members = [a.ToString("N"), b.ToString("N")]
+        };
+        var outgoing = new LobbyPresenceRequest
+        {
+            SessionId = host.SessionId, State = "lobby", RoomCode = nextHost.RoomCode, Region = nextHost.Region, Mode = nextHost.Mode,
+            IsHost = true, Members = nextHost.Members
+        };
+        await Call(s => s.Publish(a, outgoing));
+        await Call(s => s.Publish(b, nextHost));
+        await Call(s => s.Publish(a, new() { SessionId = outgoing.SessionId, State = "lobby" }));
+        check((await Call(s => s.JoinInfo(nextHost.RoomCode))).Region == "eu",
+            "same room code keeps its region during host handoff");
+        check(!(await Call(s => s.List(b, "", 0))).Players.Single().CanInvite,
+            "region lookup does not activate invitations before the new host publishes");
+        nextHost.IsHost = true;
+        nextHost.Members = [b.ToString("N")];
+        await Call(s => s.Publish(b, nextHost));
+        check((await Call(s => s.List(b, "", 0))).Players.Single().CanInvite,
+            "next host registers the original code and can invite a friend");
+        await Call(s => s.Publish(b, new() { SessionId = nextHost.SessionId, State = "lobby" }));
+        check((await Call(s => s.JoinInfo(nextHost.RoomCode))).Region == "",
+            "the room code stops resolving after the last player leaves");
+
         async Task Social(Guid self, Guid target, string action)
         {
             await using var context = new PickleVerseContext(options);

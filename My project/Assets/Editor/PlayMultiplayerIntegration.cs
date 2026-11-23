@@ -285,13 +285,6 @@ namespace PickleVerse.EditorTools
             p.singleSlot = Slot(p.singlesPanel.transform.Find("Player1Panel"), nameTemplate, null);
             p.duoSlots = new[] { Slot(p.doublesPanel.transform.Find("Player1Panel"), nameTemplate, null), Slot(p.doublesPanel.transform.Find("Player2Panel"), nameTemplate, null) };
             var kickTemplate = p.customPanel.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(b => b.name == "BtnKick");
-            var swap = p.customPanel.GetComponentsInChildren<UnityEngine.UI.Button>(true).FirstOrDefault(b => b.name == "BtnSwap");
-            if (!swap) throw new InvalidOperationException("Custom needs BtnSwap.");
-            swap.transform.SetParent(p.customPanel.transform, true); p.swap = swap;
-            var swapRect=(RectTransform)swap.transform;
-            swapRect.anchorMin=swapRect.anchorMax=new Vector2(.5f,0); swapRect.pivot=new Vector2(.5f,.5f);
-            swapRect.anchoredPosition=new Vector2(0,-34); swapRect.sizeDelta=new Vector2(160,40);
-            swap.GetComponentInChildren<TMP_Text>().fontSize=24;
             var customNameTemplate=Find<TMP_Text>(teams[0],"Player1Panel/TxtName");
             p.customSlots = teams.SelectMany(team => team.Cast<Transform>().Where(t => t.name.StartsWith("Player")).OrderBy(t => t.name).Select(t => Slot(t, customNameTemplate, kickTemplate))).ToArray();
             LocalFeaturesSetup.ConfigureRoom(scene);
@@ -305,7 +298,7 @@ namespace PickleVerse.EditorTools
                 rect.localScale=templateRect.localScale; rect.localRotation=templateRect.localRotation;
                 slot.name.fontSize=customNameTemplate.fontSize; slot.name.alignment=customNameTemplate.alignment;
             }
-            foreach (var button in new[] { p.join, p.singles, p.doubles, p.custom, p.copy, p.play, p.swap }.Concat(p.customSlots.Select(s => s.kick))) ClearCalls(button);
+            foreach (var button in new[] { p.join, p.singles, p.doubles, p.custom, p.copy, p.play }.Concat(p.customSlots.Select(s => s.kick))) ClearCalls(button);
             p.singlesPanel.SetActive(true); p.doublesPanel.SetActive(false); p.customPanel.SetActive(false);
             p.roomCode.gameObject.SetActive(false); p.copy.gameObject.SetActive(false); p.matchTime.text = "00:00";
             EditorUtility.SetDirty(p); EditorSceneManager.MarkSceneDirty(scene);

@@ -18,9 +18,9 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<PasswordRecoveryMailQueue>();
         services.AddHostedService(sp => sp.GetRequiredService<PasswordRecoveryMailQueue>());
-        services.AddScoped<StorageService>();
-        services.AddScoped<IStorageService>(sp => sp.GetRequiredService<StorageService>());
-        services.AddScoped<ISocialObjectStorage>(sp => sp.GetRequiredService<StorageService>());
+        services.AddSingleton<StorageService>();
+        services.AddSingleton<IStorageService>(sp => sp.GetRequiredService<StorageService>());
+        services.AddSingleton<ISocialObjectStorage>(sp => sp.GetRequiredService<StorageService>());
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<ITrainingService, TrainingService>();

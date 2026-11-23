@@ -59,16 +59,22 @@ public sealed class MatchReplayService : IMatchReplayService
     }
     Task Index(Guid match) => _unitOfWork.Game.IndexReplay(match, ManifestKey(match));
 
-    // Recording can finish before the game result. Publishing is retried at match
-    // completion and on subsequent recording writes. Storage outages cannot undo rewards.
-    public async Task PublishAvailable(Guid match)
+    public async Task PublishAvailable(Guid match, int? expectedChunks = null)
     {
+        if (expectedChunks == 0) return;
         ReplayMetadata? header;
         try { header = await LoadManifest(match); }
         catch (Exception error) when (error is IOException or HttpRequestException or AmazonS3Exception)
-        { logger.LogWarning(error, "Replay publication deferred for {MatchId}", match); return; }
+        {
+            logger.LogWarning(error, "Replay publication deferred for {MatchId}", match);
+            if (expectedChunks.HasValue) throw ReplayNotReady();
+            return;
+        }
+        if (expectedChunks.HasValue && (header?.complete != true || header.chunks.Count != expectedChunks.Value))
+            throw ReplayNotReady();
         if (header?.chunks.Count > 0) await Index(match);
     }
+    static AppException ReplayNotReady() => new("Replay chưa được lưu đủ để công bố kết quả.", HttpStatusCode.PreconditionFailed);
     public async Task<List<ReplayMetadata>> List(Guid player, bool admin = false)
     {
         var matches=await _unitOfWork.Game.ReplayMatches(player, admin);
@@ -114,7 +120,19 @@ public sealed class MatchReplayService : IMatchReplayService
     }
     public async Task<ReplayChunkInfo> Upload(Guid player, Guid match, int index, ReplayChunkUpload input, bool trustedServer = false)
     {
-        if (index < 0 || index >= 10000 || input.Data == null || input.Data.Length > 2800000) throw Bad("Chunk replay vượt giới hạn.");
+        var header = await UploadChunks(player, match, index, [input], complete: false, trustedServer);
+        return header.chunks[index];
+    }
+    public async Task<ReplayBatchReceipt> UploadDedicatedBatch(Guid player, Guid match, ReplayChunkBatchUpload input)
+    {
+        if (input.Chunks == null || input.Chunks.Count > ReplayChunkBatchUpload.MaxChunks || input.Chunks.Count == 0 && !input.Complete)
+            throw Bad("Lô chunk replay không hợp lệ.");
+        var header = await UploadChunks(player, match, input.StartIndex, input.Chunks, input.Complete, trustedServer: true);
+        return new ReplayBatchReceipt(header.chunks.Count, header.complete);
+    }
+    static async Task<(ReplayChunk Chunk, byte[] Data)> DecodeChunk(ReplayChunkUpload input)
+    {
+        if (input?.Data == null || input.Data.Length > 2800000) throw Bad("Chunk replay vượt giới hạn.");
         byte[] bytes;
         try { bytes = Convert.FromBase64String(input.Data); } catch (FormatException) { throw Bad("Chunk replay không hợp lệ."); }
         ReplayChunk chunk;
@@ -131,25 +149,61 @@ public sealed class MatchReplayService : IMatchReplayService
         catch (System.Text.Json.JsonException) { throw Bad("Nội dung chunk replay không hợp lệ."); }
         if (chunk.frames == null || chunk.frames.Count is < 1 or > 120 || chunk.events == null || chunk.events.Count > 512
             || chunk.frames.Any(f => f == null || !double.IsFinite(f.time) || f.time < 0 || f.time > 21600 || f.ball?.Length != 3 || f.ball.Any(v => !float.IsFinite(v)))) throw Bad("Snapshot replay không hợp lệ.");
+        for (int i = 1; i < chunk.frames.Count; i++)
+            if (chunk.frames[i].time < chunk.frames[i - 1].time) throw Bad("Thời gian replay không tăng dần.");
+        return (chunk, bytes);
+    }
+    async Task<ReplayMetadata> UploadChunks(Guid player, Guid match, int startIndex,
+        IReadOnlyList<ReplayChunkUpload> uploads, bool complete, bool trustedServer)
+    {
+        if (startIndex < 0 || startIndex > 10000 - uploads.Count) throw Bad("Chunk replay vượt giới hạn.");
+        var decoded = new List<(ReplayChunk Chunk, byte[] Data)>(uploads.Count);
+        foreach (var upload in uploads)
+            decoded.Add(await DecodeChunk(upload));
+
         await using var tx = await _unitOfWork.Game.BeginTransactionAsync();
-        await Lock(match); await GuardWriter(player, match, trustedServer);
+        await Lock(match);
+        await GuardWriter(player, match, trustedServer);
         var header = await LoadManifest(match) ?? throw Missing();
-        if (chunk.frames.Any(f => f.actors == null || f.actors.Length != header.actors.Count || f.actors.Where((a, i) => a == null || a.root?.Length != 10 || a.bones?.Length != header.actors[i].bones.Length * 10 || a.root.Any(v => !float.IsFinite(v)) || a.bones.Any(v => !float.IsFinite(v))).Any())) throw Bad("Pose replay không hợp lệ.");
-        for (int i = 1; i < chunk.frames.Count; i++) if (chunk.frames[i].time < chunk.frames[i - 1].time) throw Bad("Thời gian replay không tăng dần.");
-        string hash = Convert.ToHexString(SHA256.HashData(bytes));
-        if (index < header.chunks.Count)
+        if (startIndex > header.chunks.Count) throw Bad("Thứ tự chunk replay không hợp lệ.");
+        var additions = new List<(ReplayChunkInfo Info, byte[] Data)>(uploads.Count);
+        for (int i = 0; i < decoded.Count; i++)
         {
-            var existing = header.chunks[index];
-            if (existing.contentHash != hash) throw Bad("Chunk này đã được lưu với nội dung khác.");
-            await Index(match); await tx.CommitAsync(); return existing;
+            int index = startIndex + i;
+            var (chunk, bytes) = decoded[i];
+            if (chunk.frames.Any(f => f.actors == null || f.actors.Length != header.actors.Count ||
+                f.actors.Where((actor, j) => actor == null || actor.root?.Length != 10 ||
+                    actor.bones?.Length != header.actors[j].bones.Length * 10 ||
+                    actor.root.Any(value => !float.IsFinite(value)) || actor.bones.Any(value => !float.IsFinite(value))).Any()))
+                throw Bad("Pose replay không hợp lệ.");
+            string hash = Convert.ToHexString(SHA256.HashData(bytes));
+            if (index < header.chunks.Count)
+            {
+                if (header.chunks[index].contentHash != hash) throw Bad("Chunk này đã được lưu với nội dung khác.");
+                continue;
+            }
+            double start = chunk.frames[0].time;
+            if (header.complete || header.chunks.LastOrDefault()?.end > start) throw Bad("Replay đã đóng hoặc thứ tự chunk không hợp lệ.");
+            var info = new ReplayChunkInfo { file = ChunkFile(index, hash), contentHash = hash, start = start, end = chunk.frames[^1].time };
+            header.chunks.Add(info);
+            header.duration = info.end;
+            additions.Add((info, bytes));
         }
-        if (header.complete || index != header.chunks.Count || header.chunks.LastOrDefault()?.end > chunk.frames[0].time) throw Bad("Replay đã đóng hoặc thứ tự chunk không hợp lệ.");
-        var info = new ReplayChunkInfo { file = ChunkFile(index, hash), contentHash = hash, start = chunk.frames[0].time, end = chunk.frames[^1].time };
-        await using var stream = new MemoryStream(bytes);
-        await storage.PutFileAsync(stream, ChunkKey(match, info), "application/gzip");
-        header.chunks.Add(info); header.duration = info.end;
-        await StoreManifest(match, header); await Index(match); await tx.CommitAsync();
-        return info;
+        if (complete && (header.chunks.Count == 0 || header.chunks.Count != startIndex + decoded.Count))
+            throw Bad("Số đoạn replay không khớp khi hoàn tất.");
+        await Task.WhenAll(additions.Select(async addition =>
+        {
+            await using var stream = new MemoryStream(addition.Data);
+            await storage.PutFileAsync(stream, ChunkKey(match, addition.Info), "application/gzip");
+        }));
+        if (additions.Count > 0 || complete && !header.complete)
+        {
+            header.complete |= complete;
+            await StoreManifest(match, header);
+        }
+        await Index(match);
+        await tx.CommitAsync();
+        return header;
     }
     public async Task<ReplayChunkUpload> Chunk(Guid player, Guid match, int index, bool admin = false)
     {

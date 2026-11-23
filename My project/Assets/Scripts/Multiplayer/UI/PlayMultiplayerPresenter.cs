@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PickleVerse.Multiplayer.Services;
@@ -16,18 +17,20 @@ namespace PickleVerse.Multiplayer.UI
         public TMP_Text name;
         public UnityEngine.UI.Button kick;
         [NonSerialized]
+        public UnityEngine.UI.Button positionSwap;
+        [NonSerialized]
         public string playerId;
     }
 
     /// <summary>Serialized bindings to the user's Canvas. All room operations use services.</summary>
-    public sealed class PlayMultiplayerPresenter : MonoBehaviour
+    public sealed partial class PlayMultiplayerPresenter : MonoBehaviour
     {
         public TMP_InputField joinCode;
         public UnityEngine.UI.Button back;
         public TMP_Text navigationError;
         bool returningToModes;
         public TMP_Text roomType, matchTime, roomCode;
-        public UnityEngine.UI.Button join, singles, doubles, custom, copy, play, swap;
+        public UnityEngine.UI.Button join, singles, doubles, custom, copy, play;
         public GameObject singlesPanel, doublesPanel, customPanel;
         public RoomPlayerSlot singleSlot;
         public RoomPlayerSlot[] duoSlots, customSlots;
@@ -49,7 +52,7 @@ namespace PickleVerse.Multiplayer.UI
         IMatchmakingService matchmaking;
         IMultiplayerState state;
         IPlayerIdentityService identity;
-        readonly System.Collections.Generic.List<(UnityEngine.UI.Button button, UnityAction action)> listeners = new System.Collections.Generic.List<(UnityEngine.UI.Button, UnityAction)>();
+        readonly List<(UnityEngine.UI.Button button, UnityAction action)> listeners = new List<(UnityEngine.UI.Button, UnityAction)>();
 
         async void Start()
         {
@@ -71,17 +74,19 @@ namespace PickleVerse.Multiplayer.UI
                 GUIUtility.systemCopyBuffer = state.RoomCode;
                 app.SetNotice("Đã sao chép mã phòng.");
             });
-            Bind(swap, () => Run(rooms.SwapTeamAsync));
             Bind(play, () => Run(PlayAsync));
             Bind(invite, ShowInvite);
             Bind(inviteClose, CloseInvite);
             Bind(retry, () => Run(InitializeRoom));
             foreach (var slot in customSlots)
+            {
+                AddPositionButton(slot);
                 Bind(slot.kick, () =>
                 {
                     if (!string.IsNullOrEmpty(slot.playerId))
                         Run(() => rooms.KickAsync(slot.playerId));
                 });
+            }
             foreach (var slot in duoSlots.Concat(customSlots).Where(slot => slot != null))
             {
                 var button = slot.name ? slot.name.transform.parent.Find("BtnInvite")?.GetComponent<UnityEngine.UI.Button>() : null;
@@ -211,6 +216,7 @@ namespace PickleVerse.Multiplayer.UI
         }
         void Update()
         {
+            UpdatePositionDialog();
             if (state != null && matchTime.gameObject.activeSelf && Time.unscaledTime >= nextClockUpdate)
             {
                 nextClockUpdate = Time.unscaledTime + .2f;
@@ -225,8 +231,11 @@ namespace PickleVerse.Multiplayer.UI
         {
             if (state == null || !this)
                 return;
-            bool modal = inviteDialog && inviteDialog.activeSelf;
-            bool idle = state.State == FlowState.WaitingRoom && !state.Busy && !initializing && !modal;
+            var members = state.Members();
+            RefreshPositionDialog(members);
+            bool modal = inviteDialog && inviteDialog.activeSelf || positionDialog && positionDialog.activeSelf;
+            bool roomStarting = state.Custom && MultiplayerApp.Instance?.Room?.Data.phase != "idle";
+            bool idle = state.State == FlowState.WaitingRoom && !state.Busy && !initializing && !modal && !roomStarting;
             bool isDoubles = !state.Custom && state.Mode == PlayMode.Doubles;
             singlesPanel.SetActive(!state.Custom && state.Mode == PlayMode.Singles);
             doublesPanel.SetActive(isDoubles);
@@ -249,18 +258,12 @@ namespace PickleVerse.Multiplayer.UI
             joinCode.interactable = idle && !returningToModes;
             if (back)
                 back.interactable = !returningToModes && !modal;
-            if (swap)
-            {
-                swap.gameObject.SetActive(state.Custom);
-                swap.interactable = idle;
-            }
             play.GetComponentInChildren<TMP_Text>(true).text = RoomViewModel.PlayLabel(state);
             play.interactable = !returningToModes && !modal && (state.Searching || (idle && (state.Custom ? RoomViewModel.CanStartCustom(state) : state.IsCaptain)));
             matchTime.gameObject.SetActive(state.Searching && (MultiplayerApp.Instance == null || MultiplayerApp.Instance.SearchClockVisible));
             matchTime.text = state.Elapsed;
-            var members = state.Members();
             if (roomHint)
-                roomHint.text = initializing ? "Đang kết nối dịch vụ phòng…" : state.Notice;
+                roomHint.text = initializing ? "Đang kết nối dịch vụ phòng…" : PositionSwapNotice ?? state.Notice;
             if (memberCount)
                 memberCount.text = state.Custom ? members.Count + " / " + (2 * (int)state.Mode) + " NGƯỜI CHƠI" : "GHÉP TRẬN THEO ELO  •  " + (isDoubles ? "TỔ ĐỘI 2 NGƯỜI" : "ĐẤU ĐƠN");
             CanInviteFriends = idle && showCode && !string.IsNullOrEmpty(state.RoomCode);
@@ -273,15 +276,15 @@ namespace PickleVerse.Multiplayer.UI
                 retry.gameObject.SetActive(!modal && !initializing && !state.Busy && (state.State == FlowState.Menu || launchAction != RoomLaunchAction.None));
             if (state.Custom)
                 ArrangeCustom((int)state.Mode);
-            Fill(singleSlot, members.FirstOrDefault(m => m.id == state.PlayerId));
+            Fill(singleSlot, members.FirstOrDefault(m => m.id == state.PlayerId), idle);
             var duo = members.OrderBy(m => m.id == state.PlayerId ? 0 : 1).ToArray();
             for (int i = 0; i < duoSlots.Length; i++)
-                Fill(duoSlots[i], i < duo.Length ? duo[i] : null);
+                Fill(duoSlots[i], i < duo.Length ? duo[i] : null, idle);
             for (int team = 0; team < 2; team++)
             {
                 var teamMembers = members.Where(m => m.team == team).ToArray();
                 for (int seat = 0; seat < 2; seat++)
-                    Fill(customSlots[team * 2 + seat], seat < teamMembers.Length ? teamMembers[seat] : null);
+                    Fill(customSlots[team * 2 + seat], seat < teamMembers.Length ? teamMembers[seat] : null, idle);
             }
         }
         void ArrangeCustom(int seats)
@@ -299,7 +302,7 @@ namespace PickleVerse.Multiplayer.UI
                     root.offsetMin = root.offsetMax = Vector2.zero;
                 }
         }
-        void Fill(RoomPlayerSlot slot, RoomMember member)
+        void Fill(RoomPlayerSlot slot, RoomMember member, bool idle)
         {
             if (slot == null)
                 return;
@@ -325,12 +328,18 @@ namespace PickleVerse.Multiplayer.UI
                 invite.gameObject.SetActive(member == null);
                 var inviteButton = invite.GetComponent<UnityEngine.UI.Button>();
                 if (inviteButton)
-                    inviteButton.interactable = !state.Busy && !initializing && !returningToModes && state.State == FlowState.WaitingRoom && !string.IsNullOrEmpty(state.RoomCode) && !(inviteDialog && inviteDialog.activeSelf);
+                    inviteButton.interactable = idle && !string.IsNullOrEmpty(state.RoomCode);
             }
             if (slot.kick)
             {
                 slot.kick.gameObject.SetActive(state.Custom && state.IsCaptain && member != null && member.id != state.PlayerId);
-                slot.kick.interactable = !state.Busy && state.State == FlowState.WaitingRoom && !(inviteDialog && inviteDialog.activeSelf);
+                slot.kick.interactable = idle;
+            }
+            if (slot.positionSwap)
+            {
+                slot.positionSwap.gameObject.SetActive(state.Custom && member != null && member.id != state.PlayerId);
+                slot.positionSwap.interactable = idle && positionRoom != null &&
+                    positionRoom.Data.positionSwap == null && positionRequestId == null;
             }
         }
         static void SelectMode(UnityEngine.UI.Button button, bool selected)
@@ -352,5 +361,6 @@ namespace PickleVerse.Multiplayer.UI
                 if (listener.button)
                     listener.button.onClick.RemoveListener(listener.action);
         }
+        void OnDisable() => ResetPositionDialog();
     }
 }

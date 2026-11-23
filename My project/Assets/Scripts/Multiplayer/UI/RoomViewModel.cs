@@ -9,7 +9,7 @@ namespace PickleVerse.Multiplayer.UI
         public static bool CanStartCustom(IMultiplayerState state)
         {
             var members = state.Members();
-            return state.Custom && state.IsCaptain && !state.Busy && state.State == FlowState.WaitingRoom &&
+            return state.Custom && !state.CustomStartBlocked && state.IsCaptain && !state.Busy && state.State == FlowState.WaitingRoom &&
                 members.All(m => m.team >= 0 && m.team <= 1) &&
                 members.Count(m => m.team == 0) >= 1 && members.Count(m => m.team == 1) >= 1 &&
                 members.Count(m => m.team == 0) <= (int)state.Mode && members.Count(m => m.team == 1) <= (int)state.Mode;

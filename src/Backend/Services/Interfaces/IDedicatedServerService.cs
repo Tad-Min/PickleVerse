@@ -19,4 +19,5 @@ public interface IDedicatedServerService
     Task<TelemetryReceipt> Telemetry(string lease, TelemetryBatch batch, string worker);
     Task<ReplayMetadata> SaveReplay(string lease, ReplayMetadata metadata, string worker);
     Task<ReplayChunkInfo> UploadReplay(string lease, int index, ReplayChunkUpload chunk, string worker);
+    Task<ReplayBatchReceipt> UploadReplayBatch(string lease, ReplayChunkBatchUpload batch, string worker);
 }

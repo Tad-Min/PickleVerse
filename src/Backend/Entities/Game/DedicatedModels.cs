@@ -74,6 +74,8 @@ public sealed class DedicatedCompletion
 {
     public string LeaseId { get; set; } = "";
     public List<DedicatedPlayerResult> Results { get; set; } = [];
+    // Null is a legacy worker. Zero means the recorder could not publish a complete replay.
+    public int? ReplayChunkCount { get; set; }
 }
 public sealed class DedicatedPlayerResult
 {

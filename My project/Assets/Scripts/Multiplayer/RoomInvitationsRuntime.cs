@@ -27,6 +27,7 @@ namespace PickleVerse.Multiplayer
         readonly SemaphoreSlim publication = new SemaphoreSlim(1, 1);
         RoomInvitation[] inbox = Array.Empty<RoomInvitation>();
         bool polling, responding, joining, joinFailed;
+        int presenceRevision;
         float nextPoll;
         RectTransform root;
         TMP_Text sender, details, feedback, timer;
@@ -74,6 +75,11 @@ namespace PickleVerse.Multiplayer
         }
         void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            RoomPresenceChanged();
+        }
+        internal void RoomPresenceChanged()
+        {
+            presenceRevision++;
             nextPoll = 0;
         }
         void OnDestroy()
@@ -87,6 +93,7 @@ namespace PickleVerse.Multiplayer
                 Instance = null;
         }
         public static bool IsLobbyScene(string scene) => scene == "Menu" || scene == "ModeSelection" || scene == "PlayMultiplayer";
+        internal bool Responding => responding;
         public bool Available
         {
             get
@@ -125,6 +132,7 @@ namespace PickleVerse.Multiplayer
                 if (!account.IsSignedIn)
                     return;
                 int version = account.SessionVersion;
+                int revision = presenceRevision;
                 var reply = await Client.PublishAsync(Presence(), lifetime.Token);
                 if (!this || version != account.SessionVersion)
                     return;
@@ -133,7 +141,7 @@ namespace PickleVerse.Multiplayer
                 inbox = reply.Invitations ?? Array.Empty<RoomInvitation>();
                 if (Current == null || !responding && !joinFailed)
                     Current = inbox.FirstOrDefault();
-                nextPoll = Time.unscaledTime + Mathf.Max(1, reply.PollSeconds);
+                nextPoll = revision == presenceRevision ? Time.unscaledTime + Mathf.Max(1, reply.PollSeconds) : 0;
             }
             finally
             {
@@ -171,7 +179,7 @@ namespace PickleVerse.Multiplayer
                 Current = null;
                 joinFailed = false;
             }
-            bool visible = Current != null && (Available || responding);
+            bool visible = Current != null && (responding || Available && !FrontEndModalInput.IsOpen);
             if (!root)
             {
                 if (!visible)
@@ -222,7 +230,7 @@ namespace PickleVerse.Multiplayer
         }
         public async Task RespondAsync(bool accepted)
         {
-            if (responding || Current == null)
+            if (responding || Current == null || FrontEndModalInput.IsOpen)
                 return;
             var invitation = Current;
             int version = account.SessionVersion;

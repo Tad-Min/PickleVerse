@@ -91,8 +91,12 @@ static class DedicatedChecks
             }
             return results;
         }
-        async Task Complete(DedicatedAllocation allocation,List<DedicatedPlayerResult> results) =>
-            await Call(async(_,s)=>{await s.Complete(new(){LeaseId=allocation.LeaseId,Results=results},allocation.WorkerId);return true;});
+        async Task Complete(DedicatedAllocation allocation, List<DedicatedPlayerResult> results, int? replayChunks = null) =>
+            await Call(async (_, s) =>
+            {
+                await s.Complete(new() { LeaseId = allocation.LeaseId, Results = results, ReplayChunkCount = replayChunks }, allocation.WorkerId);
+                return true;
+            });
 
         check(await Call((_,s)=>Task.FromResult(s.Authenticate(key)&&!s.Authenticate("wrong"))),"dedicated service credential is required");
         var first=await Match(false);Guid owner=Guid.Parse(first.HostPlayerId);
@@ -182,16 +186,53 @@ static class DedicatedChecks
             return new() { Data = Convert.ToBase64String(bytes.ToArray()) };
         }
         await Call((_, s) => s.SaveReplay(job.LeaseId, recording, worker));
+        const int totalChunks = 114, uploadedWhenMatchEnded = 63;
         var firstChunk = ReplayPayload(1);
         var uploaded = await Call((_, s) => s.UploadReplay(job.LeaseId, 0, firstChunk, worker));
         var retriedChunk = await Call((_, s) => s.UploadReplay(job.LeaseId, 0, firstChunk, worker));
         check(uploaded.file == retriedChunk.file, "dedicated live chunk upload retries reuse the committed gzip bytes");
+        Task<Entities.Game.ReplayBatchReceipt> Batch(int start, int count, bool seal = false) =>
+            Call((_, s) => s.UploadReplayBatch(job.LeaseId, new()
+            {
+                StartIndex = start,
+                Chunks = Enumerable.Range(start, count).Select(index => ReplayPayload(index + 1)).ToList(),
+                Complete = seal
+            }, worker));
+
         await Reject(() => ReadReplay(owner), HttpStatusCode.NotFound, "dedicated recording stays private during gameplay");
-        await Call((_, s) => s.UploadReplay(job.LeaseId, 1, ReplayPayload(3), worker));
-        recording.complete = true;
-        await Call((_, s) => s.SaveReplay(job.LeaseId, recording, worker));
+        await Reject(() => Batch(2, 1), HttpStatusCode.BadRequest, "dedicated batch cannot skip a replay segment");
+        await Reject(() => Batch(1, 5), HttpStatusCode.BadRequest, "dedicated batch has a bounded number of segments");
+        async Task UploadThrough(int start, int limit)
+        {
+            for (int index = start; index < limit; index += Entities.Game.ReplayChunkBatchUpload.MaxChunks)
+                await Batch(index, Math.Min(Entities.Game.ReplayChunkBatchUpload.MaxChunks, limit - index));
+        }
+        int manifestWrites = TestReplayStorage.Shared.ManifestWrites;
+        await UploadThrough(1, uploadedWhenMatchEnded);
+        check(TestReplayStorage.Shared.ManifestWrites - manifestWrites == 16,
+            "62 queued segments require only 16 manifest writes");
+        await Reject(() => Complete(job, results, totalChunks), HttpStatusCode.PreconditionFailed,
+            "the result cannot publish while only 63 of 114 segments are available");
+        var beforeReplay = await Call((g, _) => g.Read(owner));
+        check(beforeReplay.player.pendingMatch?.id == job.MatchId && beforeReplay.player.history.All(r => r.id != job.MatchId)
+              && beforeReplay.player.wins == 0, "failed replay precondition leaves history, XP and Elo untouched");
+
+        await UploadThrough(uploadedWhenMatchEnded, 111);
+        TestReplayStorage.Shared.FailNextManifestWrite = true;
+        bool sealWriteFailed = false;
+        try { await Batch(111, 3, seal: true); }
+        catch (IOException) { sealWriteFailed = true; }
+        check(sealWriteFailed, "final batch can fail after writing its data and before replacing the manifest");
+        await Reject(() => Complete(job, results, totalChunks), HttpStatusCode.PreconditionFailed,
+            "the result stays pending when the final manifest write fails");
+        var seal = await Batch(111, 3, seal: true);
+        var repeatedSeal = await Batch(111, 3, seal: true);
+        check(seal == repeatedSeal && seal.Complete && seal.ChunkCount == totalChunks,
+            "retrying the final batch publishes all 114 segments exactly once");
+        await Reject(() => Complete(job, results, totalChunks - 1), HttpStatusCode.PreconditionFailed,
+            "a sealed replay must match the worker's declared segment count");
         await Reject(() => ReadReplay(owner), HttpStatusCode.NotFound, "a sealed dedicated replay waits for official result publication");
-        await Task.WhenAll(Complete(job,results),Complete(job,results));
+        await Task.WhenAll(Complete(job, results, totalChunks), Complete(job, results, totalChunks));
         var winner=await Call((g,_)=>g.Read(owner));
         check(winner.player.pendingMatch==null&&winner.player.coins==150&&winner.player.wins==1,"server completion grants the singles result exactly once");
         check(winner.player.level == 2 && winner.player.levelXp == 0 && winner.player.totalXp == 10 && winner.player.NextLevelXp == 20,
@@ -202,7 +243,7 @@ static class DedicatedChecks
         foreach (var member in first.Roster.members)
         {
             var readyReplay = await ReadReplay(Guid.Parse(member.id));
-            check(readyReplay.complete && readyReplay.chunks.Count == 2 && readyReplay.duration == 3,
+            check(readyReplay.complete && readyReplay.chunks.Count == totalChunks && readyReplay.duration == totalChunks,
                 "both participants can read the full dedicated replay with the first completed history entry");
         }
         await using(var db=new PickleVerseContext(options))
@@ -225,7 +266,10 @@ static class DedicatedChecks
             result.outcome == MatchOutcome.Interrupted && !string.IsNullOrWhiteSpace(result.reason)),
             "client heartbeat exposes the interrupted result and clears the pending match after lease expiry");
         var doubles=await Match(true,4);await Enter(doubles);var fourth=await Take(doubles);
-        await Complete(fourth,await Results(doubles));
+        var doublesResult = await Results(doubles);
+        TestReplayStorage.Shared.FailReads = true;
+        try { await Complete(fourth, doublesResult, replayChunks: 0); }
+        finally { TestReplayStorage.Shared.FailReads = false; }
         await using(var db=new PickleVerseContext(options))
         {
             var id=Guid.Parse(fourth.MatchId);

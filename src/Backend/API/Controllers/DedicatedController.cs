@@ -40,4 +40,6 @@ public sealed class DedicatedWorkerController(IDedicatedServerService server) : 
     [HttpPost("{lease}/telemetry")] public Task<TelemetryReceipt> Telemetry(string lease, TelemetryBatch batch) => server.Telemetry(lease, batch, Authenticate());
     [HttpPost("{lease}/replay")] public Task<ReplayMetadata> Replay(string lease, ReplayMetadata metadata) => server.SaveReplay(lease, metadata, Authenticate());
     [HttpPost("{lease}/replay/chunks/{index:int}")] public Task<ReplayChunkInfo> Chunk(string lease, int index, ReplayChunkUpload chunk) => server.UploadReplay(lease, index, chunk, Authenticate());
+    [HttpPost("{lease}/replay/chunks/batch"), RequestSizeLimit(12 * 1024 * 1024)]
+    public Task<ReplayBatchReceipt> ReplayBatch(string lease, ReplayChunkBatchUpload batch) => server.UploadReplayBatch(lease, batch, Authenticate());
 }

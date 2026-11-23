@@ -17,6 +17,8 @@ public class StorageService : IStorageService, ISocialObjectStorage, IDisposable
     private readonly string _bucketName;
     private readonly string _serviceUrl;
     private readonly ILogger<StorageService> _logger;
+    private readonly SemaphoreSlim _bucketCheck = new(1, 1);
+    private volatile bool _bucketReady;
 
     public StorageService(IConfiguration configuration, ILogger<StorageService> logger)
     {
@@ -41,8 +43,11 @@ public class StorageService : IStorageService, ISocialObjectStorage, IDisposable
 
     public async Task EnsureBucketExistsAsync()
     {
+        if (_bucketReady) return;
+        await _bucketCheck.WaitAsync();
         try
         {
+            if (_bucketReady) return;
             var exists = await AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, _bucketName);
             if (!exists)
             {
@@ -60,29 +65,19 @@ public class StorageService : IStorageService, ISocialObjectStorage, IDisposable
             {
                 _logger.LogInformation("Bucket '{BucketName}' đã tồn tại sẵn sàng sử dụng.", _bucketName);
             }
+            _bucketReady = true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Lỗi khi kiểm tra hoặc tự động tạo Bucket '{BucketName}'", _bucketName);
         }
+        finally { _bucketCheck.Release(); }
     }
 
     public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType)
     {
-        await EnsureBucketExistsAsync();
-
         var key = $"{Guid.NewGuid()}_{fileName}";
-        var putRequest = new PutObjectRequest
-        {
-            BucketName = _bucketName,
-            Key = key,
-            InputStream = fileStream,
-            ContentType = contentType
-            ,
-            UseChunkEncoding = false
-        };
-
-        await _s3Client.PutObjectAsync(putRequest);
+        await PutFileAsync(fileStream, key, contentType);
         return key;
     }
 
@@ -110,7 +105,25 @@ public class StorageService : IStorageService, ISocialObjectStorage, IDisposable
     public async Task PutFileAsync(Stream fileStream, string objectKey, string contentType)
     {
         await EnsureBucketExistsAsync();
-        await _s3Client.PutObjectAsync(new PutObjectRequest { BucketName = _bucketName, Key = objectKey, InputStream = fileStream, ContentType = contentType, UseChunkEncoding = false });
+        long originalPosition = fileStream.CanSeek ? fileStream.Position : 0;
+        Task Put() => _s3Client.PutObjectAsync(new PutObjectRequest
+        {
+            BucketName = _bucketName,
+            Key = objectKey,
+            InputStream = fileStream,
+            ContentType = contentType,
+            UseChunkEncoding = false,
+            AutoCloseStream = false
+        });
+        try { await Put(); }
+        catch (AmazonS3Exception error) when (error.ErrorCode == "NoSuchBucket")
+        {
+            _bucketReady = false;
+            if (!fileStream.CanSeek) throw;
+            fileStream.Position = originalPosition;
+            await EnsureBucketExistsAsync();
+            await Put();
+        }
     }
 
     public async Task<bool> DeleteFileAsync(string fileName)

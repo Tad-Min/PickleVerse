@@ -129,7 +129,7 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
     public async Task Complete(DedicatedCompletion request, string worker)
     {
         var allocation = await Guard(request.LeaseId, worker);
-        await game.CompleteDedicated(Guid.Parse(allocation.MatchId), request.Results);
+        await game.CompleteDedicated(Guid.Parse(allocation.MatchId), request.Results, request.ReplayChunkCount);
         await leases.Renew(allocation.LeaseId, worker, DedicatedAllocationStatus.Finishing, settings.Dedicated.LeaseSeconds);
     }
     public async Task Release(DedicatedCommand request, string worker)
@@ -171,4 +171,9 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
     }
     public async Task<ReplayChunkInfo> UploadReplay(string lease, int index, ReplayChunkUpload chunk, string worker)
     { var access = await ReplayAccess(lease, worker); return await replays.Upload(access.writer, access.match, index, chunk, true); }
+    public async Task<ReplayBatchReceipt> UploadReplayBatch(string lease, ReplayChunkBatchUpload batch, string worker)
+    {
+        var allocation = await Guard(lease, worker);
+        return await replays.UploadDedicatedBatch(Guid.Parse(allocation.ReplayWriter), Guid.Parse(allocation.MatchId), batch);
+    }
 }

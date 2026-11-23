@@ -396,7 +396,8 @@ public sealed partial class OnlineGameService
             return players[id].Snapshot();
         });
     }
-    async Task FinishOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players, IReadOnlyList<GameScore>? authoritativeScores = null)
+    async Task FinishOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players,
+        IReadOnlyList<GameScore>? authoritativeScores = null, int? replayChunkCount = null)
     {
         if (m.phase == "FINISHED")
             return;
@@ -424,10 +425,10 @@ public sealed partial class OnlineGameService
             await RecordRating(player, m.results[player.ToString("N")]);
         m.phase = "FINISHED";
         await SaveOnline(match, m);
-        await replays.PublishAvailable(match);
+        await replays.PublishAvailable(match, replayChunkCount);
     }
     async Task EndOnline(Guid match, OnlineMatch m, Dictionary<Guid, Session> players, int? loser, string reason,
-        HashSet<Guid> forfeits, IReadOnlyList<GameScore>? authoritativeScores = null)
+        HashSet<Guid> forfeits, IReadOnlyList<GameScore>? authoritativeScores = null, int? replayChunkCount = null)
     {
         m.results = m.roster.members.ToDictionary(x => x.id, x =>
         {
@@ -437,7 +438,7 @@ public sealed partial class OnlineGameService
             r.reason = reason;
             return r;
         });
-        await FinishOnline(match, m, players, authoritativeScores);
+        await FinishOnline(match, m, players, authoritativeScores, replayChunkCount);
     }
     public Task<GameSnapshot> LeaveOnline(Guid id, OnlineMatchCommand request)
     {

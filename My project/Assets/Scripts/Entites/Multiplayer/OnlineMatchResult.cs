@@ -8,6 +8,7 @@ namespace PickleVerse.Multiplayer
     {
         public string onlineId;
         public MatchResult result;
+        public bool? replayReady;
     }
 
 }

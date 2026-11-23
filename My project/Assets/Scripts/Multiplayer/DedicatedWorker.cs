@@ -17,8 +17,8 @@ namespace PickleVerse.Multiplayer
 {
     public sealed class DedicatedWorker : MonoBehaviour
     {
-        const int ReplayResultWaitMilliseconds = 2000;
-        static readonly TimeSpan ReplayUploadGrace = TimeSpan.FromSeconds(30);
+        const int ReplayBatchSize = 4;
+        static readonly TimeSpan ReplayUploadGrace = TimeSpan.FromSeconds(60);
         public static DedicatedWorker Instance { get; private set; }
         [Serializable] sealed class Allocation
         {
@@ -29,6 +29,7 @@ namespace PickleVerse.Multiplayer
         }
         Allocation job;
         [Serializable] sealed class PlayerSession { public string playerId; public int authVersion; }
+        [Serializable] sealed class ReplayBatchReceipt { public int chunkCount; public bool complete; }
         [Serializable] sealed class HeartbeatReply
         {
             public string stopOperationId, reason;
@@ -76,7 +77,7 @@ namespace PickleVerse.Multiplayer
             while (!stopping)
             {
                 CancellationTokenSource replayLifetime = null;
-                Task replayUpload = Task.CompletedTask;
+                Task<int> replayUpload = Task.FromResult(0);
                 try
                 {
                     job = await Post<Allocation>("poll", new { });
@@ -142,11 +143,24 @@ namespace PickleVerse.Multiplayer
                     if (recorder) { recorder.Finish(true); await recorder.Completion; }
                     replayLifetime.CancelAfter(ReplayUploadGrace);
                     recordingFinished.SetResult(true);
-                    // Publish the replay before result history when storage responds promptly.
-                    // A replay outage must not prevent scores or rewards from being finalized.
-                    await Task.WhenAny(replayUpload, Task.Delay(ReplayResultWaitMilliseconds));
+                    int replayChunks = await replayUpload;
                     if (fenced || stopping) throw new InvalidOperationException("Lease lost before result submission.");
-                    await Retry(() => Post<JToken>("complete", new { LeaseId = job.leaseId, Results = JArray.Parse(results) }));
+                    var completed = JArray.Parse(results);
+                    Task CommitResult(int count) => Retry(() => Post<JToken>("complete",
+                        new { LeaseId = job.leaseId, Results = completed, ReplayChunkCount = count }));
+                    try { await CommitResult(replayChunks); }
+                    catch (ServerApiFailure error) when (error.Status == 412 && replayChunks > 0 && !fenced)
+                    {
+                        // The backend could no longer read the sealed recording. Preserve the official scores.
+                        Debug.LogWarning($"[Dedicated] Replay publication failed at result commit match={job.matchId}: {error.Message}");
+                        replayChunks = 0;
+                        await CommitResult(replayChunks);
+                    }
+                    if (matchAtEnd && matchAtEnd.IsSpawned && matchAtEnd.Runner == session.Runner)
+                    {
+                        foreach (var entry in completed.OfType<JObject>()) entry["replayReady"] = replayChunks > 0;
+                        matchAtEnd.DeliverProgressionResults(completed.ToString(Formatting.None));
+                    }
                     foreach (var captured in telemetry.Values)
                     {
                         captured.closed = true;
@@ -155,7 +169,6 @@ namespace PickleVerse.Multiplayer
                     double deliveryDeadline = Time.realtimeSinceStartupAsDouble + 5;
                     while (NetworkMatch.Instance && !NetworkMatch.Instance.ResultsDelivered && Time.realtimeSinceStartupAsDouble < deliveryDeadline && !fenced)
                         await Task.Delay(100);
-                    await replayUpload;
                     Debug.Log($"[Dedicated] Session persisted match={job.matchId} worker={workerId}");
                 }
                 catch (Exception error)
@@ -276,11 +289,11 @@ namespace PickleVerse.Multiplayer
             try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "pickleverse-worker-alive"), "alive"); }
             catch (IOException) { }
         });
-        async Task UploadReplay(Allocation allocation, Task recordingFinished, CancellationToken cancellation)
+        async Task<int> UploadReplay(Allocation allocation, Task recordingFinished, CancellationToken cancellation)
         {
             string route = allocation.leaseId + "/replay";
             long observedRevision = -1;
-            int uploaded = 0;
+            int uploaded = 0, recorded = 0;
             bool headerSent = false;
             try
             {
@@ -293,30 +306,40 @@ namespace PickleVerse.Multiplayer
                     {
                         var metadata = await Task.Run(() => Replays.Read(allocation.replayWriter, allocation.matchId), cancellation);
                         observedRevision = revision;
-                        if (metadata?.chunks.Count > 0)
+                        recorded = metadata?.chunks.Count ?? 0;
+                        if (finished && metadata?.complete != true)
+                            throw new IOException("Local replay did not finish recording.");
+                        if (recorded > 0)
                         {
                             var chunks = metadata.chunks;
                             metadata.chunks = new List<ReplayChunkInfo>();
+                            if (uploaded > recorded) throw new IOException("Local replay manifest lost committed chunks.");
                             if (!headerSent)
                             {
                                 metadata.complete = false;
-                                await PostReplay(route, metadata, cancellation);
+                                await PostReplay<JToken>(route, metadata, cancellation);
                                 headerSent = true;
                             }
-                            while (uploaded < chunks.Count)
+                            while (uploaded < recorded || finished)
                             {
-                                var chunk = chunks[uploaded];
-                                string data = await Task.Run(() => Convert.ToBase64String(Replays.ReadCompressedChunk(metadata, chunk)), cancellation);
-                                await PostReplay(route + "/chunks/" + uploaded, new { Data = data }, cancellation);
-                                uploaded++;
-                            }
-                            if (finished)
-                            {
-                                metadata.complete = true;
-                                await PostReplay(route, metadata, cancellation);
+                                int start = uploaded;
+                                int count = Math.Min(ReplayBatchSize, recorded - start);
+                                bool seal = finished && start + count == recorded;
+                                var payloads = await Task.Run(() => chunks.Skip(start).Take(count)
+                                    .Select(chunk => new { Data = Convert.ToBase64String(Replays.ReadCompressedChunk(metadata, chunk)) }).ToArray(), cancellation);
+                                var receipt = await PostReplay<ReplayBatchReceipt>(route + "/chunks/batch",
+                                    new { StartIndex = start, Chunks = payloads, Complete = seal }, cancellation);
+                                if (receipt == null || receipt.chunkCount != start + count || (seal && !receipt.complete))
+                                    throw new IOException("The backend did not commit the expected replay segments.");
+                                uploaded = receipt.chunkCount;
+                                if (seal)
+                                {
+                                    Debug.Log($"[Dedicated] Replay sealed match={allocation.matchId} chunks={uploaded}");
+                                    return uploaded;
+                                }
                             }
                         }
-                        if (finished) return;
+                        if (finished) return 0;
                     }
                     if (Replays.Revision == observedRevision)
                         await Task.WhenAny(recordingFinished, Task.Delay(200, cancellation));
@@ -325,25 +348,26 @@ namespace PickleVerse.Multiplayer
             catch (OperationCanceledException)
             {
                 if (!fenced && !stopping)
-                    Debug.LogWarning($"[Dedicated] Replay upload timed out match={allocation.matchId} chunks={uploaded}");
+                    Debug.LogWarning($"[Dedicated] Replay upload timed out match={allocation.matchId} chunks={uploaded}/{recorded}");
             }
             catch (Exception error)
             {
-                Debug.LogWarning($"[Dedicated] Replay upload stopped match={allocation.matchId} chunks={uploaded}: {error.Message}");
+                Debug.LogWarning($"[Dedicated] Replay upload stopped match={allocation.matchId} chunks={uploaded}/{recorded}: {error.Message}");
             }
+            return 0;
         }
-        async Task PostReplay(string route, object body, CancellationToken cancellation)
+        async Task<T> PostReplay<T>(string route, object body, CancellationToken cancellation)
         {
             for (int attempt = 0; ; attempt++)
             {
                 if (fenced || stopping) throw new OperationCanceledException();
                 try
                 {
-                    await Post<JToken>(route, body, timeout: 8, cancellation: cancellation);
-                    return;
+                    return await Post<T>(route, body, timeout: 12, cancellation: cancellation);
                 }
-                catch (ServerApiFailure error) when (error.IsTransient)
+                catch (ServerApiFailure error) when (error.IsTransient || error.Status == 429)
                 {
+                    if (attempt == 0) Debug.LogWarning($"[Dedicated] Replay upload retry match={job?.matchId}: {error.Message}");
                     await Task.Delay(1000 * Math.Min(attempt + 1, 5), cancellation);
                 }
             }

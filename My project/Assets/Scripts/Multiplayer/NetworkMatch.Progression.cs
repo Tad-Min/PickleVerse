@@ -112,14 +112,18 @@ namespace PickleVerse.Multiplayer
                 completed.Add(new OnlineMatchResult { onlineId = member.id, result = r });
             }
             var envelope = JsonConvert.SerializeObject(completed);
-            ProgressionResults = envelope;
-            ResultsAvailable(default, envelope);
-            SendProgressionResultsToPeers();
 #if UNITY_SERVER
             DedicatedWorker.Instance.SubmitResults(envelope);
 #else
+            DeliverProgressionResults(envelope);
             _ = MultiplayerApp.Instance.PersistProgressionResultsAsync(envelope);
 #endif
+        }
+        internal void DeliverProgressionResults(string envelope)
+        {
+            ProgressionResults = envelope;
+            ResultsAvailable(default, envelope);
+            SendProgressionResultsToPeers();
         }
         void ResultsAvailable(string old, string value)
         {

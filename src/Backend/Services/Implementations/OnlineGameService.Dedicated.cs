@@ -5,9 +5,10 @@ namespace Services.Implementations;
 
 public sealed partial class OnlineGameService
 {
-    public async Task CompleteDedicated(Guid match, List<DedicatedPlayerResult> input)
+    public async Task CompleteDedicated(Guid match, List<DedicatedPlayerResult> input, int? replayChunkCount = null)
     {
         if (input == null || input.Count == 0 || input.Any(x => x == null)) throw Bad("Kết quả máy chủ không hợp lệ.");
+        if (replayChunkCount is < 0 or > 10000) throw Bad("Số đoạn replay không hợp lệ.");
         var record = await _unitOfWork.Game.Match(m => m.Matchid == match && m.Authoritymode == MatchAuthorityMode.Dedicated) ?? throw Bad("Không tìm thấy trận dedicated.");
         var caller = record.Gamematchplayers.First(p => !RankedBotAccounts.Contains(p.Playerid.ToString("N"))).Playerid;
         await OnlineTransaction(caller, match, null, async (m, players, participants) =>
@@ -30,7 +31,7 @@ public sealed partial class OnlineGameService
                 if (scores.Skip(1).Any(scorecard => !GameJson.Write(scorecard).Equals(GameJson.Write(scores[0]), StringComparison.Ordinal)))
                     throw Bad("Điểm hai đội không khớp.");
                 await EndOnline(match, m, players, teams.Count == 1 ? teams[0] : null,
-                    "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits, scores[0]);
+                    "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits, scores[0], replayChunkCount);
                 return true;
             }
             string? fingerprint = null;
@@ -49,7 +50,7 @@ public sealed partial class OnlineGameService
                 m.results[entry.onlineId] = result;
                 await SaveSubmittedResult(match, id, result, Now);
             }
-            await FinishOnline(match, m, players);
+            await FinishOnline(match, m, players, replayChunkCount: replayChunkCount);
             return true;
         });
     }

@@ -6,10 +6,11 @@ namespace Services.Interfaces;
 
 public interface IMatchReplayService
 {
-    Task PublishAvailable(Guid match);
+    Task PublishAvailable(Guid match, int? expectedChunks = null);
     Task<List<ReplayMetadata>> List(Guid player, bool admin = false);
     Task<ReplayMetadata> Read(Guid player, Guid match, bool admin = false);
     Task<ReplayMetadata> Save(Guid player, Guid match, ReplayMetadata input, bool trustedServer = false);
     Task<ReplayChunkInfo> Upload(Guid player, Guid match, int index, ReplayChunkUpload input, bool trustedServer = false);
+    Task<ReplayBatchReceipt> UploadDedicatedBatch(Guid player, Guid match, ReplayChunkBatchUpload input);
     Task<ReplayChunkUpload> Chunk(Guid player, Guid match, int index, bool admin = false);
 }
