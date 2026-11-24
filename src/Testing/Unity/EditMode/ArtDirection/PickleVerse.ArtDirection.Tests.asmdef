@@ -1,0 +1,17 @@
+{
+  "name": "PickleVerse.ArtDirection.Tests",
+  "references": [
+    "PickleVerse.ArtDirection",
+    "PickleVerse.LocalMatch",
+    "PickleVerse.Rules",
+    "PickleVerse.Settings",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
