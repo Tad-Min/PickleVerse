@@ -89,7 +89,8 @@ namespace PickleVerse.Multiplayer
 
         public void Open()
         {
-            if (IsVisible || !panel)
+            // An older template saved in the court scene is replaced by Create once the result is known; never show it.
+            if (IsVisible || !panel || layout != LayoutVersion)
                 return;
             if (court)
             {
