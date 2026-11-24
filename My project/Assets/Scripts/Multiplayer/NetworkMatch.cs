@@ -209,6 +209,7 @@ namespace PickleVerse.Multiplayer
             }
             ballTrail.emitting = false;
             ballTrail.Clear();
+            BallPresentationRegistry.Register(ball.transform, ballTrail);
             if (settings.landingMarkerPrefab)
             {
                 landingMarker = Instantiate(settings.landingMarkerPrefab).transform;

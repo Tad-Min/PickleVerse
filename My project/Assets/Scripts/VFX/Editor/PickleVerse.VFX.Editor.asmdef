@@ -1,0 +1,6 @@
+{
+  "name": "PickleVerse.VFX.Editor",
+  "rootNamespace": "PickleVerse.VFX.Editor",
+  "references": ["PickleVerse.VFX"],
+  "includePlatforms": ["Editor"]
+}

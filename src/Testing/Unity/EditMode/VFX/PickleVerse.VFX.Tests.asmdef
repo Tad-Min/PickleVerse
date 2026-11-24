@@ -1,0 +1,14 @@
+{
+  "name": "PickleVerse.VFX.Tests",
+  "references": [
+    "PickleVerse.VFX",
+    "PickleVerse.LocalMatch",
+    "PickleVerse.Shop"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

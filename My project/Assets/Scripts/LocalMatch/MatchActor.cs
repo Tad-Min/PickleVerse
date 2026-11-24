@@ -286,6 +286,8 @@ namespace PickleVerse.LocalMatch
             SfxPlayer.Play(Intent.kind == ShotKind.Serve ? GameSfx.Serve : Intent.power ? GameSfx.HitStrong : GameSfx.HitNormal, impactPoint);
             if (successful && impactVfx)
                 impactVfx.Play(impactPoint, Intent, transform.forward, LastContactGrade);
+            if (successful)
+                BallPresentationRegistry.ReportContact(this, impactPoint);
             if (successful && LocalHitFeedback && LastContactGrade != HitGrade.None)
             {
                 if (!gradeFeedback)

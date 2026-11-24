@@ -109,6 +109,7 @@ namespace PickleVerse.LocalMatch
             human.LocalHitFeedback = true;
             if (human.paddle)
                 PickleVerse.Shop.EquippedPaddle.Attach(human.paddle);
+            BallPresentationRegistry.Register(ball, ballTrail);
             initialServer = UnityEngine.Random.Range(0, 2);
             Rules = new SinglesRules(initialServer);
             PreparePoint();

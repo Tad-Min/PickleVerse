@@ -1,0 +1,5 @@
+{
+  "name": "PickleVerse.VFX",
+  "rootNamespace": "PickleVerse.VFX",
+  "references": ["PickleVerse.LocalMatch", "PickleVerse.Shop"]
+}

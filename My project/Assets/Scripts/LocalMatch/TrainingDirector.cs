@@ -99,6 +99,7 @@ namespace PickleVerse.LocalMatch
             opponent.Initialize();
             player.LocalHitFeedback = true;
             PickleVerse.Shop.EquippedPaddle.Attach(player.paddle);
+            BallPresentationRegistry.Register(ball, trail);
             foreach (var control in touchControls)
                 if (control)
                     control.Input = this;
