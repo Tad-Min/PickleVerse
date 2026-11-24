@@ -28,6 +28,8 @@ bằng giảm tương phản, giảm bão hòa và haze.
 
 Phân tích hiện trạng (ảnh từng màn hình, số đo trước nâng cấp): [00 Visual Audit](00-Visual-Audit.md).
 
+![Sau nâng cấp](images/audit-after.jpg)
+
 ![Bảng màu Golden Court](images/palette.png)
 
 ## Ba "phim trường" của game
@@ -70,3 +72,4 @@ và **không** áp hậu kỳ lên canvas để chữ và màu thương hiệu k
 | Phiên bản | Ngày | Nội dung |
 |---|---|---|
 | 1.0 | 24/11/2026 | Visual audit, chốt Golden Court, 5 mục ngôn ngữ, ngân sách hiệu năng. |
+| 1.1 | 24/11/2026 | Áp dụng toàn game: uber shader, 5 bộ vật liệu, Look theo scene, đạo cụ hữu cơ, khí quyển, tối ưu đo được; số đo bản build trước/sau ở [06](06-Rendering-Performance.md). |

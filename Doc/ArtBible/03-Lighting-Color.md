@@ -59,6 +59,8 @@ Tint bóng lạnh (`_PV_ShadowTint`, rgb + cường độ): Sunset (.66,.76,1) �
 | Cao | + SSAO | after-opaque, nửa độ phân giải, cường độ 0,55, bán kính 0,3 m | có | có | SMAA |
 
 Các màn UI thuần (Login, Loading, ModeSelection, PlayMultiplayer, Settings) không có Look → camera giữ nguyên, canvas không bị tonemap.
+Camera render vào texture (vợt xoay ở Shop/Collection, sân khấu match-found) cũng giữ nguyên ánh sáng studio riêng
+đã duyệt: Look chỉ áp lên camera 3D vẽ ra màn hình.
 
 ## Bảng màu
 
