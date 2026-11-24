@@ -314,9 +314,10 @@ namespace PickleVerse.FrontEnd
             if (sun)
             {
                 sun.enabled = NightWeight < .995f;
-                sun.intensity = 1.1f * (1 - NightWeight);
-                sun.color = Color.Lerp(new Color(1, .93f, .82f), new Color(1, .68f, .43f), Mathf.Sin(NightWeight * Mathf.PI) * .4f);
-                sun.transform.rotation = Quaternion.Euler(Mathf.Lerp(stadium ? 55 : 28, stadium ? 18 : 8, NightWeight), -35, 0);
+                // Art Bible §03: late-afternoon warm key (cooler ambient below), turning golden through dusk.
+                sun.intensity = 1.95f * (1 - NightWeight);
+                sun.color = Color.Lerp(new Color(1, .86f, .68f), new Color(1, .68f, .43f), Mathf.Sin(NightWeight * Mathf.PI) * .6f);
+                sun.transform.rotation = Quaternion.Euler(Mathf.Lerp(stadium ? 42 : 28, stadium ? 18 : 8, NightWeight), -35, 0);
             }
             RenderSettings.sun = sun && sun.enabled ? sun : null;
             if (floodlights != null)
@@ -325,6 +326,7 @@ namespace PickleVerse.FrontEnd
                     {
                         light.enabled = NightWeight > .01f;
                         light.intensity = 40 * NightWeight;
+                        light.color = StadiumEnvironment.FloodlightColor;
                     }
             if (portraitLight)
             {
@@ -339,16 +341,17 @@ namespace PickleVerse.FrontEnd
             if (stadium)
                 stadium.ApplyNight(NightWeight);
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = Color.Lerp(new Color(.52f, .63f, .76f), MatchEnvironmentLighting.NightAmbientSky, NightWeight);
-            RenderSettings.ambientEquatorColor = Color.Lerp(new Color(.34f, .40f, .48f), MatchEnvironmentLighting.NightAmbientEquator, NightWeight);
-            RenderSettings.ambientGroundColor = Color.Lerp(new Color(.20f, .23f, .25f), MatchEnvironmentLighting.NightAmbientGround, NightWeight);
+            RenderSettings.ambientSkyColor = Color.Lerp(new Color(.44f, .54f, .72f), MatchEnvironmentLighting.NightAmbientSky, NightWeight);
+            RenderSettings.ambientEquatorColor = Color.Lerp(new Color(.52f, .48f, .45f), MatchEnvironmentLighting.NightAmbientEquator, NightWeight);
+            RenderSettings.ambientGroundColor = Color.Lerp(new Color(.22f, .20f, .18f), MatchEnvironmentLighting.NightAmbientGround, NightWeight);
             RenderSettings.ambientIntensity = 1;
             RenderSettings.reflectionIntensity = Mathf.Lerp(.65f, .20f, NightWeight);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogStartDistance = 38;
             RenderSettings.fogEndDistance = Mathf.Lerp(140, 90, NightWeight);
-            RenderSettings.fogColor = Color.Lerp(new Color(.43f, .52f, .66f), new Color(.025f, .040f, .070f), NightWeight);
+            // Atmospheric perspective: a warm-grey haze lowers contrast and saturation of the skyline behind the court.
+            RenderSettings.fogColor = Color.Lerp(new Color(.62f, .62f, .66f), new Color(.025f, .040f, .070f), NightWeight);
             if (Application.isPlaying && Mathf.Abs(lastReflectionWeight - NightWeight) >= .25f)
             {
                 lastReflectionWeight = NightWeight;

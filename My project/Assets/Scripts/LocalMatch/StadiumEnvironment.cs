@@ -28,6 +28,8 @@ namespace PickleVerse.LocalMatch
         // Night street lighting is baked (lamp pools in the mask, glare sprites, lit windows): no realtime
         // lights. Sodium-warm, slightly brighter than the pools' baked reference.
         public static readonly Color NightLampColor = new Color(1.0f, .70f, .40f) * 1.9f;
+        /// <summary>Art Bible "Đèn đêm" (#FFE6C4, ~4800 K): court floodlights read warm-white, never clinical blue-white.</summary>
+        public static readonly Color FloodlightColor = new Color(1f, .91f, .80f);
         static readonly int SunMaskId = Shader.PropertyToID("_PV_SunMask"), SunMaskParamsId = Shader.PropertyToID("_PV_SunMaskParams"),
             SunMaskOnId = Shader.PropertyToID("_PV_SunMaskOn"), NightLightsOnId = Shader.PropertyToID("_PV_NightLightsOn"),
             LampColorId = Shader.PropertyToID("_PV_LampColor"), NightGlowId = Shader.PropertyToID("_PV_NightGlow"),
@@ -154,12 +156,14 @@ namespace PickleVerse.LocalMatch
                 {
                     l.enabled = true;
                     l.intensity = Mathf.Lerp(8f, poleNightIntensity, courtLight);
+                    l.color = Color.Lerp(Color.white, FloodlightColor, courtLight);
                 }
             foreach (var l in roofs)
                 if (l)
                 {
                     l.enabled = roof;
                     l.intensity = roofNightIntensity * courtLight;
+                    l.color = FloodlightColor;
                 }
             if (standIllumination != null)
                 foreach (var l in standIllumination)
@@ -167,6 +171,7 @@ namespace PickleVerse.LocalMatch
                     {
                         l.enabled = nightStands;
                         l.intensity = standNightIntensity * night;
+                        l.color = FloodlightColor;
                     }
             if (lightsOn && lightsOff)
             {

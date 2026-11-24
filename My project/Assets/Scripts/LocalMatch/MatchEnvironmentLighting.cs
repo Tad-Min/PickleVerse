@@ -28,8 +28,18 @@ namespace PickleVerse.LocalMatch
         // near-end camera, so faces are lit and long shadows rake across the court. The district's baked
         // ground shadows (StadiumEnvironment.sunShadowMask) were rendered for exactly this direction.
         public static readonly Quaternion GoldenHourSun = Quaternion.Euler(21f, 62f, 0f);
-        public static readonly Color GoldenHourSunColor = new Color(1f, .74f, .50f);
-        public const float GoldenHourSunIntensity = 1.75f;
+        // Art Bible §03: warm key ("Key nắng chiều" #FFBD85), strong enough that the play area is the brightest,
+        // warmest plane under Neutral tonemapping; ambient stays cool so shadows read blue but keep detail.
+        public static readonly Color GoldenHourSunColor = new Color(1f, .76f, .54f);
+        public const float GoldenHourSunIntensity = 2.25f;
+        // Academy arena (no baked district mask): a high, warm skylight through the translucent membrane roof so the court
+        // reads as a lit stage, with a cool sky fill and a warm wooden-floor bounce from below.
+        public static readonly Quaternion ArenaSkylight = Quaternion.Euler(62f, 35f, 0f);
+        public static readonly Color ArenaSkylightColor = new Color(1f, .86f, .70f);
+        public const float ArenaSkylightIntensity = 2.0f;
+        public static readonly Color ArenaAmbientSky = new Color(.42f, .50f, .66f);
+        public static readonly Color ArenaAmbientEquator = new Color(.55f, .47f, .40f);
+        public static readonly Color ArenaAmbientGround = new Color(.26f, .21f, .17f);
         public static readonly Color GoldenAmbientSky = new Color(.40f, .47f, .62f);
         public static readonly Color GoldenAmbientEquator = new Color(.58f, .47f, .40f);
         public static readonly Color GoldenAmbientGround = new Color(.22f, .19f, .16f);
@@ -66,23 +76,27 @@ namespace PickleVerse.LocalMatch
                 // The surrounding district and skyline reach ~210 m; fog hides everything beyond.
                 matchCamera.farClipPlane = Mathf.Max(matchCamera.farClipPlane, DistrictFarClip);
             }
+            bool arena = stadium && !stadium.sunShadowMask;
             if (sun)
             {
                 sun.enabled = !night;
                 if (!night)
                 {
-                    sun.transform.rotation = GoldenHourSun;
+                    sun.transform.rotation = arena ? ArenaSkylight : GoldenHourSun;
                     sun.useColorTemperature = false;
-                    sun.color = GoldenHourSunColor;
-                    sun.intensity = GoldenHourSunIntensity;
-                    sun.shadowStrength = .82f;
+                    sun.color = arena ? ArenaSkylightColor : GoldenHourSunColor;
+                    sun.intensity = arena ? ArenaSkylightIntensity : GoldenHourSunIntensity;
+                    sun.shadowStrength = arena ? .7f : .82f;
                 }
             }
             RenderSettings.sun = night ? null : sun;
             if (floodlights != null)
                 foreach (var light in floodlights)
                     if (light)
+                    {
                         light.enabled = night;
+                        light.color = StadiumEnvironment.FloodlightColor;
+                    }
             if (lampFaces != null)
                 foreach (var face in lampFaces)
                     if (face && lampsOn && lampsOff)
@@ -91,9 +105,9 @@ namespace PickleVerse.LocalMatch
                 stadium.ApplyNight(night ? 1 : 0, true, minimumCourtIllumination);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = night ? NightAmbientSky : GoldenAmbientSky;
-            RenderSettings.ambientEquatorColor = night ? NightAmbientEquator : GoldenAmbientEquator;
-            RenderSettings.ambientGroundColor = night ? NightAmbientGround : GoldenAmbientGround;
+            RenderSettings.ambientSkyColor = night ? NightAmbientSky : arena ? ArenaAmbientSky : GoldenAmbientSky;
+            RenderSettings.ambientEquatorColor = night ? NightAmbientEquator : arena ? ArenaAmbientEquator : GoldenAmbientEquator;
+            RenderSettings.ambientGroundColor = night ? NightAmbientGround : arena ? ArenaAmbientGround : GoldenAmbientGround;
             RenderSettings.ambientIntensity = 1;
             RenderSettings.reflectionIntensity = night ? .20f : .55f;
             RenderSettings.fog = true;
