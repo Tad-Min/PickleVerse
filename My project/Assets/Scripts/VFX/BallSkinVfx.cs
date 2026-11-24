@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using PickleVerse.LocalMatch;
 using PickleVerse.Shop;
 using UnityEngine;
+
+[assembly: InternalsVisibleTo("PickleVerse.VFX.Tests")]
 
 namespace PickleVerse.VFX
 {
@@ -13,6 +16,17 @@ namespace PickleVerse.VFX
     [DisallowMultipleComponent]
     public sealed class BallSkinVfx : MonoBehaviour
     {
+        /// <summary>One skin's effect instance on this ball, with the parts that are switched on and off.</summary>
+        sealed class BallEffect
+        {
+            public Transform root;
+            public Renderer shell;
+            public ParticleSystem[] particles;
+            public float fade;
+            public bool emitting = true;
+        }
+
+        const float FadeIn = .12f, FadeOut = .08f, CarriedDistance = .5f;
         static readonly int FadeId = Shader.PropertyToID("_Fade");
         static PaddleSkinVfxLibrary library;
         static bool libraryLoaded;
@@ -24,10 +38,10 @@ namespace PickleVerse.VFX
         Gradient defaultColor;
         LineTextureMode defaultTextureMode;
         PaddleSkinVfxProfile active;
-        readonly Dictionary<PaddleSkinVfxProfile, Transform> ballEffects = new Dictionary<PaddleSkinVfxProfile, Transform>();
+        readonly Dictionary<PaddleSkinVfxProfile, BallEffect> ballEffects = new Dictionary<PaddleSkinVfxProfile, BallEffect>();
         readonly Dictionary<PaddleSkinVfxProfile, ParticleSystem[]> impacts = new Dictionary<PaddleSkinVfxProfile, ParticleSystem[]>();
         MaterialPropertyBlock block;
-        float fade;
+        Vector3 restPoint;
 
         /// <summary>Skin whose effect the ball currently shows, or null for the standard trail.</summary>
         public string ActiveSkin => active ? active.skinId : null;
@@ -105,7 +119,9 @@ namespace PickleVerse.VFX
         void OnDisable()
         {
             BallPresentationRegistry.SuccessfulContact -= OnContact;
-            SetBallEffect(null);
+            Apply(null);
+            foreach (var pair in ballEffects)
+                Show(pair.Value, 0, false);
         }
 
         void OnDestroy()
@@ -126,6 +142,7 @@ namespace PickleVerse.VFX
         /// <summary>Switches the ball to a skin effect (null = standard trail).</summary>
         public void Apply(PaddleSkinVfxProfile profile)
         {
+            restPoint = transform.position;
             if (profile == active)
                 return;
             active = profile;
@@ -150,45 +167,57 @@ namespace PickleVerse.VFX
                     trail.textureMode = defaultTextureMode;
                 }
             }
-            SetBallEffect(profile);
+            EnsureBallEffect(profile);
         }
 
-        void SetBallEffect(PaddleSkinVfxProfile profile)
+        void EnsureBallEffect(PaddleSkinVfxProfile profile)
         {
-            foreach (var pair in ballEffects)
-                if (pair.Value && pair.Key != profile)
-                    SetEmitting(pair.Value, false);
-            if (!profile || !profile.ballEffect)
+            if (!profile || !profile.ballEffect || ballEffects.TryGetValue(profile, out var known) && known.root)
                 return;
-            if (!ballEffects.TryGetValue(profile, out var root) || !root)
-            {
-                root = Instantiate(profile.ballEffect, transform, false).transform;
-                root.name = profile.ballEffect.name;
-                // Author effects in metres: cancel the ball's own scale.
-                var s = transform.lossyScale;
-                root.localScale = new Vector3(1 / Mathf.Max(s.x, 1e-4f), 1 / Mathf.Max(s.y, 1e-4f), 1 / Mathf.Max(s.z, 1e-4f));
-                FitShell(root);
-                ballEffects[profile] = root;
-            }
-            SetEmitting(root, true);
+            var root = Instantiate(profile.ballEffect, transform, false).transform;
+            root.name = profile.ballEffect.name;
+            // Author effects in metres: cancel the ball's own scale.
+            var s = transform.lossyScale;
+            root.localScale = new Vector3(1 / Mathf.Max(s.x, 1e-4f), 1 / Mathf.Max(s.y, 1e-4f), 1 / Mathf.Max(s.z, 1e-4f));
+            var shell = root.Find("Glitter Shell");
+            var effect = new BallEffect { root = root, shell = shell ? shell.GetComponent<Renderer>() : null, particles = root.GetComponentsInChildren<ParticleSystem>(true) };
+            FitShell(shell);
+            ballEffects[profile] = effect;
+            Show(effect, 0, false);
         }
 
-        void FitShell(Transform root)
+        void FitShell(Transform shell)
         {
-            var shell = root.Find("Glitter Shell");
-            var ballRenderer = GetComponentInChildren<MeshRenderer>();
-            if (!shell || !ballRenderer)
+            var ballRenderer = GetComponent<MeshRenderer>() ? GetComponent<MeshRenderer>() : GetComponentInChildren<MeshRenderer>();
+            if (!shell || !ballRenderer || ballRenderer.transform.IsChildOf(shell.parent))
                 return;
             float diameter = Mathf.Max(ballRenderer.bounds.size.x, .04f);
             shell.localScale = Vector3.one * diameter * 1.12f;
         }
 
-        static void SetEmitting(Transform root, bool on)
+        /// <summary>Shows an effect at a strength; particles stop being emitted but live out their own lifetime.</summary>
+        void Show(BallEffect effect, float fade, bool emitting)
         {
-            foreach (var ps in root.GetComponentsInChildren<ParticleSystem>(true))
+            if (!effect.root)
+                return;
+            if (effect.shell && (effect.fade != fade || effect.shell.enabled != fade > .001f))
             {
+                block ??= new MaterialPropertyBlock();
+                effect.shell.GetPropertyBlock(block);
+                block.SetFloat(FadeId, fade);
+                effect.shell.SetPropertyBlock(block);
+                effect.shell.enabled = fade > .001f;
+            }
+            effect.fade = fade;
+            if (effect.emitting == emitting)
+                return;
+            effect.emitting = emitting;
+            foreach (var ps in effect.particles)
+            {
+                if (!ps)
+                    continue;
                 var emission = ps.emission;
-                emission.enabled = on;
+                emission.enabled = emitting;
             }
         }
 
@@ -212,25 +241,22 @@ namespace PickleVerse.VFX
             }
         }
 
-        void LateUpdate()
+        void LateUpdate() => Advance(Time.deltaTime, !trail || trail.emitting);
+
+        /// <summary>
+        /// Fades the active skin in and every other one out. A ball that is picked up for the next point (it moves while it is
+        /// not flying) goes back to the standard trail; a pause leaves it where it is and keeps the effect.
+        /// </summary>
+        internal void Advance(float dt, bool flying)
         {
-            if (!active || !ballEffects.TryGetValue(active, out var root) || !root)
-                return;
-            bool flying = !trail || trail.emitting;
-            fade = Mathf.MoveTowards(fade, flying ? 1 : 0, Time.deltaTime / .25f);
-            var shell = root.Find("Glitter Shell");
-            if (shell && shell.TryGetComponent<Renderer>(out var r))
+            if (flying)
+                restPoint = transform.position;
+            else if (active && (transform.position - restPoint).sqrMagnitude > CarriedDistance * CarriedDistance)
+                Apply(null);
+            foreach (var pair in ballEffects)
             {
-                block ??= new MaterialPropertyBlock();
-                r.GetPropertyBlock(block);
-                block.SetFloat(FadeId, fade);
-                r.SetPropertyBlock(block);
-                r.enabled = fade > .001f;
-            }
-            foreach (var ps in root.GetComponentsInChildren<ParticleSystem>())
-            {
-                var emission = ps.emission;
-                emission.enabled = flying;
+                bool on = pair.Key == active && flying;
+                Show(pair.Value, Mathf.MoveTowards(pair.Value.fade, on ? 1 : 0, dt / (on ? FadeIn : FadeOut)), on);
             }
         }
     }

@@ -79,6 +79,57 @@ namespace PickleVerse.Tests.VFX
             Assert.That(BallSkinVfx.Attach(ball, trail), Is.SameAs(fx), "registering again reuses the same effect");
         }
 
+        GameObject BallEffectPrefab()
+        {
+            var root = new GameObject("Effect");
+            var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            shell.name = "Glitter Shell";
+            shell.transform.SetParent(root.transform, false);
+            new GameObject("Glints").AddComponent<ParticleSystem>().transform.SetParent(root.transform, false);
+            return root;
+        }
+
+        [Test]
+        public void BallSparkleGoesOutWhenTheOpponentHitsWithAStandardPaddle()
+        {
+            var prefab = BallEffectPrefab();
+            try
+            {
+                profile.ballEffect = prefab;
+                var fx = BallSkinVfx.Attach(ball, ball.AddComponent<TrailRenderer>());
+                fx.Apply(profile);
+                fx.Advance(1, true);
+                var shell = ball.transform.Find("Effect/Glitter Shell").GetComponent<Renderer>();
+                var emission = ball.GetComponentInChildren<ParticleSystem>().emission;
+                Assert.That(shell.enabled, Is.True);
+                Assert.That(emission.enabled, Is.True);
+
+                fx.Apply(null);
+                fx.Advance(1, true);
+                Assert.That(shell.enabled, Is.False, "the glitter shell must not stay on a ball hit by a standard paddle");
+                Assert.That(emission.enabled, Is.False);
+
+                fx.Apply(profile);
+                fx.Advance(1, true);
+                Assert.That(shell.enabled, Is.True, "and it comes back with the next Gemstone hit");
+                Assert.That(ball.transform.childCount, Is.EqualTo(1), "the same instance is reused");
+            }
+            finally { Object.DestroyImmediate(prefab); }
+        }
+
+        [Test]
+        public void APauseKeepsTheEffectButTheNextPointStartsStandard()
+        {
+            var fx = BallSkinVfx.Attach(ball, ball.AddComponent<TrailRenderer>());
+            fx.Apply(profile);
+            fx.Advance(.1f, true);
+            fx.Advance(5, false); // paused in mid-air: the ball does not move
+            Assert.That(fx.ActiveSkin, Is.EqualTo("paddle.gemstone"));
+            ball.transform.position += Vector3.right * 3; // carried to the next server
+            fx.Advance(.1f, false);
+            Assert.That(fx.ActiveSkin, Is.Null);
+        }
+
         [Test]
         public void ShippedLibraryGivesTheGemstonePaddleItsEffect()
         {
