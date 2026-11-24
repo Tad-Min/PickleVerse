@@ -116,7 +116,6 @@ namespace PickleVerse.Multiplayer
             DedicatedWorker.Instance.SubmitResults(envelope);
 #else
             DeliverProgressionResults(envelope);
-            _ = MultiplayerApp.Instance.PersistProgressionResultsAsync(envelope);
 #endif
         }
         internal void DeliverProgressionResults(string envelope)
@@ -128,12 +127,9 @@ namespace PickleVerse.Multiplayer
         void ResultsAvailable(string old, string value)
         {
 #if !UNITY_SERVER
-            if (Application.isPlaying)
-            {
-                // Final authoritative coaching records arrive in a reliable message batch
-                // from LateUpdate; its checkpoint closes the spool after every shot.
-                MultiplayerApp.Instance.ApplyOnlineProgressionResults(value);
-            }
+            // The reliable result can reach a client that missed the final state snapshot.
+            if (Application.isPlaying && MultiplayerApp.Instance)
+                MultiplayerApp.Instance.ApplyOnlineProgressionResults(this, value);
 #endif
         }
         public void RecordLocalExit(bool forfeit, string reason)

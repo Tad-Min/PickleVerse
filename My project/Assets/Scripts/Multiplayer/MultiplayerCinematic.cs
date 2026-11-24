@@ -3,6 +3,7 @@ using System.Linq;
 using PickleVerse.LocalMatch;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace PickleVerse.Multiplayer
 {
@@ -18,8 +19,11 @@ namespace PickleVerse.Multiplayer
         public bool PlayerWon { get; private set; }
         public int PresentedCount => presented?.Length ?? 0;
         public bool OwnsPose => PlayingIntro || ShowingOutcome;
+        internal bool HasOutcome => outcomeRoot && outcomeRoot.activeSelf;
         MultiplayerCourtUI ui;
         Camera view; CourtCamera follow; StadiumEnvironment stadium;
+        MatchEnvironmentLighting outcomeLighting;
+        GameObject outcomeRoot;
         ActorPose[] ourTeam, theirTeam;
         RectTransform overlay, safeArea, sheenMask, sheenText;
         TMP_Text caption, title;
@@ -28,23 +32,26 @@ namespace PickleVerse.Multiplayer
         GameObject[] hud; bool[] hudActive;
         ActorPose[] actors, presented;
         bool finishedIntro, followEnabled;
-        Vector3 originCamera; Quaternion originRotation; float originFov, outcomeTime;
+        Vector3 originCamera; Quaternion originRotation; float originFov, outcomeTime, announcementDeadline;
         sealed class ActorPose
         {
             public NetworkPlayer player; public MatchActor actor; public Vector3 destination, visualPosition, visualScale; public Quaternion rotation, visualRotation;
-            public bool paddleActive; public AnimationClip walk; readonly int capturedEnd;
-            public ActorPose(NetworkPlayer p, AnimationClip walk)
+            public bool paddleActive; public AnimationClip walk;
+            public readonly int capturedEnd;
+            public readonly bool female;
+            public ActorPose(NetworkPlayer p, AnimationClip walk, MatchActor actor = null)
             {
                 player = p;
-                actor = p.Actor;
+                this.actor = actor ? actor : p.Actor;
                 this.walk = walk;
                 capturedEnd = p.CourtEnd;
-                destination = actor.transform.position;
-                rotation = actor.transform.rotation;
-                visualPosition = actor.visual.localPosition;
-                visualRotation = actor.visual.localRotation;
-                visualScale = actor.visual.localScale;
-                paddleActive = actor.paddle && actor.paddle.activeSelf;
+                female = p.Female;
+                destination = this.actor.transform.position;
+                rotation = this.actor.transform.rotation;
+                visualPosition = this.actor.visual.localPosition;
+                visualRotation = this.actor.visual.localRotation;
+                visualScale = this.actor.visual.localScale;
+                paddleActive = this.actor.paddle && this.actor.paddle.activeSelf;
             }
             public void Sample(AnimationClip clip, float time, bool celebration = false)
             {
@@ -92,7 +99,7 @@ namespace PickleVerse.Multiplayer
             mask.showMaskGraphic = false;
             var sheen = MatchPresentationUi.Label("Shine", sheenMask, font, "Thắng", 76, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Color(1, 1, .94f));
             sheenText = sheen.rectTransform;
-            next = MatchPresentationUi.Button("Continue", safeArea, font, "THOÁT TRẬN  →", new Vector2(.36f, .075f), new Vector2(.64f, .15f), true);
+            next = MatchPresentationUi.Button("Continue", safeArea, font, "XEM TỔNG KẾT  →", new Vector2(.36f, .075f), new Vector2(.64f, .15f), true);
             next.onClick.AddListener(() =>
             {
                 if (OutcomeReady && ui.resultScreen)
@@ -102,8 +109,11 @@ namespace PickleVerse.Multiplayer
         }
         void Capture()
         {
-            view = Camera.main;
-            stadium = FindAnyObjectByType<StadiumEnvironment>();
+            if (!HasOutcome)
+            {
+                view = Camera.main;
+                stadium = FindAnyObjectByType<StadiumEnvironment>();
+            }
             if (!view)
                 return;
             follow = view.GetComponent<CourtCamera>();
@@ -121,6 +131,26 @@ namespace PickleVerse.Multiplayer
         {
             if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null || PickleVerse.Settings.SceneLoading.IsBlocking)
                 return;
+            if (HasOutcome)
+            {
+                if (!view)
+                {
+                    if (ui.resultScreen) ui.resultScreen.Open();
+                    return;
+                }
+                if (!ShowingOutcome && (ui.EndAnnouncementFinished && (!ui.announcements || !ui.announcements.Busy) ||
+                    Time.unscaledTime >= announcementDeadline))
+                {
+                    if (ui.announcements) ui.announcements.Clear();
+                    BeginOutcome();
+                }
+                if (ShowingOutcome)
+                {
+                    EvaluateOutcome(Mathf.Min(Time.unscaledDeltaTime, .1f));
+                    MatchPresentationUi.SafeArea(safeArea);
+                }
+                return;
+            }
             var match = NetworkMatch.Instance;
             if (!match || !match.IsSpawned || !ui)
                 return;
@@ -146,10 +176,6 @@ namespace PickleVerse.Multiplayer
             }
             else if (PlayingIntro)
                 EndIntro();
-            if (match.Finished && !ShowingOutcome && ui.EndAnnouncementFinished && (!ui.announcements || !ui.announcements.Busy))
-                BeginOutcome(match);
-            if (ShowingOutcome)
-                EvaluateOutcome(Mathf.Min(Time.unscaledDeltaTime, .1f));
             if (overlay.gameObject.activeSelf)
                 MatchPresentationUi.SafeArea(safeArea);
         }
@@ -220,27 +246,106 @@ namespace PickleVerse.Multiplayer
                 follow.SnapToPlayer();
             }
         }
-        void BeginOutcome(NetworkMatch match)
+        internal bool TryCaptureOutcome(NetworkMatch match, MultiplayerApp app)
         {
-            var local = NetworkPlayer.All.FirstOrDefault(p => p.IsLocalHuman);
-            if (!local || !local.Actor)
+            if (!isActiveAndEnabled || outcomeRoot ||
+                SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+                return false;
+            var local = match.Roster.Find(app.PlayerId);
+            var scene = gameObject.scene;
+            var lighting = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<MatchEnvironmentLighting>())
+                .FirstOrDefault(l => l.matchCamera && l.stadium);
+            if (local == null || !lighting)
+                return false;
+            var team = NetworkPlayer.All.Where(p => p && p.IsSpawned && p.Runner == match.Runner &&
+                p.Team == local.team && p.Actor && p.Actor.visual).OrderBy(p => p.Index).ToArray();
+            var settings = app.Settings;
+            if (team.Length == 0 || team.Any(p => !(p.Female ? settings.femaleActorPrefab : settings.maleActorPrefab)))
+                return false;
+            if (PlayingIntro)
+                EndIntro();
+
+            // Keep the rendered venue and local actor copies outside Fusion's scene before it can shut down.
+            outcomeRoot = new GameObject("Finished Match Presentation");
+            var root = outcomeRoot.transform;
+            root.SetParent(app.transform, false);
+            view = lighting.matchCamera;
+            stadium = lighting.stadium;
+            outcomeLighting = lighting;
+            presented = new ActorPose[team.Length];
+            for (int i = 0; i < team.Length; i++)
+            {
+                var player = team[i];
+                var source = player.Actor;
+                var prefab = player.Female ? settings.femaleActorPrefab : settings.maleActorPrefab;
+                var actor = Instantiate(prefab, source.transform.position, source.transform.rotation, root).GetComponent<MatchActor>();
+                actor.visual.SetLocalPositionAndRotation(source.visual.localPosition, source.visual.localRotation);
+                actor.visual.localScale = source.visual.localScale;
+                foreach (var animator in actor.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
+                foreach (var collider in actor.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+                foreach (var body in actor.GetComponentsInChildren<Rigidbody>(true)) body.isKinematic = true;
+                if (actor.paddle) actor.paddle.SetActive(false);
+                presented[i] = new ActorPose(player, null, actor);
+                source.gameObject.SetActive(false);
+            }
+
+            var eventSystem = UnityEngine.EventSystems.EventSystem.current;
+            if (eventSystem && eventSystem.gameObject.scene == scene)
+                eventSystem.transform.SetParent(root, true);
+            if (lighting.sun) lighting.sun.transform.SetParent(root, true);
+            view.transform.SetParent(root, true);
+            var followCamera = view.GetComponent<CourtCamera>();
+            if (followCamera) followCamera.enabled = false;
+            stadium.transform.SetParent(root, true);
+            lighting.transform.SetParent(root, true);
+            transform.SetParent(root, false);
+            SceneManager.activeSceneChanged += RefreshOutcomeLighting;
+            if (match.Body) match.Body.gameObject.SetActive(false);
+            ui.ClearTouch();
+            if (ui.help) ui.help.SetActive(false);
+            if (ui.leave) ui.leave.gameObject.SetActive(false);
+            return true;
+        }
+
+        internal void HoldForResult() => outcomeRoot.SetActive(false);
+
+        internal void PresentOutcome(bool playerWon, string detail)
+        {
+            PlayerWon = playerWon;
+            announcementDeadline = Time.unscaledTime + 5f;
+            if (!HasOutcome)
+            {
+                outcomeRoot.SetActive(true);
+                outcomeLighting.Apply(outcomeLighting.selectedNight);
+            }
+            ui.EnsureEndAnnouncement(detail);
+        }
+
+        void RefreshOutcomeLighting(Scene _, Scene __)
+        {
+            if (HasOutcome && outcomeLighting)
+                outcomeLighting.Apply(outcomeLighting.selectedNight);
+        }
+
+        internal void CloseOutcome()
+        {
+            SceneManager.activeSceneChanged -= RefreshOutcomeLighting;
+            if (!outcomeRoot)
                 return;
-            presented = NetworkPlayer.All.Where(p => p.Team == local.Team && p.Actor).OrderBy(p => p.Index).Select(p => new ActorPose(p, null)).ToArray();
-            PlayerWon = match.WinningTeam == local.Team;
+            outcomeRoot.SetActive(false);
+            Destroy(outcomeRoot);
+            outcomeRoot = null;
+        }
+
+        void BeginOutcome()
+        {
             Capture();
-            if (!view)
-                return;
             originCamera = view.transform.position;
             originRotation = view.transform.rotation;
             originFov = view.fieldOfView;
             ShowingOutcome = true;
             outcomeTime = 0;
             OutcomeReady = false;
-            if (match.Body)
-                match.Body.gameObject.SetActive(false);
-            foreach (var p in presented)
-                if (p.actor.paddle)
-                    p.actor.paddle.SetActive(false);
             title.gameObject.SetActive(true);
             title.text = PlayerWon ? "Thắng" : "Thua";
             title.enableVertexGradient = true;
@@ -256,7 +361,7 @@ namespace PickleVerse.Multiplayer
         {
             outcomeTime += delta;
             float blend = Mathf.SmoothStep(0, 1, Mathf.Clamp01(outcomeTime / 1.25f));
-            int end = presented[0].player.CourtEnd;
+            int end = presented[0].capturedEnd;
             var facing = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
             var anchor = end < 0 ? stadium?.nearResult : stadium?.farResult;
             var center = anchor ? anchor.position : new Vector3(0, 0, end * 4.8f);
@@ -274,7 +379,7 @@ namespace PickleVerse.Multiplayer
                     clip = p.Clip("PKV_Fault_Reaction");
                     dance = clip ? Mathf.Min(dance, clip.length) : 0;
                 }
-                else if (p.player.Female)
+                else if (p.female)
                 {
                     clip = femaleWin;
                     dance = clip ? Mathf.Repeat(dance, clip.length) : 0;
@@ -300,7 +405,7 @@ namespace PickleVerse.Multiplayer
             {
                 OutcomeReady = true;
                 next.gameObject.SetActive(true);
-                UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(next.gameObject);
+                MatchPresentationUi.EnsureEventSystem(outcomeRoot.transform).SetSelectedGameObject(next.gameObject);
             }
             if (PlayerWon)
             {
@@ -311,8 +416,6 @@ namespace PickleVerse.Multiplayer
                 sheenText.anchoredPosition = new Vector2(-x, 0);
             }
             else shade.color = new Color(.012f, .018f, .035f, .22f + .025f * Mathf.Sin(outcomeTime * .8f));
-            if (ui.resultScreen.IsVisible)
-                overlay.SetAsFirstSibling();
         }
         void RestoreHud()
         {
@@ -323,13 +426,13 @@ namespace PickleVerse.Multiplayer
         }
         void OnDisable()
         {
-            foreach (var p in actors ?? Array.Empty<ActorPose>())
-                p.Restore();
-            foreach (var p in presented ?? Array.Empty<ActorPose>())
-                p.Restore();
+            if (PlayingIntro)
+                foreach (var p in actors ?? Array.Empty<ActorPose>())
+                    p.Restore();
             if (follow)
                 follow.enabled = followEnabled;
             PlayingIntro = ShowingOutcome = false;
         }
+        void OnDestroy() => SceneManager.activeSceneChanged -= RefreshOutcomeLighting;
     }
 }

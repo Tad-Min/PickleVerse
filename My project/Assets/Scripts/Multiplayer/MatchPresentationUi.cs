@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 namespace PickleVerse.Multiplayer
 {
@@ -51,6 +53,16 @@ namespace PickleVerse.Multiplayer
             r.anchorMin = new Vector2(a.xMin / Screen.width, a.yMin / Screen.height);
             r.anchorMax = new Vector2(a.xMax / Screen.width, a.yMax / Screen.height);
             r.offsetMin = r.offsetMax = Vector2.zero;
+        }
+
+        internal static EventSystem EnsureEventSystem(Transform parent)
+        {
+            if (EventSystem.current)
+                return EventSystem.current;
+            var events = new GameObject("Match Presentation EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            events.transform.SetParent(parent, false);
+            events.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
+            return events.GetComponent<EventSystem>();
         }
     }
 }

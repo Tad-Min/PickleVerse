@@ -115,7 +115,7 @@ namespace PickleVerse.Multiplayer
             onlineAuthorityMode = ticket.authorityMode;
             Roster = canonicalRoster;
         }
-        public Task PersistProgressionResultsAsync(string json)
+        async Task ApplyOnlineResultAsync(NetworkMatch match, string json)
         {
             var results = JsonConvert.DeserializeObject<List<OnlineMatchResult>>(json);
             var entry = results?.SingleOrDefault(r => r.onlineId == PlayerId);
@@ -130,7 +130,9 @@ namespace PickleVerse.Multiplayer
                 task = SaveOnlineResultAsync(own);
                 resultWrites[own.id] = task;
             }
-            return task;
+            if (!match.IsServer && own.outcome is MatchOutcome.Won or MatchOutcome.Lost)
+                ShowResult(own.id, match.Finished ? match.Status.ToString() : "Trận đã kết thúc.", own.outcome, match);
+            await task;
         }
         async Task SaveOnlineResultAsync(MatchResult result)
         {
@@ -155,23 +157,47 @@ namespace PickleVerse.Multiplayer
                 throw;
             }
         }
-        public bool ApplyOnlineProgressionResults(string json)
+        internal void ApplyOnlineProgressionResults(NetworkMatch match, string json)
         {
-            if (string.IsNullOrEmpty(json))
-                return false;
-            _ = Safe(PersistProgressionResultsAsync(json));
-            return true;
+            if (!string.IsNullOrEmpty(json) && Match?.Runner == match.Runner)
+                _ = Safe(ApplyOnlineResultAsync(match, json));
         }
 
         internal MultiplayerResultScreen ResultScreen { get; private set; }
+        MultiplayerCinematic outcome;
 
-        internal void ShowResult(string matchId, string text)
+        MultiplayerCinematic CaptureOutcomeCourt(NetworkMatch match)
         {
+            var court = MultiplayerCourtUI.Instance;
+            return match && match.IsSpawned && Match?.Runner == match.Runner && court && court.gameObject.scene == match.gameObject.scene &&
+                court.cinematic && court.cinematic.TryCaptureOutcome(match, this) ? court.cinematic : null;
+        }
+
+        internal void ShowResult(string matchId, string text, MatchOutcome result, NetworkMatch match = null,
+            MultiplayerCinematic retainedCourt = null)
+        {
+            if (closing || quitting || State == FlowState.Results)
+                return;
 #if !UNITY_SERVER
-            if (!ResultScreen)
-                ResultScreen = MultiplayerResultScreen.Create(this, matchId, MultiplayerCourtUI.Instance);
+            if (result is MatchOutcome.Won or MatchOutcome.Lost)
+                outcome = retainedCourt ? retainedCourt : CaptureOutcomeCourt(match);
+            var court = outcome ? outcome.GetComponent<MultiplayerCourtUI>() : MultiplayerCourtUI.Instance;
+            ResultScreen = MultiplayerResultScreen.Create(this, matchId, court);
+            if (outcome)
+                outcome.PresentOutcome(result == MatchOutcome.Won, text);
 #endif
             SetState(FlowState.Results, text);
+#if !UNITY_SERVER
+            if (!outcome)
+                ResultScreen.Open();
+#endif
+        }
+
+        internal void CloseOutcome()
+        {
+            if (outcome)
+                outcome.CloseOutcome();
+            outcome = null;
         }
 
         async Task KeepFinishedResultAsync()
@@ -180,7 +206,9 @@ namespace PickleVerse.Multiplayer
             var screen = ResultScreen;
             if (screen)
             {
-                screen.OpenAfterDisconnect();
+                screen.MarkDisconnected();
+                if (!outcome || !outcome.isActiveAndEnabled || !outcome.HasOutcome)
+                    screen.Open();
                 _ = RefreshDisconnectedResultAsync(screen.MatchId, screen);
             }
             await LeaveMatchAsync();

@@ -47,7 +47,7 @@ namespace PickleVerse.Multiplayer
         }
         public Vector2 TouchMovement { get; set; }
         public bool TouchRun { get; set; }
-        public bool InputBlocked => PickleVerse.Settings.SceneLoading.IsBlocking || cinematic && cinematic.OwnsPose || localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
+        public bool InputBlocked => PickleVerse.Settings.SceneLoading.IsBlocking || cinematic && (cinematic.OwnsPose || cinematic.HasOutcome) || localInputPaused || help && help.activeSelf || resultScreen && resultScreen.IsVisible;
         public bool IsGameplay => true;
         public bool IsPaused => localInputPaused;
         public bool CanSignOut => false;
@@ -115,6 +115,7 @@ namespace PickleVerse.Multiplayer
         }
         void LeaveClicked()
         {
+            if (cinematic && cinematic.HasOutcome) return;
             var app = MultiplayerApp.Instance;
             if (!app)
             {
@@ -125,6 +126,7 @@ namespace PickleVerse.Multiplayer
         }
         void ReturnClicked()
         {
+            if (cinematic && cinematic.HasOutcome) return;
             var app = MultiplayerApp.Instance;
             if (!app)
             {
@@ -159,7 +161,8 @@ namespace PickleVerse.Multiplayer
         void Update()
         {
             bool readKeys = !PickleVerse.Settings.SceneLoading.IsBlocking && Keyboard.current != null && (Application.isFocused || InputSystem.settings.backgroundBehavior == InputSettings.BackgroundBehavior.IgnoreFocus);
-            if (readKeys && (!resultScreen || !resultScreen.IsVisible) && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading)
+            bool hasOutcome = cinematic && cinematic.HasOutcome;
+            if (readKeys && !hasOutcome && (!resultScreen || !resultScreen.IsVisible) && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading)
             {
                 if (GameControls.Pressed(GameAction.Settings))
                     OpenSettings();
@@ -179,7 +182,7 @@ namespace PickleVerse.Multiplayer
                 EnsureEndAnnouncement(match.Status.ToString());
             if (!announcements && EndAnnouncementReceived && Time.unscaledTime >= announcementUntil && notices.Count == 0)
                 EndAnnouncementFinished = true;
-            if (cinematic && cinematic.OwnsPose)
+            if (cinematic && (cinematic.OwnsPose || hasOutcome && !hasMatch))
             {
                 if (intro)
                     intro.SetActive(false);
@@ -260,11 +263,11 @@ namespace PickleVerse.Multiplayer
             }
             if (returnToRoom)
             {
-                returnToRoom.gameObject.SetActive(nextGame || ended && !resultActions);
+                returnToRoom.gameObject.SetActive(!hasOutcome && (nextGame || ended && !resultActions));
                 returnToRoom.interactable = !app || !app.Busy;
             }
             if (leave)
-                leave.gameObject.SetActive(!ended && !nextGame);
+                leave.gameObject.SetActive(!hasOutcome && !ended && !nextGame);
             var owner = localOwner;
             bool choosing = owner && !string.IsNullOrEmpty(owner.SelectionKeys), swinging = owner && owner.Actor && owner.Actor.Swinging && !string.IsNullOrEmpty(owner.ActiveShotKeys);
             string keys = choosing ? owner.SelectionKeys : swinging ? owner.ActiveShotKeys : "", description = choosing ? owner.Selection : swinging ? owner.Actor.Intent.ToString() : "";

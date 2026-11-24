@@ -4,7 +4,6 @@ using PickleVerse.Settings;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 
 namespace PickleVerse.Multiplayer
 {
@@ -73,14 +72,11 @@ namespace PickleVerse.Multiplayer
             heading.text = "ĐANG XÁC NHẬN KẾT QUẢ";
             delta.text = elo.text = rank.text = score.text = experience.text = opponent.text = "";
             panel.gameObject.SetActive(true);
+            app.CloseOutcome();
             Update();
         }
 
-        internal void OpenAfterDisconnect()
-        {
-            connectionClosed = true;
-            Open();
-        }
+        internal void MarkDisconnected() => connectionClosed = true;
         internal void Close()
         {
             resultCanvas.SetActive(false);
@@ -90,16 +86,11 @@ namespace PickleVerse.Multiplayer
         {
             if (!IsVisible)
                 return;
-            if (!EventSystem.current)
-            {
-                var events = new GameObject("Result EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-                events.transform.SetParent(transform, false);
-                events.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
-            }
+            var events = MatchPresentationUi.EnsureEventSystem(transform);
             roomButton.interactable = menuButton.interactable = app && !app.Busy && (connectionClosed || RenderedMatchId != null);
-            if (EventSystem.current && EventSystem.current != focusedEventSystem)
+            if (events != focusedEventSystem)
             {
-                focusedEventSystem = EventSystem.current;
+                focusedEventSystem = events;
                 focusedEventSystem.SetSelectedGameObject(roomButton.gameObject);
             }
             if (ProgressionRuntime.Exists && RenderedMatchId != MatchId)

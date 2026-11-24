@@ -906,14 +906,24 @@ namespace PickleVerse.Multiplayer
             string name = previous.Id, region = previous.Region;
             var previousRoster = Roster;
             int generation = operation;
-            SetState(FlowState.Reconnecting, "Đang kết nối lại, tối đa 30 giây…");
-            double deadline = Time.realtimeSinceStartupAsDouble + Settings.reconnectSeconds;
+            MultiplayerCinematic retainedCourt = null;
             try
             {
+#if !UNITY_SERVER
+                // Fusion invokes Stopped before despawning actors and unloading the court.
+                if (previous.IsDedicated)
+                {
+                    retainedCourt = CaptureOutcomeCourt(NetworkMatch.Instance);
+                    if (retainedCourt)
+                        retainedCourt.HoldForResult();
+                }
+#endif
+                SetState(FlowState.Reconnecting, "Đang kết nối lại, tối đa 30 giây…");
+                double deadline = Time.realtimeSinceStartupAsDouble + Settings.reconnectSeconds;
                 await LeaveMatchAsync();
                 if (previous.IsDedicated)
                 {
-                    await RejoinDedicatedAsync(previousRoster.matchId, generation, fromMenu: false);
+                    await RejoinDedicatedAsync(previousRoster.matchId, generation, fromMenu: false, retainedCourt);
                     return;
                 }
                 while (generation == operation && Time.realtimeSinceStartupAsDouble < deadline)
@@ -933,6 +943,8 @@ namespace PickleVerse.Multiplayer
             }
             finally
             {
+                if (retainedCourt && outcome != retainedCourt)
+                    retainedCourt.CloseOutcome();
                 reconnecting = false;
             }
         }
@@ -1071,6 +1083,8 @@ namespace PickleVerse.Multiplayer
         }
         public void MatchStarted()
         {
+            if (State == FlowState.Results)
+                return;
             clock.Stop();
             stagingRequest = null;
             readyTicket = null;
@@ -1086,10 +1100,14 @@ namespace PickleVerse.Multiplayer
         }
         void SetState(FlowState state, string text)
         {
-            if (state != FlowState.Results && ResultScreen)
+            if (state != FlowState.Results)
             {
-                ResultScreen.Close();
-                ResultScreen = null;
+                CloseOutcome();
+                if (ResultScreen)
+                {
+                    ResultScreen.Close();
+                    ResultScreen = null;
+                }
             }
             State = state;
             SetNotice(text);

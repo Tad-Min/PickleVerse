@@ -85,7 +85,7 @@ namespace PickleVerse.Multiplayer
         }
 #endif
 
-        async Task RejoinDedicatedAsync(string matchId, int generation, bool fromMenu)
+        async Task RejoinDedicatedAsync(string matchId, int generation, bool fromMenu, MultiplayerCinematic retainedCourt = null)
         {
             var account = AccountRuntime.Ensure().Account;
             int version = account.SessionVersion;
@@ -135,11 +135,12 @@ namespace PickleVerse.Multiplayer
                     catch (Exception error) when (error is ApiException or InvalidOperationException or OperationCanceledException) { }
                 }
                 if (!IsCurrent()) return;
-                if (SavedMatchResult(matchId)?.outcome is MatchOutcome.Won or MatchOutcome.Lost)
+                var saved = SavedMatchResult(matchId);
+                if (saved?.outcome is MatchOutcome.Won or MatchOutcome.Lost)
                 {
                     SceneLoading.CancelExternal();
-                    ShowResult(matchId, "Trận đã kết thúc.");
-                    if (ResultScreen) ResultScreen.Open();
+                    ShowResult(matchId, "Trận đã kết thúc.", saved.outcome, retainedCourt: retainedCourt);
+                    if (ResultScreen) ResultScreen.MarkDisconnected();
                     return;
                 }
             }

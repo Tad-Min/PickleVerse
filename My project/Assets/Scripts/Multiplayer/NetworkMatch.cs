@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 using PickleVerse.LocalMatch;
+using PickleVerse.Progression;
 using PickleVerse.Rules;
 using PickleVerse.Audio;
 
@@ -847,8 +848,12 @@ namespace PickleVerse.Multiplayer
             replay?.Finish(true);
             var app = MultiplayerApp.Instance;
             if (app && app.Match?.Runner == Runner)
-                app.ShowResult(Roster.matchId, Status.ToString());
-            MultiplayerCourtUI.Instance?.EnsureEndAnnouncement(Status.ToString());
+            {
+                var local = Roster.Find(app.PlayerId);
+                var result = local == null || WinningTeam is < 0 or > 1 ? MatchOutcome.Interrupted
+                    : WinningTeam == local.team ? MatchOutcome.Won : MatchOutcome.Lost;
+                app.ShowResult(Roster.matchId, Status.ToString(), result, this);
+            }
         }
         void SoundEffect(int sound)
         {
