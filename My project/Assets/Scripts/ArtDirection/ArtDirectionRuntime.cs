@@ -33,6 +33,7 @@ namespace PickleVerse.ArtDirection
         readonly Dictionary<ScriptableRendererFeature, bool> ssaoOriginal = new Dictionary<ScriptableRendererFeature, bool>();
         float cinematicTarget;
         string appliedScene, appliedSceneForCinematic;
+        GameObject atmosphere;
         int appliedMsaa = -1;
 
         /// <summary>0 = Low (grading only), 1 = Medium (+ bloom, vignette), 2 = High (+ SSAO, cinematic depth of field).</summary>
@@ -124,6 +125,7 @@ namespace PickleVerse.ArtDirection
             nightVolume.sharedProfile = Current?.nightProfile;
             qualityVolume.weight = post && tier == 0 && qualityVolume.sharedProfile ? 1 : 0;
             SetSsao(post && tier >= 2);
+            SpawnAtmosphere(Current != null && tier >= 1 ? Current.atmosphere : null);
             if (Current != null)
             {
                 Shader.SetGlobalVector(ShadowTintId, Current.shadowTint);
@@ -135,6 +137,20 @@ namespace PickleVerse.ArtDirection
             }
             else
                 Shader.SetGlobalFloat(LookOnId, 0);
+        }
+
+        void SpawnAtmosphere(GameObject prefab)
+        {
+            if (atmosphere && atmosphere.scene == SceneManager.GetActiveScene() && atmosphere.name == (prefab ? prefab.name : null))
+                return;
+            if (atmosphere)
+                Destroy(atmosphere);
+            atmosphere = null;
+            if (!prefab)
+                return;
+            atmosphere = Instantiate(prefab);
+            atmosphere.name = prefab.name;
+            SceneManager.MoveGameObjectToScene(atmosphere, SceneManager.GetActiveScene());
         }
 
         void SetSsao(bool on)

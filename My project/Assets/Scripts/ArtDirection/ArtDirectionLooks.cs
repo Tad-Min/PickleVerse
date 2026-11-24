@@ -33,6 +33,8 @@ namespace PickleVerse.ArtDirection
             [Tooltip("xy wind direction (xz plane), z strength scale, w speed scale.")]
             public Vector4 wind = new Vector4(.91f, .41f, 1f, 1f);
             [Range(0, 1)] public float wetness;
+            [Tooltip("Ambient particles / light shafts spawned into the scene (Medium and High presets only). Must stay off the court.")]
+            public GameObject atmosphere;
         }
 
         public Look[] looks = Array.Empty<Look>();

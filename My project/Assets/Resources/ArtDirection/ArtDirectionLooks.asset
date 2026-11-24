@@ -26,6 +26,7 @@ MonoBehaviour:
     ambientBoost: {r: 1, g: 1, b: 1, a: 1}
     wind: {x: 0.91, y: 0.41, z: 1, w: 1}
     wetness: 0
+    atmosphere: {fileID: 918172997986122264, guid: 5bde31f93046d2a4d8ebea5b2ebd04c1, type: 3}
   - name: Academy Arena
     scenes:
     - Training
@@ -39,6 +40,7 @@ MonoBehaviour:
     ambientBoost: {r: 1, g: 1, b: 1, a: 1}
     wind: {x: 0.7, y: 0.7, z: 0.35, w: 0.6}
     wetness: 0
+    atmosphere: {fileID: 1869417179130586070, guid: ebe8746658ab013418e2963b7495f22f, type: 3}
   - name: Showroom
     scenes:
     - Shop
@@ -51,6 +53,7 @@ MonoBehaviour:
     ambientBoost: {r: 1, g: 1, b: 1, a: 1}
     wind: {x: 0, y: 0, z: 0, w: 0}
     wetness: 0
+    atmosphere: {fileID: 0}
   cinematicProfile: {fileID: 11400000, guid: 4e7aea0bb1adbc14d95046980030fc34, type: 2}
   lowQualityProfile: {fileID: 11400000, guid: 4cc714939fd67ed4fa014ea9e114344a, type: 2}
   ssaoRenderers:
