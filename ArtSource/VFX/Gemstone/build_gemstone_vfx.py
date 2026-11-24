@@ -215,22 +215,22 @@ def preview(frames=60):
     scene.collection.objects.link(fill)
 
     cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam"))
-    cam.data.lens = 26
-    cam.location = (1.0, -6.4, 1.75)
+    cam.data.lens = 36
+    cam.location = (0.35, -4.5, 1.45)
     scene.collection.objects.link(cam)
     scene.camera = cam
-    target = Vector((1.0, 0.0, 0.8))
+    target = Vector((0.35, 0.0, 1.05))
     cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
 
     # Ball flight: launched off the paddle at the left, apex 1.6 m, lands right.
-    start, end, apex = Vector((-1.6, 0.0, 0.9)), Vector((4.2, 0.6, 0.04)), 1.65
+    start, end, apex = Vector((-1.1, 0.0, 1.05)), Vector((3.1, 0.5, 0.55)), 1.62
     def ball_at(t):
         p = start.lerp(end, t)
         p.z = start.z + (end.z - start.z) * t + 4 * (apex - (start.z + end.z) / 2) * t * (1 - t)
         return p
-    flight_start, flight_frames = 6, 44
+    flight_start, flight_frames = 12, 48
 
-    # Paddle (the Gemstone skin) frozen at follow-through; ball model.
+    # Paddle (the Gemstone skin): swings through the contact frame and follows through; ball model.
     paddle_path = os.path.join(ASSETS, "Models", "Paddle", "paddle-skin-gemstone-model.glb")
     if os.path.exists(paddle_path):
         before = set(bpy.data.objects)
@@ -238,9 +238,25 @@ def preview(frames=60):
         parts = [o for o in bpy.data.objects if o not in before]
         root = next((o for o in parts if o.parent is None), parts[0])
         dims = max(max(o.dimensions) for o in parts if o.type == "MESH")
-        root.scale = [0.62 / max(dims, 1e-3)] * 3
-        root.location = (-1.95, -0.25, 0.95)
-        root.rotation_euler = (math.radians(75), math.radians(-35), math.radians(-15))
+        root.scale = [0.98 / max(dims, 1e-3)] * 3
+        root.location = (-1.42, -0.12, 1.08)
+        root.rotation_euler = (math.radians(80), math.radians(-8), math.radians(-12))
+        hinge = bpy.data.objects.new("SwingHinge", None)
+        hinge.location = (-1.5, -0.12, 0.55)
+        scene.collection.objects.link(hinge)
+        bpy.context.view_layer.update()
+        root.parent = hinge
+        root.matrix_parent_inverse = hinge.matrix_world.inverted()
+        for f, angle in ((1, -58), (6, -64), (flight_start, 4), (flight_start + 6, 34), (flight_start + 16, 26), (frames, 22)):
+            hinge.rotation_euler = (0, math.radians(angle), 0)
+            hinge.keyframe_insert("rotation_euler", frame=f)
+        # Jeweller's lighting: a warm key on the gems, an emerald rim from behind.
+        for name, loc, energy, colour, size in (("PaddleKey", (-1.7, -1.5, 1.75), 26, (1.0, 0.9, 0.74), 0.5), ("PaddleRim", (-2.1, 0.9, 1.6), 22, (0.35, 1.0, 0.7), 0.6)):
+            light = bpy.data.objects.new(name, bpy.data.lights.new(name, "AREA"))
+            light.data.energy, light.data.color, light.data.size = energy, colour, size
+            light.location = loc
+            light.rotation_euler = (Vector((-1.4, -0.1, 1.1)) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
+            scene.collection.objects.link(light)
     bpy.ops.mesh.primitive_uv_sphere_add(radius=0.075, segments=32, ring_count=16)
     ball = bpy.context.object
     bpy.ops.object.shade_smooth()
@@ -305,11 +321,11 @@ def preview(frames=60):
     trail.data.materials.append(tm)
     # Emerald halo: a wider, dimmer copy of the ribbon (reads as the green fire of the paddle's emeralds).
     halo_curve = curve.copy()
-    halo_curve.bevel_depth = 0.075
+    halo_curve.bevel_depth = 0.05
     halo = bpy.data.objects.new("TrailHalo", halo_curve)
     scene.collection.objects.link(halo)
     halo_curve.materials.clear()
-    halo_curve.materials.append(emission("EmeraldHalo", (0.04, 0.78, 0.30), 0.55, additive=True))
+    halo_curve.materials.append(emission("EmeraldHalo", (0.04, 0.78, 0.30), 0.34, additive=True))
     for f in range(1, frames + 1):
         t = min(max((f - flight_start) / flight_frames, 0), 1)
         for c, lag in ((curve, 0.32), (halo_curve, 0.26)):
