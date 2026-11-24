@@ -1247,7 +1247,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -124342618953976126, guid: cbbca3952b8b5bd4280440de2ab283d3, type: 3}
+  - {fileID: 2100000, guid: 30acb7fe787117c48a52e8502b609a6a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2102,7 +2102,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7070998040287193566, guid: 9122173920e8dfc4b9dac51863916f98, type: 3}
+  - {fileID: 2100000, guid: dff8d83c5c12e8740954c46ed5deb1ff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2815,7 +2815,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 111690740065759945, guid: 17795c0383819aa4dbecdebe91e6039b, type: 3}
+  - {fileID: 2100000, guid: ef28c9973732e8d4ebca7028778611e0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6689,7 +6689,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<size=28><color=#83E6CD>\u0110I\u1EC0U KHI\u1EC2N & LU\u1EACT</color></size>\n\nWASD di chuy\u1EC3n \u2022 Shift ch\u1EA1y \u2022 Kh\xF4ng c\xF3 nh\u1EA3y\nJ Drive sau n\u1EA3y | K Dink sau n\u1EA3y | L Volley tr\u01B0\u1EDBc n\u1EA3y\nJ+K Drop | J+L Smash b\xF3ng cao | K+L Reset volley\nJ/K/L + U t\u1EA5n c\xF4ng | J/K/L + I ch\xE9o \u2022 T\u1ED1i \u0111a hai n\xFAt\n\nGi\u1EEF \u0111\u1EC3 ch\u1ECDn, th\u1EA3 ph\xEDm g\u1ED1c \u0111\u1EC3 swing; swing tr\u1EC5 c\xF3 th\u1EC3 tr\u01B0\u1EE3t.\nReturn v\xE0 c\xFA th\u1EE9 ba ph\u1EA3i n\u1EA3y. Volley trong Kitchen ho\u1EB7c \u0111\xE0 v\xE0o Kitchen l\xE0 l\u1ED7i.\nEsc m\u1EDF c\u00E0i \u0111\u1EB7t \u2022 Enter ti\u1EBFp t\u1EE5c\nC\u1EA3m \u1EE9ng: joystick v\xE0 gi\u1EEF/th\u1EA3 n\xFAt; U/I b\u1EADt t\u1EAFt l\xE0m b\u1ED5 tr\u1EE3."
+  m_text: "<size=28><color=#83E6CD>\u0110I\u1EC0U KHI\u1EC2N & LU\u1EACT</color></size>\n\nWASD di chuy\u1EC3n \u2022 Shift ch\u1EA1y \u2022 Kh\xF4ng c\xF3 nh\u1EA3y\nJ Drive sau n\u1EA3y | K Dink sau n\u1EA3y | L Volley tr\u01B0\u1EDBc n\u1EA3y\nJ+K Drop | J+L Smash b\xF3ng cao | K+L Reset volley\nJ/K/L + U t\u1EA5n c\xF4ng | J/K/L + I ch\xE9o \u2022 T\u1ED1i \u0111a hai n\xFAt\n\nGi\u1EEF \u0111\u1EC3 ch\u1ECDn, th\u1EA3 ph\xEDm g\u1ED1c \u0111\u1EC3 swing; swing tr\u1EC5 c\xF3 th\u1EC3 tr\u01B0\u1EE3t.\nReturn v\xE0 c\xFA th\u1EE9 ba ph\u1EA3i n\u1EA3y. Volley trong Kitchen ho\u1EB7c \u0111\xE0 v\xE0o Kitchen l\xE0 l\u1ED7i.\nEsc m\u1EDF c\xE0i \u0111\u1EB7t \u2022 Enter ti\u1EBFp t\u1EE5c\nC\u1EA3m \u1EE9ng: joystick v\xE0 gi\u1EEF/th\u1EA3 n\xFAt; U/I b\u1EADt t\u1EAFt l\xE0m b\u1ED5 tr\u1EE3."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7a1acc010f3c2904e9e4d597fe6c04cd, type: 2}
   m_sharedMaterial: {fileID: -7938430593459131251, guid: 7a1acc010f3c2904e9e4d597fe6c04cd, type: 2}
@@ -7807,7 +7807,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -1281455694887351328, guid: 98b97cbb0312daf4c98e223c3e3f1aed, type: 3}
+  - {fileID: 2100000, guid: bf53ba2f1ec6d534ca290d8f38e92975, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15433,7 +15433,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7070998040287193566, guid: 9122173920e8dfc4b9dac51863916f98, type: 3}
+  - {fileID: 2100000, guid: dff8d83c5c12e8740954c46ed5deb1ff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

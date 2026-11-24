@@ -8,46 +8,96 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SD_Paint
-  m_Shader: {fileID: 4800000, guid: 936401536fdbde74fbf73d3dc2c0f7ac, type: 3}
+  m_Shader: {fileID: 4800000, guid: 51f63fcaf75761c4ab825749d252aaad, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _MASKMAP
+  - _NORMALMAP
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
-  stringTagMap:
-    RenderType: Opaque
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: e11ee3cce068b5748aaed7190b51ca10, type: 3}
+        m_Texture: {fileID: 2800000, guid: c9b34c0481672d74eb6bf9c6323d067a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: b1ca6cb77007bea498194200199f974e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMap:
+        m_Texture: {fileID: 2800000, guid: bd0e8f41c2aa3604697b42a06c5b2a46, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskMap:
+        m_Texture: {fileID: 2800000, guid: 10abb213e349f164d82309b445e302fe, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AlphaTest: 0
     - _AlphaToMask: 0
-    - _BumpScale: 0
+    - _BumpScale: 0.35
+    - _CourtGrain: 0.35
+    - _CourtWear: 0.55
     - _Cull: 2
     - _Cutoff: 0.5
+    - _DetailScale: 7
+    - _DetailStrength: 0
     - _Dither: 0
+    - _EdgeHighlight: 0.35
     - _GlassSmoothness: 0
     - _Glow: 0
+    - _GradientStrength: 0
+    - _KitchenDepth: 2.134
     - _Metallic: 0
-    - _Smoothness: 0.52
+    - _NoiseAlbedo: 0
+    - _NoiseScale: 0.15
+    - _NoiseSmoothness: 0
+    - _OcclusionStrength: 1
+    - _Puddles: 0.35
+    - _RimPower: 4.5
+    - _RimStrength: 0.14
+    - _ShadowTintStrength: 1
+    - _Smoothness: 0.8857143
+    - _SpecularScale: 1
     - _SunMask: 0
     - _Unlit: 0
-    - _UseNormalMap: 0
+    - _UseCourt: 0
+    - _UseEmission: 0
+    - _UseMaskMap: 1
+    - _UseNormalMap: 1
+    - _UseWetness: 0
+    - _UseWind: 0
+    - _UseWorldDetail: 0
+    - _VertexTint: 1
     - _Water: 0
-    m_Colors: []
+    - _WetResponse: 1
+    - _WindSpeedScale: 1
+    - _WindWeight: 0
+    - _Wrap: 0.25
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CourtParams: {r: 0, g: 0, b: 3.05, a: 6.705}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GradientColor: {r: 0.54999995, g: 0.56, b: 0.6399999, a: 1}
+    - _GradientRange: {r: 0, g: 1, b: 0, a: 0}
+    - _KitchenTint: {r: 0.93, g: 0.95, b: 1, a: 1}
+    - _RimColor: {r: 1, g: 0.827451, b: 0.6117647, a: 1}
+    - _SmoothnessRange: {r: 0.04, g: 0.88, b: 0, a: 0}
+    - _SurroundExtent: {r: 9.25, g: 13.2, b: 0, a: 0}
+    - _SurroundTint: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

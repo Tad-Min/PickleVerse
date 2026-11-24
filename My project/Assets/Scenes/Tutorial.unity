@@ -1009,7 +1009,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -124342618953976126, guid: cbbca3952b8b5bd4280440de2ab283d3, type: 3}
+  - {fileID: 2100000, guid: 30acb7fe787117c48a52e8502b609a6a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1971,6 +1971,7 @@ MonoBehaviour:
   shotMask: 0
   joystick: 1
   modifier: 0
+  sprint: 0
   knob: {fileID: 739719289}
 --- !u!114 &247731561
 MonoBehaviour:
@@ -2131,7 +2132,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7070998040287193566, guid: 9122173920e8dfc4b9dac51863916f98, type: 3}
+  - {fileID: 2100000, guid: dff8d83c5c12e8740954c46ed5deb1ff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2347,7 +2348,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 111690740065759945, guid: 17795c0383819aa4dbecdebe91e6039b, type: 3}
+  - {fileID: 2100000, guid: ef28c9973732e8d4ebca7028778611e0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3250,6 +3251,7 @@ MonoBehaviour:
   stadium: {fileID: 623787780}
   selectedNight: 0
   useLocalLaunchSettings: 0
+  minimumCourtIllumination: 0
 --- !u!114 &512385379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6383,7 +6385,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -1281455694887351328, guid: 98b97cbb0312daf4c98e223c3e3f1aed, type: 3}
+  - {fileID: 2100000, guid: bf53ba2f1ec6d534ca290d8f38e92975, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8602,6 +8604,7 @@ MonoBehaviour:
   shotMask: 4
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1303477149
 MonoBehaviour:
@@ -8792,6 +8795,7 @@ MonoBehaviour:
   shotMask: 8
   joystick: 0
   modifier: 1
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1335479974
 MonoBehaviour:
@@ -10543,7 +10547,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7070998040287193566, guid: 9122173920e8dfc4b9dac51863916f98, type: 3}
+  - {fileID: 2100000, guid: dff8d83c5c12e8740954c46ed5deb1ff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11335,6 +11339,7 @@ MonoBehaviour:
   shotMask: 1
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &1726890822
 MonoBehaviour:
@@ -12957,6 +12962,7 @@ MonoBehaviour:
   shotMask: 2
   joystick: 0
   modifier: 0
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &2105274696
 MonoBehaviour:
@@ -13051,6 +13057,7 @@ MonoBehaviour:
   shotMask: 16
   joystick: 0
   modifier: 1
+  sprint: 0
   knob: {fileID: 0}
 --- !u!114 &2114893539
 MonoBehaviour:
