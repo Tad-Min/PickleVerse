@@ -21,7 +21,7 @@ public sealed class ProgressResetService(IUnitOfWork unit, RedisGameState matchm
             || selection.Groups.Distinct().Count() != selection.Groups.Count) throw new AppException("Hãy chọn các nhóm tiến trình hợp lệ.", HttpStatusCode.BadRequest);
     }
     Task<bool> Busy(Guid player) => BusyCore(player);
-    async Task<bool> BusyCore(Guid player) => await unit.Game.InMatch(player, Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds))
+    async Task<bool> BusyCore(Guid player) => await unit.Game.InMatch(player, Now.AddSeconds(-settings.Matchmaking.ReadyWindowSeconds))
         || await matchmaking.HasActiveSearch(player, new DateTimeOffset(Now).ToUnixTimeMilliseconds());
     public async Task<ProgressResetPreview> Preview(Guid player, ProgressResetSelection selection)
     {

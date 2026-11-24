@@ -9,7 +9,7 @@ static class TestSettings
         .AddInMemoryCollection(new Dictionary<string, string?>
         { ["Jwt:Key"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48)),
           // Stable timing fixture, independent of a developer's local gameplay settings.
-          ["Matchmaking:BotFallbackSeconds"] = "360", ["Matchmaking:ReadyConfirmationSeconds"] = "120" }).Build();
+          ["Matchmaking:BotFallbackSeconds"] = "360", ["Matchmaking:ReadyConfirmationSeconds"] = "120", ["Matchmaking:ReadyIntroSeconds"] = "0" }).Build();
     public static ServerSettings Load() => new(Configuration());
 
     public static IConfigurationRoot StorageConfiguration() => new ConfigurationBuilder()

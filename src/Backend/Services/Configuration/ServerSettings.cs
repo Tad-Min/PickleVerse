@@ -10,7 +10,13 @@ public sealed class ServerSettings
     public sealed record SmtpSettings(string Host, int Port, string FromName, string FromEmail, string Username, string Password);
     public sealed record OtpSettings(int LifetimeMinutes, int ResendCooldownSeconds, int MaxAttempts);
     public sealed record AuthenticationSettings(int AccessTokenHours, int RefreshTokenDays);
-    public sealed record MatchmakingSettings(int BotFallbackSeconds, int ReadyConfirmationSeconds);
+    /// <param name="ReadyIntroSeconds">Grace before the confirmation the players see: the client plays the match-found
+    /// intro first and only then shows Accept/Cancel and the countdown.</param>
+    public sealed record MatchmakingSettings(int BotFallbackSeconds, int ReadyConfirmationSeconds, int ReadyIntroSeconds = 0)
+    {
+        /// <summary>The server-side ready deadline: intro grace plus the visible confirmation window.</summary>
+        public int ReadyWindowSeconds => ReadyConfirmationSeconds + ReadyIntroSeconds;
+    }
     public sealed record OnlineMatchSettings(int DisconnectTimeoutSeconds, int HeartbeatSeconds);
     public sealed record RewardSettings(int Coins, int Gems, int Xp)
     {
@@ -52,7 +58,8 @@ public sealed class ServerSettings
             configuration["Smtp:FromEmail"] ?? "", configuration["Smtp:Username"] ?? "", configuration["Smtp:Password"] ?? "");
         Otp = new(Number("Otp:LifetimeMinutes", 1, 1440), Number("Otp:ResendCooldownSeconds", 1, 86400), Number("Otp:MaxAttempts", 1, 100));
         Authentication = new(Number("Authentication:AccessTokenHours", 1, 8760), Number("Authentication:RefreshTokenDays", 1, 3650));
-        Matchmaking = new(Number("Matchmaking:BotFallbackSeconds", 1, 86400), Number("Matchmaking:ReadyConfirmationSeconds", 1, 3600));
+        Matchmaking = new(Number("Matchmaking:BotFallbackSeconds", 1, 86400), Number("Matchmaking:ReadyConfirmationSeconds", 1, 3600),
+            string.IsNullOrWhiteSpace(configuration["Matchmaking:ReadyIntroSeconds"]) ? 4 : Number("Matchmaking:ReadyIntroSeconds", 0, 30));
         OnlineMatch = new(Number("OnlineMatch:DisconnectTimeoutSeconds", 2, 3600), Number("OnlineMatch:HeartbeatSeconds", 1, 3599));
         if (OnlineMatch.HeartbeatSeconds >= OnlineMatch.DisconnectTimeoutSeconds)
             throw new InvalidOperationException("OnlineMatch:HeartbeatSeconds must be less than OnlineMatch:DisconnectTimeoutSeconds.");

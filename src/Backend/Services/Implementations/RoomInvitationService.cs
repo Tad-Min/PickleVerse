@@ -35,7 +35,7 @@ public sealed class RoomInvitationService : IRoomInvitationService
         return p != null && p.ExpiresAt > Now ? p : null;
     }
     Task<bool> Friends(Guid a, Guid b) => _unitOfWork.Game.CanInvite(a, b);
-    Task<bool> InMatch(Guid player) => _unitOfWork.Game.InMatch(player, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds));
+    Task<bool> InMatch(Guid player) => _unitOfWork.Game.InMatch(player, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyWindowSeconds));
     static int Capacity(Presence p) => p.Value.Custom ? 2 * p.Value.Mode : 2;
     static bool ValidCode(string code) => Regex.IsMatch(code, "^[A-Z0-9-]{6,64}$");
     async Task<Presence?> Room(string code, bool resolveRegionDuringHandoff = false)

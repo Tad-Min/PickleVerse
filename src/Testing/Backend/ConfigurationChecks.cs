@@ -37,6 +37,7 @@ static class ConfigurationChecks
             ["Authentication:RefreshTokenDays"] = "4",
             ["Matchmaking:BotFallbackSeconds"] = "7",
             ["Matchmaking:ReadyConfirmationSeconds"] = "6",
+            ["Matchmaking:ReadyIntroSeconds"] = "2",
             ["OnlineMatch:DisconnectTimeoutSeconds"] = "9",
             ["OnlineMatch:HeartbeatSeconds"] = "2",
             ["Progression:winXp"] = "77",
@@ -138,9 +139,9 @@ static class ConfigurationChecks
         }
         var request = await Ranked();
         var offer = await Game(s => s.OfferOnline(player, request));
-        check(offer.readyRemainingSeconds == 6 && !offer.allAccepted,
-            "ready confirmation opens with the configured duration");
-        clock.Now = clock.Now.AddSeconds(7);
+        check(offer.readyRemainingSeconds == 8 && !offer.allAccepted,
+            "ready confirmation opens with the intro grace plus the configured confirmation");
+        clock.Now = clock.Now.AddSeconds(9);
         await Reject(() => Game(s => s.PrepareOnline(player, request)), HttpStatusCode.Conflict,
             "ready confirmation expires using the configured timeout");
         await Game(s => s.CancelRankedSearch(player, new() { SearchId = Guid.Parse(request.SearchId) }));

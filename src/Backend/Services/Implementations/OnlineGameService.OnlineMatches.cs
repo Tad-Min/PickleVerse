@@ -233,7 +233,7 @@ public sealed partial class OnlineGameService
                     MatchId = m.roster.matchId, LeaseId = Guid.NewGuid().ToString("N"), Session = "ds-" + m.roster.matchId,
                     Region = m.roster.region, Roster = m.roster, Protocol = settings.Dedicated.Protocol,
                     TelemetryEnabled = settings.HybridAi.IngestEnabled, ReplayWriter = m.host
-                }, settings.Dedicated.MaxConcurrentMatches, settings.Matchmaking.ReadyConfirmationSeconds + 20);
+                }, settings.Dedicated.MaxConcurrentMatches, settings.Matchmaking.ReadyWindowSeconds + 20);
                 if (allocation == null)
                 {
                     if (await matchmaking.ReadyExists(m.roster.matchId)) return await CancelOffer();
@@ -244,7 +244,7 @@ public sealed partial class OnlineGameService
             }
             var ready = await matchmaking.Consent(m.roster.matchId, Hash(RosterKey(m.roster) + m.session + m.host),
                 m.roster.members.Select(x => x.id).ToArray(), m.roster.members.Where(x => x.bot).Select(x => x.id).ToArray(),
-                accept ? id.ToString("N") : null, Milliseconds, settings.Matchmaking.ReadyConfirmationSeconds);
+                accept ? id.ToString("N") : null, Milliseconds, settings.Matchmaking.ReadyWindowSeconds);
             foreach (var p in participants)
                 p.accepted = ready.Accepted.Contains(p.id.ToString("N"));
             if (!ready.AllAccepted && ready.Deadline <= Milliseconds)
@@ -283,7 +283,7 @@ public sealed partial class OnlineGameService
             if (m.phase != "PREPARING")
                 throw Conflict("Trận không còn nhận xác nhận.");
             var ready = await matchmaking.Consent(m.roster.matchId, Hash(RosterKey(m.roster) + m.session + m.host),
-                m.roster.members.Select(x => x.id).ToArray(), m.roster.members.Where(x => x.bot).Select(x => x.id).ToArray(), null, Milliseconds, settings.Matchmaking.ReadyConfirmationSeconds);
+                m.roster.members.Select(x => x.id).ToArray(), m.roster.members.Where(x => x.bot).Select(x => x.id).ToArray(), null, Milliseconds, settings.Matchmaking.ReadyWindowSeconds);
             if (!ready.AllAccepted)
                 throw Conflict("Mọi người phải xác nhận trước khi tải sân.");
             foreach (var p in participants)
