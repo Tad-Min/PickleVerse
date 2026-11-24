@@ -8,6 +8,7 @@
     "Unity.ugui",
     "PickleVerse.CharacterMotion",
     "PickleVerse.Settings",
+    "PickleVerse.ArtDirection",
     "PickleVerse.Audio",
     "PickleVerse.Progression",
     "PickleVerse.Services",

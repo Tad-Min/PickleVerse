@@ -1,0 +1,5 @@
+{
+  "name": "PickleVerse.ArtDirection",
+  "rootNamespace": "PickleVerse.ArtDirection",
+  "references": ["Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime", "PickleVerse.Settings"]
+}

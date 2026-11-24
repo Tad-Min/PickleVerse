@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e05f7c65cdbc4f4aa9bdcf7d85ebce9, type: 3}
+  m_Name: ArtDirectionLooks
+  m_EditorClassIdentifier: PickleVerse.ArtDirection::PickleVerse.ArtDirection.ArtDirectionLooks
+  looks:
+  - name: Sunset District
+    scenes:
+    - Menu
+    - BotMatch
+    - MultiplayerCourt
+    profile: {fileID: 11400000, guid: 4c587995fd1fc864cb4fc48b220f62bc, type: 2}
+    nightProfile: {fileID: 11400000, guid: 90b3a45b53a96444c90e34ddb6426c44, type: 2}
+    postProcess: 1
+    shadowTint: {r: 0.66, g: 0.76, b: 1, a: 0.38}
+    rimTint: {r: 1, g: 0.88, b: 0.74, a: 1}
+    ambientBoost: {r: 1, g: 1, b: 1, a: 1}
+    wind: {x: 0.91, y: 0.41, z: 1, w: 1}
+    wetness: 0
+  - name: Academy Arena
+    scenes:
+    - Training
+    - Tutorial
+    - Replay
+    profile: {fileID: 11400000, guid: 90706a5406b41334dac9b48902ede194, type: 2}
+    nightProfile: {fileID: 0}
+    postProcess: 1
+    shadowTint: {r: 0.68, g: 0.78, b: 1, a: 0.32}
+    rimTint: {r: 1, g: 0.9, b: 0.78, a: 0.9}
+    ambientBoost: {r: 1, g: 1, b: 1, a: 1}
+    wind: {x: 0.7, y: 0.7, z: 0.35, w: 0.6}
+    wetness: 0
+  - name: Showroom
+    scenes:
+    - Shop
+    - Collection
+    profile: {fileID: 11400000, guid: 0340d80ef6a1659448635791b06ab794, type: 2}
+    nightProfile: {fileID: 0}
+    postProcess: 1
+    shadowTint: {r: 0.7, g: 0.8, b: 1, a: 0.25}
+    rimTint: {r: 1, g: 0.92, b: 0.82, a: 1.1}
+    ambientBoost: {r: 1, g: 1, b: 1, a: 1}
+    wind: {x: 0, y: 0, z: 0, w: 0}
+    wetness: 0
+  cinematicProfile: {fileID: 11400000, guid: 4e7aea0bb1adbc14d95046980030fc34, type: 2}
+  lowQualityProfile: {fileID: 11400000, guid: 4cc714939fd67ed4fa014ea9e114344a, type: 2}
+  ssaoRenderers:
+  - {fileID: 11400000, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}

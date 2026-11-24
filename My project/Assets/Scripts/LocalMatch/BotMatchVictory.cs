@@ -95,6 +95,7 @@ namespace PickleVerse.LocalMatch
             match.TouchRun = false;
             match.TouchShotMask = 0;
             Active = true;
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true);
             Ready = TransitionStarted = false;
             elapsed = DanceElapsed = 0;
             CurrentClip = null;
@@ -302,6 +303,7 @@ namespace PickleVerse.LocalMatch
             if (!Active)
                 return;
             Active = Ready = false;
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(false);
             if (TransitionStarted && PresentedActor)
             {
                 PresentedActor.transform.SetPositionAndRotation(actorPosition, actorRotation);

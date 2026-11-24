@@ -112,6 +112,7 @@ namespace PickleVerse.LocalMatch
                 match.ballTrail.Clear();
             }
             match.BeginCinematic();
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true);
             IsPlaying = true;
             Elapsed = 0;
             overlay.SetActive(true);
@@ -237,6 +238,7 @@ namespace PickleVerse.LocalMatch
             if (!IsPlaying)
                 return;
             IsPlaying = false;
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(false);
             Stage = "";
             humanPose.IdleAt(humanPose.end);
             botPose.IdleAt(botPose.end);
