@@ -168,6 +168,7 @@ namespace PickleVerse.Multiplayer
                     if (match.Body)
                         match.Body.gameObject.SetActive(false);
                     PlayingIntro = true;
+                    PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true);
                     title.gameObject.SetActive(false);
                     next.gameObject.SetActive(false);
                     shade.gameObject.SetActive(false);
@@ -237,6 +238,7 @@ namespace PickleVerse.Multiplayer
             if (NetworkMatch.Instance && NetworkMatch.Instance.Body)
                 NetworkMatch.Instance.Body.gameObject.SetActive(true);
             PlayingIntro = false;
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(false);
             finishedIntro = true;
             overlay.gameObject.SetActive(false);
             RestoreHud();
@@ -266,6 +268,8 @@ namespace PickleVerse.Multiplayer
                 EndIntro();
 
             // Keep the rendered venue and local actor copies outside Fusion's scene before it can shut down.
+            // The venue keeps its art-direction look (grading, shadow tint) after the court scene is gone.
+            PickleVerse.ArtDirection.ArtDirectionRuntime.HoldLook(scene.name);
             outcomeRoot = new GameObject("Finished Match Presentation");
             var root = outcomeRoot.transform;
             root.SetParent(app.transform, false);
@@ -330,6 +334,8 @@ namespace PickleVerse.Multiplayer
         internal void CloseOutcome()
         {
             SceneManager.activeSceneChanged -= RefreshOutcomeLighting;
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(false);
+            PickleVerse.ArtDirection.ArtDirectionRuntime.HoldLook(null);
             if (!outcomeRoot)
                 return;
             outcomeRoot.SetActive(false);
@@ -344,6 +350,7 @@ namespace PickleVerse.Multiplayer
             originRotation = view.transform.rotation;
             originFov = view.fieldOfView;
             ShowingOutcome = true;
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true);
             outcomeTime = 0;
             OutcomeReady = false;
             title.gameObject.SetActive(true);
@@ -431,8 +438,15 @@ namespace PickleVerse.Multiplayer
                     p.Restore();
             if (follow)
                 follow.enabled = followEnabled;
+            if (PlayingIntro || ShowingOutcome)
+                PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(false);
             PlayingIntro = ShowingOutcome = false;
         }
-        void OnDestroy() => SceneManager.activeSceneChanged -= RefreshOutcomeLighting;
+        void OnDestroy()
+        {
+            SceneManager.activeSceneChanged -= RefreshOutcomeLighting;
+            if (outcomeRoot)
+                PickleVerse.ArtDirection.ArtDirectionRuntime.HoldLook(null);
+        }
     }
 }

@@ -33,6 +33,7 @@ namespace PickleVerse.ArtDirection
         readonly Dictionary<ScriptableRendererFeature, bool> ssaoOriginal = new Dictionary<ScriptableRendererFeature, bool>();
         float cinematicTarget;
         string appliedScene, appliedSceneForCinematic;
+        static string heldScene;
         GameObject atmosphere;
         int appliedMsaa = -1;
 
@@ -42,6 +43,19 @@ namespace PickleVerse.ArtDirection
         /// <summary>Anti-aliasing for a camera whose MSAA is off: SMAA on High, FXAA on Medium, none on Low.</summary>
         public static AntialiasingMode PostAntialiasing(int tier, int msaa) => msaa > 1 ? AntialiasingMode.None :
             tier >= 2 ? AntialiasingMode.SubpixelMorphologicalAntiAliasing : tier == 1 ? AntialiasingMode.FastApproximateAntialiasing : AntialiasingMode.None;
+
+        /// <summary>
+        /// Keeps a scene's look while its venue outlives the scene (the online result keeps the court after Fusion unloads
+        /// it). Pass null to return to the active scene's look.
+        /// </summary>
+        public static void HoldLook(string sceneName)
+        {
+            heldScene = string.IsNullOrEmpty(sceneName) ? null : sceneName;
+            if (Instance) Instance.Refresh(true);
+        }
+
+        /// <summary>Look scene for an active scene while <paramref name="held"/> may override it (pure, unit-tested).</summary>
+        public static string LookScene(string active, string held) => string.IsNullOrEmpty(held) ? active : held;
 
         /// <summary>Blends in the cinematic look (shallow depth of field) for intros, victories and replays' hero shots.</summary>
         public static void SetCinematic(bool on)
@@ -102,7 +116,7 @@ namespace PickleVerse.ArtDirection
 
         void Refresh(bool force)
         {
-            var scene = SceneManager.GetActiveScene().name;
+            var scene = LookScene(SceneManager.GetActiveScene().name, heldScene);
             int tier = QualityTier(GameSettings.Current.graphics, MobileRenderPolicy.Enabled);
             int msaa = GameSettings.Current.msaa;
             if (!force && scene == appliedScene && tier == Tier && msaa == appliedMsaa)

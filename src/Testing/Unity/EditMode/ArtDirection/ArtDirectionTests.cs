@@ -161,5 +161,30 @@ namespace PickleVerse.ArtDirection.Tests
                 Assert.IsTrue(lods[1].renderers.OfType<SkinnedMeshRenderer>().All(r => r.quality == SkinQuality.Bone2), g.name);
             }
         }
+        [Test]
+        public void OnlineVenuesUseTheMatchLookAndKeepItForTheResult()
+        {
+            var looks = Resources.Load<ArtDirectionLooks>("ArtDirection/ArtDirectionLooks");
+            Assert.IsNotNull(looks);
+            Assert.AreSame(looks.Find("BotMatch"), looks.Find("MultiplayerCourt"), "online and custom rooms share the bot match venue look");
+            Assert.IsNotNull(looks.Find("Training"));
+            // The result is shown after Fusion unloads the court: the held venue keeps its look over the active scene.
+            Assert.AreEqual("MultiplayerCourt", ArtDirectionRuntime.LookScene("PlayMultiplayer", "MultiplayerCourt"));
+            Assert.AreEqual("PlayMultiplayer", ArtDirectionRuntime.LookScene("PlayMultiplayer", null));
+            Assert.AreEqual("BotMatch", ArtDirectionRuntime.LookScene("BotMatch", ""));
+        }
+
+        [Test]
+        public void MultiplayerCourtHasAnActiveSun()
+        {
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Scenes/MultiplayerCourt.unity", UnityEditor.SceneManagement.OpenSceneMode.Additive);
+            try
+            {
+                var suns = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Light>(true)).Where(l => l.type == LightType.Directional).ToArray();
+                Assert.IsNotEmpty(suns);
+                Assert.IsTrue(suns.Any(l => l.gameObject.activeInHierarchy && l.enabled), "the art-direction key light must be active");
+            }
+            finally { UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true); }
+        }
     }
 }

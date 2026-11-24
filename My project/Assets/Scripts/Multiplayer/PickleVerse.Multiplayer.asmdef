@@ -14,6 +14,7 @@
     "PickleVerse.Rules",
     "PickleVerse.Audio",
     "PickleVerse.Settings",
+    "PickleVerse.ArtDirection",
     "PickleVerse.Progression",
     "PickleVerse.Shop",
     "PickleVerse.Entites",
