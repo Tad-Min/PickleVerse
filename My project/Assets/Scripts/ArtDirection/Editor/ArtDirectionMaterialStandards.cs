@@ -245,6 +245,7 @@ namespace PickleVerse.ArtDirection.Editor
             foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { Tex }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path.Contains("/FX/")) continue;   // atmosphere sprites: clamped, set by the atmosphere builder
                 var importer = (TextureImporter)AssetImporter.GetAtPath(path);
                 bool normal = path.EndsWith("_Normal.png"), mask = path.EndsWith("_Mask.png") || path.EndsWith("T_WorldDetail.png");
                 bool changed = false;
