@@ -47,7 +47,7 @@ namespace PickleVerse.ArtDirection.Tests
         [TestCase("Menu", "Sunset District")]
         [TestCase("BotMatch", "Sunset District")]
         [TestCase("MultiplayerCourt", "Sunset District")]
-        [TestCase("Training", "Academy Arena")]
+        [TestCase("Training", "Sunset District")]
         [TestCase("Tutorial", "Academy Arena")]
         [TestCase("Replay", "Academy Arena")]
         [TestCase("Shop", "Showroom")]
@@ -167,7 +167,7 @@ namespace PickleVerse.ArtDirection.Tests
             var looks = Resources.Load<ArtDirectionLooks>("ArtDirection/ArtDirectionLooks");
             Assert.IsNotNull(looks);
             Assert.AreSame(looks.Find("BotMatch"), looks.Find("MultiplayerCourt"), "online and custom rooms share the bot match venue look");
-            Assert.IsNotNull(looks.Find("Training"));
+            Assert.AreSame(looks.Find("BotMatch"), looks.Find("Training"), "training is played in the bot match venue and look");
             // The result is shown after Fusion unloads the court: the held venue keeps its look over the active scene.
             Assert.AreEqual("MultiplayerCourt", ArtDirectionRuntime.LookScene("PlayMultiplayer", "MultiplayerCourt"));
             Assert.AreEqual("PlayMultiplayer", ArtDirectionRuntime.LookScene("PlayMultiplayer", null));

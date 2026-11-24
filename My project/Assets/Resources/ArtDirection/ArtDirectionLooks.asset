@@ -18,6 +18,7 @@ MonoBehaviour:
     - Menu
     - BotMatch
     - MultiplayerCourt
+    - Training
     profile: {fileID: 11400000, guid: 4c587995fd1fc864cb4fc48b220f62bc, type: 2}
     nightProfile: {fileID: 11400000, guid: 90b3a45b53a96444c90e34ddb6426c44, type: 2}
     postProcess: 1
@@ -29,7 +30,6 @@ MonoBehaviour:
     atmosphere: {fileID: 918172997986122264, guid: 5bde31f93046d2a4d8ebea5b2ebd04c1, type: 3}
   - name: Academy Arena
     scenes:
-    - Training
     - Tutorial
     - Replay
     profile: {fileID: 11400000, guid: 90706a5406b41334dac9b48902ede194, type: 2}

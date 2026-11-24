@@ -39,8 +39,8 @@ shader, bộ vật liệu, bảng màu và luật ánh sáng.
 
 | Bối cảnh | Scene | Look | Ý đồ |
 |---|---|---|---|
-| **Sunset District** (ngoài trời) | Menu, BotMatch, MultiplayerCourt | `Look_GoldenHour` / `Look_Night` | Giờ vàng: nắng thấp 21°, bóng dài, haze ấm; đêm: đèn sân trắng ấm, thành phố xa phát sáng. |
-| **Academy Arena** (trong nhà) | Training, Tutorial, Replay | `Look_Arena` | Đấu trường gỗ–thép: ánh trời ấm rọi qua mái, khán đài lùi vào bóng xanh lạnh, sân sáng như sân khấu. |
+| **Sunset District** (ngoài trời) | Menu, BotMatch, MultiplayerCourt, Training | `Look_GoldenHour` / `Look_Night` | Giờ vàng: nắng thấp 21°, bóng dài, haze ấm; đêm: đèn sân trắng ấm, thành phố xa phát sáng. |
+| **Academy Arena** (trong nhà) | Tutorial, Replay | `Look_Arena` | Đấu trường gỗ–thép: ánh trời ấm rọi qua mái, khán đài lùi vào bóng xanh lạnh, sân sáng như sân khấu. |
 | **Showroom** (studio) | Shop, Collection, Match found | `Look_Showroom` | Ba điểm sáng studio (key ấm, fill lạnh, rim), nền navy thương hiệu, vật thể như đồ trang sức. |
 
 Các màn UI thuần (Login, Loading, ModeSelection, PlayMultiplayer, Settings) giữ hệ UI Arena Glass (navy + gold + mint)

@@ -78,14 +78,14 @@ namespace PickleVerse.ArtDirection.Editor
             {
                 new ArtDirectionLooks.Look
                 {
-                    name = "Sunset District", scenes = new[] { "Menu", "BotMatch", "MultiplayerCourt" },
+                    name = "Sunset District", scenes = new[] { "Menu", "BotMatch", "MultiplayerCourt", "Training" },
                     profile = golden, nightProfile = night, postProcess = true,
                     shadowTint = new Color(.66f, .76f, 1f, .38f), rimTint = new Color(1f, .88f, .74f, 1f),
                     ambientBoost = new Color(1f, 1f, 1f), wind = new Vector4(.91f, .41f, 1f, 1f), wetness = 0,
                 },
                 new ArtDirectionLooks.Look
                 {
-                    name = "Academy Arena", scenes = new[] { "Training", "Tutorial", "Replay" },
+                    name = "Academy Arena", scenes = new[] { "Tutorial", "Replay" },
                     profile = arena, postProcess = true,
                     shadowTint = new Color(.68f, .78f, 1f, .32f), rimTint = new Color(1f, .9f, .78f, .9f),
                     ambientBoost = new Color(1f, 1f, 1f), wind = new Vector4(.7f, .7f, .35f, .6f), wetness = 0,

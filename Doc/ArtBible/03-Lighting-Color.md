@@ -16,9 +16,9 @@
 
 | Bối cảnh | Key (Euler / màu / cường độ) | Ambient trilight (trời / chân trời / đất) | Sương / haze |
 |---|---|---|---|
-| Sunset District — ngày (BotMatch, Multiplayer) | (21°, 62°) · (1, .76, .54) · 2,25 · shadow .82 | (.40,.47,.62) / (.58,.47,.40) / (.22,.19,.16) | ấm (.80,.62,.50), 55–330 m |
+| Sunset District — ngày (BotMatch, Multiplayer, Training) | (21°, 62°) · (1, .76, .54) · 2,25 · shadow .82 | (.40,.47,.62) / (.58,.47,.40) / (.22,.19,.16) | ấm (.80,.62,.50), 55–330 m |
 | Menu — chiều muộn → hoàng hôn | 42° → 18°, yaw −35° · (1,.86,.68) → (1,.68,.43) · 1,95 | (.44,.54,.72) / (.52,.48,.45) / (.22,.20,.18) | xám ấm (.62,.62,.66), 38–140 m |
-| Academy Arena (Training, Tutorial, Replay) | skylight (62°, 35°) · (1,.86,.70) · 2,0 · shadow .7 | (.42,.50,.66) / (.55,.47,.40) / (.26,.21,.17) | như ngày |
+| Academy Arena (Tutorial, Replay) | skylight (62°, 35°) · (1,.86,.70) · 2,0 · shadow .7 | (.42,.50,.66) / (.55,.47,.40) / (.26,.21,.17) | như ngày |
 | Ban đêm (mọi sân) | đèn pha (1,.91,.80) | (.07,.078,.09) / (.05,.057,.065) / (.035,.04,.045) | xanh đêm (.025,.04,.07), 38–210 m |
 
 Hướng nắng chiều ở Sunset District không được đổi: mặt nạ bóng tĩnh (`SD_SunMask_*`) được nướng theo đúng (21°, 62°).
