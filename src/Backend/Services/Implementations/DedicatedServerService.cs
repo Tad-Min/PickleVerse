@@ -145,7 +145,7 @@ public sealed class DedicatedServerService(IUnitOfWork unit, DedicatedLeaseRepos
         foreach (var match in await unit.Game.ExpiredDedicated(now.AddSeconds(-settings.Dedicated.LeaseSeconds)))
             if (await leases.ReadMatch(match.ToString("N")) == null)
                 await game.InterruptDedicated(match);
-        foreach (var match in await unit.Game.ExpiredDedicatedPreparations(now.AddSeconds(-Math.Max(30, settings.Matchmaking.ReadyConfirmationSeconds + 15))))
+        foreach (var match in await unit.Game.ExpiredDedicatedPreparations(now.AddSeconds(-Math.Max(30, settings.Matchmaking.ReadyWindowSeconds + 15))))
             if (await leases.ReadMatch(match.ToString("N")) == null && !await leases.IsWaiting(match.ToString("N")))
                 await game.InterruptDedicated(match);
     }

@@ -186,7 +186,7 @@ static class RoomInvitationChecks
             return await profiles.UpdateProfileAsync(c, new Entities.DTOs.UpdateProfileRequest { PlayerName = "Chi mới" });
         }
         await Rejected(() => Rename(), HttpStatusCode.Conflict, "a live ready confirmation prevents profile changes");
-        await Sql("UPDATE gamematches SET createdat=@created WHERE matchid=@match", P("match", preparation), P("created", clock.GetUtcNow().UtcDateTime.AddSeconds(-TestSettings.Load().Matchmaking.ReadyConfirmationSeconds - 1)));
+        await Sql("UPDATE gamematches SET createdat=@created WHERE matchid=@match", P("match", preparation), P("created", clock.GetUtcNow().UtcDateTime.AddSeconds(-TestSettings.Load().Matchmaking.ReadyWindowSeconds - 1)));
         check(await Rename(), "an expired preparation does not permanently lock the profile");
         await Sql("UPDATE gamematches SET status='PLAYING' WHERE matchid=@match", P("match", preparation));
         await Rejected(() => Rename(), HttpStatusCode.Conflict, "an ongoing match keeps the profile locked regardless of its age");

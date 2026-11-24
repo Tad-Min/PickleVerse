@@ -252,7 +252,7 @@ public sealed partial class OnlineGameService
         }
         if (search.state != MatchmakingSearchStatus.Searching)
             throw Conflict("Lượt tìm trận đã có đối thủ thật.");
-        var available = await _unitOfWork.Game.AvailableBots(RankedBotAccounts.Ids.Select(Guid.Parse).ToArray(), Now.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds));
+        var available = await _unitOfWork.Game.AvailableBots(RankedBotAccounts.Ids.Select(Guid.Parse).ToArray(), Now.AddSeconds(-settings.Matchmaking.ReadyWindowSeconds));
         foreach (var bot in available)
         {
             if (await matchmaking.BotBusy(bot.ToString("N")))

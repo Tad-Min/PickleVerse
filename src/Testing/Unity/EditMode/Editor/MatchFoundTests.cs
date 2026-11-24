@@ -138,6 +138,28 @@ namespace PickleVerse.Tests.Multiplayer
         }
 
         [Test]
+        public void ControlsWaitForTheIntroWhenTheServerGrantsGrace()
+        {
+            float intro = MatchReadyOverlay.IntroSeconds;
+            Assert.That(intro, Is.GreaterThan(C.LockSeconds), "buttons come after the VS lock");
+            // server window = 4 s grace + 10 s confirmation, read ~0.2 s after it opened
+            Assert.That(MatchReadyOverlay.ControlsDelay(13.8f, 10, intro, false), Is.EqualTo(intro).Within(1e-4f));
+            // the countdown then starts full
+            Assert.That(MatchReadyOverlay.VisibleSeconds(13.8f - intro, 10), Is.EqualTo(10).Within(1e-4f));
+        }
+
+        [Test]
+        public void ControlsNeverEatIntoDecisionTime()
+        {
+            float intro = MatchReadyOverlay.IntroSeconds;
+            Assert.That(MatchReadyOverlay.ControlsDelay(10, 10, intro, false), Is.EqualTo(0), "no grace from the server: show at once");
+            Assert.That(MatchReadyOverlay.ControlsDelay(11.2f, 10, intro, false), Is.EqualTo(1.2f).Within(1e-4f), "late arrival: only the grace left");
+            Assert.That(MatchReadyOverlay.ControlsDelay(14, 10, intro, true), Is.EqualTo(0), "already accepted");
+            Assert.That(MatchReadyOverlay.VisibleSeconds(2.5f, 10), Is.EqualTo(2.5f));
+            Assert.That(MatchReadyOverlay.VisibleSeconds(-1, 10), Is.EqualTo(0));
+        }
+
+        [Test]
         public void DefaultAvatarUsesTheFirstLetter()
         {
             Assert.That(MatchReadyOverlay.Initial("smashKing"), Is.EqualTo("S"));

@@ -73,7 +73,7 @@ namespace Services.Implementations
                 if (request.PlayerName != null || request.IsMale.HasValue)
                 {
                     long now = clock.GetUtcNow().ToUnixTimeMilliseconds();
-                    if (await _unitOfWork.Game.InMatch(userId, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyConfirmationSeconds)) ||
+                    if (await _unitOfWork.Game.InMatch(userId, clock.GetUtcNow().UtcDateTime.AddSeconds(-settings.Matchmaking.ReadyWindowSeconds)) ||
                         lobby != null && await lobby.ProfileBusy(userId, now / 1000) ||
                         matchmaking != null && await matchmaking.HasActiveSearch(userId, now))
                         throw new AppException("Hãy rời phòng, dừng tìm trận và kết thúc thi đấu trước khi đổi hồ sơ.", System.Net.HttpStatusCode.Conflict);

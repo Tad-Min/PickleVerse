@@ -31,7 +31,8 @@ namespace PickleVerse.Multiplayer
     /// <summary>
     /// Match found: a cinematic intro (paddles rally, cross and hold the VS ball) under the ready check. Players are
     /// shown as default avatars per team (1v1 or 2v2, the local team on the left) and light up the moment they accept;
-    /// Accept/Cancel and the confirmation timeout stay available from the first frame.
+    /// Accept/Cancel and the confirmation countdown appear once the intro has played; the server adds the same grace
+    /// (Matchmaking:ReadyIntroSeconds) in front of the confirmation window, so the intro never costs decision time.
     /// </summary>
     public sealed class MatchReadyOverlay : MonoBehaviour
     {
@@ -54,7 +55,9 @@ namespace PickleVerse.Multiplayer
         Button accept, cancel;
         TMP_FontAsset font;
         MatchFoundStage stage;
-        float shownAt, allReadyAt = -1;
+        float shownAt, allReadyAt = -1, controlsAt = -1;
+        CanvasGroup rowGroup;
+        bool controlsShown;
         bool visible;
         int shownSecond = -1, shownMode = -1, shownState = -1, seatKey;
 
@@ -106,6 +109,19 @@ namespace PickleVerse.Multiplayer
                 }
         }
 
+        /// <summary>The cinematic (rally, cross, VS lock) plus the avatars settling in.</summary>
+        public static float IntroSeconds => C.LockSeconds + .6f;
+
+        /// <summary>
+        /// When Accept/Cancel and the countdown appear: after the intro, but never later than the grace the server
+        /// added in front of the visible confirmation (so the delay can never eat into a player's decision time).
+        /// </summary>
+        public static float ControlsDelay(float remaining, float confirmation, float intro, bool accepted)
+            => accepted ? 0 : Mathf.Clamp(remaining - confirmation, 0, intro);
+
+        /// <summary>Seconds shown to the player: the confirmation window only, never the intro grace.</summary>
+        public static float VisibleSeconds(float remaining, float confirmation) => Mathf.Clamp(remaining, 0, Mathf.Max(0, confirmation));
+
         public static string TimerText(float seconds, bool accepted)
         {
             int s = Mathf.Max(0, Mathf.CeilToInt(seconds));
@@ -142,6 +158,8 @@ namespace PickleVerse.Multiplayer
             visible = true;
             shownAt = Time.unscaledTime;
             allReadyAt = -1;
+            controlsAt = -1;
+            controlsShown = false;
             shownSecond = shownMode = shownState = -1;
             root.gameObject.SetActive(true);
             bool mobile = MobileRenderPolicy.Enabled;
@@ -151,7 +169,7 @@ namespace PickleVerse.Multiplayer
             stageImage.texture = stage ? stage.Texture : null;
             stageImage.enabled = stage;
             seatKey = 0;
-            if (EventSystem.current) EventSystem.current.SetSelectedGameObject(accept.gameObject);
+            if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
         }
 
         void Hide()
@@ -193,7 +211,18 @@ namespace PickleVerse.Multiplayer
             stageImage.color = Color.Lerp(Color.black, Color.white, Mathf.Clamp01(t / .25f));
             title.alpha = rise * (allReadyAt < 0 ? 1 : 1 - Mathf.Clamp01((t - allReadyAt) / .15f));
             mode.alpha = rise;
-            var row = new Vector2(0, Mathf.Lerp(-40, 0, rise));
+            // Accept/Cancel and the countdown wait for the intro to finish (see ControlsDelay).
+            if (controlsAt < 0) controlsAt = ControlsDelay(s.seconds, s.totalSeconds, IntroSeconds, s.accepted);
+            float reveal = t < controlsAt ? 0 : C.Smooth((t - controlsAt) / .35f);
+            if (rowGroup.alpha != reveal) rowGroup.alpha = reveal;
+            bool controls = t >= controlsAt;
+            if (rowGroup.interactable != controls) { rowGroup.interactable = controls; rowGroup.blocksRaycasts = controls; }
+            if (controls && !controlsShown)
+            {
+                controlsShown = true;
+                if (EventSystem.current && !s.accepted) EventSystem.current.SetSelectedGameObject(accept.gameObject);
+            }
+            var row = new Vector2(0, Mathf.Lerp(-40, 0, reveal));
             if (buttonRow.anchoredPosition != row) buttonRow.anchoredPosition = row;
 
             if (s.AllReady && allReadyAt < 0)
@@ -218,20 +247,21 @@ namespace PickleVerse.Multiplayer
             if (cancel.interactable != canCancel) cancel.interactable = canCancel;
 
             // Timeout.
-            float fraction = Mathf.Clamp01(s.seconds / Mathf.Max(1, s.totalSeconds));
+            float visibleSeconds = VisibleSeconds(s.seconds, s.totalSeconds);
+            float fraction = Mathf.Clamp01(visibleSeconds / Mathf.Max(1, s.totalSeconds));
             var fill = new Vector2(fraction, 1);
             if (timerFill.rectTransform.anchorMax != fill) timerFill.rectTransform.anchorMax = fill;
-            bool urgent = !s.accepted && !s.AllReady && s.seconds <= 3.0f;
+            bool urgent = !s.accepted && !s.AllReady && visibleSeconds <= 3.0f;
             float pulse = urgent ? .65f + .35f * Mathf.Abs(Mathf.Sin(t * 6)) : 1;
             var bar = urgent ? Urgent : Gold;
             timerFill.color = new Color(bar.r, bar.g, bar.b, pulse);
             timerText.color = urgent ? Urgent : Muted;
             bool allReady = s.AllReady;
-            int second = Mathf.Max(0, Mathf.CeilToInt(s.seconds)) * 4 + (s.accepted ? 1 : 0) + (allReady ? 2 : 0);
+            int second = Mathf.Max(0, Mathf.CeilToInt(visibleSeconds)) * 4 + (s.accepted ? 1 : 0) + (allReady ? 2 : 0);
             if (second != shownSecond)
             {
                 shownSecond = second;
-                timerText.text = allReady ? "ĐANG VÀO TRẬN…" : TimerText(s.seconds, s.accepted);
+                timerText.text = allReady ? "ĐANG VÀO TRẬN…" : TimerText(visibleSeconds, s.accepted);
                 hint.text = allReady ? "Mọi người đã xác nhận. Trận đấu sắp bắt đầu."
                     : s.accepted ? "Nếu trận bị hủy, bạn sẽ tự động tìm trận tiếp."
                     : s.canAccept || s.busy ? "Nhấn HỦY để dừng tìm trận. Hết giờ mà chưa xác nhận sẽ tự hủy."
@@ -439,6 +469,9 @@ namespace PickleVerse.Multiplayer
             buttonRow = Box("Buttons", bottom, Vector2.zero, new Vector2(784, 84));
             buttonRow.anchorMin = buttonRow.anchorMax = new Vector2(.5f, 0);
             buttonRow.pivot = new Vector2(.5f, 0);
+            rowGroup = buttonRow.gameObject.AddComponent<CanvasGroup>();
+            rowGroup.alpha = 0;
+            rowGroup.interactable = rowGroup.blocksRaycasts = false;
             var rowHome = Box("Row", buttonRow, new Vector2(0, 116), new Vector2(784, 84));
             cancel = MakeButton("Cancel", rowHome, "HỦY", false, new Vector2(-242, 0), new Vector2(300, 84), () =>
             {
