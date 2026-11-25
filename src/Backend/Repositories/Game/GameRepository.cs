@@ -144,7 +144,10 @@ public sealed partial class GameRepository(PickleVerseContext db) : IAppActivity
             definitions = achievements.Select(a => new ProgressDefinition(a.Achievementcode, a.Achievementname, ProgressScope.Achievement,
                 Enum.Parse<ProgressMetric>(a.Type), a.Target, GameJson.Read<RewardBundle>(a.Reward)))
                 .Concat(missions.Select(GameJson.Read<ProgressDefinition>)).ToList(),
-            lessons = lessons.Select(GameJson.Read<TrainingDrill>).ToArray(), cosmetics = cosmetics.Select(GameJson.Read<CosmeticOffer>).ToArray()
+            lessons = lessons.Select(GameJson.Read<TrainingDrill>).ToArray(),
+            // An item added in the CMS has no game configuration (and no model in any build) yet; clients released so
+            // far fail to load the profile when they receive it.
+            cosmetics = cosmetics.Select(GameJson.Read<CosmeticOffer>).Where(c => !string.IsNullOrEmpty(c.id)).ToArray()
         };
     }
     public Task<string?> DefinitionCode(int id, bool achievement) => achievement

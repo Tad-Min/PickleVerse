@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PickleVerse.Progression;
@@ -40,14 +41,20 @@ namespace PickleVerse.Shop
             ApplyCatalog();
             Changed?.Invoke(Current());
         }
-        void ApplyCatalog()
+        void ApplyCatalog() => Merge(PlayerEconomy.Catalog, Runtime.Snapshot.catalog.cosmetics);
+
+        /// <summary>
+        /// Takes titles, descriptions and prices from the server. An item that this build has no model for (added in
+        /// the CMS, or sold only in a newer build) is skipped: an exception here would leave through
+        /// ProgressionRuntime.Changed and stop every profile load and command of the player.
+        /// </summary>
+        public static void Merge(ShopCatalog catalog, IReadOnlyCollection<OnlineCosmeticOffer> offers)
         {
-            var catalog = PlayerEconomy.Catalog;
-            foreach (var remote in Runtime.Snapshot.catalog.cosmetics)
+            foreach (var remote in offers)
             {
-                var item = catalog.Find(remote.id);
+                var item = string.IsNullOrEmpty(remote.id) ? null : catalog.Find(remote.id);
                 if (item == null)
-                    throw new InvalidOperationException("Thiếu model cho vật phẩm " + remote.id);
+                    continue;
                 item.title = remote.title;
                 item.description = remote.description;
                 item.collection = remote.collection;
@@ -56,7 +63,7 @@ namespace PickleVerse.Shop
                 item.gemstone = remote.gemstone;
                 item.releaseOrder = remote.releaseOrder;
             }
-            catalog.paddles = catalog.paddles.Where(p => Runtime.Snapshot.catalog.cosmetics.Any(c => c.id == p.id)).ToArray();
+            catalog.paddles = catalog.paddles.Where(p => offers.Any(c => c.id == p.id)).ToArray();
         }
         public async Task<PlayerEconomyState> ReadAsync()
         {

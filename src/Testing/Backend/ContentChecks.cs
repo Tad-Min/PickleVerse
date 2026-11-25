@@ -33,6 +33,15 @@ static class ContentChecks
             db.Playerprofiles.Add(new Playerprofile { Userid = player, Playername = "cms" + player.ToString("N")[..12], Avatar = "initial", Level = 1, Elo = 2000 });
             await db.SaveChangesAsync();
         }
+        using (var db = new PickleVerseContext(options))
+        {
+            db.Cosmetics.Add(new Cosmetic { Itemcode = "paddle.cms-" + player.ToString("N")[..8], Cosmeticname = "Vợt CMS", Description = "Chưa có model.",
+                Price = 100, Type = "PADDLE", Currencyid = await db.Currencies.OrderBy(x => x.Currencyid).Select(x => x.Currencyid).FirstAsync() });
+            await db.SaveChangesAsync();
+            using var unit = new UnitOfWork(db);
+            check((await unit.Game.Catalog()).cosmetics.All(x => !string.IsNullOrEmpty(x.id)),
+                "an item added in the CMS without game configuration is not sent to the clients");
+        }
         var all = await Content(s => s.Lessons());
         check(all.Count == 15 && all.All(l => l.Drills.Count == 1), "catalog contains 15 seeded lessons, each with one drill");
         var serve = all.Single(l => l.Code == "serve");
