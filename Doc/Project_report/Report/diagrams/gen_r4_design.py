@@ -423,7 +423,23 @@ MultiplayerApp --> FlowState
 MultiplayerApp "1" o-- "0..2" PhotonSession : Room / Match
 PhotonSession "1" *-- "1" PhotonRoomState
 PhotonSession ..> NetworkMatch : spawns
+class SurrenderDesk {
+  + Ask(player) : void
+  + Agree(player) : void
+  + Refuse(player) : void
+  + Disconnected(player) : void
+  + Tick() : void
+  + IsOpen(team) : bool
+}
+class SurrenderPanel <<MonoBehaviour>> {
+  + Current : View
+  + Ask(court) : void
+  + Cancel() : void
+  + Refresh(court, hidden) : void
+}
 NetworkMatch "1" *-- "1" PickleballRules
+NetworkMatch "1" *-- "0..1" SurrenderDesk : state authority
+SurrenderPanel ..> NetworkMatch : surrender messages
 NetworkMatch "1" o-- "2..4" NetworkPlayer
 NetworkMatch --> MatchRoster
 MultiplayerApp --> MatchRoster
@@ -660,11 +676,16 @@ package "Admin Web (React)" {
 }
 package "Web API" {
   class ContentController <<ApiController>> {
-    + List() : IActionResult
-    + Get(id) : IActionResult
-    + Save(id, draft) : IActionResult
-    + Publish(id) : IActionResult
-    + Unpublish(id) : IActionResult
+    + List() / Get(id)
+    + Create(request) / Save(id, request)
+    + AddDrill(id, request) / SaveDrill(id, drillId, request)
+    + DeleteDrill(id, drillId, expectedVersion)
+    + Publish(id, request) / Unpublish(id, request)
+  }
+  class ReplayLaunchController <<ApiController>> {
+    + Issue(match) : ReplayLaunchLink
+    + Redeem(input) : ReplayLaunchView
+    + Read(match) / Chunk(match, index)
   }
   class ProgressResetController <<ApiController>> {
     + Preview(player, request) : IActionResult
@@ -702,10 +723,15 @@ package "Web API" {
     + CoachingDataset() : IActionResult
   }
   interface IContentService {
-    + Lessons() : Task<List<LessonSummary>>
-    + Get(id) : Task<LessonDraft>
-    + Save(actor, id, draft, expectedVersion) : Task<LessonDraft>
-    + Publish(actor, id, publish) : Task<LessonDraft>
+    + Lessons() / Get(lessonId)
+    + CreateLesson(request) / SaveLesson(lessonId, request)
+    + AddDrill / SaveDrill / DeleteDrill
+    + Publish(lessonId, request, publish)
+  }
+  interface IReplayLaunchService {
+    + Issue(admin, authVersion, match)
+    + Redeem(code)
+    + Read(token, match) / Chunk(token, match, index)
   }
   interface IProgressResetService {
     + Preview(player, groups) : Task<ResetPreview>
@@ -745,6 +771,8 @@ Axios ..> AnalyticsController
 Axios ..> ExpertReviewController
 Axios ..> ProgressResetController
 ContentController --> IContentService
+Axios ..> ReplayLaunchController : HTTPS JSON + JWT
+ReplayLaunchController --> IReplayLaunchService
 ProgressResetController --> IProgressResetService
 AdminModerationController --> IModerationService
 LiveMatchesController ..> IModerationService
@@ -830,6 +858,80 @@ SocialMediaCleanup --> ISocialMediaService
 SocialContentService --> IUnitOfWork
 SocialDirectService --> IUnitOfWork
 SocialMediaService --> IUnitOfWork
+IUnitOfWork --> GameRepository
+"""
+
+D["r4_cls_membership"] = r"""
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class MembershipPanel <<MonoBehaviour>> {
+    + Show(locked) : void
+    - Buy() : Task
+    - Render() : void
+  }
+  class ModeSelectionMenu <<MonoBehaviour>> {
+    - RequireMembership() : bool
+    - RefreshMembership() : void
+  }
+  class ProgressionRuntime {
+    + HasMembership : bool
+    + CurrentMembership : MembershipOffer
+    + ReadMembershipAsync(token) : Task<MembershipOffer>
+    + CheckoutMembershipAsync(token) : Task<MembershipOffer>
+  }
+}
+package "Web API" {
+  class MembershipController <<ApiController>> {
+    + Read() : MembershipOffer
+    + Checkout(token) : MembershipOffer
+    + Refresh(token) : MembershipOffer
+    + Webhook(body, token) : ApiResponse
+  }
+  class GameMatchesController <<ApiController>> {
+    - MemberAction(action, otherPlayers)
+  }
+  interface IMembershipService {
+    + Read(player) : MembershipOffer
+    + Checkout(player, token) : MembershipOffer
+    + Refresh(player, token) : MembershipOffer
+    + ReceiveWebhook(body, token) : void
+    + Require(players) : void
+  }
+  class MembershipService {
+    + PriceVnd = 49000
+    + EliteTokenBonus = 3000
+    - Reconcile(order, token)
+    - Apply(order, payment)
+  }
+  interface IPayOsGateway {
+    + Create(orderCode, amount, expiresAt, token) : PayOsCheckout
+    + Read(orderCode, token) : PayOsPayment
+    + VerifyWebhook(body) : PayOsNotification
+  }
+  class PayOsGateway {
+    - Send(method, path, body, token) : JsonElement
+    - Verify(data, signature) : bool
+  }
+  class MembershipOrder <<entity>> {
+    + OrderCode : long
+    + Status : string
+    + ExpiresAt : DateTime
+    + PaidAt : DateTime?
+  }
+  interface IUnitOfWork
+  class GameRepository
+}
+MembershipPanel --> ProgressionRuntime
+ModeSelectionMenu --> ProgressionRuntime
+ModeSelectionMenu ..> MembershipPanel : opens
+ProgressionRuntime ..> MembershipController : HTTPS JSON
+MembershipController --> IMembershipService
+GameMatchesController --> IMembershipService : Require
+MembershipService ..|> IMembershipService
+MembershipService --> IPayOsGateway
+PayOsGateway ..|> IPayOsGateway
+MembershipService --> IUnitOfWork
+MembershipService ..> MembershipOrder
 IUnitOfWork --> GameRepository
 """
 

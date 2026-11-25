@@ -2,8 +2,18 @@
 !include _style.iuml
 |Player|
 start
+:Choose online play or a private room;
+|Web API|
+if () then ([every human player is a member])
+else ([else])
+  :Refuse with MSG79;
+  |Player|
+  :Open the membership panel (FR-36);
+  stop
+endif
+|Player|
 if () then ([private room])
-  :Create room and invite friend;
+  :Create room, invite friend\n(and swap positions by agreement);
 elseif () then ([ranked doubles])
   :Search alone or with a party of two;
   |Web API|
@@ -23,7 +33,7 @@ else ([else])
   endif
 endif
 |Player|
-:Accept ready check (10 s);
+:Watch the match-found intro\nand accept the ready check (10 s);
 |Web API|
 if () then ([all required humans accepted])
   :Create match record (PLAYING);
@@ -34,17 +44,17 @@ else ([else])
 endif
 |Dedicated server|
 :Verify ticket and admit players;
-:Simulate rallies authoritatively;
+:Simulate rallies authoritatively\nand upload the replay in batches;
 if () then ([stopped by an administrator or lease lost])
   :End match as INTERRUPTED\n(no Elo, no reward);
-elseif () then ([a player left or did not return within 30 s])
-  :End match as a forfeit\n(the other team wins, BR-28);
-  :Send final result;
+elseif () then ([a player left or did not return within 30 s,\nor every human of a team confirmed the surrender])
+  :End match as a forfeit\n(the other team wins, BR-28, BR-66);
+  :Seal the replay (at most 60 s)\nand send the final result;
 else ([else])
-  :Send final result;
+  :Seal the replay (at most 60 s)\nand send the final result;
 endif
 |Web API|
-:Save scores, Elo and rewards once;
+:Save scores, Elo and rewards once\n(with or without a replay);
 |Player|
 :View result and history;
 stop

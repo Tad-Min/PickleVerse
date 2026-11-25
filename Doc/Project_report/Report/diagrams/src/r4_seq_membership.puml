@@ -1,0 +1,68 @@
+@startuml r4_seq_membership
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":MembershipPanel" as UI
+control ":MembershipController" as C
+control ":MembershipService" as S
+entity ":GameRepository" as G
+control ":PayOsGateway" as P
+actor "PayOS" as Ext
+Player -> UI : Buy()
+activate UI
+UI -> C : Checkout()
+activate C
+C -> S : Checkout(player)
+activate S
+S -> G : Lock(membership-checkout, player)
+alt the player is a member
+  S --> C : offer (active)
+else a pending order is still valid
+  S --> C : offer (same checkout URL)
+else else
+  S -> P : Create(orderCode, 49000, expiresAt)
+  P -> Ext : signed payment request
+  Ext --> P : paymentLinkId, checkoutUrl (signed)
+  S -> G : AddMembershipOrder(PENDING)
+  S --> C : offer (checkout URL, 15 min)
+end
+deactivate S
+C --> UI : MembershipOffer
+deactivate C
+UI -> Ext : open the payment page in the browser
+deactivate UI
+Player -> Ext : pay
+Ext -> C : Webhook(body)
+activate C
+C -> S : ReceiveWebhook(body)
+activate S
+S -> P : VerifyWebhook(body)
+alt signature invalid
+  S --> C : error 403
+else order known and not paid
+  S -> P : Read(orderCode)
+  P -> Ext : order query
+  Ext --> P : status, amount, amountPaid (signed)
+  S -> G : Lock(membership-checkout, player)
+  alt PAID, amount matches, nothing remaining
+    S -> G : SaveBalance(+3000 Elite Token), order PAID
+  else partial payment
+    S --> C : error 409
+  else else
+    S -> G : order CANCELLED or EXPIRED
+  end
+end
+deactivate S
+C --> Ext : 200
+deactivate C
+Player -> UI : return to the game
+UI -> C : Refresh()
+activate C
+C --> UI : MembershipOffer (active)
+deactivate C
+note over UI : Refresh also reads the order when no webhook has arrived\n(at most every 10 s per order)
+@enduml

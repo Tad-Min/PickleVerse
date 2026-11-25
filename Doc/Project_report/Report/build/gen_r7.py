@@ -14,7 +14,7 @@ from docx.shared import Pt
 from report_lib import Report, PROJECT_NAME, AI_USAGE, add_runs, _set_cell_width, prefix_references
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-os.environ.setdefault("PKV_EDITMODE_RESULTS", os.path.abspath(os.path.join(HERE, "..", "evidence", "editmode_results_20261116_1b64424.json")))
+os.environ.setdefault("PKV_EDITMODE_RESULTS", os.path.abspath(os.path.join(HERE, "..", "evidence", "editmode_results_20261125_adcb4e2.json")))
 
 PARTS = [
     ("gen_r1.py", "I. Project Introduction"),
@@ -27,18 +27,18 @@ PARTS = [
 
 ACRONYMS = [
     ("AI", "Artificial Intelligence"), ("API", "Application Programming Interface"), ("BR", "Business Rule"),
-    ("CI/CD", "Continuous Integration / Continuous Delivery"), ("CR", "Change request (CR-01: membership subscription decided after Review 1)"), ("CMS", "Content Management System (lesson, item and mission management in the admin web)"),
+    ("CI/CD", "Continuous Integration / Continuous Delivery"), ("CR", "Change request (CR-01: membership, decided after Review 1 and implemented on 22/11/2026)"), ("CMS", "Content Management System (lesson, item and mission management in the admin web)"),
     ("DAU", "Daily Active Users"), ("Dedicated server", "Headless Unity server that runs an online match with authority over the result"),
     ("Drill", "Practice exercise with a fixed number of shots and a target"), ("Elo", "Rating system used for ranked matches (K-factor 32, floor 100)"),
-    ("ERD", "Entity Relationship Diagram"), ("EV", "Evidence item of a test run (Report 5, §5.1)"), ("FE", "Major feature (FE-01 to FE-10)"),
-    ("FR", "Functional Requirement (FR-01 to FR-35)"), ("Fusion", "Photon Fusion 2, the real-time networking library and cloud"),
+    ("ERD", "Entity Relationship Diagram"), ("EV", "Evidence item of a test run (Report 5, §5.1)"), ("FE", "Major feature (FE-01 to FE-11)"),
+    ("FR", "Functional Requirement (FR-01 to FR-36)"), ("Fusion", "Photon Fusion 2, the real-time networking library and cloud"),
     ("GUI", "Graphical User Interface"), ("HMAC", "Hash-based Message Authentication Code"), ("HUD", "Head-Up Display (in-match information)"),
     ("JWT", "JSON Web Token"), ("Kitchen / NVZ", "Non-volley zone, the area within 2.13 m of the net where volleys are not allowed"),
     ("LI", "Limitation or exclusion (Report 1, §6.2)"), ("NFR", "Non-Functional Requirement (NFR-01 to NFR-12)"), ("OTP", "One-Time Password"),
     ("PB", "Product backlog item"), ("RACI", "Responsibility matrix: Do, Review, Support, Inform"), ("RTT", "Round-Trip Time"),
     ("S3", "Amazon Simple Storage Service API, used for replays and post videos"), ("SignalR", "ASP.NET Core library for real-time messages over WebSocket, used for lobby whispers"), ("SDD", "Software Design Document"),
     ("SPMP", "Software Project Management Plan"), ("SRS", "Software Requirement Specification"), ("TC", "Test Case"),
-    ("Tokenpad", "In-game currency earned by playing"), ("UAT", "User Acceptance Test"), ("UC", "Use Case (UC-01 to UC-76)"),
+    ("PayOS", "Vietnamese payment provider used for the membership"), ("Tokenpad", "In-game currency earned by playing"), ("Elite Token", "In-game currency credited with the membership"), ("UAT", "User Acceptance Test"), ("UC", "Use Case (UC-01 to UC-81)"),
     ("UI", "User Interface"), ("W01–W04", "End-to-end review workflows committed in the Review 2 form BM04"),
     ("WBS", "Work Breakdown Structure"), ("XP", "Experience points"),
 ]

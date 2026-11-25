@@ -31,11 +31,16 @@ package "Admin Web (React)" {
 }
 package "Web API" {
   class ContentController <<ApiController>> {
-    + List() : IActionResult
-    + Get(id) : IActionResult
-    + Save(id, draft) : IActionResult
-    + Publish(id) : IActionResult
-    + Unpublish(id) : IActionResult
+    + List() / Get(id)
+    + Create(request) / Save(id, request)
+    + AddDrill(id, request) / SaveDrill(id, drillId, request)
+    + DeleteDrill(id, drillId, expectedVersion)
+    + Publish(id, request) / Unpublish(id, request)
+  }
+  class ReplayLaunchController <<ApiController>> {
+    + Issue(match) : ReplayLaunchLink
+    + Redeem(input) : ReplayLaunchView
+    + Read(match) / Chunk(match, index)
   }
   class ProgressResetController <<ApiController>> {
     + Preview(player, request) : IActionResult
@@ -73,10 +78,15 @@ package "Web API" {
     + CoachingDataset() : IActionResult
   }
   interface IContentService {
-    + Lessons() : Task<List<LessonSummary>>
-    + Get(id) : Task<LessonDraft>
-    + Save(actor, id, draft, expectedVersion) : Task<LessonDraft>
-    + Publish(actor, id, publish) : Task<LessonDraft>
+    + Lessons() / Get(lessonId)
+    + CreateLesson(request) / SaveLesson(lessonId, request)
+    + AddDrill / SaveDrill / DeleteDrill
+    + Publish(lessonId, request, publish)
+  }
+  interface IReplayLaunchService {
+    + Issue(admin, authVersion, match)
+    + Redeem(code)
+    + Read(token, match) / Chunk(token, match, index)
   }
   interface IProgressResetService {
     + Preview(player, groups) : Task<ResetPreview>
@@ -116,6 +126,8 @@ Axios ..> AnalyticsController
 Axios ..> ExpertReviewController
 Axios ..> ProgressResetController
 ContentController --> IContentService
+Axios ..> ReplayLaunchController : HTTPS JSON + JWT
+ReplayLaunchController --> IReplayLaunchService
 ProgressResetController --> IProgressResetService
 AdminModerationController --> IModerationService
 LiveMatchesController ..> IModerationService

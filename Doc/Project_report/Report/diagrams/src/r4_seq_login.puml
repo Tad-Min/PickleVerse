@@ -28,6 +28,8 @@ else email not verified
   S --> C : error email_not_verified
 else else
   S -> G : EffectiveRestriction(user)
+  S -> S : AuthVersion + 1
+  S -> UR : RevokeAllRefreshTokensAsync(user)
   S -> UR : AddRefreshTokenAsync(hash)
   S -> G : RecordLogin(user)
   S --> C : AuthResponse (access 2 h, refresh 14 d, scope game or appeals)
@@ -45,4 +47,15 @@ opt scope = game
 end
 UI --> Visitor : Menu, Decisions and Appeals or error message
 deactivate UI
+loop signed in, every 3 s
+  AS -> C : Session()
+  activate C
+  alt the account signed in on another device
+    C --> AS : 401
+    AS -> UI : Clear(MSG84), Login screen
+  else else
+    C --> AS : session active
+  end
+  deactivate C
+end
 @enduml

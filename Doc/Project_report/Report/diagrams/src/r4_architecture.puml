@@ -13,6 +13,7 @@ component "Redis 7.4" as RD <<database>>
 component "S3-compatible Storage" as S3 <<external>>
 component "Photon Cloud" as Photon <<external>>
 component "Gmail SMTP" as SMTP <<external>>
+component "PayOS" as PAY <<external>>
 interface "HTTPS\n(REST JSON, SignalR)" as IHttps
 interface "Web API\n/api (JWT)" as IApi
 interface "Server API\n(service key)" as ISrv
@@ -23,6 +24,8 @@ interface "SQL\n(Npgsql EF Core)" as ISql
 interface "Redis\nprotocol" as IRedis
 interface "S3 API" as IS3
 interface "SMTP\n(STARTTLS)" as ISmtp
+interface "PayOS API\n(HMAC-SHA256)" as IPay
+interface "Webhook\n(signed)" as IHook
 Proxy -up- IHttps
 Client -down-( IHttps
 Web -down-( IHttps
@@ -46,5 +49,9 @@ S3 -up- IS3
 API -down-( IS3
 SMTP -up- ISmtp
 API -down-( ISmtp
+PAY -up- IPay
+API -down-( IPay
+API -down- IHook
+PAY -up-( IHook
 Workers .up.> API : <<hosted in>>
 @enduml

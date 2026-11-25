@@ -18,6 +18,7 @@ component "Redis 7.4" as RD <<database>>
 component "S3-compatible Storage" as S3 <<external>>
 component "Photon Cloud" as Photon <<external>>
 component "Gmail SMTP" as SMTP <<external>>
+component "PayOS" as PAY <<external>>
 interface "HTTPS\n(REST JSON, SignalR)" as IHttps
 interface "Web API\n/api (JWT)" as IApi
 interface "Server API\n(service key)" as ISrv
@@ -28,6 +29,8 @@ interface "SQL\n(Npgsql EF Core)" as ISql
 interface "Redis\nprotocol" as IRedis
 interface "S3 API" as IS3
 interface "SMTP\n(STARTTLS)" as ISmtp
+interface "PayOS API\n(HMAC-SHA256)" as IPay
+interface "Webhook\n(signed)" as IHook
 Proxy -up- IHttps
 Client -down-( IHttps
 Web -down-( IHttps
@@ -51,6 +54,10 @@ S3 -up- IS3
 API -down-( IS3
 SMTP -up- ISmtp
 API -down-( ISmtp
+PAY -up- IPay
+API -down-( IPay
+API -down- IHook
+PAY -up-( IHook
 Workers .up.> API : <<hosted in>>
 """
 
@@ -77,6 +84,7 @@ node "tad-min.io.vn\n<<Ubuntu 24.04, Docker Engine>>" as Host {
 }
 cloud "Photon Cloud\n(Fusion 2.1.3)" as Photon
 cloud "Gmail SMTP\n:587" as Smtp
+cloud "PayOS\n(api-merchant.payos.vn,\npay.payos.vn)" as PayOs
 node "GitHub Actions\n<<CI/CD: plan, checks, build,\npublish, deploy>>" as CI
 actor "Developer" as Dev
 node "Docker Hub\ntadminm/pickelverse" as Hub
@@ -97,6 +105,9 @@ ApiC --> RdC : TCP 6379
 ApiC --> S3C : HTTP 9000
 ApiC --> AiC : HTTP 8000
 ApiC --> Smtp : SMTP STARTTLS
+ApiC --> PayOs : HTTPS (signed requests)
+PayOs --> HostNginx : HTTPS webhook
+WinClient --> PayOs : payment page (browser)
 Dev --> CI : push to main
 CI --> Hub : push changed images\n<component>-<commit>-<run>-<attempt>
 CI --> Host : SSH: verified pg_dump,\nimage digests, docker compose up
@@ -107,15 +118,15 @@ D["r4_pkg_backend"] = r"""
 skinparam packageStyle folder
 left to right direction
 package "PickleVerse.API" as API {
-  package "Controllers (29 classes)\nand Hubs (SocialHub)" as Ctl
+  package "Controllers (31 classes)\nand Hubs (SocialHub)" as Ctl
   package "Filters and middleware\n(ApiResponse envelope,\nexception handler, scope)" as Flt
   package "Program (DI, JWT, CORS,\nrate limiter, Redis)" as Prog
 }
 package "PickleVerse.Services" as SVC {
   package "Interfaces" as SI
-  package "Implementations" as SImpl
+  package "Implementations\n(incl. MembershipService, PayOsGateway,\nReplayLaunchService)" as SImpl
   package "Workers\n(HybridAiWorker,\nDedicatedLeaseMonitor,\nSocialMediaCleanup)" as SW
-  package "Configuration\n(ServerSettings)" as SCfg
+  package "Configuration\n(ServerSettings, PayOsSettings)" as SCfg
   package "Rules\n(TrainingEngine, Elo)" as SRules
 }
 package "PickleVerse.Repositories" as REPO {
@@ -155,6 +166,8 @@ package "PickleVerse.Replays" as Replays
 package "PickleVerse.Settings" as Settings
 package "PickleVerse.Audio" as Audio
 package "PickleVerse.CharacterMotion" as CharacterMotion
+package "PickleVerse.ArtDirection" as ArtDirection
+package "PickleVerse.VFX" as VFX
 package "Photon Fusion 2.1.3" as Fusion <<external>>
 package "Unity Behavior 1.0.16" as Behavior <<external>>
 FrontEnd ..> Multiplayer
@@ -175,6 +188,11 @@ LocalMatch ..> Settings
 LocalMatch ..> Audio
 LocalMatch ..> CharacterMotion
 LocalMatch ..> Behavior
+LocalMatch ..> ArtDirection
+Multiplayer ..> ArtDirection
+ArtDirection ..> Settings
+VFX ..> LocalMatch
+VFX ..> Shop
 Progression ..> Services
 Progression ..> Entites
 Progression ..> Replays
@@ -197,8 +215,9 @@ package "Admin Web (React 18 + TypeScript + Vite)" as WEB {
     package "matches" as Fm
     package "moderation" as Fmo
     package "analytics\n(incl. expert review)" as Fan
+    package "membership\n(payment return page)" as Fme
   }
-  package "api\n(client.ts, adminApi.ts,\ncoachingApi.ts)" as WApi
+  package "api\n(client.ts, adminApi.ts, lessonApi.ts,\ncoachingApi.ts, replayLaunchApi.ts)" as WApi
   package "context\n(AuthContext)" as WCtx
   package "components/layout\n(AdminLayout, ProtectedRoute,\nSidebar)" as WLay
   package "types" as WT
@@ -228,7 +247,7 @@ GROUPS = {
     "r4_erd_social": (["FriendRequests", "Friendships", "BlockedUsers"], ["Users"]),
     "r4_erd_training": (["Techniques", "TechniqueReferences", "Lessons", "Drills", "LessonDrills", "ContentCatalogs", "PlayerLessonDrills", "TrainingSessions", "PlayerTechniqueMastery", "PlayerTechniquesErrors", "GameCommands"], ["PlayerProfiles", "GameMatches"]),
     "r4_erd_match": (["GameMatches", "GameMatchPlayers", "MatchScore", "ratingledger", "MatchHistoryReplay", "MatchmakingSearches", "DedicatedOperations"], ["PlayerProfiles"]),
-    "r4_erd_economy": (["Currencies", "PlayerCurrencies", "CurrencyTransactions", "Cosmetics", "CosmeticPrices", "PlayerCosmetics", "Missions", "PlayerMissions", "Achievements", "PlayerAchievements", "ProgressRewardGrants"], ["PlayerProfiles"]),
+    "r4_erd_economy": (["MembershipOrders", "Currencies", "PlayerCurrencies", "CurrencyTransactions", "Cosmetics", "CosmeticPrices", "PlayerCosmetics", "Missions", "PlayerMissions", "Achievements", "PlayerAchievements", "ProgressRewardGrants"], ["PlayerProfiles"]),
     "r4_erd_moderation": (["ReportPlayerInMatch", "UserSanctions", "SanctionAppeals", "AdminAudits"], ["Users", "PlayerProfiles", "GameMatches"]),
     "r4_erd_feed": (["SocialMedia", "SocialPosts", "SocialPostExclusions", "SocialPostLikes", "SocialPostComments", "SocialConversations", "SocialConversationMembers", "SocialMessages"], ["PlayerProfiles", "GameMatches"]),
     "r4_erd_coaching": (["aitelemetrysessions", "aitelemetryparts", "aianalysisjobs", "aicoachingsessions", "aicoachingprofiles", "ExpertReviews", "CoachingDemoSessions"], ["PlayerProfiles", "Users"]),

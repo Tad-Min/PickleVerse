@@ -14,16 +14,19 @@ rectangle "<b>PickleVerse System</b>\n\nUnity game client, Web API,\nadmin web, 
 rectangle "Photon Cloud\n(Fusion session and relay)" as PH <<external system>>
 rectangle "Gmail SMTP\n(email delivery)" as SMTP <<external system>>
 rectangle "S3-compatible\nobject storage" as S3 <<external system>>
+rectangle "PayOS\n(payment provider)" as PAY <<external system>>
 
-Player --> SYS : account data, game input,\ntraining runs, reports, appeals
+Player --> SYS : account data, game input, training runs,\nmembership purchase, reports, appeals
 SYS --> Player : game state, rewards, rankings,\ncoaching tips, replays
 Admin --> SYS : user, content and\nmoderation commands
 SYS --> Admin : dashboards, live matches,\nreports and appeals
 SYS --> PH : session registration,\ninput and state packets
 PH --> SYS : relayed packets,\nconnection events
 SYS --> SMTP : verification and\npassword-reset codes
-SYS --> S3 : replay manifests and chunks
-S3 --> SYS : stored replay data
+SYS --> S3 : replay chunks, post videos
+S3 --> SYS : stored replays and videos
+SYS --> PAY : signed payment request,\norder query
+PAY --> SYS : payment link, order status,\nsigned webhook
 """
 
 D["r3_uc_overview"] = r"""
@@ -34,6 +37,7 @@ actor "Restricted Player" as RP
 actor Administrator as Admin
 rectangle "Email Service\n(Gmail SMTP)" as ES <<actor>>
 rectangle "Photon Cloud" as PC <<actor>>
+rectangle "PayOS" as PO <<actor>>
 Player -up-|> Visitor
 RP -up-|> Visitor
 rectangle "PickleVerse System" {
@@ -46,20 +50,21 @@ rectangle "PickleVerse System" {
     usecase "UC-16 Play Bot Match" as U16
     usecase "UC-17 View Coaching Summary" as U17
   }
-  package "P3 Online Match (UC-19 to UC-27)" {
+  package "P3 Online Match (UC-19 to UC-27, UC-79, UC-81)" {
     usecase "UC-19 Find Online Match" as U19
     usecase "UC-21 Create Private Room" as U21
     usecase "UC-25 Play Online Match" as U25
   }
-  package "P4 Progress, Economy and Social (UC-28 to UC-44, UC-69 to UC-76)" {
+  package "P4 Progress, Economy and Social (UC-28 to UC-44, UC-69 to UC-78)" {
     usecase "UC-28 View Match History" as U28
     usecase "UC-42 Purchase Cosmetic" as U42
     usecase "UC-69 Browse Social Feed" as U69
+    usecase "UC-78 Buy Membership" as U78
   }
   package "P5 Account Restriction (UC-45, UC-46)" {
     usecase "UC-46 Submit Appeal" as U46
   }
-  package "P6 Admin: Users and Moderation (UC-47 to UC-55)" {
+  package "P6 Admin: Users and Moderation (UC-47 to UC-55, UC-80)" {
     usecase "UC-51 Apply Sanction" as U51
     usecase "UC-54 Review Player Report" as U54
   }
@@ -82,6 +87,7 @@ Player -- U25
 Player -- U28
 Player -- U42
 Player -- U69
+Player -- U78
 RP -- U46
 Admin -- U51
 Admin -- U54
@@ -90,6 +96,7 @@ Admin -- U62
 Admin -- U66
 U01 -- ES
 U25 -- PC
+U78 -- PO
 """
 
 D["r3_uc_p1_account"] = r"""
@@ -163,6 +170,8 @@ rectangle "P3 Online Match" {
   usecase "UC-25 Play Online Match" as UC25
   usecase "UC-26 Reconnect to Match" as UC26
   usecase "UC-27 Leave Match" as UC27
+  usecase "UC-79 Swap Position in a Room" as UC79
+  usecase "UC-81 Surrender Match" as UC81
 }
 Player -- UC19
 Player -- UC21
@@ -171,8 +180,11 @@ Player -- UC24
 Player -- UC25
 UC19 ..> UC20 : <<include>>
 UC23 .> UC21 : <<extend>>
+UC79 .> UC21 : <<extend>>
+UC79 .> UC22 : <<extend>>
 UC26 .> UC25 : <<extend>>
 UC27 .> UC25 : <<extend>>
+UC81 .> UC25 : <<extend>>
 UC21 -- PC
 UC25 -- PC
 """
@@ -231,7 +243,8 @@ UC73 .> UC74 : <<extend>>
 D["r3_uc_p4b_economy"] = r"""
 left to right direction
 actor Player
-rectangle "P4 Progress, Economy and Social (part 2: missions, achievements and shop)" {
+rectangle "PayOS" as PO <<actor>>
+rectangle "P4 Progress, Economy and Social (part 2: missions, achievements, shop and membership)" {
   usecase "UC-37 View Missions and Streak" as UC37
   usecase "UC-38 Claim Mission Reward" as UC38
   usecase "UC-39 View Achievements" as UC39
@@ -240,11 +253,16 @@ rectangle "P4 Progress, Economy and Social (part 2: missions, achievements and s
   usecase "UC-42 Purchase Cosmetic" as UC42
   usecase "UC-43 View Collection" as UC43
   usecase "UC-44 Equip Cosmetic" as UC44
+  usecase "UC-77 View Membership Offer" as UC77
+  usecase "UC-78 Buy Membership" as UC78
 }
 Player -- UC37
 Player -- UC39
 Player -- UC41
 Player -- UC43
+Player -- UC77
+UC78 .> UC77 : <<extend>>
+UC78 -- PO
 UC38 .> UC37 : <<extend>>
 UC40 .> UC39 : <<extend>>
 UC42 .> UC41 : <<extend>>
@@ -275,6 +293,7 @@ rectangle "P6 Admin: Users and Moderation" {
   usecase "UC-53 Reset Player Progress" as UC53
   usecase "UC-54 Review Player Report" as UC54
   usecase "UC-55 Review Appeal" as UC55
+  usecase "UC-80 Open Replay in the Game" as UC80
 }
 Admin -- UC47
 Admin -- UC48
@@ -286,6 +305,7 @@ Admin -- UC55
 UC49 .> UC48 : <<extend>>
 UC50 .> UC48 : <<extend>>
 UC51 .> UC54 : <<extend>>
+UC80 .> UC54 : <<extend>>
 """
 
 D["r3_uc_p7_admin_content"] = r"""
@@ -348,8 +368,11 @@ state "Bot Match" as BotMatch
 state "Training Academy" as Training
 state "Drill Result\n[popup]" as DrillResult <<popup>>
 state "Online Lobby" as Online
-state "Ready Check\n[popup]" as Ready <<popup>>
+state "Ready Check\n[overlay]" as Ready <<popup>>
 state "Multiplayer Court" as Court
+state "Match Summary\n[overlay]" as Summary <<popup>>
+state "Membership\n[popup]" as Member <<popup>>
+state "Music Room\n[overlay]" as Music <<popup>>
 state "Match Result\n[popup]" as Result <<popup>>
 state "Coaching Summary\n[popup]" as Coach <<popup>>
 state "Training Progress\n[popup]" as Progress <<popup>>
@@ -395,8 +418,15 @@ DrillResult --> Coach
 Modes --> Online
 Online --> Ready : match found
 Ready --> Court : all accepted
-Court --> Result
+Court --> Summary : outcome cinematic
+Summary --> Online : VỀ PHÒNG CHỜ
+Summary --> Menu : VỀ TRANG CHỦ
+Summary --> Coach
 Result --> Coach
+Modes --> Member : locked mode
+BotSetup --> Member : adaptive bot locked
+Menu --> Member : GÓI THÀNH VIÊN
+Menu --> Music
 Menu --> Progress
 Menu --> History
 History --> Replay
@@ -433,16 +463,20 @@ state "Stop Match\n[dialog]" as Stop
 state "Moderation\n(reports, sanctions, appeals)" as Mod
 state "Analytics" as Analytics
 state "Coaching Review" as Coach
+state "Replay Launch\n[dialog]" as Launch
+state "Payment Return\n(public page)" as PayRet
 [*] --> Login
+[*] --> PayRet : after a PayOS payment
 Login --> Dash : Admin role
 Dash --> Users
 Users --> Reset
 Dash --> CMS
-CMS --> Lesson
+CMS --> Lesson : lesson and drills
 CMS --> Refs
 Dash --> Matches
 Matches --> Stop
 Dash --> Mod
+Mod --> Launch : Xem replay
 Dash --> Analytics
 Dash --> Coach
 """
@@ -508,6 +542,8 @@ entity LESSON {
 entity DRILL {
   DrillId <<key>>
   Code
+  PublishedConfig
+  DraftConfig
 }
 entity PLAYER_PROFILE {
   PlayerId <<key>>
@@ -519,6 +555,8 @@ entity TRAINING_ATTEMPT {
   Completed
 }
 relationship CONTAINS {
+  Target
+  SortOrder
 }
 relationship PRACTISES_SKILL {
 }
@@ -669,6 +707,16 @@ entity ACHIEVEMENT {
   AchievementId <<key>>
   Target
 }
+entity MEMBERSHIP_ORDER {
+  OrderCode <<key>>
+  AmountVnd
+  EliteTokenBonus
+  Status
+  ExpiresAt
+  PaidAt
+}
+relationship PLACES {
+}
 relationship HOLDS {
   Balance
 }
@@ -697,6 +745,8 @@ PLAYER_PROFILE -M- PROGRESSES
 PROGRESSES -N- MISSION
 PLAYER_PROFILE -M- EARNS
 EARNS -N- ACHIEVEMENT
+PLAYER_PROFILE -1- PLACES
+PLACES -N- MEMBERSHIP_ORDER
 @endchen
 """
 

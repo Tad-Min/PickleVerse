@@ -12,6 +12,7 @@ rectangle "P6 Admin: Users and Moderation" {
   usecase "UC-53 Reset Player Progress" as UC53
   usecase "UC-54 Review Player Report" as UC54
   usecase "UC-55 Review Appeal" as UC55
+  usecase "UC-80 Open Replay in the Game" as UC80
 }
 Admin -- UC47
 Admin -- UC48
@@ -23,4 +24,5 @@ Admin -- UC55
 UC49 .> UC48 : <<extend>>
 UC50 .> UC48 : <<extend>>
 UC51 .> UC54 : <<extend>>
+UC80 .> UC54 : <<extend>>
 @enduml

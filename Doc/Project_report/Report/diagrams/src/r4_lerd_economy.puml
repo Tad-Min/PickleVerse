@@ -4,6 +4,19 @@ hide circle
 hide empty members
 skinparam linetype ortho
 left to right direction
+entity "MembershipOrders" as MembershipOrders {
+  * OrderCode <<PK>>
+  --
+  * PlayerId <<FK>>
+  * PaymentLinkId
+  * AmountVnd
+  * EliteTokenBonus
+  * Status
+  * CreatedAt
+  * ExpiresAt
+  PaidAt
+  LastCheckedAt
+}
 entity "Currencies" as Currencies {
   * CurrencyId <<PK>>
   --
@@ -100,6 +113,7 @@ entity "PlayerProfiles" as PlayerProfiles {
   * UserId <<PK, FK>>
   --
 }
+PlayerProfiles ||--o{ MembershipOrders : "PlayerId"
 PlayerProfiles ||--o{ PlayerCurrencies : "PlayerId"
 Currencies ||--o{ PlayerCurrencies : "CurrencyId"
 PlayerProfiles ||--o{ CurrencyTransactions : "PlayerId"

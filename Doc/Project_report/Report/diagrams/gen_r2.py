@@ -8,7 +8,7 @@ D["r2_process"] = r"""
 skinparam ActivityBackgroundColor #F5F9FC
 title Two-week iteration
 start
-:Product backlog\n(features FE-01 to FE-10,\ndefects, technical items);
+:Product backlog\n(features FE-01 to FE-11,\ndefects, technical items);
 repeat
   :Iteration planning\n(select items, estimate, assign owner);
   fork
@@ -57,7 +57,7 @@ Project starts 2026-09-07
 [It-2 Single-player core] is 100% completed
 [It-3 Online and backend] is 100% completed
 [It-4 Dedicated server and coaching] is 100% completed
-[It-5 Stabilisation] is 20% completed
+[It-5 Stabilisation] is 70% completed
 -- Milestones (due dates) --
 [M01 Report 1] happens 2026-09-13
 [M02 Report 2] happens 2026-09-20
@@ -69,7 +69,7 @@ Project starts 2026-09-07
 [M08 Full package] happens 2026-12-06
 [M09 Report 6] happens 2026-12-13
 [M10 Final defense] happens 2026-12-20
-today is 2026-11-17 and is colored in #FFE0E0
+today is 2026-11-25 and is colored in #FFE0E0
 @endgantt
 """
 

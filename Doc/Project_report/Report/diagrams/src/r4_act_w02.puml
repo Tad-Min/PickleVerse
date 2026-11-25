@@ -12,7 +12,7 @@ repeat
   :Bot decides movement and shot;
   :Apply singles rules to the rally;
   if () then ([fault])
-    :Show quick rule tip;
+    :Show the referee call\n(red for the side at fault, green for the other);
   else ([else])
   endif
   :Commit point;
@@ -20,11 +20,17 @@ repeat while () is ([no player has won two games]) not ([else])
 |Web API|
 :Save bot result and rewards;
 |Game client|
-:Upload session telemetry;
+:Upload session telemetry\n(after the result has been saved);
 |AI coaching service|
 :Analyse session with rules;
-:Return summary and drill recommendation;
+:Return findings, summary and drill recommendation;
+|Game client|
+if () then ([analysis ready within 90 s])
+  :Show the coaching panel;
+else ([else])
+  :Offer "THỬ LẠI";
+endif
 |Player|
-:Read coaching summary;
+:Read the coaching summary\nand open a recommended drill;
 stop
 @enduml

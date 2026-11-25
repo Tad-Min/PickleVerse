@@ -1,4 +1,4 @@
-"""Report 3 §3.2–3.11: functional requirements FR-01 to FR-35."""
+"""Report 3 §3.2–3.12: functional requirements FR-01 to FR-36."""
 import os
 from report_lib import SCREENS
 
@@ -75,11 +75,11 @@ def write(r):
 
     fr(r, "FR-02", "Sign In and Sign Out", "UC-03 Sign In, UC-05 Sign Out",
        "Login screen → **Đăng nhập**; Settings → Overview → **Đăng xuất**. Token refresh runs automatically before the access token expires.",
-       "A visitor signs in with e-mail and password. The API verifies the BCrypt hash, issues a JWT access token (2 hours) and a refresh token (14 days, stored as a SHA-256 hash) and returns the profile summary. The client loads the profile, wallet, catalogue and settings on the Loading screen and opens the Menu. A restricted account receives a token limited to the appeal scope and is taken to Decisions and Appeals. Signing out revokes the refresh token on the server and clears the session on the device.",
+       "A visitor signs in with e-mail and password. The API verifies the BCrypt hash, issues a JWT access token (2 hours) and a refresh token (14 days, stored as a SHA-256 hash) and returns the profile summary. The client loads the profile, wallet, catalogue and settings on the Loading screen and opens the Menu. A restricted account receives a token limited to the appeal scope and is taken to Decisions and Appeals. Since 21/11/2026 an account has one session at a time: a successful sign-in ends every earlier session of the account, and the other device returns to the Login screen within a few seconds with MSG84. Signing out ends the session on the server and clears it on the device.",
        shots=[("01_login.png", "Login screen of the game client")],
        fields=[["Email", "Text", "Yes", "Not empty (MSG01), valid format (MSG02)"],
                ["Password", "Password", "Yes", "Not empty (MSG03)"]],
-       rules="BR-04, BR-05.",
+       rules="BR-04, BR-05, BR-62.",
        normal=["The visitor enters e-mail and password and selects **Đăng nhập**.",
                "The API validates the credentials and returns tokens and the profile; the client shows MSG13 and the Loading screen.",
                "On the first sign-in the client asks for the experience level (FR-04); otherwise it opens the Menu.",
@@ -88,7 +88,7 @@ def write(r):
                    "E2 – The e-mail is not verified: MSG11 and a link to the verification page.",
                    "E3 – The account is suspended or banned: MSG14 and the Decisions and Appeals popup (FR-28).",
                    "E4 – A system bot account tries to sign in: MSG65.",
-                   "E5 – The refresh token is expired or revoked: MSG18 and the Login screen.",
+                   "E5 – The refresh token is expired or revoked, or the account has signed in on another device: MSG84 and the Login screen; during an online match the new device takes over the seat of the player (FR-17).",
                    "A1 – No network and a cached profile exists: the visitor can select **Luyện tập ngoại tuyến** (FR-09)."])
 
     fr(r, "FR-03", "Reset Password", "UC-04 Reset Password",
@@ -148,7 +148,7 @@ def write(r):
 
     fr(r, "FR-07", "Browse Lessons", "UC-11 Browse Lessons",
        "Mode Selection → **Luyện tập**; Training Progress → **Tiếp tục luyện**.",
-       "The academy lists the 15 published lessons grouped as Basic, Control, Advanced and Doubles. Each row shows the group, the first-pass reward, the best stars and whether the lesson is unlocked. Selecting a lesson opens its briefing: coach explanation, target, reward and the star rules.",
+       "The academy lists the drills of the published lessons (15 in the seed data, one drill per lesson) grouped as Basic, Control, Advanced and Doubles. Each row shows the group, the first-pass reward, the best stars and whether the lesson is unlocked. Selecting a lesson opens its briefing: coach explanation, target, reward and the star rules.",
        shots=[("08_lesson_catalog.png", "Lesson catalogue with group tabs"), ("04_training_entry.png", "Lesson briefing for \"Giao bóng đúng ô\" (serve)")],
        rules="BR-18, BR-19, BR-20.",
        normal=["The player opens the academy; the catalogue loads from the server (or the cached catalogue when offline).", "The player filters by group and selects **Luyện tập** on a lesson.", "The briefing opens; **Bắt đầu** starts the drill (FR-08)."],
@@ -211,82 +211,88 @@ def write(r):
        rules="BR-09 to BR-15.",
        normal=["The server of the rally serves underhand from behind the baseline into the diagonal service court within 10 seconds.",
                "The return and the third shot must bounce; afterwards volleys are allowed outside the non-volley zone.",
-               "When a fault occurs, the rally ends, a fault banner (MSG30) is shown and the point or side-out is applied.",
+               "When a fault occurs, the rally ends, the point or side-out is applied and the referee call (MSG30) is shown for about 1.5 seconds: red for the side that faulted, green for the side that gains the point or the serve.",
                "A game ends at 11 points with a 2-point lead; the first side to win two games wins the match (MSG31)."],
        exceptions=["A1 – In the third game the players change ends when a side reaches 6 points.",
                    "E1 – The serve timer expires: fault ServeTimeout and MSG29."])
 
     fr(r, "FR-13", "Set Up and Play a Bot Match", "UC-16 Play Bot Match",
        "Menu → **Chơi ngay** → Mode Selection → **Đấu với bot** → Bot Match Setup → **Vào sân**.",
-       "The player chooses the difficulty, the time of day and the court, then plays a singles match against the computer. Easy, Medium and Hard use fixed reaction and accuracy settings; the adaptive option uses a behaviour-tree bot whose tier follows the player's Elo. After the match the result popup shows the winner, scores and rewards, and the coaching analysis can be opened.",
+       "The player chooses the difficulty, the time of day and the court, then plays a singles match against the computer. Easy, Medium and Hard use fixed reaction and accuracy settings; the adaptive option (**Tự động**) uses a behaviour-tree bot whose tier follows the player's Elo and needs the membership (FR-36): without it the option carries a lock, and selecting it opens the membership panel. After the match the result popup shows the winner, scores and rewards, and the coaching analysis can be opened.",
        shots=[("16_mode_selection.png", "Mode selection"), ("17_bot_setup.png", "Bot match setup")],
        refs=("20_botmatch_victory.png",),
        fields=[["Difficulty", "Choice", "Yes", "Easy, Medium, Hard or Adaptive"], ["Time of day", "Choice", "Yes", "Day or night"], ["Court", "Choice", "Yes", "Professional or outdoor"]],
-       rules="BR-10 to BR-16, BR-22, BR-31, BR-32.",
+       rules="BR-10 to BR-16, BR-22, BR-31, BR-32, BR-58.",
        normal=["The player selects the options and **Vào sân**; the intro cinematic plays.", "The match is played with FR-11 and FR-12.",
                "At the end the API settles the result: rewards and XP are added; Elo does not change in a practice bot match.",
                "The player selects **Chơi lại**, **Chọn chế độ** or **Xem phân tích**."],
-       exceptions=["A1 – Ranked Bot match assigned by matchmaking (FR-14): Elo changes according to BR-23.", "E1 – The device is offline: the bot match card is disabled."])
+       exceptions=["A1 – Ranked Bot match assigned by matchmaking (FR-14): Elo changes according to BR-23.", "E1 – The device is offline: the bot match card is disabled.", "E2 – The adaptive bot is requested without membership: the API refuses with MSG79 (HTTP 403)."])
 
     # ============================================================ FE-04
     r.h3("3.5 Online Matches (FE-04)")
     fr(r, "FR-14", "Find an Online Match", "UC-19 Find Online Match, UC-20 Confirm Match Readiness",
        "Mode Selection → **Đấu online** → Online Lobby → **Đấu đơn 1v1** (ranked singles) or **Đấu đôi 2v2** (ranked doubles) → **Tìm trận**.",
-       "**Ranked singles:** the player joins the ranked queue; the matchmaking worker pairs two searching players whose Elo is within the pairing window, and if no human opponent is found within 180 seconds a ranked bot opponent is assigned. **Ranked doubles:** a player searches alone or the captain of a party of two (formed by room code or invitation) searches for both; the API fills two teams of two from solo players and parties in the same region and protocol version, and a party always stays on one team. When a search has lasted 180 seconds and four humans are not available, the free seats are filled with ranked bots whose Elo is derived from the average rating of the humans; available humans always take priority. The match is rated (BR-22, BR-23). Clients older than protocol 20 keep the former unrated search without bots. In both modes every player must accept within 10 seconds. When all players accept, the API allocates the dedicated server and issues signed tickets, and the clients load the multiplayer court.",
-       shots=[("28_searching.png", "Searching for a singles opponent with the elapsed time (layout preview rendered in the Unity Editor)")],
-       rules="BR-22 to BR-27.",
-       normal=["The player selects **Tìm trận**; MSG32 and a timer are shown.", "A pair (or two full teams for doubles) is found; the Ready Check shows MSG33 with a 10-second countdown.",
+       "**Ranked singles:** the player joins the ranked queue; the matchmaking worker pairs two searching players whose Elo is within the pairing window, and if no human opponent is found within 180 seconds a ranked bot opponent is assigned. **Ranked doubles:** a player searches alone or the captain of a party of two (formed by room code or invitation) searches for both; the API fills two teams of two from solo players and parties in the same region and protocol version, and a party always stays on one team. When a search has lasted 180 seconds and four humans are not available, the free seats are filled with ranked bots whose Elo is derived from the average rating of the humans; available humans always take priority. The match is rated (BR-22, BR-23). Clients older than protocol 20 keep the former unrated search without bots. When a match is found the clients play a short intro (paddles, the VS ball and the players of both sides) and then show the ready check; every player must accept within 10 seconds (the server allows 14 seconds, 4 of them for the intro). When all players accept, the API allocates the dedicated server and issues signed tickets, and the clients load the multiplayer court. Online play needs the membership (FR-36): the mode card is locked without it, and the API refuses a search, a room or a match in which a human player is not a member.",
+       shots=[("28_searching.png", "Searching for a singles opponent with the elapsed time (layout preview rendered in the Unity Editor)"), ("49_ready_check.png", "Ready check after the match-found intro (Windows build of 25/11/2026, two accounts on staging)")],
+       rules="BR-22 to BR-27, BR-58.",
+       normal=["The player selects **Tìm trận**; MSG32 and a timer are shown.", "A pair (or two full teams for doubles) is found; the match-found intro plays and the Ready Check shows MSG33 with a 10-second countdown and the **Chấp nhận** and **Hủy** buttons.",
                "All players accept; the server allocates the match and the court loads (FR-16)."],
        exceptions=["A1 – Ranked singles only: no opponent within 180 seconds: a ranked bot is assigned and the match starts on the dedicated server.",
                    "A2 – Ranked doubles: four humans are not found within 180 seconds: ranked bots fill the free seats, and every human still has to accept the ready check.",
                    "A3 – The player selects **Hủy** while searching: the ticket is cancelled.",
                    "E1 – A player declines or the countdown ends: the offer closes; the decliner sees MSG35 and the other player returns to the queue.",
                    "E2 – Every game-server container is busy: MSG36; the ready check waits (phase WAITING_CAPACITY) until a container is reserved for the match.",
-                   "E3 – The player already has a search or an unfinished match: MSG41.", "E4 – Search expired: MSG34."])
+                   "E3 – The player already has a search or an unfinished match: MSG41.", "E4 – Search expired: MSG34.", "E5 – A player of the search is not a member: MSG79 (HTTP 403)."])
 
-    fr(r, "FR-15", "Private Rooms and Invitations", "UC-21 Create Private Room, UC-22 Join Room by Code, UC-23 Invite Friend to Room, UC-24 Respond to Room Invitation",
+    fr(r, "FR-15", "Private Rooms and Invitations", "UC-21 Create Private Room, UC-22 Join Room by Code, UC-23 Invite Friend to Room, UC-24 Respond to Room Invitation, UC-79 Swap Position in a Room",
        "Mode Selection → **Tạo phòng**; Online Lobby → **Mã phòng** + **Tham gia**; friend list → invite.",
-       "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The collapsible friends column of the lobby lists the friends who can be invited; only friends who are in the lobby receive invitations. The host can change teams, remove a guest and start the match. Custom matches are unrated and give no Elo. A doubles room of two players can also be used as a party for ranked doubles (FR-14).",
+       "A player creates a singles (2 players) or doubles (up to 4 players) room. Other players join with the room code or accept an invitation sent to an online friend. The collapsible friends column of the lobby lists the friends who can be invited; only friends who are in the lobby receive invitations. The host can remove a guest and start the match. Players change places by agreement: a player selects the position button of another player, the other player accepts or declines within 20 seconds, and the two seats are swapped (since 23/11/2026; it replaces the team button of the host). When the host leaves, the next remaining player becomes the host and the room stays open. A room code also finds a room in another Photon region: the API returns the region of the host. Creating, joining and accepting an invitation need the membership (FR-36). Custom matches are unrated and give no Elo. A doubles room of two players can also be used as a party for ranked doubles (FR-14).",
        shots=[("27_online_lobby.png", "Online lobby – doubles room with the room code and the friends column (layout preview rendered in the Unity Editor with sample friend data)")],
        fields=[["Room code", "Text", "Yes (to join)", "Code of an open room on Photon; wrong code → MSG39"], ["Mode", "Choice", "Yes", "Singles 1v1 or Doubles 2v2"]],
-       rules="BR-22, BR-30, BR-38.",
+       rules="BR-22, BR-30, BR-38, BR-58, BR-63.",
        normal=["The host creates the room; the lobby shows the room code and roster slots.", "Guests join by code or by accepting an invitation.", "The host starts the match; the dedicated server is allocated as in FR-14."],
        exceptions=["E1 – Room full: MSG37.", "E2 – Room closed or the player was removed: MSG38.", "E3 – Invited player is busy or offline: MSG40.",
-                   "E4 – Blocked players cannot invite each other (BR-38)."])
+                   "E4 – Blocked players cannot invite each other (BR-38).", "E5 – The player or the invited friend is not a member: MSG79.", "E6 – The other player declines the swap, does not answer in 20 seconds or leaves: the seats stay as they are and the requester is told the reason (MSG86)."])
 
     fr(r, "FR-16", "Play an Online Match", "UC-25 Play Online Match",
        "Automatically after the ready check (FR-14) or when the host starts a room (FR-15).",
-       "Each client connects to the dedicated server with its signed ticket through Photon Fusion. The server simulates the ball and applies the rules (FR-12); clients send only input and render server state with interpolation. The server sends heartbeats to the API every 8 seconds, records telemetry and the replay, and reports the final result.",
-       shots=[("10_multiplayercourt_editmode.png", "Multiplayer court scene")],
-       rules="BR-12 to BR-17, BR-28, BR-29.",
+       "Each client connects to the dedicated server with its signed ticket through Photon Fusion. The server simulates the ball and applies the rules (FR-12); clients send only input and render server state with interpolation. The server sends heartbeats to the API every 8 seconds, records telemetry, uploads the replay in batches while the match is played, and reports the final result. At the end the recording is sealed and the outcome cinematic is shown over the kept court, so that the players see the result even when the server leaves the session.",
+       shots=[("50_referee_calls.png", "Online match on two clients: the referee call of the same fault for the player at fault (left) and for the opponent (right), Windows build of 25/11/2026"), ("51_match_summary.png", "Match summary of a private-room match that the opponent left")],
+       rules="BR-12 to BR-17, BR-28, BR-29, BR-64.",
        normal=["The court loads and the server starts the match after all players are connected.", "Players play rallies; scores are shown from the server state.", "The server ends the match and the result popup appears (FR-18)."],
        exceptions=["E1 – Photon cannot be reached: MSG45.", "E2 – The connection to the match server is lost: MSG42 and FR-17 starts."])
 
-    fr(r, "FR-17", "Reconnect to or Leave a Match", "UC-26 Reconnect to Match, UC-27 Leave Match",
-       "Connection loss during an online match; pause menu → leave.",
-       "If a player's connection drops, the client shows a reconnecting overlay and retries for up to 30 seconds with the same identity. The dedicated server pauses the match and keeps the player's slot for 30 seconds. A player who reconnects in time continues with the server score. A player who leaves, or who does not return within 30 seconds, forfeits: the server ends the match with a win for the other team, and the forfeiting player gets a loss (Elo changes in a ranked match; no Tokenpad or XP). If the dedicated server itself is lost, its lease expires and the API ends the match as interrupted, which changes no Elo and gives no reward (BR-28).",
-       layout=[["Reconnecting overlay", "Status text and countdown; the court stays visible in the background"], ["Leave dialog", "Warning about the consequence and Confirm / Cancel buttons"]],
-       rules="BR-28, BR-29.",
+    fr(r, "FR-17", "Reconnect to, Surrender or Leave a Match", "UC-26 Reconnect to Match, UC-27 Leave Match, UC-81 Surrender Match",
+       "Connection loss during an online match; court → **Đầu hàng**; settings (Esc) → leave the match.",
+       "If a player's connection drops, the client shows a reconnecting overlay and retries for up to 30 seconds with the same identity. The dedicated server pauses the match and keeps the player's slot for 30 seconds. A player who reconnects in time continues with the server score; a player who signs in on another device takes over the seat there, and the session on the first device is disconnected. **Đầu hàng** on the court opens a confirmation box and changes nothing by itself. In singles, or when the partner is a bot, the player decides alone. In doubles the box appears on the screens of both partners at the same time; the match ends only when both have confirmed within 20 seconds, the opponents see nothing before that, and after a refused, withdrawn or expired request the team waits 15 seconds before it can ask again. The box does not lock the controls and cannot be answered with the keyboard, because the rally goes on. After the confirmation the match server ends the match, the surrendering team loses, and all players see the outcome and the summary. A player who leaves, or who does not return within 30 seconds, forfeits: the server ends the match with a win for the other team. In both cases the players who gave up get a loss (Elo changes in a ranked match; no Tokenpad or XP). If the dedicated server itself is lost, its lease expires and the API ends the match as interrupted, which changes no Elo and gives no reward (BR-28).",
+       layout=[["Reconnecting overlay", "Status text and countdown; the court stays visible in the background"], ["Surrender box", "Title, consequence (MSG88), countdown of the request, **ĐẦU HÀNG** and **TIẾP TỤC ĐẤU**; for the partner a card on the right with the name of the player who asked (MSG89), **ĐẦU HÀNG** and **KHÔNG ĐẦU HÀNG**; while the partner decides, **HỦY**"], ["Leave dialog", "Warning about the consequence and Confirm / Cancel buttons (Settings → leave the match). While the connection is lost the court button is **Rời trận** and asks before it leaves"]],
+       shots=[("52_surrender_ask.png", "Surrender box of the player who asked, ranked doubles (Windows player of 25/11/2026, court probe)"), ("53_surrender_partner.png", "Surrender request seen by the doubles partner (Windows player of 25/11/2026, court probe)")],
+       rules="BR-28, BR-29, BR-66.",
        normal=["The client detects the loss and starts reconnecting.", "The player rejoins with the same ticket identity and control is restored."],
-       exceptions=["E1 – Reconnection fails within 30 seconds: MSG43; the result is shown when the server finishes processing.", "A1 – The player confirms leaving: MSG44 and the Menu opens."])
+       exceptions=["A1 – Surrender in singles: the player selects **Đầu hàng** and **ĐẦU HÀNG**; the server ends the match and the player loses (BR-66).",
+                   "A2 – Surrender in doubles: the player selects **Đầu hàng**, the box opens for both partners, both select **ĐẦU HÀNG**; the server ends the match and their team loses (BR-66).",
+                   "A3 – The player confirms leaving in the settings: MSG44, and the room, the online lobby or the Menu opens.",
+                   "E1 – Reconnection fails within 30 seconds: MSG43; the result is shown when the server finishes processing.",
+                   "E2 – The partner refuses, the player withdraws, nobody answers for 20 seconds, the partner is disconnected or the team asked less than 15 seconds ago: MSG90 and the match goes on.",
+                   "E3 – The match server does not answer within 6 seconds: MSG90 (\"Máy chủ trận chưa phản hồi. Hãy thử lại.\")."])
 
     fr(r, "FR-18", "Record the Match Result and Update Elo", "UC-16, UC-25 (non-screen settlement)",
        "End of a bot match (reported by the client) or of an online match (reported by the dedicated server).",
-       "The API settles each match exactly once in a single transaction: it stores the game scores, marks the match FINISHED, applies Elo for ranked matches (ranked singles, ranked bot and ranked doubles; in doubles each human is rated against the average Elo of the opposing team, and bots receive no rating row), grants Tokenpad and XP, and updates missions, achievements and streaks. The result popup and the history (FR-24) show the outcome.",
+       "The API settles each match exactly once in a single transaction: it stores the game scores, marks the match FINISHED, applies Elo for ranked matches (ranked singles, ranked bot and ranked doubles; in doubles each human is rated against the average Elo of the opposing team, and bots receive no rating row), grants Tokenpad and XP, and updates missions, achievements and streaks. A dedicated match is settled after its replay has been sealed in object storage; when that fails or takes longer than 60 seconds the result is saved without a replay. The result popup and the history (FR-24) show the outcome.",
        refs=("20_botmatch_victory.png",),
-       rules="BR-22, BR-23, BR-29, BR-32 to BR-35.",
+       rules="BR-22, BR-23, BR-29, BR-32 to BR-35, BR-64.",
        normal=["The API receives the result with the match identifier.", "It validates that the match is still PLAYING and that the reporter is allowed to report it.", "It saves scores, Elo, rewards and progress, then returns the summary to the clients."],
-       exceptions=["A1 – The result is sent again: the stored result is returned and nothing is applied twice.", "E1 – The match was stopped by an administrator before the result: no Elo or reward (BR-48)."])
+       exceptions=["A1 – The result is sent again: the stored result is returned and nothing is applied twice.", "A2 – The sealed replay cannot be read when the result is saved (HTTP 412): the server sends the result again without a replay.", "E1 – The match was stopped by an administrator before the result: no Elo or reward (BR-48)."])
 
     # ============================================================ FE-05
     r.h3("3.6 AI Coaching (FE-05)")
     fr(r, "FR-19", "View Coaching Summary and Drill Recommendations", "UC-17 View Coaching Summary, UC-18 View Drill Recommendation",
        "Drill Result → analysis panel; Match Result → **Xem phân tích**.",
-       "The client uploads the shot telemetry of the drill or match (for online matches the dedicated server uploads it). The hybrid AI worker sends the session to the AI coaching service, which detects common errors with rules (for example late contact, dink too high, entering the non-volley zone after a volley), writes a short summary and recommends at most three drills. When the gated tier model is approved, it also estimates the player's tier. The coaching popup shows the counts of shots, contacts and serves, the main errors with their frequency, and the recommended drills.",
-       shots=[("21_ai_analysis.png", "Coaching summary after a bot match")],
+       "The client uploads the shot telemetry of the drill or match (for online matches the dedicated server uploads it). The hybrid AI worker sends the session to the AI coaching service, which detects common errors with rules (for example late contact, dink too high, entering the non-volley zone after a volley), writes a short summary and recommends at most three drills. When the gated tier model is approved, it also estimates the player's tier. The coaching popup shows the number of shots, the clean shots and their rate and the number of faults, then every fault with its frequency per technique and one piece of advice, and the recommended drills. A clean shot is a shot without a fault in the measured criteria; rule faults outside these criteria are not counted, and the popup says so. After a bot match the client sends the telemetry again as soon as the API has saved the result, because the API accepts match telemetry only for a finished match.",
+       shots=[("21_ai_analysis.png", "Coaching summary after a bot match (Windows build on staging, 25/11/2026)")],
        rules="BR-50, BR-51.",
-       normal=["The player opens the analysis; the client polls the analysis job.", "The summary and recommendations appear when the job is completed.", "**Luyện ngay** opens the recommended lesson briefing."],
-       exceptions=["A1 – The analysis is still running: the panel shows \"Đang phân tích…\".", "E1 – Too few shot opportunities: no finding is reported for that error.",
+       normal=["The player opens the analysis; the client asks for it every 1.5 to 3 seconds for up to 90 seconds.", "The figures, the faults and the recommendations appear when the job is completed, without closing the popup.", "**Luyện ngay** opens the recommended lesson briefing."],
+       exceptions=["A1 – The analysis is still running: the panel shows \"Đang phân tích dữ liệu trận đấu…\" and refreshes itself.", "A2 – The analysis is not ready after 90 seconds: the panel shows \"Phân tích chưa xong\" and **THỬ LẠI**.", "E1 – An error with fewer than 5 opportunities in the current and recent sessions leads to no drill recommendation; it is still listed as a fault.",
                    "E2 – AI service unavailable: the job is retried by the worker; the player can open the analysis later."])
 
     # ============================================================ FE-06
@@ -308,7 +314,7 @@ def write(r):
 
     fr(r, "FR-22", "Browse Shop and Purchase Cosmetic", "UC-41 Browse Shop, UC-42 Purchase Cosmetic",
        "Menu → **Cửa hàng**.",
-       "The shop lists cosmetic paddles with preview, description and price. An item can have a Tokenpad price, an Elite Token price or both. The purchase debits the wallet and adds the item to the collection in one transaction.",
+       "The shop lists cosmetic paddles with preview, description and price. An item can have a Tokenpad price, an Elite Token price or both; the detail panel of the Dragon Ruby paddle also describes its ball effect (the Gemstone paddle has an effect without a description). The purchase debits the wallet and adds the item to the collection in one transaction. Elite Token comes only from the membership (FR-36).",
        shots=[("22_shop.png", "Shop with featured GEMSTONE and THOT paddles")],
        rules="BR-36.",
        normal=["The player selects an item and its currency and confirms the purchase.", "The API checks ownership and balance, debits the price and grants the item.", "The wallet and the collection are refreshed."],
@@ -327,13 +333,13 @@ def write(r):
     fr(r, "FR-24", "View Match History, Match Detail and Replay", "UC-28 View Match History, UC-29 Watch Match Replay, UC-76 View Match Detail",
        "Menu → **Lịch sử**; history entry (\"Bấm để xem tỷ số từng ván\") → Match Detail; history entry → replay button.",
        "The history popup lists the player's last 20 matches in Vietnam time with opponent, mode, result (win, loss or interrupted), game score and Elo change, plus the level card. Selecting a finished match opens **Match Detail**: the tab **Tỉ số** shows the score of each game for team A and team B and which side each team started on, and the tab **Thông số** shows, for every player of the match, the errors per technique and game found by the AI analysis (errors / opportunities, or \"Đang phân tích…\" while the analysis runs); the detail also offers the report button for each other human player. A match with a stored replay can be watched in the Replay Viewer with pause, seek and speeds from 0.5× to 2×. Only participants can open the detail and the replay, except a replay shared in a visible post (FR-34).",
-       shots=[("12_history.png", "Match history with interrupted ranked matches")],
+       shots=[("12_history.png", "Match history with a private-room match, a bot match and a forfeited ranked match (Windows build on staging, 25/11/2026)")],
        layout=[["Match Detail header", "‹ Quay lại, kind and mode, series score, metadata (time, end reason) and Elo change"],
                ["Tabs", "Tỉ số (games with team A and team B score, \"Chưa hoàn tất\" or \"Chưa ghi phía sân\" notes) and Thông số (per player and game: technique · error code, errors/opportunities and rate)"],
                ["Actions", "Làm mới; report button for each other human player (FR-27)"]],
        rules="BR-29, BR-40, BR-41.",
        normal=["The player opens History; the list loads from the API.", "The player selects a finished match; GET /api/Matches/{id} returns the games and the per-player statistics.", "The player selects a replay; the manifest and chunks are downloaded and played."],
-       exceptions=["A1 – No replay stored: the entry shows \"Chưa có replay\".", "A2 – The match has no score per game: \"Trận này chưa ghi tỷ số từng ván.\"", "A3 – The analysis of a game is missing: \"Chưa có thống kê cho ván này\".",
+       exceptions=["A1 – No replay stored (or it could not be sealed in time, BR-64): the entry shows \"Chưa có replay\".", "A2 – The match has no score per game: \"Trận này chưa ghi tỷ số từng ván.\"", "A3 – The analysis of a game is missing: \"Chưa có thống kê cho ván này\".",
                    "E1 – A player who did not take part requests the replay: HTTP 403.", "E2 – The match is not finished or not the player's: MSG78."])
 
     fr(r, "FR-25", "Manage Friends and Blocked Players", "UC-32 to UC-36",
@@ -354,7 +360,7 @@ def write(r):
     r.p("FR-34 and FR-35 were added on 17/11/2026 for the social feature that the Review 1 committee asked for (Report 1, §6.3); they are numbered after FR-33 so that the earlier numbers stay unchanged. No screenshot is shown because the screens need a signed-in account; the layout is read from SocialLobbyMenu and will be captured in test Round 2.")
     fr(r, "FR-34", "Social Feed and Posts", "UC-69 Browse Social Feed, UC-70 Write, Edit or Delete Post, UC-71 Like and Comment on Post, UC-72 Watch Shared Video or Replay",
        "Menu → friend drawer → **BẢNG TIN**; Social Feed → **Viết bài**.",
-       "The feed shows, newest first and 20 at a time (**Xem thêm**), the posts the player may see: the player's own posts, community posts, and posts that friends share with friends unless the player is excluded; posts of a player who blocked the player, or whom the player blocked, are never shown. A post has a text of up to 2,000 characters and may attach one MP4 video and one completed replay of a match of the author. The author chooses the audience **Cộng đồng** (all signed-in players), **Bạn bè**, **Bạn bè ngoại trừ** (friends except up to 200 chosen players) or **Chỉ mình tôi**, and can edit or delete the post at any time. Players who can see a post like it (**Thích** / **Đã thích**), read and write comments, play its video in the built-in player and open its replay in the Replay Viewer. A video is uploaded before the post is saved and accepted only as MP4 with one H.264 video stream and optional AAC audio, at most 250 MB and 15 minutes. In release 1.0 the video picker exists only when the game runs in the Unity Editor; the Windows and Android builds show MSG70 (Report 1, LI-12).",
+       "The feed shows, newest first and 20 at a time (**Xem thêm**), the posts the player may see: the player's own posts, community posts, and posts that friends share with friends unless the player is excluded; posts of a player who blocked the player, or whom the player blocked, are never shown. A post has a text of up to 2,000 characters and may attach one MP4 video and one completed replay of a match of the author. The author chooses the audience **Cộng đồng** (all signed-in players), **Bạn bè**, **Bạn bè ngoại trừ** (friends except up to 200 chosen players) or **Chỉ mình tôi**, and can edit or delete the post at any time. Players who can see a post like it (**Thích** / **Đã thích**), read and write comments, play its video in the built-in player and open its replay in the Replay Viewer. A video is uploaded before the post is saved and accepted only as MP4 with one H.264 video stream and optional AAC audio, at most 250 MB and 15 minutes. In release 1.0 **Chọn MP4** opens the Windows file dialog (and the file panel in the Unity Editor); the Android build has no video picker and shows MSG70 (Report 1, LI-12; Report 5, D-22).",
        layout=[["Header", "Title; Bảng tin, Hộp thư, Bạn bè and × buttons; feedback line at the bottom"],
                ["Feed", "Post cards: author, time, audience, text, Video and Replay buttons, Thích with the count, Bình luận with the count, Sửa and Xóa on own posts; Viết bài, Làm mới; Xem thêm for older posts; \"Bảng tin chưa có bài đăng.\" when empty"],
                ["Post editor", "Nội dung bài đăng (2,000 characters); Ai có thể xem selector; Chọn người ngoại trừ (only for Bạn bè ngoại trừ); Chọn MP4 / Bỏ video with \"MP4 tối đa 250 MB · 15 phút\" and upload progress; Chọn replay / Bỏ replay; Đăng bài (Lưu bài when editing) and Quay lại"],
@@ -370,7 +376,7 @@ def write(r):
        normal=["The player opens BẢNG TIN; the first 20 visible posts are loaded.", "The player selects Viết bài, writes the text, chooses the audience and optionally attaches a replay or, in the Windows build, an MP4 video.",
                "The player selects Đăng bài; the post appears at the top of the feed of the players in its audience.", "Another player likes the post, writes a comment, plays the video or opens the replay."],
        exceptions=["E1 – Empty post, text too long or an invalid audience or exclusion list: MSG66.", "E2 – The video is not MP4 H.264/AAC or longer than 15 minutes: MSG67; larger than 250 MB: MSG68; four uploads are already running: MSG69.",
-                   "E3 – Video upload in a Windows or Android build: MSG70.", "E4 – The post was deleted or is no longer visible to the player: MSG76; a video that is playing stops with MSG75.",
+                   "E3 – Video upload in the Android build: MSG70.", "E4 – The post was deleted or is no longer visible to the player: MSG76; a video that is playing stops with MSG75.",
                    "E5 – The attached replay is not complete yet: \"Replay đang được hoàn thiện.\"", "E6 – A comment is empty or longer than 1,000 characters: MSG71."])
 
     fr(r, "FR-35", "Direct Messages and Whispers", "UC-73 Send Direct Message, UC-74 Read Inbox and Conversation, UC-75 Whisper in the Lobby",
@@ -386,6 +392,24 @@ def write(r):
                "In the lobby the player selects THÌ THẦM on another player's row, types and sends; the other player sees the whisper at once."],
        exceptions=["E1 – The recipient is not a friend, is blocked or is not active: MSG72.", "E2 – Empty message or longer than 1,000 characters: MSG71.", "E3 – Whisper to a blocked or unverified player: MSG73.",
                    "E4 – The whisper recipient has left the lobby: MSG74.", "E5 – The lobby connection is not ready: \"Đang kết nối dịch vụ thì thầm.\""])
+
+    # ============================================================ FE-11
+    r.p("FR-36 was added on 25/11/2026 for change request CR-01 (Report 1, §6.3); it belongs to feature FE-11 and is numbered after FR-35 so that the earlier numbers stay unchanged.")
+    fr(r, "FR-36", "View and Buy the Membership", "UC-77 View Membership Offer, UC-78 Buy Membership",
+       "Menu → **GÓI THÀNH VIÊN**; selecting a locked mode (Online match, Create room, the adaptive bot) opens the same panel with MSG79.",
+       "The membership is bought once and lasts for ever. The panel shows the price and the bonus that the API returns (49,000 VND and 3,000 Elite Token), the three benefits and the state of the player's order. **MUA NGAY** asks the API for a checkout: the API creates an order with a random code, signs the request with HMAC-SHA256, checks the signature and the values of the answer and stores the order as PENDING with a link that is valid for 15 minutes; the game opens the PayOS page in the browser. A second click while the link is valid opens the same page (**MỞ THANH TOÁN**). The payment is confirmed on the server only: the signed webhook of PayOS, or the check that the client requests when the player comes back to the game, makes the API read the order from PayOS, and the membership is activated only when the order is PAID, the amount is the one of the order and nothing remains to be paid. Activation sets the order to PAID and credits the Elite Token in one transaction, once. The game reloads the profile, and the locks disappear without a restart.",
+       shots=[("48_membership.png", "Membership panel of a player who is already a member (Windows build on staging, 25/11/2026)")],
+       fields=[["Price", "Integer (VND)", "System", "49,000; returned by the API"], ["Elite Token bonus", "Integer", "System", "3,000; credited once at activation"],
+               ["Order code", "Integer", "System", "Random, 1 to 2^52; unique"], ["Order status", "Choice", "System", "PENDING, PAID, CANCELLED or EXPIRED"],
+               ["Link validity", "Minutes", "System", "15 by default (PayOs:CheckoutLifetimeMinutes)"]],
+       rules="BR-58 to BR-61.",
+       normal=["The player opens the panel and selects **MUA NGAY**.", "The API creates the order and the browser opens the PayOS page.", "The player pays by bank transfer or QR code and returns to the game.",
+               "The API confirms the payment with PayOS, activates the membership and credits 3,000 Elite Token.", "The panel shows MSG83 and **ĐÃ KÍCH HOẠT**; online play, private rooms and the adaptive bot are unlocked."],
+       exceptions=["A1 – The player closes the page without paying: the order stays PENDING; the same link can be used until it expires, then a new order can be created.",
+                   "A2 – The player already is a member: the button is disabled and shows **ĐÃ KÍCH HOẠT**.", "A3 – The player cancels on the PayOS page: the order becomes CANCELLED and a new one can be created.",
+                   "E1 – PayOS is not enabled on the server: MSG80 (HTTP 503).", "E2 – PayOS cannot be reached or answers with an invalid signature: MSG81; nothing is activated.",
+                   "E3 – The previous order is still being checked: MSG82 (HTTP 409).", "E4 – PayOS reports a partial payment: nothing is activated and the player is asked to contact the support (MSG87).",
+                   "E5 – The platform does not sell the membership (iOS): the panel explains that it is sold on Windows and in the directly installed APK."])
 
     # ============================================================ FE-08
     r.h3("3.9 Reports, Restrictions and Appeals (FE-08)")
@@ -433,28 +457,28 @@ def write(r):
         ["Reports tab", "Filter by status; reporter, reported player, match and evidence; Download match evidence and replay"],
         ["Decision form", "Outcome (accept or decline), optional sanction (suspend with expiry or ban) and decision reason; Save"],
         ["Appeals tab", "Statement, related sanction, decision (accept revokes only that sanction, decline keeps it) and reason"]])
-    fr(r, "FR-30", "Review Player Reports and Appeals", "UC-54 Review Player Report, UC-55 Review Appeal, UC-51 Apply Sanction",
+    fr(r, "FR-30", "Review Player Reports and Appeals", "UC-54 Review Player Report, UC-55 Review Appeal, UC-51 Apply Sanction, UC-80 Open Replay in the Game",
        "Sidebar → **Xử lý vi phạm** (/moderation).",
-       "The administrator opens a pending report, marks it CHECKING, examines the match evidence and replay, and accepts or declines it with a reason; accepting may apply a sanction to the reported player. Appeals are handled in the same way; accepting an appeal revokes only the sanction it concerns.",
+       "The administrator opens a pending report, marks it CHECKING, examines the match evidence, downloads the replay or opens it in the installed Windows game (**Xem replay**, a pickleverse:// link with a ticket that is valid for 2 minutes and one use), and accepts or declines it with a reason; accepting may apply a sanction to the reported player. Appeals are handled in the same way; accepting an appeal revokes only the sanction it concerns.",
        shots=sh, layout=lay,
        fields=[["Decision", "Choice", "Yes", "ACCEPTED or DECLINED"], ["Decision reason", "Text", "Yes", "3–2000 characters (MSG55)"]],
-       rules="BR-42, BR-43, BR-44, BR-45.",
+       rules="BR-42, BR-43, BR-44, BR-45, BR-65.",
        normal=["The administrator selects a report and reviews evidence.", "The administrator enters the decision and reason and saves.", "The report status changes; a sanction, if chosen, is applied and the player is restricted."],
-       exceptions=["E1 – The report or appeal was changed by another administrator: the latest version is reloaded.", "E2 – A non-admin token: MSG63 (HTTP 403)."])
+       exceptions=["E1 – The report or appeal was changed by another administrator: the latest version is reloaded.", "E2 – A non-admin token: MSG63 (HTTP 403).", "E3 – The replay ticket has expired or was already used: MSG85; the administrator creates a new one."])
 
     sh, lay = admin_layout(r, "43_admin_cms.png", "Content management page", [
-        ["Lesson manager", "Lesson list; editor with code, name, group, order, target, prerequisite, coach text and technique template; Save draft, Publish saved version, Unpublish"],
+        ["Lesson manager", "Lesson list with the drills of each lesson; lesson editor (code, name, description, order) and drill editor (technique, target, shots, reward, prerequisite, coach text); Save draft, Publish saved version, Unpublish, delete drill"],
         ["Technique references", "Reference values per technique with version; save requires the latest version"],
         ["Shop item form", "Item code, name, type (paddle, outfit, hat), price and currency"],
         ["Mission form", "Name, cycle (daily or weekly), target and reward"]])
     fr(r, "FR-31", "Manage Training Content, Items and Missions", "UC-56 to UC-61",
        "Sidebar → **Nội dung (CMS)** (/cms).",
-       "The administrator creates and edits lessons as drafts, publishes a saved draft so that new attempts use it, and unpublishes a lesson to hide it from players; attempts already in progress keep their version. The administrator also maintains technique reference values, adds shop items and creates missions.",
+       "The administrator creates lessons and adds one or more drills to each lesson; a drill carries the whole configuration (technique, target, number of shots, reward, prerequisite, coach text). Lesson and drills are edited as drafts and published together, so that new attempts use them; unpublishing hides the lesson from players, attempts already in progress keep their version, and a drill can be deleted only while no player has data for it. The administrator also maintains technique reference values, adds shop items and creates missions.",
        shots=sh, layout=lay,
-       fields=[["Lesson code", "Text", "Yes", "Unique (MSG59)"], ["Target", "Integer", "Yes", "1 ≤ target ≤ number of shots"],
+       fields=[["Lesson code", "Text", "Yes", "Unique (MSG59)"], ["Drills", "List", "Yes (publish)", "At least one drill to publish the lesson"], ["Drill code", "Text", "Yes", "Unique; identifies the drill in the game"], ["Target", "Integer", "Yes", "1 ≤ target ≤ number of shots"],
                ["Prerequisite", "Lesson", "No", "Must not create an unlock cycle"], ["Price", "Integer", "Yes (item)", "≥ 0, with a currency"]],
        rules="BR-19, BR-45, BR-47.",
-       normal=["The administrator edits a lesson and selects **Lưu bản nháp**.", "The administrator selects **Xuất bản bản đã lưu**; the lesson becomes PUBLISHED.", "**Gỡ xuất bản** sets it to UNPUBLISHED."],
+       normal=["The administrator edits a drill of the lesson and selects **Lưu bài tập** (draft).", "The administrator selects **Xuất bản bài học**; the drafts of all drills are published and the lesson becomes PUBLISHED.", "**Gỡ xuất bản** sets it to UNPUBLISHED."],
        exceptions=["E1 – Duplicate lesson code: MSG59.", "E2 – The content changed since it was loaded: MSG60.", "E3 – The prerequisite creates a cycle: the save is rejected."])
 
     sh1, lay1 = admin_layout(r, "41_admin_dashboard.png", "Admin dashboard", None)
@@ -466,7 +490,7 @@ def write(r):
                ["Matches", "Live matches refreshed every 5 s with kind, players, score (games A : B) and connection; history list; Stop match dialog with reason and warning MSG61"],
                ["Analytics", "From/To dates (Vietnam time); daily players; retention cohorts; popular lessons with pass rate; error heat map; matchmaking health"]]
     fr(r, "FR-32", "Monitor Matches and View Analytics", "UC-62 to UC-66",
-       "Sidebar → **Tổng quan (Dashboard)**, **Giám sát trận đấu** (/matches), **Thống kê & AI Telemetry** (/analytics).",
+       "Sidebar → **Tổng quan** (/), **Giám sát trận đấu** (/matches), **Thống kê & Telemetry AI** (/analytics).",
        "The dashboard summarises today's activity and pending work. The Matches page shows live matches with the score and connection state reported by the dedicated server and lets the administrator stop a live match with a reason. The Analytics page reports daily active players, retention cohorts, popular lessons with pass rate (passes divided by started attempts), the technique-error heat map and matchmaking health for a chosen date range.",
        shots=sh1 + sh2 + sh3, layout=lay,
        fields=[["Stop reason", "Text", "Yes", "3–2000 characters"], ["From / To date", "Date", "Yes", "From ≤ To; at most 366 days (MSG62)"]],

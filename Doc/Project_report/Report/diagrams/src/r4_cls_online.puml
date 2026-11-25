@@ -78,7 +78,23 @@ MultiplayerApp --> FlowState
 MultiplayerApp "1" o-- "0..2" PhotonSession : Room / Match
 PhotonSession "1" *-- "1" PhotonRoomState
 PhotonSession ..> NetworkMatch : spawns
+class SurrenderDesk {
+  + Ask(player) : void
+  + Agree(player) : void
+  + Refuse(player) : void
+  + Disconnected(player) : void
+  + Tick() : void
+  + IsOpen(team) : bool
+}
+class SurrenderPanel <<MonoBehaviour>> {
+  + Current : View
+  + Ask(court) : void
+  + Cancel() : void
+  + Refresh(court, hidden) : void
+}
 NetworkMatch "1" *-- "1" PickleballRules
+NetworkMatch "1" *-- "0..1" SurrenderDesk : state authority
+SurrenderPanel ..> NetworkMatch : surrender messages
 NetworkMatch "1" o-- "2..4" NetworkPlayer
 NetworkMatch --> MatchRoster
 MultiplayerApp --> MatchRoster

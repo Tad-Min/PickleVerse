@@ -1,0 +1,13 @@
+@startuml r4_sm_membership
+!include _style.iuml
+[*] --> PENDING : checkout [no valid pending order] / createPaymentLink()
+PENDING --> PENDING : checkout [link valid] / returnSameLink()
+PENDING --> PAID : reconcile [PAID, amount matches, nothing remaining] / creditEliteToken()
+PENDING --> CANCELLED : reconcile [cancelled at PayOS, nothing paid]
+PENDING --> EXPIRED : reconcile [expired at PayOS, nothing paid]
+CANCELLED --> PAID : reconcile [paid late in full] / creditEliteToken()
+EXPIRED --> PAID : reconcile [paid late in full] / creditEliteToken()
+PAID --> [*]
+CANCELLED --> [*]
+EXPIRED --> [*]
+@enduml

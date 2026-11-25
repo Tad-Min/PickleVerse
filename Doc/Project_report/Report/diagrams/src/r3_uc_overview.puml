@@ -7,6 +7,7 @@ actor "Restricted Player" as RP
 actor Administrator as Admin
 rectangle "Email Service\n(Gmail SMTP)" as ES <<actor>>
 rectangle "Photon Cloud" as PC <<actor>>
+rectangle "PayOS" as PO <<actor>>
 Player -up-|> Visitor
 RP -up-|> Visitor
 rectangle "PickleVerse System" {
@@ -19,20 +20,21 @@ rectangle "PickleVerse System" {
     usecase "UC-16 Play Bot Match" as U16
     usecase "UC-17 View Coaching Summary" as U17
   }
-  package "P3 Online Match (UC-19 to UC-27)" {
+  package "P3 Online Match (UC-19 to UC-27, UC-79, UC-81)" {
     usecase "UC-19 Find Online Match" as U19
     usecase "UC-21 Create Private Room" as U21
     usecase "UC-25 Play Online Match" as U25
   }
-  package "P4 Progress, Economy and Social (UC-28 to UC-44, UC-69 to UC-76)" {
+  package "P4 Progress, Economy and Social (UC-28 to UC-44, UC-69 to UC-78)" {
     usecase "UC-28 View Match History" as U28
     usecase "UC-42 Purchase Cosmetic" as U42
     usecase "UC-69 Browse Social Feed" as U69
+    usecase "UC-78 Buy Membership" as U78
   }
   package "P5 Account Restriction (UC-45, UC-46)" {
     usecase "UC-46 Submit Appeal" as U46
   }
-  package "P6 Admin: Users and Moderation (UC-47 to UC-55)" {
+  package "P6 Admin: Users and Moderation (UC-47 to UC-55, UC-80)" {
     usecase "UC-51 Apply Sanction" as U51
     usecase "UC-54 Review Player Report" as U54
   }
@@ -55,6 +57,7 @@ Player -- U25
 Player -- U28
 Player -- U42
 Player -- U69
+Player -- U78
 RP -- U46
 Admin -- U51
 Admin -- U54
@@ -63,4 +66,5 @@ Admin -- U62
 Admin -- U66
 U01 -- ES
 U25 -- PC
+U78 -- PO
 @enduml

@@ -3,7 +3,7 @@
 skinparam ActivityBackgroundColor #F5F9FC
 title Two-week iteration
 start
-:Product backlog\n(features FE-01 to FE-10,\ndefects, technical items);
+:Product backlog\n(features FE-01 to FE-11,\ndefects, technical items);
 repeat
   :Iteration planning\n(select items, estimate, assign owner);
   fork

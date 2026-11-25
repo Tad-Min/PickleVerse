@@ -13,16 +13,20 @@ state "Stop Match\n[dialog]" as Stop
 state "Moderation\n(reports, sanctions, appeals)" as Mod
 state "Analytics" as Analytics
 state "Coaching Review" as Coach
+state "Replay Launch\n[dialog]" as Launch
+state "Payment Return\n(public page)" as PayRet
 [*] --> Login
+[*] --> PayRet : after a PayOS payment
 Login --> Dash : Admin role
 Dash --> Users
 Users --> Reset
 Dash --> CMS
-CMS --> Lesson
+CMS --> Lesson : lesson and drills
 CMS --> Refs
 Dash --> Matches
 Matches --> Stop
 Dash --> Mod
+Mod --> Launch : Xem replay
 Dash --> Analytics
 Dash --> Coach
 @enduml

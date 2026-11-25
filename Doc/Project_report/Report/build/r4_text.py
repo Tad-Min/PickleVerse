@@ -9,7 +9,7 @@ ARCH_INTRO = ("PickleVerse uses a client–server architecture with five deploya
               "accounts, progression, economy, matchmaking and moderation; the Unity dedicated server owns the state of online "
               "matches; the AI coaching service analyses shot telemetry; the React administration application is a pure client of "
               "the Web API. Background workers run inside the Web API process. PostgreSQL is the system of record, Redis holds "
-              "short-lived coordination data, and object storage keeps replays.")
+              "short-lived coordination data, object storage keeps replays and videos, and the payment provider PayOS hosts the payment page of the membership.")
 
 COMPONENTS = [
     ["Unity game client", "Unity 6000.6.2f1, C#, uGUI, Input System", "Scenes and UI, local physics and rules for training and bot matches, Photon Fusion client, offline training store, REST client (ApiClient) to the Web API"],
@@ -18,11 +18,12 @@ COMPONENTS = [
     ["Background workers", "Hosted services in the Web API", "HybridAiWorker (analysis jobs), DedicatedLeaseMonitor (expired leases), ModerationExpiryWorker (expired suspensions), AnalyticsProjectionWorker (daily aggregates), PasswordRecoveryMailQueue (e-mail sending), SocialMediaCleanup (unused post videos)"],
     ["AI coaching service", "Python 3.12, FastAPI, scikit-learn", "Rule engine for technique errors, summary and drill recommendations, gated tier model; internal API protected by an API key"],
     ["Admin web application", "React 18, TypeScript 5, Vite 5, React Query, Axios", "Administration screens served by nginx; calls the Web API with the administrator's JWT"],
-    ["PostgreSQL 16", "Relational database", "59 tables: accounts, profiles, content, matches, economy, moderation, telemetry, coaching, posts and messages"],
-    ["Redis 7.4", "In-memory store", "Matchmaking queue and search state, dedicated-server pool (reservations, waiting queue, leases), presence and lobby connections, video playback grants, SignalR backplane, leaderboard cache (15 s)"],
+    ["PostgreSQL 16", "Relational database", "60 tables: accounts, profiles, content, matches, economy, membership orders, moderation, telemetry, coaching, posts and messages"],
+    ["Redis 7.4", "In-memory store", "Matchmaking queue and search state, dedicated-server pool (reservations, waiting queue, leases), presence and lobby connections, video playback grants, replay launch tickets, SignalR backplane, leaderboard cache (15 s)"],
     ["Object storage", "S3-compatible container", "Replay manifests and compressed chunks; MP4 videos of posts"],
     ["Photon Cloud", "External service", "Fusion session lookup and relay for clients and the dedicated server"],
     ["Gmail SMTP", "External service", "Delivery of verification and password-reset e-mails"],
+    ["PayOS", "External payment provider (api-merchant.payos.vn)", "Payment page of the membership, order status and signed webhook; called only by the Web API (PayOsGateway)"],
 ]
 
 AUTHORITY = ("Online matches support two authority modes recorded in GameMatches.AuthorityMode. In **dedicated** mode, enabled by "
@@ -35,19 +36,23 @@ AUTHORITY = ("Online matches support two authority modes recorded in GameMatches
 
 DEPLOY_INTRO = ("Figure 2 shows the staging deployment on the host tad-min.io.vn (Ubuntu 24.04, Docker Engine). On each push to main the "
                 "GitHub Actions workflow dockerhub.yml first reads the release that is deployed and plans which checks and images the changed "
-                "files need (plan-release.py). It then runs the selected checks – fifteen IntegrationChecks groups on PostgreSQL and Redis, the "
+                "files need (plan-release.py). It then runs the selected checks – sixteen IntegrationChecks groups on PostgreSQL and Redis, the "
                 "FastAPI tests and the admin web type check – and builds the Unity Linux dedicated server with GameCI when the Unity project "
                 "changed. **Publish** (publish-release.sh) removes the credentials from the settings files, builds the changed images among "
                 "api, ai, web and server, pushes them to Docker Hub with the tag <component>-<commit>-<run>-<attempt> and smoke-tests the four "
                 "image digests with Docker Compose on the runner. **Deploy** (ssh-deploy.sh) locks the release on the host, takes a PostgreSQL "
                 "dump and checks it with pg_restore, copies docker-compose.linux.yml and Database.sql, writes the four image digests into the "
-                "host .env file, runs docker compose up and records the deployed release. **Status on 13/11/2026:** the pipeline passed. Of "
+                "host .env file, runs docker compose up and records the deployed release. The script refuses to start when three older "
+                "database objects are missing, but it does not change the schema: Database.sql is used only to create an empty "
+                "database, so a schema change has to be applied on the host by hand in the same step (Report 2, risk 17). **Status on 13/11/2026:** the pipeline passed. Of "
                 "its 35 runs, 30 did not pass: two configuration failures on 05/11/2026, 18 runs that did not start while the GitHub account "
                 "was locked for a billing issue (06/11 to 11/11), six failures of the dedicated-server build (11/11 and 12/11), one failed "
                 "FastAPI test, two failed deployment steps and one cancelled manual run. Runs 27, 28, 30, 33 and 34 of 13/11/2026 completed every "
-                "job in about 15 minutes each, and run 34 (17:07) deployed the release that is running now. **Status on 17/11/2026:** 17 of 53 runs have passed. The deploy job ran only in the passing runs in which the FastAPI "
+                "job in about 15 minutes each, and run 34 (17:07) deployed the release of that day. **Status on 17/11/2026:** 17 of 53 runs have passed. The deploy job ran only in the passing runs in which the FastAPI "
                 "and admin web checks also ran (runs 38, 39 and 52 since 13/11/2026); in the other nine passing runs it was skipped (Report 5, "
-                "D-23), and run 52 deployed main @ 96ff8e9 on 17/11/2026. The four earlier staging releases (Docker Hub tags api-, ai-, web- and "
+                "D-23), and run 52 deployed main @ 96ff8e9 on 17/11/2026. **Status on 25/11/2026:** D-23 was fixed on 18/11/2026 (291542a), every "
+                "passing run deploys; of the 51 runs since then 33 passed, 15 were cancelled by a newer push and 3 failed, and run 103 "
+                "deployed main @ adcb4e2 on 25/11/2026. The four earlier staging releases (Docker Hub tags api-, ai-, web- and "
                 "server-manual-<date-time>, 08/11 to 10/11/2026) were built and started by hand. Since 13/11/2026 a Caddy reverse proxy on "
                 "the host serves the admin web and the Web API over HTTPS; Table 2 lists the ports that are reachable from the Internet.")
 
@@ -65,14 +70,14 @@ NODES = [
 ]
 
 PKG_BACKEND = [
-    ["01", "PickleVerse.API", "Entry point: 29 controller classes in 25 files, the SignalR hub SocialHub, Program.cs (dependency injection, JWT, CORS, rate limiter, Redis), filters that wrap responses in ApiResponse<T>, the global exception handler that maps service exceptions to HTTP status codes"],
-    ["02", "PickleVerse.Services", "Business logic: service interfaces (Interfaces) and implementations (Implementations), background workers (including SocialMediaCleanup), typed settings (ServerSettings) and pure rule classes (TrainingEngine, ProgressionEngine, EloPolicy); the social services SocialContentService, SocialDirectService, SocialMediaService and SocialSessionService"],
-    ["03", "PickleVerse.Repositories", "Data access: PickleVerseContext (Npgsql EF Core mapping of the 59 tables), IUnitOfWork, repositories, GameRepository partial classes for match, progress and social persistence, Redis repositories for queues, the dedicated-server pool, social presence and caches"],
+    ["01", "PickleVerse.API", "Entry point: 31 controller classes in 27 files, the SignalR hub SocialHub, Program.cs (dependency injection, JWT, CORS, rate limiter, Redis), filters that wrap responses in ApiResponse<T>, the global exception handler that maps service exceptions to HTTP status codes"],
+    ["02", "PickleVerse.Services", "Business logic: service interfaces (Interfaces) and implementations (Implementations), background workers (including SocialMediaCleanup), typed settings (ServerSettings) and pure rule classes (TrainingEngine, ProgressionEngine, EloPolicy); the social services SocialContentService, SocialDirectService, SocialMediaService and SocialSessionService; MembershipService with PayOsGateway, and ReplayLaunchService"],
+    ["03", "PickleVerse.Repositories", "Data access: PickleVerseContext (Npgsql EF Core mapping of the 60 tables), IUnitOfWork, repositories, GameRepository partial classes for match, progress and social persistence, Redis repositories for queues, the dedicated-server pool, social presence and caches"],
     ["04", "PickleVerse.Entities", "Shared model: EF entity classes, DTOs and contracts, enums, configuration models (RedisSettings, DedicatedServerSettings) and exception/response types (AppException, ApiResponse)"],
 ]
 PKG_UNITY = [
-    ["01", "PickleVerse.FrontEnd", "Menus and screens: login (with the quit button), loading, menu, mode selection, settings entry, overlays, history, match detail and missions popups, social feed, inbox and whispers (SocialLobbyMenu, SocialLobbyConnection)"],
-    ["02", "PickleVerse.Multiplayer", "Online flow: MultiplayerApp, PhotonSession, room state, NetworkMatch and NetworkPlayer, dedicated-server client and reconnection"],
+    ["01", "PickleVerse.FrontEnd", "Menus and screens: login (with the quit button), loading, menu, mode selection, settings entry, overlays, history, match detail and missions popups, social feed, inbox and whispers (SocialLobbyMenu, SocialLobbyConnection); membership panel (MembershipPanel) and the launch of a replay from the admin web (WindowsReplayBridge, WebReplayLauncher)"],
+    ["02", "PickleVerse.Multiplayer", "Online flow: MultiplayerApp, PhotonSession, room state with host migration and position swap, match-found intro and ready check (MatchFoundStage, MatchReadyOverlay), NetworkMatch and NetworkPlayer, outcome cinematic and summary (MultiplayerResultScreen), dedicated-server client and reconnection"],
     ["03", "PickleVerse.LocalMatch", "Local gameplay: BotMatch, MatchActor, ball flight, paddle contact, shot input, LocalBot and BhTreeBot, training and tutorial directors"],
     ["04", "PickleVerse.Rules", "Engine-independent rules shared by local and online play (scoring, faults, court geometry)"],
     ["05", "PickleVerse.Progression", "ProgressionRuntime, training engine on the client, offline training store, wallet and profile cache"],
@@ -84,10 +89,12 @@ PKG_UNITY = [
     ["11", "PickleVerse.Settings", "Settings scene: audio, graphics, key binding, touch layout and PC display modes; the PickleVerse window frame (DesktopWindowFrame, NativeWindow) and the quit confirmation (GameExitPrompt)"],
     ["12", "PickleVerse.Audio", "Music player and sound effects policy"],
     ["13", "PickleVerse.CharacterMotion", "Character animation controller and movement blending"],
+    ["14", "PickleVerse.ArtDirection", "Looks of the venues (stylised materials, lighting, atmosphere, courtside kit, geometry budget and depth of field), added on 24/11/2026"],
+    ["15", "PickleVerse.VFX", "Ball effects of the Gemstone and Dragon Ruby paddles, which follow the ball registered by the running match (BallPresentationRegistry of LocalMatch), added on 24–25/11/2026"],
 ]
 PKG_WEB_AI = [
-    ["01", "features (admin web)", "One folder per area: auth, dashboard, users, content, matches, moderation, analytics (including expert review); each holds its pages"],
-    ["02", "api", "Axios client with the JWT interceptor (client.ts) and typed API modules (adminApi.ts, coachingApi.ts)"],
+    ["01", "features (admin web)", "One folder per area: auth, dashboard, users, content, matches, moderation (with the replay launch dialog), analytics (including expert review) and membership (the page after a payment); each holds its pages"],
+    ["02", "api", "Axios client with the JWT interceptor (client.ts) and typed API modules (adminApi.ts, lessonApi.ts, coachingApi.ts, replayLaunchApi.ts)"],
     ["03", "context", "AuthContext: stores the session and exposes sign-in and sign-out"],
     ["04", "components/layout", "AdminLayout, Sidebar and ProtectedRoute, which redirects users without the Admin role to the login page"],
     ["05", "main.py (AI service)", "FastAPI application, request validation and the X-AI-Key check"],
@@ -116,11 +123,14 @@ DECISIONS = [
     ["7", "Gated AI tier model with rule fallback", "Always show the model output", "Too little labelled real data; a wrong tier would mislead beginners", "The tier is hidden until the acceptance criteria of NFR-06 are met"],
     ["8", "Pool of single-match dedicated-server containers coordinated in Redis", "One server process hosting many matches; a managed game-server service", "A container per match isolates crashes and keeps the Fusion server code unchanged; Redis scripts make reservation, activation and release atomic", "Capacity grows with containers and host resources; every container needs its own UDP port (PKV_GAME_UDP_RANGE)"],
     ["9", "SignalR hub only for live lobby events; REST for posts, messages and history", "WebSocket for everything; polling only", "Messages must survive an offline recipient, so they are stored through REST; whispers and notifications need a push channel", "Whispers are lost if the recipient leaves the lobby; clients reconnect the hub every 3 s after a drop"],
+    ["10", "One-time lifetime membership through PayOS, confirmed by reading the order (CR-01)", "Monthly subscription; in-game currency packs; payment through an app store", "One payment needs no renewal, cancellation or proration logic, which fits the remaining time; PayOS serves Vietnamese bank transfers; reading the order makes a forged redirect or a replayed webhook harmless", "No recurring income; a store release would need the billing of the store; refunds are handled outside the system (Report 1, LI-14)"],
+    ["11", "Replay uploaded during the match and sealed before the result is saved", "Upload after the result (until 22/11/2026)", "The result and the replay appear together, and the container is released earlier", "The result waits up to 60 s for storage; when it fails the result is saved without a replay, so storage never decides a match"],
+    ["12", "One session per account (authentication version raised at every sign-in)", "Several devices at once; a list of devices", "A second device cannot search or play with the same account; a stolen token ends at the next sign-in", "Clients ask the API every 3 s, which adds load that the NFR-04 test has to include"],
 ]
 
 DB_INTRO = ("The database is designed at three levels in one notation (crow's foot): the conceptual ERD of Report 3, §3.1.5, "
             "the logical data model in §2.1 and the physical data model in §2.2. Both lower levels are derived directly from "
-            "src/Database.sql (59 tables, 403 columns, 88 foreign keys) and divided into the same eight subject areas so that the "
+            "src/Database.sql (60 tables, 411 columns, 89 foreign keys) and divided into the same eight subject areas so that the "
             "diagrams stay readable. «PK» and «FK» mark keys, * marks mandatory attributes, and tables drawn without attributes belong "
             "to another area and are shown only for their relationships. Table names follow the PascalCase convention of the EF model; "
             "the AI tables (ai*) and ratingledger use lower case because they were created for the Python service and the rating "
@@ -175,9 +185,10 @@ TABLE_DESC = {
     "PlayerMissions": "Mission progress of a player in one period (PeriodKey) and the claim time.",
     "Techniques": "Techniques taught by the curriculum.",
     "TechniqueReferences": "Versioned reference values used to judge a technique.",
-    "Lessons": "Lessons with code, group, order, target, reward (JSONB), configuration (JSONB), prerequisite and status (DRAFT, PUBLISHED, UNPUBLISHED).",
-    "Drills": "Drills that practise one technique.",
-    "LessonDrills": "Drills of a lesson with their target (many-to-many).",
+    "Lessons": "Lessons with code, name, description, order, content version and status (DRAFT, PUBLISHED, UNPUBLISHED); since 22/11/2026 a lesson only groups drills.",
+    "Drills": "Drills that practise one technique, with the published configuration (Config, JSONB) and the configuration being edited (DraftConfig): target, shots, reward, prerequisite, coach text and technique reference.",
+    "LessonDrills": "Drills of a lesson with their target and order (many-to-many).",
+    "MembershipOrders": "Orders of the lifetime membership: PayOS order code and payment link, amount and Elite Token bonus, status (PENDING, PAID, CANCELLED, EXPIRED), link expiry, payment time and the time of the last check with PayOS. A partial unique index allows one PENDING order per player.",
     "PlayerTechniqueMastery": "Mastery score of a player per technique.",
     "PlayerTechniquesErrors": "Technique errors detected for a player in a lesson or match.",
     "PlayerLessonDrills": "Best result of a player per lesson drill: stars, accuracy, timing, attempts and first-pass time.",
@@ -209,11 +220,14 @@ TABLE_DESC = {
     "SocialMessages": "Direct messages with sender, body (≤ 1,000 characters) and the client message ID that is UNIQUE per sender.",
 }
 
-DICT_TABLES = ["Users", "PlayerProfiles", "GameMatches", "GameMatchPlayers", "MatchScore", "ratingledger", "Lessons", "TrainingSessions", "UserSanctions", "SanctionAppeals"]
+DICT_TABLES = ["Users", "PlayerProfiles", "GameMatches", "GameMatchPlayers", "MatchScore", "ratingledger", "Lessons", "Drills", "MembershipOrders", "TrainingSessions", "UserSanctions", "SanctionAppeals"]
 COL_NOTES = {
     ("Users", "Status"): "ACTIVE, SUSPENDED, BANNED",
     ("GameMatches", "Status"): "PREPARING, PLAYING, FINISHED, CANCELLED",
     ("GameMatches", "AuthorityMode"): "shared or dedicated",
+    ("MembershipOrders", "Status"): "PENDING, PAID, CANCELLED, EXPIRED; PAID if and only if PaidAt is set",
+    ("MembershipOrders", "PaymentLinkId"): "UNIQUE; identifier of the PayOS payment link",
+    ("Drills", "Config"): "Published configuration; NULL while the drill has never been published",
     ("UserSanctions", "Restriction"): "BANNED or SUSPENDED; SUSPENDED requires ExpiresAt",
     ("SanctionAppeals", "SanctionId"): "UNIQUE: one appeal per sanction",
     ("SanctionAppeals", "Status"): "PENDING, CHECKING, ACCEPTED, DECLINED",
@@ -224,7 +238,8 @@ DB_NOTES = [
     "GameMatchPlayers keeps only facts that belong to the participant in that match, including the fixed Elo input needed before a rating ledger row exists; names and cosmetics are joined from the profile tables.",
     "PlayerProfiles is wide (35 columns) because it is the hot read model of the menu; statistics that change together are kept in one row to avoid joins on every screen.",
     "TrainingSessions references Lessons, Drills and the composite LessonDrills key: the composite key guarantees that the drill belongs to the lesson, and the single keys keep historical attempts when a lesson is re-configured.",
-    "Lessons.Reward and Lessons.Config are JSONB because each lesson type has different parameters; the API validates them before saving.",
+    "Drills.Config and Drills.DraftConfig are JSONB because each drill type has different parameters; the API validates them before saving, and publishing a lesson copies the drafts of all its drills.",
+    "MembershipOrders has no separate membership flag: a player is a member when a paid order exists, so the payment record is the only source; the CHECK (Status = 'PAID') = (PaidAt IS NOT NULL) keeps both columns consistent.",
     "AdminAudits stores the actor ID without a foreign key so that audit records survive the deletion of an administrator account.",
     "CoachingDemoSessions holds simulated data in its own table so that it can never be mixed with real sessions used for AI evaluation.",
     "Idempotency: GameCommands, TrainingSessions receipts and the UNIQUE constraints on rewards (ProgressRewardGrants, PlayerMissions period key) make retried requests safe; for messages the pair (SenderId, ClientMessageId) is UNIQUE.",
@@ -288,6 +303,8 @@ RESP = {
     "PickleballRules": "Rules engine used by the network match (singles and doubles)",
     "MatchRoster": "Teams, slots, bot flags and mode of a match",
     "PlayMultiplayerPresenter": "Online lobby screen: singles or doubles room, room code, search timer, invite button and ready state",
+    "SurrenderDesk": "Surrender requests of both teams on the match server: one open request per team, answers of its humans, timeout and waiting time",
+    "SurrenderPanel": "Confirmation box of Đầu hàng on the court, for the player who asked and for the doubles partner",
     "LobbyFriendsSidebar": "Collapsible friends column of the lobby: paged list of friends who can be invited, search and send invitation",
     # dedicated
     "DedicatedWorker": "Main loop of the dedicated server: lease, admission, heartbeats, telemetry, replay and result",
@@ -322,7 +339,23 @@ RESP = {
     "IMatchReplayService": "Contract of replay storage",
     "OnlineSocialService": "Friend requests, friendships, blocks and leaderboard cache",
     "GameRepository": "EF Core queries and locks for matches, progression and economy",
-    "PickleVerseContext": "EF Core DbContext mapping the 59 tables",
+    "PickleVerseContext": "EF Core DbContext mapping the 60 tables",
+    # membership and replay launch (added 25/11/2026)
+    "MembershipPanel": "Membership popup of the game: price, benefits, status and the button that opens the PayOS page",
+    "ModeSelectionMenu": "Mode cards and bot setup with the lock badges of the membership",
+    "MembershipController": "REST endpoints /api/Game/membership (read, checkout, refresh) and the PayOS webhook",
+    "IMembershipService": "Contract of the membership use cases and of the permission check Require",
+    "MembershipService": "Creates and reconciles orders, activates the membership once and credits the Elite Token in one transaction",
+    "IPayOsGateway": "Abstraction of the payment provider",
+    "PayOsGateway": "Signed HTTP calls to PayOS; verifies the signature of answers and webhooks and the host of the payment page",
+    "MembershipOrder": "Order of the membership (PENDING, PAID, CANCELLED, EXPIRED)",
+    "GameMatchesController": "Match endpoints; calls IMembershipService.Require for every human player before online play",
+    "ReplayLaunchDialog": "Admin dialog that asks for a one-time ticket and opens the pickleverse:// link",
+    "ReplayLaunchController": "REST endpoints /api/replay-launch: issue (Admin), redeem and read with the view token",
+    "IReplayLaunchService": "Contract of the replay launch",
+    "ReplayLaunchService": "Issues and exchanges the tickets and checks the issuing administrator at every read",
+    "ReplayLaunchRepository": "Tickets and view tokens in Redis, stored as SHA-256 keys with expiry; exchange by an atomic Lua script",
+    "WebReplayLauncher": "Opens the Replay Viewer of the game from a pickleverse:// link without touching the signed-in account",
     # admin
     "AuthContext": "Admin web session state and role check",
     "CMS page": "Lesson, drill, item and mission forms",
@@ -364,9 +397,9 @@ RESP = {
 SECTIONS = [
     {"num": "3.1", "title": "3.1 Account and Authentication", "short": "account and authentication", "cls": "r4_cls_account",
      "cls_caption": "Class diagram – account and authentication",
-     "intro": "This feature group implements FR-01 to FR-05. The Unity AccountScreen calls AccountService, which uses ApiClient to reach AuthController. AuthService performs the rules of BR-01 to BR-05 through IUnitOfWork and sends e-mails through IEmailSender.",
+     "intro": "This feature group implements FR-01 to FR-05. The Unity AccountScreen calls AccountService, which uses ApiClient to reach AuthController. AuthService performs the rules of BR-01 to BR-05 and BR-62 through IUnitOfWork and sends e-mails through IEmailSender. Every successful sign-in raises Users.AuthVersion and revokes the refresh tokens of the account, so tokens issued to another device stop working; the client checks GET /api/Auth/session every 3 seconds and returns to the Login screen when its session has been replaced.",
      "seqs": [("r4_seq_register", "Register and verify e-mail", "The visitor registers; the service hashes the password, stores the HMAC of a six-digit code and queues the e-mail. The alternative fragments show a confirmation mismatch, a registered e-mail, a valid code and an invalid or expired code."),
-              ("r4_seq_login", "Sign in", "The service checks the password hash and the account state. A wrong password, an unverified e-mail and a restricted account return different results; an active account receives the JWT and refresh token, after which the client loads the profile."),
+              ("r4_seq_login", "Sign in", "The service checks the password hash and the account state. A wrong password, an unverified e-mail and a restricted account return different results; an active account gets a new authentication version, its older refresh tokens are revoked, and the new JWT and refresh token are returned, after which the client loads the profile."),
               ("r4_seq_reset_pwd", "Reset password", "The reset request always returns the same message; the mail queue sends the code only for a verified account. A valid code changes the hash and revokes every refresh token.")]},
     {"num": "3.2", "title": "3.2 Gameplay Core and Ball Physics", "short": "gameplay core", "cls": "r4_cls_gameplay",
      "cls_caption": "Class diagram – gameplay core (bot match)",
@@ -400,7 +433,7 @@ SECTIONS = [
      "seqs": [("r4_seq_bot_match", "Play a bot match", "The loop fragment repeats rallies until one side wins two games; at the end the client reports the result to GameMatchesController, which settles rewards.")]},
     {"num": "3.5", "title": "3.5 Online Matchmaking and Netcode", "short": "online play", "cls": "r4_cls_online",
      "cls_caption": "Class diagram – online client",
-     "intro": "Online play implements FR-14 to FR-18. MultiplayerApp is a state machine over FlowState; PlayMultiplayerPresenter and LobbyFriendsSidebar form the lobby screen. Unity Gaming Services code from the earlier prototype (files guarded by PICKLEVERSE_LEGACY_NGO) is not compiled; the live path uses only Photon Fusion and the Web API. Ranked singles, ranked doubles (2v2 filled from solo players and parties of two; after 180 seconds the free seats are filled with ranked bots, for clients of protocol 20) and private rooms share the same ready check and the dedicated-server pool. PhotonSession connects to Fusion; NetworkMatch and NetworkPlayer replicate state from the dedicated server, which is the only authority. Table below gives the netcode design: clients send input only, predict their own movement and reconcile with the server frame; remote players are interpolated.",
+     "intro": "Online play implements FR-14 to FR-18. MultiplayerApp is a state machine over FlowState; PlayMultiplayerPresenter and LobbyFriendsSidebar form the lobby screen. Unity Gaming Services code from the earlier prototype (files guarded by PICKLEVERSE_LEGACY_NGO) is not compiled; the live path uses only Photon Fusion and the Web API. Ranked singles, ranked doubles (2v2 filled from solo players and parties of two; after 180 seconds the free seats are filled with ranked bots, for clients of protocol 20) and private rooms share the same match-found intro, ready check and dedicated-server pool, and all of them need the membership of every human player. A room keeps its state in PhotonRoomState: when the host leaves, Fusion promotes the next player, who publishes the room again, and a position swap is a request with an epoch, a deadline of 20 seconds and one answer. PhotonSession connects to Fusion; NetworkMatch and NetworkPlayer replicate state from the dedicated server, which is the only authority. Table below gives the netcode design: clients send input only, predict their own movement and reconcile with the server frame; remote players are interpolated.",
      "params": [["Authority", "Dedicated server (Fusion server mode)", "Shared mode is kept only for local development without a server"],
                 ["Client input", "DedicatedInput {Movement, Running, Sequence}", "Sent every tick; shot commands travel as reliable messages (JSON, at most 16 KB) and are judged on the server"],
                 ["Local prediction", "Own player only", "The client applies its input at once and keeps the unacknowledged moves in a sequence-numbered list"],
@@ -410,12 +443,17 @@ SECTIONS = [
                 ["Remote players and ball", "Interpolated in Render", "Fusion snapshot interpolation"],
                 ["Lag compensation", "Disabled", "Hits are judged on the server's own state"],
                 ["Tick rate", "Fusion project default", "No explicit override in the project settings"],
-                ["Protocol version", "20 (release 20261116-p20, since 17/11/2026)", "Client and server must match or the connection is refused; ranked doubles with bot fill needs protocol 20"],
+                ["Protocol version", "22 (release 20261121-p22, since 21/11/2026)", "Client and server must match or the connection is refused; ranked doubles with bot fill needs protocol 20 or later"],
+                ["Session of a player", "AuthVersion in the ticket and in the Fusion user id", "Heartbeats list the sessions on the server; the API answers with the expired ones, which are disconnected; the new device takes over the seat"],
+                ["Replay upload", "batches of 4 chunks while the match runs; 60 s grace at the end", "POST /api/Server/{lease}/replay/chunks/batch; the result carries the number of sealed chunks, 0 when there is no replay"],
+                ["Surrender", "request of a team: 20 s to answer, 15 s before the next one", "SurrenderDesk runs on the state authority; reliable messages surrender-ask, -agree and -refuse to the server, surrender-open and -end to the humans of the team; no networked state, so the protocol version does not change (BR-66)"],
+                ["Ready check", "4 s intro + 10 s confirmation", "Matchmaking:ReadyIntroSeconds and ReadyConfirmationSeconds (BR-25)"],
                 ["Reconnection", "client 30 s; server keeps the slot 30 s; API interrupts after 35 s without heartbeat (heartbeat every 8 s)", "MultiplayerSettings.reconnectSeconds, NetworkMatch reservations, OnlineMatch settings (BR-28)"]],
      "params_caption": "Netcode design parameters",
      "seqs": [("r4_seq_ranked", "Find a ranked singles or ranked doubles match", "The client polls the search. For singles the alternatives show a human opponent inside the Elo window and the bot fallback after 180 seconds. For ranked doubles the captain sends the party members; the API fills two sides of two from parties and solo players and, after 180 seconds, fills the free seats with ranked bots. The offer waits in WAITING_CAPACITY while every game-server container is busy. In all modes every human must accept, and a decline or timeout closes the offer."),
               ("r4_seq_invite", "Invite a friend to a room", "The invitation is rejected when the friend is not in the lobby, is blocked or the room is full; otherwise the friend polls and accepts it."),
-              ("r4_seq_dedicated", "Allocate the dedicated server and play", "Each container waits for work on /api/Server/poll. When every container is busy the client waits. When a container is reserved and all humans accepted, the API signs tickets; the client polls every 500 ms until the server is ready; during play the server sends heartbeats and at the end telemetry, replay and the result.")],
+              ("r4_seq_dedicated", "Allocate the dedicated server and play", "Each container waits for work on /api/Server/poll. When every container is busy the client waits. When a container is reserved and all humans accepted, the API signs tickets; the client polls every 500 ms until the server is ready; during play the server sends heartbeats and uploads the replay in batches; at the end it seals the replay, sends the telemetry and commits the result together with the number of replay chunks."),
+              ("r4_seq_surrender", "Surrender a match", "The figure shows doubles. In singles, or next to a bot, the box is local and the first confirmation already ends the match. The result carries the reason of the surrender and marks every human of the team as a forfeit; the API stores it like a forfeit (BR-28, BR-66).")],
      "extra_cls": [("r4_cls_dedicated", "Class diagram – dedicated server coordination", "dedicated server")]},
     {"num": "3.6", "title": "3.6 AI Coaching", "short": "AI coaching", "cls": "r4_cls_coaching",
      "cls_caption": "Class diagram – AI coaching",
@@ -430,22 +468,25 @@ SECTIONS = [
      "seqs": [("r4_seq_coaching", "Analyse a session", "The worker marks the job processing and calls the service; on success the result is stored and the job completed, on failure the job is retried and finally marked failed.")]},
     {"num": "3.7", "title": "3.7 Progress, Economy, Social and Replays", "short": "progress, economy and social", "cls": "r4_cls_progress",
      "cls_caption": "Class diagram – progress, economy, social and replays",
-     "intro": "This group implements FR-20 to FR-26, FR-34 and FR-35. The client screens share ProgressionRuntime. On the server, OnlineGameService settles rewards and purchases, OnlineSocialService manages friends and the leaderboard, and IMatchReplayService stores replays; GameRepository performs the EF Core queries and row locks inside the unit of work. The social feed and messaging of FR-34 and FR-35 (added on 15/11/2026 after Review 1) are shown in a second class diagram: SocialLobbyMenu talks to SocialContentController over REST and to SocialHub over a SignalR WebSocket; four services keep posts, messages, videos and lobby presence apart.",
-     "seqs": [("r4_seq_purchase", "Purchase a cosmetic", "The command ID makes the purchase idempotent: an already processed request returns the stored receipt; otherwise ownership and balance are checked and the debit, ledger entry and ownership are written in one transaction."),
+     "intro": "This group implements FR-20 to FR-26 and FR-34 to FR-36. The client screens share ProgressionRuntime. On the server, OnlineGameService settles rewards and purchases, OnlineSocialService manages friends and the leaderboard, and IMatchReplayService stores replays; GameRepository performs the EF Core queries and row locks inside the unit of work. The social feed and messaging of FR-34 and FR-35 (added on 15/11/2026 after Review 1) are shown in a second class diagram: SocialLobbyMenu talks to SocialContentController over REST and to SocialHub over a SignalR WebSocket; four services keep posts, messages, videos and lobby presence apart. The membership of FR-36 (added on 22/11/2026) has its own class diagram: MembershipService is the only class that decides whether a player is a member, PayOsGateway is the only class that talks to PayOS, and the controllers of matches and rooms call Require before any action that needs the membership. The client hides nothing that the server would allow: the lock badges of ModeSelectionMenu only mirror the answer of the API.",
+     "seqs": [("r4_seq_membership", "Buy the membership", "The checkout holds an advisory lock of the player, so two clicks create one order. The browser redirect changes nothing. The webhook is verified with HMAC-SHA256 and, like the refresh of the client, only triggers a read of the order from PayOS; the membership is activated when the order is PAID with the exact amount and nothing remaining, and the Elite Token is credited in the same transaction."),
+              ("r4_seq_purchase", "Purchase a cosmetic", "The command ID makes the purchase idempotent: an already processed request returns the stored receipt; otherwise ownership and balance are checked and the debit, ledger entry and ownership are written in one transaction."),
               ("r4_seq_social_post", "Publish a post with a video", "The video is uploaded and validated before the post exists; a draft row is written before the object, so a failure leaves only a draft that the clean-up removes. Saving the post locks the post and the media and checks the audience, the exclusions, the replay and the ownership of the video in one transaction."),
               ("r4_seq_message", "Send a direct message and a whisper", "A direct message is stored once per client message ID and announced to both players through the hub. A whisper is delivered only to the live hub connections of the recipient and is not stored.")],
-     "extra_cls": [("r4_cls_social", "Class diagram – social feed and messaging", "social feed and messaging")]},
+     "extra_cls": [("r4_cls_social", "Class diagram – social feed and messaging", "social feed and messaging"),
+                   ("r4_cls_membership", "Class diagram – membership and payment", "membership and payment")]},
     {"num": "3.8", "title": "3.8 Administration and Moderation", "short": "administration", "cls": "r4_cls_admin",
      "cls_caption": "Class diagram – administration web and admin API",
-     "intro": "Administration implements FR-27 to FR-33. Every admin controller requires the Admin role; services write an AdminAudits record in the same transaction as the change.",
+     "intro": "Administration implements FR-27 to FR-33. Since 22/11/2026 a lesson contains several drills and a replay of a reported match can be opened in the installed Windows game. Every admin controller requires the Admin role; services write an AdminAudits record in the same transaction as the change.",
      "seqs": [("r4_seq_moderation", "Report, sanction and appeal", "A player reports; the administrator accepts the report and applies a sanction; the restricted player appeals; the administrator accepts or declines the appeal."),
               ("r4_seq_reset", "Reset player progress", "The dialog previews the impact; execution is refused when the revision changed after the preview."),
-              ("r4_seq_publish", "Publish a lesson", "Publishing is refused when the expected version changed; otherwise the lesson becomes PUBLISHED and a new catalogue version is produced."),
+              ("r4_seq_publish", "Publish a lesson", "Publishing is refused when the expected version changed or the lesson has no drill; otherwise the drafts of all its drills are published together, the lesson becomes PUBLISHED and a new catalogue version is produced."),
+              ("r4_seq_replay_launch", "Open a replay in the game", "The administrator asks for a ticket; the API checks that the replay exists and stores the ticket in Redis for 2 minutes. The game opened by the pickleverse:// link exchanges the ticket once for a view token (2 hours) and reads the manifest and the chunks; every read checks the administrator again."),
               ("r4_seq_stop", "Stop a live match", "The stop request is stored as a dedicated operation; the server reads it with the next heartbeat, ends the match as interrupted and acknowledges.")]},
 ]
 
-API_INTRO = ("The Web API exposes 147 REST endpoints in 29 controller classes (25 source files) and one SignalR hub (/api/Game/social/hub). The endpoint list below is extracted from the "
-             "controller attributes by build/api_extract.py, so routes and access levels are those of the code on 17/11/2026 (main @ 96ff8e9). The column "
+API_INTRO = ("The Web API exposes 160 REST endpoints in 31 controller classes (27 source files) and one SignalR hub (/api/Game/social/hub). The endpoint list below is extracted from the "
+             "controller attributes by build/api_extract.py, so routes and access levels are those of the code on 25/11/2026 (main @ adcb4e2). The column "
              "Used by shows which program calls each route (game client, dedicated game server or admin web), found by searching the client "
              "sources; code compiled only for the old Netcode prototype is ignored. Access: Anonymous (no token), Player (any signed-in "
              "account with game scope), Player, Restricted (also allowed for a restricted account with appeals scope), Admin (role Admin), "
@@ -470,12 +511,14 @@ API_RULES = [
 
 SECURITY = [
     ["Passwords", "BCrypt hash with salt; 6–128 characters; never logged"],
-    ["Tokens", "JWT HS256, 2-hour access token; refresh token 14 days stored as SHA-256 hash, rotated on use; auth_version in the token is incremented to revoke all sessions (password reset, ban)"],
+    ["Tokens", "JWT HS256, 2-hour access token; refresh token 14 days stored as SHA-256 hash, rotated on use; auth_version in the token is incremented to end all earlier sessions (sign-in, sign-out, password reset, ban), so an account has one session at a time"],
     ["Codes", "OTP and reset codes stored as HMAC, 10-minute expiry, 5 attempts, 60-second resend cooldown"],
     ["Authorisation", "Role-based ([Authorize(Roles = \"Admin\")]) plus access scope: restricted accounts receive scope appeals and can call only moderation endpoints; resource ownership is checked in services (own matches, replays, telemetry)"],
     ["Transport", "HTTPS with TLS 1.2+ behind the reverse proxy. Since 13/11/2026 the staging API and admin web are served only over HTTPS on port 443 (Let's Encrypt certificate, TLS 1.3; port 80 redirects and port 8080 is closed) and the game client uses https://tad-min.io.vn (commit be556a1; Report 5, D-18 fixed)"],
     ["User content", "Post visibility is evaluated in the database query of every read (audience, exclusions, friendship, blocks); messages only between unblocked friends; videos accepted only after an ffprobe check restricted to local files (MP4, H.264, optional AAC, ≤ 250 MB, ≤ 15 min), at most four uploads at once, request body limit 250 MB; playback through a 20-minute random grant bound to the session version; the hub requires the game scope and closes on token expiry. Posts, comments and messages cannot yet be reported or removed by administrators (Report 2, risk 15)"],
-    ["Secrets", "Read from environment variables and the server .env file. Commit be556a1 (13/11/2026) emptied the development credentials in appsettings.json and removed the fallback JWT key from Program.cs: the API refuses to start without a key of at least 32 bytes. The published images are also built from sanitised settings (deploy/api/sanitize_settings.py). The old values remain in the Git history of the public repository and must be rotated (Report 5, D-17 partly fixed)"],
+    ["Payment", "Request, answer and webhook of PayOS are signed with HMAC-SHA256 over the sorted fields and compared in constant time; the payment page must be https://pay.payos.vn/web/<link id>; order code, link, amount and currency are compared with the stored order; a redirect or webhook only triggers a read of the order; activation is idempotent under an advisory lock and a profile row lock; keys only in environment variables and the API refuses to start with incomplete PayOS settings; the webhook body is limited to 32 KB and the checkout is rate-limited"],
+    ["Replay launch", "Random 256-bit ticket, stored as a SHA-256 key in Redis, valid 2 minutes and one use; the view token is read-only, bound to one match and 2 hours and is refused when the issuing administrator is no longer active, not an Admin or has signed in again"],
+    ["Secrets", "Read from environment variables and the server .env file (since 22/11/2026 also the PayOS keys). Commit be556a1 (13/11/2026) emptied the development credentials in appsettings.json and removed the fallback JWT key from Program.cs: the API refuses to start without a key of at least 32 bytes. The published images are also built from sanitised settings (deploy/api/sanitize_settings.py). The old values remain in the Git history of the public repository and must be rotated (Report 5, D-17 partly fixed)"],
     ["Abuse protection", "Rate limiting on authentication; server-authoritative online results; idempotent commands; validation of telemetry ownership; HMAC tickets bind a player to a match and slot"],
     ["CORS", "AdminWebPolicy allows only the admin web origins; production serves the admin web and API under the same origin through the reverse proxy"],
     ["Data protection", "Other players never receive e-mail addresses; audit log for administrative actions; since be556a1 the deployment takes a PostgreSQL dump before every release and verifies it with pg_restore (kept under .deploy/backups on the host); there is no scheduled daily backup or off-host copy yet (Report 2, risk 11)"],
@@ -486,7 +529,7 @@ SECURITY = [
 ACTIVITIES = [
     ("r4_act_w01.png", "W01 – Learn and sync a drill (owner: Trần Nguyễn Hiếu Thuận)", "The player signs in or opens offline training; a beginner is sent to the tutorial; the player practises a drill; the attempt is applied online or queued offline and synchronised when the network returns."),
     ("r4_act_w02.png", "W02 – Play a bot and get a tip (owner: Nguyễn Gia Huy)", "The player sets up a bot match and plays rallies until a side wins; the API settles the result, the AI service analyses the telemetry and the player reads the tip and opens the recommended drill."),
-    ("r4_act_w03.png", "W03 – Play online and save the result (owner: Nguyễn Văn Thành Đạt)", "The player creates a private room, starts ranked doubles (alone or with a party of two) or searches a ranked singles match; after 180 seconds singles offers a ranked bot opponent and doubles fills the free seats with ranked bots; all players must accept; the dedicated server runs the match unless it is stopped or the lease is lost, and the API saves the result once."),
+    ("r4_act_w03.png", "W03 – Play online and save the result (owner: Nguyễn Văn Thành Đạt)", "The player creates a private room, starts ranked doubles (alone or with a party of two) or searches a ranked singles match; a player without membership is sent to the membership panel first; after 180 seconds singles offers a ranked bot opponent and doubles fills the free seats with ranked bots; all players must accept; the dedicated server runs the match and uploads the replay unless the match is stopped or the lease is lost, and the API saves the result once, after the replay has been sealed or 60 seconds have passed."),
     ("r4_act_w04.png", "W04 – Review a report and publish a lesson, part 1: report, sanction and appeal (owner: Huỳnh Trung Kiên)", "A player reports an opponent; the administrator reviews and may sanction; the restricted player may appeal; the administrator decides the appeal."),
     ("r4_act_content.png", "W04 – Review a report and publish a lesson, part 2: publish a lesson (owner: Huỳnh Trung Kiên)", "The administrator edits and publishes a lesson; the API checks the expected version and that prerequisites are published; clients receive the new catalogue version."),
 ]
@@ -507,4 +550,5 @@ STATES = [
     ("r4_sm_aijob.png", "SM-13 AI analysis job", "pending, processing, completed and failed with retries."),
     ("r4_sm_friend.png", "SM-14 Friend request", "PENDING, ACCEPTED and DECLINED; blocking removes the friendship."),
     ("r4_sm_media.png", "SM-15 Post video", "Draft, Ready, Attached, Deleted and Removed; a video that is not attached within 24 hours, or whose post is deleted, is removed by the clean-up worker."),
+    ("r4_sm_membership.png", "SM-16 Membership order", "PENDING, PAID, CANCELLED and EXPIRED; only an order that PayOS reports as paid in full becomes PAID, also when it had expired before."),
 ]

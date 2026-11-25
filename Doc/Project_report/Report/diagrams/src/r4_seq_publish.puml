@@ -10,33 +10,34 @@ boundary ":CmsPage" as W
 control ":ContentController" as C
 control ":ContentService" as S
 entity ":GameRepository" as G
-Admin -> W : edit lesson draft
+Admin -> W : edit a drill of the lesson
 activate W
-W -> C : Save(id, draft, expectedVersion)
+W -> C : SaveDrill(id, drillId, draft, expectedVersion)
 activate C
-C -> S : Save(actor, id, draft, expectedVersion)
+C -> S : SaveDrill(lessonId, drillId, request)
 activate S
 S -> G : Lock(lesson)
 S -> G : ContentLesson(id)
 alt stored version differs from expectedVersion
   S --> C : error 409 reload_before_saving
 else else
-  S --> C : LessonDraft (version + 1)
+  S --> C : AdminLessonContent (version + 1, HasChanges)
 end
 deactivate S
 C --> W : ApiResponse
 deactivate C
 Admin -> W : Publish
-W -> C : Publish(id)
+W -> C : Publish(id, request)
 activate C
-C -> S : Publish(actor, id, true)
+C -> S : Publish(lessonId, request, true)
 activate S
 S -> G : ContentLessons()
-alt a prerequisite is not published
-  S --> C : error prerequisite_unpublished
+alt the lesson has no drill or a prerequisite is not published
+  S --> C : error 400
 else else
+  S -> S : copy DraftConfig to Config of every drill
   S -> G : AddContent(catalogSnapshot)
-  S --> C : LessonDraft (PUBLISHED)
+  S --> C : AdminLessonContent (PUBLISHED)
 end
 deactivate S
 C --> W : ApiResponse

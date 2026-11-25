@@ -25,13 +25,8 @@ entity "Lessons" as Lessons {
   * Description
   Code
   * SortOrder
-  * Type
-  * Target
-  * Config
   * PublishStatus
-  DraftConfig
   * ContentVersion
-  * Reward
 }
 entity "Drills" as Drills {
   * DrillId <<PK>>
@@ -40,12 +35,15 @@ entity "Drills" as Drills {
   * DrillName
   * Description
   Code
+  Config
+  DraftConfig
 }
 entity "LessonDrills" as LessonDrills {
   * LessonId <<PK, FK>>
   * DrillId <<PK, FK>>
   --
   * Target
+  * SortOrder
 }
 entity "ContentCatalogs" as ContentCatalogs {
   * Version <<PK>>

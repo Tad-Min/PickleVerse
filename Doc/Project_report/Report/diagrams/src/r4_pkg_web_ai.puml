@@ -11,8 +11,9 @@ package "Admin Web (React 18 + TypeScript + Vite)" as WEB {
     package "matches" as Fm
     package "moderation" as Fmo
     package "analytics\n(incl. expert review)" as Fan
+    package "membership\n(payment return page)" as Fme
   }
-  package "api\n(client.ts, adminApi.ts,\ncoachingApi.ts)" as WApi
+  package "api\n(client.ts, adminApi.ts, lessonApi.ts,\ncoachingApi.ts, replayLaunchApi.ts)" as WApi
   package "context\n(AuthContext)" as WCtx
   package "components/layout\n(AdminLayout, ProtectedRoute,\nSidebar)" as WLay
   package "types" as WT

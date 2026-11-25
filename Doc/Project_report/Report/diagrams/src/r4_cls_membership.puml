@@ -1,0 +1,74 @@
+@startuml r4_cls_membership
+!include _style.iuml
+skinparam classAttributeIconSize 0
+package "Unity client" {
+  class MembershipPanel <<MonoBehaviour>> {
+    + Show(locked) : void
+    - Buy() : Task
+    - Render() : void
+  }
+  class ModeSelectionMenu <<MonoBehaviour>> {
+    - RequireMembership() : bool
+    - RefreshMembership() : void
+  }
+  class ProgressionRuntime {
+    + HasMembership : bool
+    + CurrentMembership : MembershipOffer
+    + ReadMembershipAsync(token) : Task<MembershipOffer>
+    + CheckoutMembershipAsync(token) : Task<MembershipOffer>
+  }
+}
+package "Web API" {
+  class MembershipController <<ApiController>> {
+    + Read() : MembershipOffer
+    + Checkout(token) : MembershipOffer
+    + Refresh(token) : MembershipOffer
+    + Webhook(body, token) : ApiResponse
+  }
+  class GameMatchesController <<ApiController>> {
+    - MemberAction(action, otherPlayers)
+  }
+  interface IMembershipService {
+    + Read(player) : MembershipOffer
+    + Checkout(player, token) : MembershipOffer
+    + Refresh(player, token) : MembershipOffer
+    + ReceiveWebhook(body, token) : void
+    + Require(players) : void
+  }
+  class MembershipService {
+    + PriceVnd = 49000
+    + EliteTokenBonus = 3000
+    - Reconcile(order, token)
+    - Apply(order, payment)
+  }
+  interface IPayOsGateway {
+    + Create(orderCode, amount, expiresAt, token) : PayOsCheckout
+    + Read(orderCode, token) : PayOsPayment
+    + VerifyWebhook(body) : PayOsNotification
+  }
+  class PayOsGateway {
+    - Send(method, path, body, token) : JsonElement
+    - Verify(data, signature) : bool
+  }
+  class MembershipOrder <<entity>> {
+    + OrderCode : long
+    + Status : string
+    + ExpiresAt : DateTime
+    + PaidAt : DateTime?
+  }
+  interface IUnitOfWork
+  class GameRepository
+}
+MembershipPanel --> ProgressionRuntime
+ModeSelectionMenu --> ProgressionRuntime
+ModeSelectionMenu ..> MembershipPanel : opens
+ProgressionRuntime ..> MembershipController : HTTPS JSON
+MembershipController --> IMembershipService
+GameMatchesController --> IMembershipService : Require
+MembershipService ..|> IMembershipService
+MembershipService --> IPayOsGateway
+PayOsGateway ..|> IPayOsGateway
+MembershipService --> IUnitOfWork
+MembershipService ..> MembershipOrder
+IUnitOfWork --> GameRepository
+@enduml

@@ -13,6 +13,8 @@ rectangle "P3 Online Match" {
   usecase "UC-25 Play Online Match" as UC25
   usecase "UC-26 Reconnect to Match" as UC26
   usecase "UC-27 Leave Match" as UC27
+  usecase "UC-79 Swap Position in a Room" as UC79
+  usecase "UC-81 Surrender Match" as UC81
 }
 Player -- UC19
 Player -- UC21
@@ -21,8 +23,11 @@ Player -- UC24
 Player -- UC25
 UC19 ..> UC20 : <<include>>
 UC23 .> UC21 : <<extend>>
+UC79 .> UC21 : <<extend>>
+UC79 .> UC22 : <<extend>>
 UC26 .> UC25 : <<extend>>
 UC27 .> UC25 : <<extend>>
+UC81 .> UC25 : <<extend>>
 UC21 -- PC
 UC25 -- PC
 @enduml

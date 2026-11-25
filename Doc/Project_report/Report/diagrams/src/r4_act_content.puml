@@ -3,7 +3,7 @@
 |Administrator|
 start
 :Open lesson in CMS;
-:Edit draft (config, reward, prerequisites);
+:Edit the drafts of its drills\n(target, reward, prerequisites);
 |Web API|
 if () then ([expected version matches])
   :Save draft and audit;
@@ -16,7 +16,7 @@ endif
 |Administrator|
 :Publish lesson;
 |Web API|
-if () then ([all prerequisites published])
+if () then ([at least one drill and all prerequisites published])
   :Create new catalog snapshot;
 else ([else])
   :Reject publish;

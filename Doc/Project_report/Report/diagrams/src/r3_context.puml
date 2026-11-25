@@ -10,14 +10,17 @@ rectangle "<b>PickleVerse System</b>\n\nUnity game client, Web API,\nadmin web, 
 rectangle "Photon Cloud\n(Fusion session and relay)" as PH <<external system>>
 rectangle "Gmail SMTP\n(email delivery)" as SMTP <<external system>>
 rectangle "S3-compatible\nobject storage" as S3 <<external system>>
+rectangle "PayOS\n(payment provider)" as PAY <<external system>>
 
-Player --> SYS : account data, game input,\ntraining runs, reports, appeals
+Player --> SYS : account data, game input, training runs,\nmembership purchase, reports, appeals
 SYS --> Player : game state, rewards, rankings,\ncoaching tips, replays
 Admin --> SYS : user, content and\nmoderation commands
 SYS --> Admin : dashboards, live matches,\nreports and appeals
 SYS --> PH : session registration,\ninput and state packets
 PH --> SYS : relayed packets,\nconnection events
 SYS --> SMTP : verification and\npassword-reset codes
-SYS --> S3 : replay manifests and chunks
-S3 --> SYS : stored replay data
+SYS --> S3 : replay chunks, post videos
+S3 --> SYS : stored replays and videos
+SYS --> PAY : signed payment request,\norder query
+PAY --> SYS : payment link, order status,\nsigned webhook
 @enduml

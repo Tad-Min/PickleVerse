@@ -98,6 +98,8 @@ else [email not verified]
   S --> C : error email_not_verified
 else [else]
   S -> G : EffectiveRestriction(user)
+  S -> S : AuthVersion + 1
+  S -> UR : RevokeAllRefreshTokensAsync(user)
   S -> UR : AddRefreshTokenAsync(hash)
   S -> G : RecordLogin(user)
   S --> C : AuthResponse (access 2 h, refresh 14 d, scope game or appeals)
@@ -115,6 +117,17 @@ opt [scope = game]
 end
 UI --> Visitor : Menu, Decisions and Appeals or error message
 deactivate UI
+loop [signed in, every 3 s]
+  AS -> C : Session()
+  activate C
+  alt [the account signed in on another device]
+    C --> AS : 401
+    AS -> UI : Clear(MSG84), Login screen
+  else [else]
+    C --> AS : session active
+  end
+  deactivate C
+end
 """
 
 SEQ["r4_seq_reset_pwd"] = SEQ_HEAD + r"""
@@ -418,24 +431,89 @@ deactivate DC
 Cl -> W : JoinDedicatedAsync(session, region, player, token, roster)
 W -> WC : AuthorizeAdmission(request)
 loop [match running]
-  W -> WC : Heartbeat(request)
+  W -> WC : Heartbeat(live status, sessions)
   activate WC
-  WC -> S : Renew(lease)
-  WC --> W : HeartbeatReply (pending stop command, if any)
+  WC -> S : Renew(lease, sessions)
+  WC --> W : HeartbeatReply (stop command, expired sessions)
   deactivate WC
+  opt [a session has expired]
+    W -> W : ExpireSessions(reply) / disconnect the old device
+  end
+  W -> WC : ReplayBatch(lease, up to 4 chunks)
 end
+W -> WC : ReplayBatch(lease, last chunks, complete)
 W -> WC : Telemetry(lease, batch)
-W -> WC : Complete(request)
+W -> WC : Complete(results, replayChunkCount)
 activate WC
-WC -> S : Complete(lease, result)
+WC -> S : Complete(lease, results, replayChunkCount)
 activate S
-S -> G : CompleteDedicated(match, result)
+S -> G : CompleteDedicated(match, results, replayChunkCount)
 S -> L : Release(lease, worker)
 S --> WC : saved once
 deactivate S
 WC --> W : ok
 deactivate WC
 deactivate W
+"""
+
+SEQ["r4_seq_surrender"] = SEQ_HEAD + r"""
+actor Player
+boundary ":SurrenderPanel\n(player)" as PA
+control ":NetworkMatch\n(match server)" as S
+control ":SurrenderDesk" as D
+boundary ":SurrenderPanel\n(partner)" as PB
+actor Partner
+Player -> PA : Đầu hàng
+activate PA
+PA -> S : AskToSurrender() : surrender-ask
+activate S
+S -> D : Ask(player)
+activate D
+alt [the partner is offline or the team asked less than 15 s ago]
+  D --> S : Closed(player, reason)
+  S --> PA : surrender-end
+else [else]
+  D --> S : Opened(player), Opened(partner)
+  deactivate D
+  S --> PA : surrender-open (20 s)
+  S -> PB : surrender-open (20 s)
+  activate PB
+  deactivate S
+  Player -> PA : ĐẦU HÀNG
+  PA -> S : AgreeToSurrender() : surrender-agree
+  activate S
+  S -> D : Agree(player)
+  activate D
+  D --> S : Opened(both, agreed)
+  deactivate D
+  S --> PA : surrender-open (waiting for the partner)
+  deactivate S
+  alt [the partner confirms]
+    Partner -> PB : ĐẦU HÀNG
+    PB -> S : AgreeToSurrender() : surrender-agree
+    activate S
+    S -> D : Agree(partner)
+    activate D
+    D --> S : Surrendered(team, players)
+    deactivate D
+    S -> S : SurrenderTeam(team, players) / Rules.Forfeit(team), Finish()
+    S --> PA : match finished
+    S --> PB : match finished
+    deactivate S
+  else [the partner refuses, the player withdraws, 20 s pass or a connection is lost]
+    PB -> S : RefuseToSurrender() : surrender-refuse
+    activate S
+    S -> D : Refuse(partner) / Tick() / Disconnected(player)
+    activate D
+    D --> S : Closed(both, reason)
+    deactivate D
+    S --> PA : surrender-end
+    S --> PB : surrender-end
+    deactivate S
+  end
+end
+deactivate PB
+deactivate PA
 """
 
 SEQ["r4_seq_coaching"] = SEQ_HEAD + r"""
@@ -578,39 +656,152 @@ boundary ":CmsPage" as W
 control ":ContentController" as C
 control ":ContentService" as S
 entity ":GameRepository" as G
-Admin -> W : edit lesson draft
+Admin -> W : edit a drill of the lesson
 activate W
-W -> C : Save(id, draft, expectedVersion)
+W -> C : SaveDrill(id, drillId, draft, expectedVersion)
 activate C
-C -> S : Save(actor, id, draft, expectedVersion)
+C -> S : SaveDrill(lessonId, drillId, request)
 activate S
 S -> G : Lock(lesson)
 S -> G : ContentLesson(id)
 alt [stored version differs from expectedVersion]
   S --> C : error 409 reload_before_saving
 else [else]
-  S --> C : LessonDraft (version + 1)
+  S --> C : AdminLessonContent (version + 1, HasChanges)
 end
 deactivate S
 C --> W : ApiResponse
 deactivate C
 Admin -> W : Publish
-W -> C : Publish(id)
+W -> C : Publish(id, request)
 activate C
-C -> S : Publish(actor, id, true)
+C -> S : Publish(lessonId, request, true)
 activate S
 S -> G : ContentLessons()
-alt [a prerequisite is not published]
-  S --> C : error prerequisite_unpublished
+alt [the lesson has no drill or a prerequisite is not published]
+  S --> C : error 400
 else [else]
+  S -> S : copy DraftConfig to Config of every drill
   S -> G : AddContent(catalogSnapshot)
-  S --> C : LessonDraft (PUBLISHED)
+  S --> C : AdminLessonContent (PUBLISHED)
 end
 deactivate S
 C --> W : ApiResponse
 deactivate C
 deactivate W
 note over G : the next catalogue request of a game client\nreturns the new catalogue version
+"""
+
+SEQ["r4_seq_membership"] = SEQ_HEAD + r"""
+actor Player
+boundary ":MembershipPanel" as UI
+control ":MembershipController" as C
+control ":MembershipService" as S
+entity ":GameRepository" as G
+control ":PayOsGateway" as P
+actor "PayOS" as Ext
+Player -> UI : Buy()
+activate UI
+UI -> C : Checkout()
+activate C
+C -> S : Checkout(player)
+activate S
+S -> G : Lock(membership-checkout, player)
+alt [the player is a member]
+  S --> C : offer (active)
+else [a pending order is still valid]
+  S --> C : offer (same checkout URL)
+else [else]
+  S -> P : Create(orderCode, 49000, expiresAt)
+  P -> Ext : signed payment request
+  Ext --> P : paymentLinkId, checkoutUrl (signed)
+  S -> G : AddMembershipOrder(PENDING)
+  S --> C : offer (checkout URL, 15 min)
+end
+deactivate S
+C --> UI : MembershipOffer
+deactivate C
+UI -> Ext : open the payment page in the browser
+deactivate UI
+Player -> Ext : pay
+Ext -> C : Webhook(body)
+activate C
+C -> S : ReceiveWebhook(body)
+activate S
+S -> P : VerifyWebhook(body)
+alt [signature invalid]
+  S --> C : error 403
+else [order known and not paid]
+  S -> P : Read(orderCode)
+  P -> Ext : order query
+  Ext --> P : status, amount, amountPaid (signed)
+  S -> G : Lock(membership-checkout, player)
+  alt [PAID, amount matches, nothing remaining]
+    S -> G : SaveBalance(+3000 Elite Token), order PAID
+  else [partial payment]
+    S --> C : error 409
+  else [else]
+    S -> G : order CANCELLED or EXPIRED
+  end
+end
+deactivate S
+C --> Ext : 200
+deactivate C
+Player -> UI : return to the game
+UI -> C : Refresh()
+activate C
+C --> UI : MembershipOffer (active)
+deactivate C
+note over UI : Refresh also reads the order when no webhook has arrived\n(at most every 10 s per order)
+"""
+
+SEQ["r4_seq_replay_launch"] = SEQ_HEAD + r"""
+actor Administrator as Admin
+boundary ":ReplayLaunchDialog" as W
+control ":ReplayLaunchController" as C
+control ":ReplayLaunchService" as S
+entity ":ReplayLaunchRepository" as R
+boundary ":WebReplayLauncher" as Game
+Admin -> W : Xem replay
+activate W
+W -> C : Issue(match)
+activate C
+C -> S : Issue(admin, authVersion, match)
+activate S
+S -> R : Issue(code, access, 2 min)
+S --> C : pickleverse://replay/{match}?code
+deactivate S
+C --> W : ReplayLaunchLink
+deactivate C
+W -> Game : open the link (confirmed in the browser)
+deactivate W
+activate Game
+Game -> C : Redeem(code)
+activate C
+C -> S : Redeem(code)
+activate S
+S -> R : Exchange(code, view token, 2 h)
+alt [expired or already used]
+  S --> C : error 401 (MSG85)
+else [else]
+  S --> C : ReplayLaunchView (grant, metadata)
+end
+deactivate S
+C --> Game : view token
+deactivate C
+loop [each chunk]
+  Game -> C : Chunk(match, index)
+  activate C
+  C -> S : Chunk(token, match, index)
+  activate S
+  S -> S : Guard(admin active, same session)
+  S --> C : ReplayChunkUpload
+  deactivate S
+  C --> Game : chunk
+  deactivate C
+end
+Game --> Admin : Replay Viewer
+deactivate Game
 """
 
 SEQ["r4_seq_moderation"] = SEQ_HEAD + r"""
@@ -918,7 +1109,7 @@ repeat
   :Bot decides movement and shot;
   :Apply singles rules to the rally;
   if () then ([fault])
-    :Show quick rule tip;
+    :Show the referee call\n(red for the side at fault, green for the other);
   else ([else])
   endif
   :Commit point;
@@ -926,20 +1117,36 @@ repeat while () is ([no player has won two games]) not ([else])
 |Web API|
 :Save bot result and rewards;
 |Game client|
-:Upload session telemetry;
+:Upload session telemetry\n(after the result has been saved);
 |AI coaching service|
 :Analyse session with rules;
-:Return summary and drill recommendation;
+:Return findings, summary and drill recommendation;
+|Game client|
+if () then ([analysis ready within 90 s])
+  :Show the coaching panel;
+else ([else])
+  :Offer "THỬ LẠI";
+endif
 |Player|
-:Read coaching summary;
+:Read the coaching summary\nand open a recommended drill;
 stop
 """
 
 ACT["r4_act_w03"] = r"""
 |Player|
 start
+:Choose online play or a private room;
+|Web API|
+if () then ([every human player is a member])
+else ([else])
+  :Refuse with MSG79;
+  |Player|
+  :Open the membership panel (FR-36);
+  stop
+endif
+|Player|
 if () then ([private room])
-  :Create room and invite friend;
+  :Create room, invite friend\n(and swap positions by agreement);
 elseif () then ([ranked doubles])
   :Search alone or with a party of two;
   |Web API|
@@ -959,7 +1166,7 @@ else ([else])
   endif
 endif
 |Player|
-:Accept ready check (10 s);
+:Watch the match-found intro\nand accept the ready check (10 s);
 |Web API|
 if () then ([all required humans accepted])
   :Create match record (PLAYING);
@@ -970,17 +1177,17 @@ else ([else])
 endif
 |Dedicated server|
 :Verify ticket and admit players;
-:Simulate rallies authoritatively;
+:Simulate rallies authoritatively\nand upload the replay in batches;
 if () then ([stopped by an administrator or lease lost])
   :End match as INTERRUPTED\n(no Elo, no reward);
-elseif () then ([a player left or did not return within 30 s])
-  :End match as a forfeit\n(the other team wins, BR-28);
-  :Send final result;
+elseif () then ([a player left or did not return within 30 s,\nor every human of a team confirmed the surrender])
+  :End match as a forfeit\n(the other team wins, BR-28, BR-66);
+  :Seal the replay (at most 60 s)\nand send the final result;
 else ([else])
-  :Send final result;
+  :Seal the replay (at most 60 s)\nand send the final result;
 endif
 |Web API|
-:Save scores, Elo and rewards once;
+:Save scores, Elo and rewards once\n(with or without a replay);
 |Player|
 :View result and history;
 stop
@@ -1025,7 +1232,7 @@ ACT["r4_act_content"] = r"""
 |Administrator|
 start
 :Open lesson in CMS;
-:Edit draft (config, reward, prerequisites);
+:Edit the drafts of its drills\n(target, reward, prerequisites);
 |Web API|
 if () then ([expected version matches])
   :Save draft and audit;
@@ -1038,7 +1245,7 @@ endif
 |Administrator|
 :Publish lesson;
 |Web API|
-if () then ([all prerequisites published])
+if () then ([at least one drill and all prerequisites published])
   :Create new catalog snapshot;
 else ([else])
   :Reject publish;
@@ -1135,13 +1342,14 @@ TIMEOUT --> [*]
 SM["r4_sm_room"] = r"""
 state "assigning-bot" as assigning_bot
 [*] --> searching : createSession
+searching --> searching : hostLeft [a player remains] / promoteNextHost()
 searching --> assigning_bot : beginRankedFallback [no opponent after 180 s]
 assigning_bot --> searching : botAssignmentFailed
 assigning_bot --> ready : completeRankedFallback(bot)
 searching --> ready : playerJoined [all seats connected]
 ready --> loading : accept [all humans accepted]
 ready --> rejected : decline
-ready --> rejected : readyDeadline [10 s passed]
+ready --> rejected : readyDeadline [4 s intro + 10 s passed]
 loading --> playing : courtLoaded
 loading --> rejected : playerLeft
 playing --> interrupted : authorityLost
@@ -1157,7 +1365,7 @@ PREPARING --> PLAYING : startOnline [all required players accepted]
 PREPARING --> CANCELLED : decline
 PREPARING --> CANCELLED : startOnline [start failed]
 PLAYING --> FINISHED : complete [trusted result] / saveScoresAndElo()
-PLAYING --> FINISHED : complete [player forfeited] / saveForfeitLoss()
+PLAYING --> FINISHED : complete [player forfeited or team surrendered] / saveForfeitLoss()
 PLAYING --> FINISHED : stop [administrator stop or lease lost] / markInterrupted()
 FINISHED --> FINISHED : complete [result already saved] / ignore()
 FINISHED --> [*]
@@ -1247,6 +1455,19 @@ Attached --> Deleted : deletePost
 Attached --> Deleted : editPost [video replaced]
 Deleted --> Removed : cleanup / deleteObject()
 Removed --> [*]
+"""
+
+SM["r4_sm_membership"] = r"""
+[*] --> PENDING : checkout [no valid pending order] / createPaymentLink()
+PENDING --> PENDING : checkout [link valid] / returnSameLink()
+PENDING --> PAID : reconcile [PAID, amount matches, nothing remaining] / creditEliteToken()
+PENDING --> CANCELLED : reconcile [cancelled at PayOS, nothing paid]
+PENDING --> EXPIRED : reconcile [expired at PayOS, nothing paid]
+CANCELLED --> PAID : reconcile [paid late in full] / creditEliteToken()
+EXPIRED --> PAID : reconcile [paid late in full] / creditEliteToken()
+PAID --> [*]
+CANCELLED --> [*]
+EXPIRED --> [*]
 """
 
 

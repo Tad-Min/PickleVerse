@@ -2,13 +2,14 @@
 !include _style.iuml
 state "assigning-bot" as assigning_bot
 [*] --> searching : createSession
+searching --> searching : hostLeft [a player remains] / promoteNextHost()
 searching --> assigning_bot : beginRankedFallback [no opponent after 180 s]
 assigning_bot --> searching : botAssignmentFailed
 assigning_bot --> ready : completeRankedFallback(bot)
 searching --> ready : playerJoined [all seats connected]
 ready --> loading : accept [all humans accepted]
 ready --> rejected : decline
-ready --> rejected : readyDeadline [10 s passed]
+ready --> rejected : readyDeadline [4 s intro + 10 s passed]
 loading --> playing : courtLoaded
 loading --> rejected : playerLeft
 playing --> interrupted : authorityLost

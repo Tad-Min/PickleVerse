@@ -5,7 +5,7 @@ PREPARING --> PLAYING : startOnline [all required players accepted]
 PREPARING --> CANCELLED : decline
 PREPARING --> CANCELLED : startOnline [start failed]
 PLAYING --> FINISHED : complete [trusted result] / saveScoresAndElo()
-PLAYING --> FINISHED : complete [player forfeited] / saveForfeitLoss()
+PLAYING --> FINISHED : complete [player forfeited or team surrendered] / saveForfeitLoss()
 PLAYING --> FINISHED : stop [administrator stop or lease lost] / markInterrupted()
 FINISHED --> FINISHED : complete [result already saved] / ignore()
 FINISHED --> [*]

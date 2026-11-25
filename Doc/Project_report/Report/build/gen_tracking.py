@@ -29,9 +29,9 @@ PLAN = {
     "1.4": (4, 4, "Done", 100, "v1.0 on 11/11/2026"),
     "1.5": (4, 6, "Doing", 80, "Reports 5–7 v1.0 done on 11/11/2026; defense slides pending"),
     "2.1": (0, 1, "Done", 100, "Unity project initialised 17/09/2026"),
-    "2.2": (3, 3, "Done", 100, "Normalised schema 31/10/2026 (51 tables); 59 tables since the social feature of 15/11/2026"),
+    "2.2": (3, 3, "Done", 100, "Normalised schema 31/10/2026 (51 tables); 59 tables since the social feature of 15/11/2026, 60 since the membership of 22/11/2026"),
     "2.3": (4, 4, "Done", 100, "Docker deployment 04/11/2026"),
-    "2.4": (4, 5, "Doing", 90, "17 of 53 runs passed by 17/11/2026 (run 52 on 96ff8e9 with 15 check groups); the deploy job is skipped when the FastAPI and admin web checks are skipped (D-23, PB-24); Unity tests are not in CI yet (PB-09)"),
+    "2.4": (4, 5, "Doing", 90, "33 of the 51 runs since 18/11/2026 passed (run 103 on adcb4e2 with 16 check groups, EV-19); D-23 closed (291542a, PB-24); open: Unity tests in CI (PB-09), membership and replay-launch groups (PB-27), schema check in the deployment (PB-28)"),
     "3.1": (2, 2, "Done", 100, "Covered by EditMode tests"),
     "3.2": (2, 2, "Done", 100, "PaddleContactTests, SinglesMatchTests"),
     "3.3": (2, 2, "Done", 100, "SinglesMatchTests, MultiplayerRulesTests"),
@@ -43,6 +43,7 @@ PLAN = {
     "4.4": (3, 4, "Done", 100, "D-07 fixed 11/11/2026 (6d1ed37); retest in Round 2"),
     "4.5": (3, 3, "Done", 100, ""),
     "4.6": (5, 5, "Done", 100, "16/11/2026 (bc53722, 9dec659, 1b64424); EV-12, EV-13"),
+    "4.7": (5, 5, "Done", 100, "21/11/2026 (2398d98, 6e25c2c); CI check single-session passes (EV-19); two-device test TC-F01-10 pending"),
     "5.1": (2, 2, "Done", 100, "TC-F02-01 passed"),
     "5.2": (2, 4, "Done", 100, "TC-F03-01..03 passed"),
     "5.3": (4, 4, "Done", 100, "15 lessons seeded"),
@@ -56,9 +57,12 @@ PLAN = {
     "7.4": (4, 5, "Done", 100, "Reconnection within 20 s works (EV-15); the forfeit after 65 s matches BR-28 v1.5 (TC-F09-03 passed in EV-17; D-28 resolved by requirement change)"),
     "7.5": (4, 4, "Done", 100, "Start Elo 100; the ranking reset uses the same value since 0cee928 (D-08 closed)"),
     "7.6": (4, 5, "Done", 100, "Server pool 15/11/2026 (e160b4e); ranked doubles with bot fill 17/11/2026 (b08f5c7); CI check ranked-doubles passes (EV-11); played in the client with bot fill on 18/11/2026 (EV-16); four-human test pending; D-29 fixed and closed (EV-17)"),
+    "7.7": (5, 5, "Done", 100, "19–25/11/2026 (2a2c37c, 610633a, 824a196); TC-F07-05, TC-F07-06 passed (EV-18, EV-20)"),
+    "7.8": (5, 5, "Doing", 90, "22–24/11/2026 (08e2cb4, 308f5fa, 40685b4, 5424415); TC-F08-05, TC-F08-06, TC-F09-07, TC-F11-06 passed; surrender with confirmation instead of Rời trận (D-34) fixed on 25/11, to be released; replay court D-35, AFK match D-47 open"),
     "8.1": (4, 4, "Done", 100, ""),
     "8.2": (3, 4, "Done", 100, "Tier model gated (NFR-06)"),
     "8.3": (4, 4, "Done", 100, "D-02 and D-11 fixed and closed 18/11/2026 (EV-17)"),
+    "8.4": (5, 5, "Done", 100, "25/11/2026 (b1013f8, c616ec5); TC-F06-04, TC-F09-04, TC-F09-05 passed (EV-20); D-37 open"),
     "9.1": (2, 2, "Done", 100, ""),
     "9.2": (2, 2, "Done", 100, ""),
     "9.3": (2, 2, "Done", 100, "D-12 Elite Token source"),
@@ -75,15 +79,19 @@ PLAN = {
     "12.4": (4, 4, "Done", 100, ""),
     "12.5": (4, 4, "Done", 100, ""),
     "12.6": (4, 4, "Done", 100, ""),
+    "12.7": (5, 5, "Doing", 90, "20–22/11/2026 (41ab7d1, 171368e, 1e80a97, 0e56440, d196829); TC-F16-04 passed; D-36, D-45 and TC-F17-05 open"),
     "13.1": (4, 4, "Done", 100, "No labelled real data yet"),
     "14.1": (1, 2, "Done", 100, ""),
     "14.2": (2, 2, "Done", 100, ""),
     "14.3": (3, 4, "Done", 100, "D-01 open; D-04 and D-19 closed after retest (EV-15)"),
     "14.4": (4, 4, "Done", 100, "15/11/2026; frame rate measured only in the Editor (Doc/Sunset_District_20261115.md); no phone measurement"),
-    "15.1": (4, 5, "Doing", 60, "522 EditMode tests passed on 16/11/2026 (EV-12); IntegrationChecks (15 groups), pytest and the web type check pass in CI on main @ 96ff8e9 (EV-11); coverage not measured"),
-    "15.2": (5, 6, "Doing", 50, "Round 1 done; %d of %d cases passed after the checks of 13–17/11/2026 and the end-to-end runs of 17–18/11/2026 (EV-15, EV-16) and the defect retest EV-17; rest of Round 2 and Round 3 planned" % (R.stats()[0]["Passed"], len(R.CASES))),
+    "14.5": (5, 5, "Done", 100, "24–25/11/2026 (fc14a22 to 50aa330, b845c65); Doc/ArtBible; no measurement on the reference devices"),
+    "14.6": (5, 5, "Done", 100, "24–25/11/2026 (b27c1ba, 8eb4fc1, 3c55c5e, 9046ab2, f1b4863, adcb4e2); Dragon Ruby not on sale on staging (D-48)"),
+    "15.1": (4, 5, "Doing", 70, "730 EditMode tests passed on 25/11/2026 (EV-18); IntegrationChecks (16 groups) pass in CI on main @ adcb4e2 (EV-19); coverage not measured"),
+    "15.2": (5, 6, "Doing", 50, "Round 1 done; %d of %d cases passed after the checks of 13–17/11/2026 the end-to-end runs of 17–18/11/2026 (EV-15, EV-16), the defect retest EV-17 and the runs of 25/11/2026 (EV-18 to EV-20); rest of Round 2 and Round 3 planned" % (R.stats()[0]["Passed"], len(R.CASES))),
     "15.3": (5, 6, "Pending", 0, "Acceptance 07–11/12/2026"),
-    "15.4": (4, 6, "Doing", 60, "Staging deployed by the pipeline (run 52 deployed 96ff8e9 on 17/11/2026); Windows build of main @ 96ff8e9 made on 17/11/2026 (EV-15) and Windows builds with the fixes of 18/11/2026 (EV-17); APKs of 12/11 and 14/11/2026 use protocol 18 and must be rebuilt (protocol 20); release package pending"),
+    "15.4": (4, 6, "Doing", 60, "Staging deployed by the pipeline (run 103 deployed adcb4e2 on 25/11/2026); Windows build of adcb4e2 made on 25/11/2026 (EV-20); Windows build of main @ 96ff8e9 made on 17/11/2026 (EV-15) and Windows builds with the fixes of 18/11/2026 (EV-17); APKs of 12/11 and 14/11/2026 use protocol 18 and must be rebuilt (protocol 20); release package pending"),
+    "16.1": (5, 5, "Doing", 85, "22/11/2026 (d196829); TC-F20-01, TC-F20-04 passed (EV-20); real payment, non-member locks and CI group open (TC-F20-02, TC-F20-03, TC-F20-05)"),
 }
 MEMBERS = [("Huỳnh Trung Kiên", "Kiên", "KienHT"), ("Nguyễn Văn Thành Đạt", "Đạt", "DatNVT"), ("Nguyễn Gia Huy", "Huy", "HuyNG"), ("Trần Nguyễn Hiếu Thuận", "Thuận", "ThuanTNH")]
 SHORT = {m[1]: m[0] for m in MEMBERS}
@@ -116,7 +124,7 @@ def tracking():
     wb = openpyxl.load_workbook(TPL)
     # ---------------- WBS
     ws = wb["WBS"]
-    ws["D5"] = "PROJECT WORK BREAKDOWN STRUCTURE – PickleVerse (PKV), updated 17/11/2026"
+    ws["D5"] = "PROJECT WORK BREAKDOWN STRUCTURE – PickleVerse (PKV), updated 25/11/2026"
     clear(ws, 8, 14)
     extra = ["WBS ID", "Owner", "Est. effort (man-days)", "Start", "End", "% complete", "Notes"]
     for j, h in enumerate(extra):
@@ -174,13 +182,17 @@ def tracking():
         ("PB-17", "Install the Android build on a reference phone; smoke test and frame-rate capture", "Test", "High", "Iteration 5", "Thuận", 1.5, "Pending", "TC-N03, TC-N10; Report 1 LI-11; the APK of 12/11/2026 (EV-10) predates the HTTPS switch – rebuild first (PB-20)"),
         ("PB-18", "Decide the XP curve or the GEMSTONE level and record the decision", "Decision", "Medium", "Iteration 4", "Kiên", 1, "Done", "D-20 first accepted as designed (13/11/2026), then fixed by the XP curve level × 10 (b08f5c7, 17/11/2026); D-12 stays in PB-08"),
         ("PB-19", "Remove the 24 endpoints that no client calls, or document them as public API", "Maintenance", "Low", "Iteration 5", "Kiên", 1, "Pending", "Issue I-12; Report 4 §3.9"),
-        ("PB-20", "Set the Android package name, label and version, then rebuild the APK and the Windows build from main @ 96ff8e9 (HTTPS address, protocol 20)", "Defect fix", "High", "Iteration 5", "Huy", 0.5, "Doing", "Windows build of 96ff8e9 made on 17/11/2026 (EV-15); APK still pending; D-21 fixed in be556a1; TC-N10"),
+        ("PB-20", "Set the Android package name, label and version, then rebuild the APK and the Windows build from the current main (HTTPS address, protocol 22)", "Defect fix", "High", "Iteration 5", "Huy", 0.5, "Doing", "Windows build of adcb4e2 made on 25/11/2026 (EV-20); APK still pending; D-21 fixed in be556a1; TC-N10"),
         ("PB-21", "Add a daily database dump with an off-host copy (since be556a1 the pipeline takes a verified dump before each deployment, kept on the same host)", "DevOps", "Medium", "Iteration 5", "Đạt", 1, "Pending", "NFR-08; Report 2 risk 11"),
-        ("PB-22", "CR-01 (Review 1, finance): decide the membership subscription – price, member benefits, payment provider, refund and terms – with the supervisor, then specify, build and test it in the provider's sandbox", "Change request", "High", "Iteration 6", "Kiên", "Not estimated", "Pending", "Report 1 LI-02 and §6.3; Report 2 risk 14; not implemented on 17/11/2026"),
+        ("PB-22", "CR-01 (Review 1, finance): membership – built on 22/11/2026 (49,000 VND once, PayOS, 3,000 Elite Token); left: confirm price and benefits with the supervisor, refund procedure, terms of sale, order list for administrators, one real payment by an account owner", "Change request", "High", "Iteration 6", "Kiên", 2, "Doing", "Report 1 FE-11, LI-14; FR-36; TC-F20-01 to TC-F20-05"),
         ("PB-23", "Let the Windows and Android builds pick and upload an MP4 video for a post", "Defect fix", "High", "Iteration 5", "Đạt", 1, "Doing", "Windows done in 9557581 (TC-F19-05 passed, EV-17); Android picker pending (D-22 partly fixed); Report 1 LI-12"),
-        ("PB-24", "Run the deploy job after every passing pipeline run, also when the FastAPI and admin web checks are skipped", "DevOps", "Medium", "Iteration 5", "Đạt", 0.5, "Pending", "D-23"),
+        ("PB-24", "Run the deploy job after every passing pipeline run, also when the FastAPI and admin web checks are skipped", "DevOps", "Medium", "Iteration 5", "Đạt", 0.5, "Done", "D-23 closed 25/11/2026 (291542a, EV-19)"),
         ("PB-25", "Let players report posts, comments and messages and let administrators remove them", "Moderation", "Medium", "Iteration 6", "Kiên", 2, "Pending", "Report 2 risk 15; Review 1 comment on admin complaints"),
         ("PB-26", "Test the social feed, messages, whispers and ranked doubles with two to four accounts", "Test", "High", "Iteration 5", "Thuận", 1.5, "Doing", "TC-F19-05, TC-F19-06; four-client part of TC-F07-04"),
+        ("PB-27", "Add the IntegrationChecks groups membership and replay-launch to the validate job", "DevOps", "High", "Iteration 5", "Đạt", 0.5, "Pending", "D-49; TC-F20-05, TC-F17-05; Report 2 risk 19"),
+        ("PB-28", "Stop a deployment whose schema is not on the host (extend the schema check of ssh-deploy.sh) and record the manual schema step", "DevOps", "High", "Iteration 5", "Đạt", 0.5, "Pending", "D-48; Report 2 risk 17"),
+        ("PB-29", "Đầu hàng with a confirmation box instead of Rời trận; in doubles both partners confirm", "Defect fix", "High", "Iteration 5", "Huy", 1, "Doing", "D-34 fixed in the working tree of 25/11/2026 (EV-18, EV-21); left: release, TC-F09-06 and TC-F09-09 on staging, TC-F09-10 in CI"),
+        ("PB-30", "Release the fix of D-33, distribute the new build, then add the Dragon Ruby rows to the staging database", "Defect fix", "High", "Iteration 5", "Huy", 0.5, "Doing", "D-33 fixed in the working tree of 25/11/2026; D-48"),
     ]
     write_rows(bl, 2, [list(x) for x in items])
     for col, w in zip("ABCDEFGHI", [8, 70, 14, 10, 12, 10, 12, 10, 28]):
@@ -194,18 +206,21 @@ def tracking():
         ("Development credentials and a fallback JWT key are committed to the repository", "Account takeover or e-mail abuse if the repository leaks", "High", "DatNVT", dt.date(2026, 11, 10), None, "Open", "D-17 partly fixed 13/11/2026 (be556a1): removed from the settings file and the code; the values are still in the Git history, so rotate them on staging and record the rotation (PB-02)"),
         ("Staging API and admin web use HTTP", "Credentials and tokens travel unencrypted", "High", "DatNVT", dt.date(2026, 11, 10), dt.date(2026, 11, 13), "Closed", "D-18 fixed by be556a1 and verified on 13/11/2026 16:21 (EV-09): HTTPS only, port 80 redirects, port 8080 closed"),
         ("Uneven contribution: two members hold most of the commits", "Key-person risk; members cannot explain modules they did not build", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pairing sessions and workflow ownership (Report 2 risk 1)"),
-        ("No pull-request review: every commit, also on 16–17/11/2026, is pushed directly to main", "Defects and secrets reach main without review", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pull requests with one reviewer were planned from Iteration 5 but had not started on 17/11/2026"),
+        ("No pull-request review: pull requests were used on 21/11/2026 only (#2–#6, merged by their author)", "Defects and secrets reach main without review", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "Pull requests with one reviewer were planned from Iteration 5; on 25/11/2026 commits are pushed directly to main again"),
         ("Unity tests are not run in CI (the pipeline builds the server with a Unity licence but has no test step)", "Automation target of Review 2 not demonstrated", "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-09"),
         ("No test mailbox, seed accounts or analytics seed", "%d test cases pending" % R.stats()[0]["Pending"], "Medium", "ThuanTNH", dt.date(2026, 11, 11), None, "Open", "PB-04"),
-        ("Elite Token has no earning source", "GEMSTONE can only be granted at level 25", "Medium", "KienHT", dt.date(2026, 11, 10), None, "Open", "D-12; Q&A 3"),
+        ("Elite Token has no earning source", "GEMSTONE can only be granted at level 25", "Medium", "KienHT", dt.date(2026, 11, 10), dt.date(2026, 11, 22), "Closed", "Since 22/11/2026 the membership credits 3,000 Elite Token (BR-58); D-12; Q&A 3"),
         ("Capacity of online matches is limited by the game-server containers started on staging (one by default)", "One online match at a time unless PKV_GAME_REPLICAS is raised; capacity target not load-tested", "Medium", "DatNVT", dt.date(2026, 11, 3), None, "Open", "Server pool since 15/11/2026 (e160b4e); Report 1 LI-07; Q&A 2"),
         ("GitHub Actions did not pass before 13/11/2026: configuration failures on 05/11, account locked for a billing issue from 06/11 to 11/11, dedicated-server build failures on 11–12/11", "No automated validation or deployment; staging was released by hand on 08–10/11/2026", "High", "KienHT", dt.date(2026, 11, 6), dt.date(2026, 11, 13), "Closed", "Runs 27, 28, 30, 33 and 34 passed every job on 13/11/2026 (EV-08); PB-16 done"),
         ("24 API endpoints are not called by the game, the server or the admin web", "Untested surface that still accepts requests", "Low", "DatNVT", dt.date(2026, 11, 12), None, "Open", "PB-19; Report 4 §3.9"),
         ("Stored data is not encrypted at rest (proposal: AES-256)", "Deviation from the proposal; database and backups readable on the host", "Medium", "DatNVT", dt.date(2026, 11, 12), None, "Open", "Report 1 LI-10; disk encryption before release"),
         ("The Android build has not been tested on a device", "NFR-03 and NFR-10 unverified; touch controls only checked in the Editor", "Medium", "ThuanTNH", dt.date(2026, 11, 12), None, "Open", "PB-17, PB-20; Report 1 LI-11; the APK of 12/11/2026 (EV-10) predates the HTTPS switch"),
-        ("The deploy job is skipped when the FastAPI and admin web checks are skipped (nine passing runs of 13–16/11/2026 did not deploy)", "Staging can run an older release than main without anyone noticing", "Medium", "DatNVT", dt.date(2026, 11, 17), None, "Open", "D-23, PB-24; run 52 deployed 96ff8e9 on 17/11/2026"),
+        ("The deploy job is skipped when the FastAPI and admin web checks are skipped (nine passing runs of 13–16/11/2026 did not deploy)", "Staging can run an older release than main without anyone noticing", "Medium", "DatNVT", dt.date(2026, 11, 17), dt.date(2026, 11, 25), "Closed", "D-23 closed (291542a, EV-19), PB-24; run 52 deployed 96ff8e9 on 17/11/2026"),
         ("The repository is public and the old credentials are still in its Git history", "Anyone can read the removed SMTP password and JWT key until they are rotated", "High", "DatNVT", dt.date(2026, 11, 17), None, "Open", "D-17, PB-02; Report 2 risk 2"),
         ("The admin web was not reachable at the staging address after the deployment of 13/11/2026 01:18", "The admin workflow W04 and the admin test cases could not be run on staging", "High", "DatNVT", dt.date(2026, 11, 13), dt.date(2026, 11, 13), "Closed", "Fixed by be556a1 (the Caddyfile routes every path except /api and /health/ready to the admin web); https://tad-min.io.vn opens the admin web since the deployment of 14:34 (EV-09)"),
+        ("Schema changes are not part of the deployment: the new columns and tables of 22/11/2026 were added to staging by hand and the Dragon Ruby rows are missing", "A release can pass the pipeline and fail at run time", "High", "DatNVT", dt.date(2026, 11, 22), None, "Open", "Report 2 risk 17; PB-28; D-48"),
+        ("The membership uses the production address of PayOS on staging, without refund procedure, terms of sale and order list", "Real money can be lost or disputed; a paywall stands before the demonstration of W03", "High", "KienHT", dt.date(2026, 11, 22), None, "Open", "Report 2 risks 14 and 18; Report 1 LI-14; PB-22; keep member accounts for the defense"),
+        ("One item added in the CMS could stop the game for every player (D-33)", "All workflows of all players", "High", "HuyNG", dt.date(2026, 11, 25), None, "Open", "Fixed in the client and the API on 25/11/2026; to be released (PB-30)"),
     ]
     write_rows(ws, 4, [[i + 1] + list(x) for i, x in enumerate(issues)])
     ws.data_validations.dataValidation = []
@@ -225,7 +240,9 @@ def tracking():
     feat = {"TC-F14-01": "FE-02", "TC-F06-03": "FE-05", "TC-F03-01": "FE-02", "TC-F01-02": "FE-01", "TC-F05-01": "FE-03", "TC-F10-01": "FE-04",
             "TC-F09-01": "FE-04", "TC-F06-01": "FE-05", "TC-F04-01": "FE-06", "TC-F04-03": "FE-06", "TC-W03": "FE-04", "TC-F07-01": "FE-04", "Unit test run": "Testing", "TC-N09": "Security", "TC-N10": "Android client",
             "TC-F19-05": "FE-07", "CI history (EV-14)": "CI/CD", "Windows build (EV-15)": "Testing", "TC-F15-01": "FE-08/09", "TC-X01-02": "FE-10",
-            "TC-F17-01": "FE-07", "TC-F09-03": "FE-04", "TC-F08-04": "FE-04"}
+            "TC-F17-01": "FE-07", "TC-F09-03": "FE-04", "TC-F08-04": "FE-04",
+            "TC-F04-04": "FE-06", "TC-F09-06": "FE-04", "TC-F11-06": "FE-07", "TC-F18-01": "FE-09", "TC-F18-03": "FE-09", "TC-F06-04": "FE-05", "TC-F11-02": "FE-07",
+            "TC-F08-05": "FE-04", "TC-F08-01": "FE-04", "TC-F09-05": "FE-04", "TC-F07-03": "FE-04", "CI history (EV-19)": "CI/CD"}
     tester = {"TC-F09-01": "Nguyễn Gia Huy, Nguyễn Văn Thành Đạt"}
     rows = []
     for did, summary, typ, sev, tc, date, own in R.DEFECTS:
@@ -258,7 +275,7 @@ def tracking():
         "Which Android device should be the reference device for NFR-03 and NFR-10?",
         "Please confirm the RACI matrix in Report 2 §4 for the documents and modules (workflow owners are fixed by BM04).",
         "Level 25 needs 60,000 XP with the current curve (n × 200 per level), so GEMSTONE is effectively unreachable (D-20). Should the curve be flattened, or should GEMSTONE be granted at a lower level?",
-        "Review 1 (finance): the team will add a paid membership subscription (CR-01). Which price, member benefits and payment provider are acceptable, must it be in release 1.0, and may it use only the provider's sandbox?",
+        "Review 1 (finance): the membership is built (CR-01: 49,000 VND once, PayOS, online play, private rooms and the adaptive bot). Do you accept the price, the benefits and the paywall before ranked play (F07–F10), and which refund procedure, terms of sale and handling of minors are required?",
         "Review 1 (club owner): the team does not plan club owner or club functions. Is it acceptable to record this as out of scope (Report 1 LI-02)?",
         "Review 1 (schedule management): is a match schedule required, or are the ranked queue, room codes and friend invitations enough (Report 1 LI-13)?",
         "Must administrators be able to remove posts, comments and messages before release 1.0 (Report 2 risk 15, PB-25)?",
@@ -336,7 +353,7 @@ def schedule():
            "  <SaveVersion>14</SaveVersion>", "  <Name>PickleVerse_Project_Schedule</Name>", "  <Title>PickleVerse (PKV) – GFA26SE111 master schedule</Title>",
            "  <Company>FPT University</Company>", "  <Author>GFA26SE111</Author>", "  <ScheduleFromStart>1</ScheduleFromStart>",
            "  <StartDate>%s</StartDate>" % d(dt.date(2026, 9, 7)), "  <FinishDate>%s</FinishDate>" % d(dt.date(2026, 12, 20), 17),
-           "  <CurrentDate>%s</CurrentDate>" % d(dt.date(2026, 11, 11)), "  <StatusDate>%s</StatusDate>" % d(dt.date(2026, 11, 11), 17),
+           "  <CurrentDate>%s</CurrentDate>" % d(dt.date(2026, 11, 25)), "  <StatusDate>%s</StatusDate>" % d(dt.date(2026, 11, 25), 17),
            "  <CalendarUID>1</CalendarUID>", "  <DefaultStartTime>08:00:00</DefaultStartTime>", "  <DefaultFinishTime>17:00:00</DefaultFinishTime>",
            "  <MinutesPerDay>480</MinutesPerDay>", "  <MinutesPerWeek>2400</MinutesPerWeek>", "  <DaysPerMonth>20</DaysPerMonth>",
            "  <Calendars>", "    <Calendar>", "      <UID>1</UID>", "      <Name>Standard</Name>", "      <IsBaseCalendar>1</IsBaseCalendar>", "      <WeekDays>"]

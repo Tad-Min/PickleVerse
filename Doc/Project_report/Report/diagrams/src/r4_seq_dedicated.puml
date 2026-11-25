@@ -38,18 +38,23 @@ deactivate DC
 Cl -> W : JoinDedicatedAsync(session, region, player, token, roster)
 W -> WC : AuthorizeAdmission(request)
 loop match running
-  W -> WC : Heartbeat(request)
+  W -> WC : Heartbeat(live status, sessions)
   activate WC
-  WC -> S : Renew(lease)
-  WC --> W : HeartbeatReply (pending stop command, if any)
+  WC -> S : Renew(lease, sessions)
+  WC --> W : HeartbeatReply (stop command, expired sessions)
   deactivate WC
+  opt a session has expired
+    W -> W : ExpireSessions(reply) / disconnect the old device
+  end
+  W -> WC : ReplayBatch(lease, up to 4 chunks)
 end
+W -> WC : ReplayBatch(lease, last chunks, complete)
 W -> WC : Telemetry(lease, batch)
-W -> WC : Complete(request)
+W -> WC : Complete(results, replayChunkCount)
 activate WC
-WC -> S : Complete(lease, result)
+WC -> S : Complete(lease, results, replayChunkCount)
 activate S
-S -> G : CompleteDedicated(match, result)
+S -> G : CompleteDedicated(match, results, replayChunkCount)
 S -> L : Release(lease, worker)
 S --> WC : saved once
 deactivate S

@@ -1,0 +1,461 @@
+{
+ "source": "GitHub REST API, read 25/11/2026",
+ "total_runs": 104,
+ "by_conclusion": {
+  "success": 50,
+  "cancelled": 20,
+  "failure": 33,
+  "startup_failure": 1
+ },
+ "since_18_11": {
+  "count": 51,
+  "by_conclusion": {
+   "success": 33,
+   "cancelled": 15,
+   "failure": 3
+  }
+ },
+ "runs_since_18_11": [
+  {
+   "number": 53,
+   "commit": "291542a",
+   "conclusion": "success",
+   "created_utc": "2026-11-18T13:14:37Z",
+   "branch": "main"
+  },
+  {
+   "number": 54,
+   "commit": "0cee928",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-18T13:14:45Z",
+   "branch": "main"
+  },
+  {
+   "number": 55,
+   "commit": "95ff4a4",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-18T13:14:53Z",
+   "branch": "main"
+  },
+  {
+   "number": 56,
+   "commit": "9557581",
+   "conclusion": "success",
+   "created_utc": "2026-11-18T13:15:01Z",
+   "branch": "main"
+  },
+  {
+   "number": 57,
+   "commit": "329810f",
+   "conclusion": "success",
+   "created_utc": "2026-11-18T14:22:23Z",
+   "branch": "main"
+  },
+  {
+   "number": 58,
+   "commit": "bc34d84",
+   "conclusion": "success",
+   "created_utc": "2026-11-19T14:40:59Z",
+   "branch": "main"
+  },
+  {
+   "number": 59,
+   "commit": "9401119",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-19T14:41:09Z",
+   "branch": "main"
+  },
+  {
+   "number": 60,
+   "commit": "2a2c37c",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-19T14:41:16Z",
+   "branch": "main"
+  },
+  {
+   "number": 61,
+   "commit": "413bb59",
+   "conclusion": "success",
+   "created_utc": "2026-11-19T14:41:23Z",
+   "branch": "main"
+  },
+  {
+   "number": 62,
+   "commit": "0ac9102",
+   "conclusion": "success",
+   "created_utc": "2026-11-20T05:46:30Z",
+   "branch": "main"
+  },
+  {
+   "number": 63,
+   "commit": "41ab7d1",
+   "conclusion": "success",
+   "created_utc": "2026-11-20T05:59:46Z",
+   "branch": "main"
+  },
+  {
+   "number": 64,
+   "commit": "e579f9d",
+   "conclusion": "success",
+   "created_utc": "2026-11-20T06:20:22Z",
+   "branch": "main"
+  },
+  {
+   "number": 65,
+   "commit": "2398d98",
+   "conclusion": "failure",
+   "created_utc": "2026-11-21T01:09:19Z",
+   "branch": "Min"
+  },
+  {
+   "number": 66,
+   "commit": "2398d98",
+   "conclusion": "failure",
+   "created_utc": "2026-11-21T01:14:01Z",
+   "branch": "1-delay-skill-j-in-play-online-1vs1-and-2vs2"
+  },
+  {
+   "number": 67,
+   "commit": "e09d187",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T01:15:05Z",
+   "branch": "main"
+  },
+  {
+   "number": 68,
+   "commit": "d98c1a1",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T01:19:02Z",
+   "branch": "Min"
+  },
+  {
+   "number": 69,
+   "commit": "4216639",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T01:22:22Z",
+   "branch": "main"
+  },
+  {
+   "number": 70,
+   "commit": "b84055c",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T01:48:16Z",
+   "branch": "realtime-AI-response"
+  },
+  {
+   "number": 71,
+   "commit": "bb67fa1",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T01:49:38Z",
+   "branch": "main"
+  },
+  {
+   "number": 72,
+   "commit": "4508f01",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T01:49:54Z",
+   "branch": "main"
+  },
+  {
+   "number": 73,
+   "commit": "6e25c2c",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T18:02:09Z",
+   "branch": "main"
+  },
+  {
+   "number": 74,
+   "commit": "a7577ba",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T18:51:50Z",
+   "branch": "main"
+  },
+  {
+   "number": 75,
+   "commit": "7374871",
+   "conclusion": "success",
+   "created_utc": "2026-11-21T19:42:08Z",
+   "branch": "main"
+  },
+  {
+   "number": 76,
+   "commit": "171368e",
+   "conclusion": "success",
+   "created_utc": "2026-11-22T02:34:06Z",
+   "branch": "main"
+  },
+  {
+   "number": 77,
+   "commit": "1e80a97",
+   "conclusion": "success",
+   "created_utc": "2026-11-22T03:02:20Z",
+   "branch": "main"
+  },
+  {
+   "number": 78,
+   "commit": "0e56440",
+   "conclusion": "success",
+   "created_utc": "2026-11-22T04:41:16Z",
+   "branch": "main"
+  },
+  {
+   "number": 79,
+   "commit": "0e56440",
+   "conclusion": "failure",
+   "created_utc": "2026-11-22T05:07:41Z",
+   "branch": "main"
+  },
+  {
+   "number": 80,
+   "commit": "0e56440",
+   "conclusion": "success",
+   "created_utc": "2026-11-22T05:27:02Z",
+   "branch": "main"
+  },
+  {
+   "number": 81,
+   "commit": "467eb4f",
+   "conclusion": "success",
+   "created_utc": "2026-11-22T15:14:29Z",
+   "branch": "main"
+  },
+  {
+   "number": 82,
+   "commit": "08e2cb4",
+   "conclusion": "success",
+   "created_utc": "2026-11-23T06:25:10Z",
+   "branch": "main"
+  },
+  {
+   "number": 83,
+   "commit": "308f5fa",
+   "conclusion": "success",
+   "created_utc": "2026-11-23T14:09:10Z",
+   "branch": "main"
+  },
+  {
+   "number": 84,
+   "commit": "40685b4",
+   "conclusion": "success",
+   "created_utc": "2026-11-23T16:20:02Z",
+   "branch": "main"
+  },
+  {
+   "number": 85,
+   "commit": "d058313",
+   "conclusion": "success",
+   "created_utc": "2026-11-24T01:32:08Z",
+   "branch": "main"
+  },
+  {
+   "number": 86,
+   "commit": "610633a",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-24T01:32:15Z",
+   "branch": "main"
+  },
+  {
+   "number": 87,
+   "commit": "851c325",
+   "conclusion": "success",
+   "created_utc": "2026-11-24T01:33:54Z",
+   "branch": "main"
+  },
+  {
+   "number": 88,
+   "commit": "a086b4b",
+   "conclusion": "success",
+   "created_utc": "2026-11-25T01:28:26Z",
+   "branch": "main"
+  },
+  {
+   "number": 89,
+   "commit": "a55737c",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:28:37Z",
+   "branch": "main"
+  },
+  {
+   "number": 90,
+   "commit": "bb97d86",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:28:44Z",
+   "branch": "main"
+  },
+  {
+   "number": 91,
+   "commit": "311c211",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:28:52Z",
+   "branch": "main"
+  },
+  {
+   "number": 92,
+   "commit": "73a0ed0",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:28:59Z",
+   "branch": "main"
+  },
+  {
+   "number": 93,
+   "commit": "97bc444",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:29:06Z",
+   "branch": "main"
+  },
+  {
+   "number": 94,
+   "commit": "725457d",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:29:20Z",
+   "branch": "main"
+  },
+  {
+   "number": 95,
+   "commit": "2667ccd",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:29:35Z",
+   "branch": "main"
+  },
+  {
+   "number": 96,
+   "commit": "b27c1ba",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:29:42Z",
+   "branch": "main"
+  },
+  {
+   "number": 97,
+   "commit": "6519e2d",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:29:49Z",
+   "branch": "main"
+  },
+  {
+   "number": 98,
+   "commit": "824a196",
+   "conclusion": "cancelled",
+   "created_utc": "2026-11-25T01:29:56Z",
+   "branch": "main"
+  },
+  {
+   "number": 99,
+   "commit": "50aa330",
+   "conclusion": "success",
+   "created_utc": "2026-11-25T01:30:03Z",
+   "branch": "main"
+  },
+  {
+   "number": 100,
+   "commit": "c616ec5",
+   "conclusion": "success",
+   "created_utc": "2026-11-25T01:55:30Z",
+   "branch": "main"
+  },
+  {
+   "number": 101,
+   "commit": "b845c65",
+   "conclusion": "success",
+   "created_utc": "2026-11-25T02:53:40Z",
+   "branch": "main"
+  },
+  {
+   "number": 102,
+   "commit": "f1b4863",
+   "conclusion": "success",
+   "created_utc": "2026-11-25T04:59:00Z",
+   "branch": "main"
+  },
+  {
+   "number": 103,
+   "commit": "adcb4e2",
+   "conclusion": "success",
+   "created_utc": "2026-11-25T04:59:11Z",
+   "branch": "main"
+  }
+ ],
+ "run_103": {
+  "id": 45550426329,
+  "number": 103,
+  "commit": "adcb4e2",
+  "url": "https://github.com/Tad-Min/PickleVerse/actions/runs/45550426329",
+  "jobs": [
+   {
+    "name": "Read last successful Linux deployment",
+    "conclusion": "success",
+    "started": "2026-11-25T05:12:19Z",
+    "completed": "2026-11-25T05:12:39Z"
+   },
+   {
+    "name": "Plan affected builds and checks",
+    "conclusion": "success",
+    "started": "2026-11-25T05:12:42Z",
+    "completed": "2026-11-25T05:12:56Z"
+   },
+   {
+    "name": "Build Unity Linux Dedicated Server",
+    "conclusion": "success",
+    "started": "2026-11-25T05:12:58Z",
+    "completed": "2026-11-25T05:21:38Z"
+   },
+   {
+    "name": "Backend integration checks",
+    "conclusion": "success",
+    "started": "2026-11-25T05:12:58Z",
+    "completed": "2026-11-25T05:14:58Z"
+   },
+   {
+    "name": "Admin web type check",
+    "conclusion": "skipped",
+    "started": "2026-11-25T05:12:56Z",
+    "completed": "2026-11-25T05:12:56Z"
+   },
+   {
+    "name": "FastAPI tests",
+    "conclusion": "skipped",
+    "started": "2026-11-25T05:12:56Z",
+    "completed": "2026-11-25T05:12:56Z"
+   },
+   {
+    "name": "Validate .NET, FastAPI and admin web",
+    "conclusion": "success",
+    "started": "2026-11-25T05:15:00Z",
+    "completed": "2026-11-25T05:15:04Z"
+   },
+   {
+    "name": "Publish changed images and smoke test the release",
+    "conclusion": "success",
+    "started": "2026-11-25T05:21:40Z",
+    "completed": "2026-11-25T05:23:13Z"
+   },
+   {
+    "name": "Deploy Linux development",
+    "conclusion": "success",
+    "started": "2026-11-25T05:23:17Z",
+    "completed": "2026-11-25T05:24:27Z"
+   }
+  ],
+  "check_groups": [
+   "client-security",
+   "api-contract",
+   "schema",
+   "status-enums",
+   "content",
+   "training-sync",
+   "progress-reset",
+   "moderation",
+   "single-session",
+   "analytics",
+   "expert-review",
+   "room-invitations",
+   "dedicated",
+   "ranked-doubles",
+   "social-content",
+   "hybrid"
+  ],
+  "not_run": [
+   "membership",
+   "replay-launch"
+  ]
+ }
+}

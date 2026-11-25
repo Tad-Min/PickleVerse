@@ -19,8 +19,11 @@ state "Bot Match" as BotMatch
 state "Training Academy" as Training
 state "Drill Result\n[popup]" as DrillResult <<popup>>
 state "Online Lobby" as Online
-state "Ready Check\n[popup]" as Ready <<popup>>
+state "Ready Check\n[overlay]" as Ready <<popup>>
 state "Multiplayer Court" as Court
+state "Match Summary\n[overlay]" as Summary <<popup>>
+state "Membership\n[popup]" as Member <<popup>>
+state "Music Room\n[overlay]" as Music <<popup>>
 state "Match Result\n[popup]" as Result <<popup>>
 state "Coaching Summary\n[popup]" as Coach <<popup>>
 state "Training Progress\n[popup]" as Progress <<popup>>
@@ -66,8 +69,15 @@ DrillResult --> Coach
 Modes --> Online
 Online --> Ready : match found
 Ready --> Court : all accepted
-Court --> Result
+Court --> Summary : outcome cinematic
+Summary --> Online : VỀ PHÒNG CHỜ
+Summary --> Menu : VỀ TRANG CHỦ
+Summary --> Coach
 Result --> Coach
+Modes --> Member : locked mode
+BotSetup --> Member : adaptive bot locked
+Menu --> Member : GÓI THÀNH VIÊN
+Menu --> Music
 Menu --> Progress
 Menu --> History
 History --> Replay

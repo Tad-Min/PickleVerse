@@ -66,22 +66,6 @@
  {
   "controller": "Admin",
   "method": "POST",
-  "route": "/api/Admin/cms/lessons",
-  "action": "CreateLesson",
-  "access": "Admin",
-  "usedBy": "Admin web"
- },
- {
-  "controller": "Admin",
-  "method": "POST",
-  "route": "/api/Admin/cms/drills",
-  "action": "CreateDrill",
-  "access": "Admin",
-  "usedBy": "Admin web"
- },
- {
-  "controller": "Admin",
-  "method": "POST",
   "route": "/api/Admin/cms/cosmetics",
   "action": "CreateCosmetic",
   "access": "Admin",
@@ -241,6 +225,14 @@
  },
  {
   "controller": "Auth",
+  "method": "GET",
+  "route": "/api/Auth/session",
+  "action": "Session",
+  "access": "Player",
+  "usedBy": "Admin web, Game client"
+ },
+ {
+  "controller": "Auth",
   "method": "POST",
   "route": "/api/Auth/logout",
   "action": "Logout",
@@ -277,6 +269,14 @@
   "route": "/api/Admin/cms/lessons/{id:int}",
   "action": "Get",
   "access": "Admin",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Content",
+  "method": "POST",
+  "route": "/api/Admin/cms/lessons",
+  "action": "Create",
+  "access": "Admin",
   "usedBy": "Admin web"
  },
  {
@@ -285,7 +285,31 @@
   "route": "/api/Admin/cms/lessons/{id:int}",
   "action": "Save",
   "access": "Admin",
-  "usedBy": "Admin web"
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Content",
+  "method": "POST",
+  "route": "/api/Admin/cms/lessons/{id:int}/drills",
+  "action": "AddDrill",
+  "access": "Admin",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Content",
+  "method": "PUT",
+  "route": "/api/Admin/cms/lessons/{id:int}/drills/{drillId:int}",
+  "action": "SaveDrill",
+  "access": "Admin",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Content",
+  "method": "DELETE",
+  "route": "/api/Admin/cms/lessons/{id:int}/drills/{drillId:int}",
+  "action": "DeleteDrill",
+  "access": "Admin",
+  "usedBy": "Not called"
  },
  {
   "controller": "Content",
@@ -397,7 +421,7 @@
   "route": "/api/Server/{lease}/replay",
   "action": "Replay",
   "access": "Service key",
-  "usedBy": "Game server"
+  "usedBy": "Not called"
  },
  {
   "controller": "DedicatedWorker",
@@ -405,7 +429,15 @@
   "route": "/api/Server/{lease}/replay/chunks/{index:int}",
   "action": "Chunk",
   "access": "Service key",
-  "usedBy": "Game server"
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "DedicatedWorker",
+  "method": "POST",
+  "route": "/api/Server/{lease}/replay/chunks/batch",
+  "action": "ReplayBatch",
+  "access": "Service key",
+  "usedBy": "Not called"
  },
  {
   "controller": "Economy",
@@ -776,6 +808,38 @@
   "usedBy": "Game client"
  },
  {
+  "controller": "Membership",
+  "method": "GET",
+  "route": "/api/Game/membership",
+  "action": "Read",
+  "access": "Player",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "Membership",
+  "method": "POST",
+  "route": "/api/Game/membership/checkout",
+  "action": "Checkout",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Membership",
+  "method": "POST",
+  "route": "/api/Game/membership/refresh",
+  "action": "Refresh",
+  "access": "Player",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "Membership",
+  "method": "POST",
+  "route": "/api/payments/payos/webhook",
+  "action": "Webhook",
+  "access": "Anonymous",
+  "usedBy": "Not called"
+ },
+ {
   "controller": "Missions",
   "method": "GET",
   "route": "/api/Missions",
@@ -976,6 +1040,38 @@
   "usedBy": "Admin web"
  },
  {
+  "controller": "ReplayLaunch",
+  "method": "POST",
+  "route": "/api/replay-launch/{match:guid}",
+  "action": "Issue",
+  "access": "Admin",
+  "usedBy": "Admin web, Game client"
+ },
+ {
+  "controller": "ReplayLaunch",
+  "method": "POST",
+  "route": "/api/replay-launch/redeem",
+  "action": "Redeem",
+  "access": "Anonymous",
+  "usedBy": "Game client"
+ },
+ {
+  "controller": "ReplayLaunch",
+  "method": "GET",
+  "route": "/api/replay-launch/view/{match:guid}",
+  "action": "Read",
+  "access": "Anonymous",
+  "usedBy": "Not called"
+ },
+ {
+  "controller": "ReplayLaunch",
+  "method": "GET",
+  "route": "/api/replay-launch/view/{match:guid}/chunks/{index:int}",
+  "action": "Chunk",
+  "access": "Anonymous",
+  "usedBy": "Not called"
+ },
+ {
   "controller": "Replays",
   "method": "POST",
   "route": "/api/Replays/save",
@@ -989,7 +1085,7 @@
   "route": "/api/Replays/{matchId}",
   "action": "GetReplay",
   "access": "Player",
-  "usedBy": "Admin web"
+  "usedBy": "Not called"
  },
  {
   "controller": "RoomInvitations",
@@ -1006,6 +1102,14 @@
   "action": "Friends",
   "access": "Player",
   "usedBy": "Game client"
+ },
+ {
+  "controller": "RoomInvitations",
+  "method": "GET",
+  "route": "/api/Game/lobby/rooms/{code}",
+  "action": "JoinInfo",
+  "access": "Player",
+  "usedBy": "Not called"
  },
  {
   "controller": "RoomInvitations",

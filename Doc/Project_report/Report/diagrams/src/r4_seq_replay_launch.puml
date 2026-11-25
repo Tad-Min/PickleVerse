@@ -1,0 +1,54 @@
+@startuml r4_seq_replay_launch
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Administrator as Admin
+boundary ":ReplayLaunchDialog" as W
+control ":ReplayLaunchController" as C
+control ":ReplayLaunchService" as S
+entity ":ReplayLaunchRepository" as R
+boundary ":WebReplayLauncher" as Game
+Admin -> W : Xem replay
+activate W
+W -> C : Issue(match)
+activate C
+C -> S : Issue(admin, authVersion, match)
+activate S
+S -> R : Issue(code, access, 2 min)
+S --> C : pickleverse://replay/{match}?code
+deactivate S
+C --> W : ReplayLaunchLink
+deactivate C
+W -> Game : open the link (confirmed in the browser)
+deactivate W
+activate Game
+Game -> C : Redeem(code)
+activate C
+C -> S : Redeem(code)
+activate S
+S -> R : Exchange(code, view token, 2 h)
+alt expired or already used
+  S --> C : error 401 (MSG85)
+else else
+  S --> C : ReplayLaunchView (grant, metadata)
+end
+deactivate S
+C --> Game : view token
+deactivate C
+loop each chunk
+  Game -> C : Chunk(match, index)
+  activate C
+  C -> S : Chunk(token, match, index)
+  activate S
+  S -> S : Guard(admin active, same session)
+  S --> C : ReplayChunkUpload
+  deactivate S
+  C --> Game : chunk
+  deactivate C
+end
+Game --> Admin : Replay Viewer
+deactivate Game
+@enduml

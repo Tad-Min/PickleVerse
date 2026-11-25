@@ -25,13 +25,8 @@ entity "Lessons" as Lessons {
   * Description : VARCHAR(254)
   Code : VARCHAR(50)
   * SortOrder : INT
-  * Type : VARCHAR(25)
-  * Target : INT
-  * Config : JSONB
   * PublishStatus : VARCHAR(20)
-  DraftConfig : JSONB
   * ContentVersion : BIGINT
-  * Reward : JSONB
 }
 entity "Drills" as Drills {
   * DrillId : SERIAL <<PK>>
@@ -40,12 +35,15 @@ entity "Drills" as Drills {
   * DrillName : VARCHAR(254)
   * Description : VARCHAR(254)
   Code : VARCHAR(50)
+  Config : JSONB
+  DraftConfig : JSONB
 }
 entity "LessonDrills" as LessonDrills {
   * LessonId : INT <<PK, FK>>
   * DrillId : INT <<PK, FK>>
   --
   * Target : INT
+  * SortOrder : INT
 }
 entity "ContentCatalogs" as ContentCatalogs {
   * Version : VARCHAR(64) <<PK>>

@@ -30,12 +30,23 @@ Results are recorded only from real runs:
          bot fill, replay), 18/11/2026 08:24-09:02 (evidence/e2e_retest_20261118.md)
   EV-17  Defect fixes 291542a, 0cee928, 95ff4a4 and 9557581 and their retest on Windows builds with the fixes (diagnosis of
          D-29 with a temporary input probe), 18/11/2026 15:20-21:30 (evidence/bugfix_retest_20261118.md)
+  EV-18  Unity EditMode run, 25/11/2026, main @ adcb4e2 with the fixes of D-33 and D-34, 730 tests, 730 passed
+         (evidence/editmode_results_20261125_adcb4e2.json)
+  EV-19  GitHub Actions run 103 (id 45550426329), 25/11/2026 12:12-12:24 (UTC+7), main @ adcb4e2: 16 IntegrationChecks groups (adds
+         single-session), dedicated-server build, publish and deployment succeeded; history of the 51 runs since 18/11/2026
+         (evidence/ci_runs_20261125.json)
+  EV-20  End-to-end run on the Windows build of main @ adcb4e2 with two member accounts, public probes of staging and a read-only pass
+         through the admin web, 25/11/2026 13:35-14:20 (evidence/e2e_run_20261125.md)
+  EV-21  Court probe of the surrender, 25/11/2026 16:50, Windows player of main @ adcb4e2 with the fixes of D-33 and D-34: the real
+         court scene, HUD and NetworkMatch on one Fusion runner without server and account, messages of the other seats injected
+         (evidence/surrender_probe_20261125.md)
 Every other case is Pending, with the reason in the Note column.
 """
 
 HUY, DAT = "Nguyễn Gia Huy", "Nguyễn Văn Thành Đạt"
 D10, D11, D09, D12, D13 = "10/11/2026", "11/11/2026", "09/11/2026", "12/11/2026", "13/11/2026"
 D16, D17, D18 = "16/11/2026", "17/11/2026", "18/11/2026"
+D25 = "25/11/2026"
 
 SHEETS = [
     ("FE01 Account", "FE-01 Account and onboarding", "FR-01 to FR-05: registration, verification, sign-in, profile, settings"),
@@ -45,6 +56,7 @@ SHEETS = [
     ("FE05 Coaching", "FE-05 AI coaching", "FR-19: coaching summary and recommendations"),
     ("FE06 Progress", "FE-06 Progress, rewards and shop", "FR-20 to FR-23: XP, missions, streaks, shop and collection"),
     ("FE07 Social", "FE-07 History, social and ranking", "FR-10, FR-24 to FR-26, FR-34, FR-35: progress, history, match detail, replay, friends, leaderboard, feed and messages"),
+    ("FE11 Membership", "FE-11 Membership", "FR-36: offer, payment, activation and locks"),
     ("FE08-09 Admin", "FE-08/FE-09 Moderation and administration", "FR-27 to FR-32: reports, appeals, users, content, matches, analytics"),
     ("FE10 Expert", "FE-10 Expert review", "FR-33: expert labelling and dataset export"),
     ("Workflows", "End-to-end workflows W01–W04", "Acceptance scenarios of the Review 2 commitment"),
@@ -383,6 +395,93 @@ for sid, title, items in S:
               "The entity is in the target state and the change is recorded; invalid events leave the state unchanged.", "Seeded staging or local database",
               note="Not run: not covered by the IntegrationChecks groups of the CI validate job (EV-08, EV-11); needs a new check or seeded staging data.")
 
+# ------------------------------------------------------------------ Changes of 18–25/11/2026
+PASS_25 = dict(status="Passed", date=D25, tester=HUY)
+CI_25 = dict(status="Passed", date=D25, tester="GitHub Actions (CI)")
+C("TC-F01-09", "FE01 Account", "FR-02", "Integration", "Rule", "Signing in on a second device ends the first session",
+  "Automated: sign in twice with the same account, use the first access and refresh token, sign out with an old token, sign in four times in parallel.",
+  "The first access and refresh token are refused; other accounts are not affected; a delayed sign-out of the replaced device cannot end the new session; after parallel sign-ins exactly one session is valid (BR-62).", "Fresh database",
+  auto="IntegrationChecks --check-single-session (CI validate job)", note="EV-19.", **CI_25)
+C("TC-F01-10", "FE01 Account", "FR-02", "System", "Exception", "The replaced device returns to the login screen",
+  "1. Sign in on PC 1.\n2. Sign in with the same account on PC 2.\n3. Watch PC 1.", "PC 1 shows MSG84 on the Login screen within a few seconds; PC 2 keeps working.", "One account, two devices",
+  note="Not run: one device per account needs a second device or a second password entry by the account owner.")
+C("TC-F06-04", "FE05 Coaching", "FR-19", "System", "Main", "Analysis after a bot match",
+  "1. Play a bot match (Easy) to the end.\n2. Wait on the result screen.\n3. Select Xem phân tích AI.",
+  "The button changes to \"Xem phân tích AI\" without reopening the screen; the panel shows the number of shots, clean shots, rate and faults, every fault with one piece of advice and the recommended drills.", "Signed-in player, staging",
+  note="EV-20 (25/11, 13:51): 28 shots, 19 clean (68%), 9 faults (Đánh hụt 7/28, Bóng nảy hai lần 2/28), drills \"Giao bóng đúng ô\" and \"Đánh bạt về cuối sân\". The figures are those of the engine; D-37 questions two of them.", **PASS_25)
+C("TC-F07-05", "FE04 Online", "FR-14", "System", "Exception", "Nobody accepts the ready check",
+  "1. Two members search ranked 1v1.\n2. Let the ready check expire on both clients.",
+  "Both clients show the match-found intro and the countdown, then return to the lobby with a message; no Elo changes.", "Two member accounts with similar Elo",
+  note="EV-20 (25/11): Elo 114 and 117 matched after about 31 s; \"Lượt xác nhận đã kết thúc. Bạn có thể tìm trận lại.\"; Elo unchanged.", **PASS_25)
+C("TC-F07-06", "FE04 Online", "FR-14", "Unit", "Rule", "The intro never shortens the time to decide",
+  "Run the ready-check overlay and choreography tests.", "The buttons wait for the intro when the server grants the grace, and the intro ends within three seconds of its start; the decision time stays 10 s.", "–",
+  auto=EM + "MatchReadyOverlayRulesTests.ControlsWaitForTheIntroWhenTheServerGrantsGrace, ControlsNeverEatIntoDecisionTime; MatchFoundChoreographyTests.HitsBulletTimeAndLockHappenInOrderWithinThreeSeconds", note="EV-18", **PASS_25)
+C("TC-F08-05", "FE04 Online", "FR-15", "System", "Main", "Two players swap positions in a private room",
+  "1. Host and guest are in a 1v1 room.\n2. The host selects the position button of the guest and confirms.\n3. The guest selects Đồng ý.", "Both clients show the swapped teams (BR-63).", "Two member accounts",
+  note="EV-20 (25/11): request and answer dialogs shown, seats swapped on both clients.", **PASS_25)
+C("TC-F08-06", "FE04 Online", "FR-15", "System", "Exception", "The host leaves a private room",
+  "1. Host and guest are in a room.\n2. The host selects CHỌN CHẾ ĐỘ.", "The guest becomes the host and the room stays open with the same code.", "Two member accounts",
+  note="EV-20 (25/11): \"Bạn là chủ phòng.\", same room code.", **PASS_25)
+C("TC-F09-04", "FE04 Online", "FR-12, FR-16", "Unit", "Rule", "Referee calls from the point of view of the reader",
+  "Run the rally call tests.", "Own fault: red MẤT LƯỢT; opponent fault: green call that follows side-out scoring; doubles names the team and the second server; the text stays still for about 1.5 s.", "–",
+  auto=EM + "RallyCallTests (5 tests)", note="EV-18", **PASS_25)
+C("TC-F09-05", "FE04 Online", "FR-12, FR-16", "System", "Main", "The same fault is announced differently to both players",
+  "1. Two players are in an online match.\n2. Each of them lets the serve timer expire once.", "The player at fault sees the red call, the opponent the green call, with the right consequence (MSG30).", "Two member accounts",
+  note="EV-20 (25/11): four serve time-outs, calls correct on both clients (screenshots/50).", **PASS_25)
+C("TC-F09-06", "FE04 Online", "FR-17", "System", "Exception", "Giving up a running singles match asks for a confirmation",
+  "1. In an online singles match select Đầu hàng.\n2. Select TIẾP TỤC ĐẤU.\n3. Select Đầu hàng again and confirm with ĐẦU HÀNG.",
+  "Step 1 opens a box with the consequence and ends nothing; step 2 closes it; step 3 ends the match, the player loses (Thua · Đầu hàng, no reward), the opponent wins and both see the summary (BR-66).", "Online match in progress",
+  note="Failed in EV-20 (25/11): the former button Rời trận forfeited the match at once (D-34). Fixed on 25/11; the three steps passed in the court probe EV-21 (one PC, no server). Retest on staging with the next release.")
+C("TC-F09-07", "FE04 Online", "FR-16, FR-18", "Integration", "Rule", "The result of a dedicated match is published with its sealed replay",
+  "Automated: upload replay batches, complete the match before and after the recording is sealed, repeat batches.", "The result is withheld until the replay is complete; repeated batches are stored once; the sealed replay has every chunk.", "Fresh database, replay storage of the test",
+  auto="IntegrationChecks --check-dedicated (CI validate job)", note="EV-19.", **CI_25)
+C("TC-F09-08", "FE04 Online", "FR-17", "Unit", "Rule", "Surrender requests follow the rules of a team",
+  "Run the surrender tests (server rules and the box of every player on simulated clients).",
+  "Singles needs one confirmation, doubles both; the box opens for both partners at once and never for the opponents; refusal, withdrawal, timeout, waiting time, disconnected partner and silent server are handled; bots and strangers cannot answer; the result is labelled Thua · Đầu hàng.", "–",
+  auto=EM + "SurrenderTests (20 tests)", note="EV-18; server rules and box of D-34.", **PASS_25)
+C("TC-F09-09", "FE04 Online", "FR-17", "System", "Main", "Two partners surrender a doubles match together",
+  "1. In a 2v2 match partner A selects Đầu hàng.\n2. B refuses.\n3. After 15 s A asks again; A confirms, B confirms.",
+  "Step 1 shows the box to A and B, nothing to the opponents; step 2 tells A and the match goes on; step 3 ends the match, A and B lose, the opponents win (BR-66).", "Four accounts, or a party of two against ranked bots",
+  note="Not run on staging: the match server with the request is not released yet. The steps passed in the court probe EV-21 with the partner's messages injected.")
+C("TC-F09-10", "FE04 Online", "FR-17, FR-18", "Integration", "Rule", "A surrendered dedicated match is stored as a rated loss without reward",
+  "Automated: complete a dedicated doubles match with the surrender result of both partners, then with another reason text.",
+  "Both partners: loss, Elo change, unchanged Tokenpad, label Thua · Đầu hàng; another text is stored as the general forfeit reason.", "Fresh database",
+  note="Not run: the check was added to the group ranked-doubles on 25/11/2026 and runs in the pipeline with the next push.")
+C("TC-F11-06", "FE07 Social", "FR-24", "System", "Main", "The replay of an online match is available at once",
+  "1. Finish an online match.\n2. Lịch sử → Xem replay of this match.", "The replay opens directly after the match and plays with pause, seek and speed.", "Two member accounts",
+  note="EV-20 (25/11): replay of the private-room match of 13:57 opened and played; the court shown is not the court of the match (D-35).", **PASS_25)
+C("TC-F04-04", "FE06 Progress", "FR-22", "Unit", "Exception", "Shop items without a model in this build do not stop the client",
+  "Run the catalogue merge tests.", "Unknown, empty and missing item codes are skipped; known items take title and price from the server; items that are not sold are hidden.", "–",
+  auto=EM + "CatalogMergeTests (2 tests)", note="EV-18; verifies the client part of D-33.", **PASS_25)
+C("TC-F04-05", "FE06 Progress", "FR-22, FR-31", "Integration", "Exception", "An item added in the CMS without game configuration is not sent to the clients",
+  "Automated: add a cosmetic with the code paddle.cms-… and the default configuration, read the game catalogue.", "The catalogue contains no item without an id; the other items are unchanged.", "Fresh database",
+  note="Not run: the check was added to the group content with the fix of D-33 on 25/11/2026 and runs in the pipeline with the next push.")
+C("TC-F16-04", "FE08-09 Admin", "FR-31", "Integration", "Main", "A lesson holds several drills that are published together",
+  "Automated: create a lesson, add two drills, publish, edit a draft, publish again, unpublish.", "Drafts are absent from the player catalogue; after publishing both drills appear in order; attempts keep their snapshot.", "Fresh database",
+  auto="IntegrationChecks --check-content (CI validate job)", note="EV-19.", **CI_25)
+C("TC-F17-04", "FE08-09 Admin", "FR-30", "Unit", "Exception", "A replay link opens only its own replay",
+  "Run the replay link tests.", "Other protocols, extended or ambiguous links are refused; the view token reads one match without account authentication; expired or disposed tokens cannot read.", "–",
+  auto=EM + "WebReplayTests (6 tests); WindowsReplayBridgeTests (2 tests)", note="EV-18", **PASS_25)
+C("TC-F17-05", "FE08-09 Admin", "FR-30", "System", "Main", "Open the replay of a reported match from the admin web",
+  "1. Moderation → Xem replay on a report.\n2. Confirm the browser dialog.\n3. Use the same link again.", "The game opens the Replay Viewer of this match without changing the signed-in account; the second use shows MSG85.", "Admin account, Windows game installed",
+  note="Not run. The report row shows Xem replay (EV-20); the server part is in IntegrationChecks --check-replay-launch, which is not in the pipeline (D-49).")
+C("TC-F20-01", "FE11 Membership", "FR-36", "System", "Main", "The membership panel of a member",
+  "1. Menu → THÀNH VIÊN.", "Price and bonus from the server, the three benefits, \"Gói thành viên đang hoạt động.\" and the disabled button ĐÃ KÍCH HOẠT.", "Member account",
+  note="EV-20 (25/11): 49.000 đ, +3.000 Elite Token, ĐÃ KÍCH HOẠT (screenshots/48).", **PASS_25)
+C("TC-F20-02", "FE11 Membership", "FR-36", "System", "Exception", "A player without membership meets the locks",
+  "1. Sign in with an account without membership.\n2. Select Đấu online, Tạo phòng and the bot level Tự động.", "The cards carry a lock; each choice opens the membership panel with MSG79; Easy, Medium, Hard, training and the shop stay usable.", "Account without membership",
+  note="Not run: no account without membership was signed in during EV-20.")
+C("TC-F20-03", "FE11 Membership", "FR-36", "System", "Main", "Buy the membership",
+  "1. MUA NGAY; pay 49,000 VND on the PayOS page.\n2. Return to the game.", "MSG83, +3,000 Elite Token once, the locks disappear without a restart; the order is PAID.", "Account without membership; a payment with real money by its owner",
+  note="Not run: PayOS moves real money on staging (Report 1, LI-14); the account owner must pay.")
+C("TC-F20-04", "FE11 Membership", "FR-36", "System", "Exception", "An unsigned payment notification is refused",
+  "POST /api/payments/payos/webhook with an empty body and no signature.", "HTTP 403, nothing is stored or activated.", "Staging",
+  note="EV-20 (25/11, 13:40): 403 \"Chữ ký PayOS không hợp lệ.\"", **PASS_25)
+C("TC-F20-05", "FE11 Membership", "FR-36", "Integration", "Rule", "Order, signature, amount, partial payment and permissions",
+  "Automated: public PayOS signature vector, forged webhook, wrong amount, partial and late payment, two parallel checkouts, member and non-member calls to rooms, matches and the adaptive bot.",
+  "BR-58 to BR-60 hold; the Elite Token is credited once; every locked action of a non-member is refused with MSG79.", "Fresh database and Redis",
+  note="Not run in the pipeline: the group membership of IntegrationChecks exists but is not in the validate job (D-49), and no local database was available on 25/11/2026.")
+
 # ------------------------------------------------------------------ NFR
 NFR = [("NFR-01", "Usability test with 10 first-time students", "≥ 8 of 10 finish the tutorial in ≤ 5 min and pass the serve lesson within 3 attempts"),
        ("NFR-02", "RTT over 10 online matches from Ho Chi Minh City", "p95 RTT ≤ 100 ms"),
@@ -437,6 +536,23 @@ DEFECTS = [
     ("D-30", "Custom room matches give no XP (MatchResult.Eligible excludes custom matches), while BR-32 says that every finished match gives 10 XP for a win and 5 XP for a loss", "Requirement", "Low", "TC-F08-04", D18, "Kiên"),
     ("D-31", "The referee banner of the bot match shows the technical fault codes \"PermanentObject\" and \"DoubleHit\" instead of a Vietnamese text", "UI text", "Low", "TC-F05-01", D18, "Huy"),
     ("D-32", "After an appeal is accepted, Làm mới in Quyết định và khiếu nại returns to the login screen that still shows the old text \"Tài khoản đang bị hạn chế. Bạn có thể xem quyết định và gửi khiếu nại.\"; signing in again works", "UI message", "Low", "TC-W04", D18, "Thuận"),
+    ("D-33", "A shop item that the client build does not know stops the game for every player: OnlinePlayerEconomy.ApplyCatalog throws inside ProgressionRuntime.Changed, so the profile load and every command fail. One item with a code starting with \"paddle.\" added in the CMS (UC-60), or an item of a newer build, is enough; the CMS cannot delete it", "Functional", "Critical", "TC-F04-04", D25, "Huy"),
+    ("D-34", "The court button Rời trận forfeits a running online match at once; the confirmation of FR-17 is shown only when leaving through the settings, so a mis-click costs Elo in a ranked match", "Functional", "High", "TC-F09-06", D25, "Đạt"),
+    ("D-35", "The Replay Viewer shows the old stadium court, not the court, light and crowd of the match that was played", "Functional", "Medium", "TC-F11-06", D25, "Huy"),
+    ("D-36", "Analytics: \"Hủy sau ghép\" counts every search whose ticket is closed after the match (37 of 37 matched searches on staging), so the figure says that all matches were cancelled", "Functional", "Medium", "TC-F18-01", D25, "Đạt"),
+    ("D-37", "Coaching figures mislead: serve time-outs are counted as shots, and a swing in a rally that is lost by a rule fault (ball past the player to the fence, body hit) counts as a clean shot – 68% clean shots in a 0–2 loss without a point", "Business rule", "Medium", "TC-F06-04", D25, "Đạt"),
+    ("D-38", "Match history names the opponent of a bot match with the internal account name (player9034cf523f53) instead of Bot", "UI text", "Low", "TC-F11-02", D25, "Huy"),
+    ("D-39", "Private room: most player cards show a silhouette; the portrait appears only for the local player in slot B and changes with the swap", "UI", "Low", "TC-F08-05", D25, "Huy"),
+    ("D-40", "The friends column keeps the button MỜI for a friend who already is in the room", "UI", "Low", "TC-F08-01", D25, "Đạt"),
+    ("D-41", "Private room: when the ready check expires the guest reads \"Một người đã hủy tìm trận.\" although nobody searched", "UI text", "Low", "TC-F08-01", D25, "Đạt"),
+    ("D-42", "Singles online HUD shows the doubles serving order (\"NGƯỜI 1 · LƯỢT 2\")", "UI text", "Low", "TC-F09-05", D25, "Đạt"),
+    ("D-43", "Shop detail: the footer text is cut at 960 × 540 and the Gemstone paddle has no description of its ball effect", "UI", "Low", "TC-F04-01", D25, "Huy"),
+    ("D-44", "A ball that the receiver does not return is announced as \"Bóng chạm vật cố định ngoài sân\" when it reaches the fence before the second bounce; a beginner cannot see what went wrong", "Usability", "Low", "TC-F05-01", D25, "Huy"),
+    ("D-45", "Admin match history shows the match ID, the kind in English and the games only: no players, no winner and no reason (0 : 0 for forfeits and stops), and it cannot be searched", "Usability", "Medium", "TC-F18-03", D25, "Kiên"),
+    ("D-46", "BR-24 pairs two waiting players with different Elo only after 30 seconds, because the window of the lower one extends upwards and that of the higher one does not extend downwards; average wait 19.6 s and P95 34.9 s with two players online", "Business rule", "Medium", "TC-F07-03", D25, "Đạt"),
+    ("D-47", "A match of two inactive players goes on until the server limit of two hours and then ends as interrupted: the serve passes every 10 seconds, no score changes and the game-server container stays occupied", "Functional", "Medium", "TC-F09-05", D25, "Đạt"),
+    ("D-48", "The Dragon Ruby paddle is in the build and in Database.sql but not on sale on staging, because the deployment does not change the database (Report 2, risk 17)", "DevOps", "Medium", "TC-F04-01", D25, "Đạt"),
+    ("D-49", "The IntegrationChecks groups membership and replay-launch are not run by the pipeline, so the payment path has no automatic regression test", "DevOps", "Medium", "CI history (EV-19)", D25, "Đạt"),
 ]
 # Defects fixed in code after Round 1: commit on main and verification (EV-07). They are closed only after the Round 2 retest on staging.
 DEFECT_FIX = {
@@ -453,6 +569,7 @@ DEFECT_FIX = {
     "D-11": "95ff4a4",
     "D-02": "9557581", "D-06": "9557581", "D-10": "9557581, 329810f", "D-14": "9557581", "D-22": "9557581",
     "D-27": "9557581", "D-29": "9557581", "D-31": "9557581",
+    "D-33": "fix of 25/11/2026", "D-34": "fix of 25/11/2026",
 }
 # How each fix was checked (shown with the defect list).
 DEFECT_CHECK = {
@@ -462,14 +579,16 @@ DEFECT_CHECK = {
     "D-03": "Checked in Play Mode (EV-07); on the Windows build of 96ff8e9 (EV-15) the key-hint box stays below the player in training and online matches; the bot match was not retested",
     "D-14": "EV-17: after a room match and after a ranked 1v1 the lobby shows \"Trận đã kết thúc.\"; in these runs the dedicated server did not leave while the players read the summary, so the branch for a planned server stop was checked by code review only",
     "D-23": "The new condition was checked by review; the runs of 18/11/2026 ran every check and deployed, so the skipped-check case has not occurred since the fix",
-    "D-31": "Vietnamese names added in BotMatch.FaultText; no banner with these faults occurred in the bot matches of EV-17, so the fix was checked by code review",
+    "D-31": "Vietnamese names added in BotMatch.FaultText; no banner with these faults occurred in the bot matches of EV-17, so the fix was checked by code review; in EV-20 (25/11) the fault PermanentObject was shown as \"Bóng chạm vật cố định ngoài sân\", DoubleHit has not occurred",
+    "D-34": "The court button is now Đầu hàng with a confirmation box; in doubles both partners have to confirm within 20 s (BR-66). Checked by 20 EditMode tests (SurrenderTests, EV-18) and by the court probe EV-21 (36 checks); the database check in ranked-doubles runs with the next push, the retest on staging (TC-F09-06, TC-F09-09) with the next release. Leaving in the settings keeps its own dialog",
+    "D-33": "The client skips items without a model (OnlinePlayerEconomy.Merge; EditMode tests CatalogMergeTests, EV-18) and the API withholds items without game configuration (GameRepository.Catalog; new check in the group content, runs with the next push). Builds older than the fix still fail when the server sells an item they do not know, so a new item must be added to the database only after every player has the new build",
 }
 
 
 # Defects with a state other than Open or Fixed: (state, date, explanation).
 DEFECT_STATE = {
     "D-22": ("Partly fixed", D18, "Commit 9557581 adds the native Windows open-file dialog; in EV-17 an MP4 was uploaded, played and deleted from the Windows build. The Android build still cannot pick a video and says that the upload is available on Windows"),
-    "D-12": ("As designed", D18, "Report 3 BR-36 states that Elite Token has no earning source in release 1.0; GEMSTONE is granted at level 25, which is reachable since the XP curve of b08f5c7 (D-20). No change is planned for release 1.0"),
+    "D-12": ("As designed", D18, "GEMSTONE is granted at level 25, which is reachable since the XP curve of b08f5c7 (D-20). Since 22/11/2026 Elite Token is credited with the membership (3,000 tokens, BR-58); a player without membership still has no source, as stated in Report 1 LI-02"),
     "D-17": ("Partly fixed", D13, "Commit be556a1 emptied the credential values in appsettings.json and removed the fallback JWT key from Program.cs (the API now refuses to start without a key of at least 32 bytes). The old values are still readable in the Git history of the public repository, so they must be rotated on staging and the rotation confirmed"),
 }
 
@@ -498,6 +617,8 @@ DEFECT_CLOSED = {
     "D-28": (D18, "Resolved by requirement change: Report 3 v1.5 states the implemented forfeit rule in BR-28 and FR-17; TC-F09-03 passed against it in EV-17"),
     "D-29": (D18, "Retested in EV-17: after the host closed the party the guests kept the summary, then returned to the room or to the menu normally"),
     "D-30": (D18, "Resolved by requirement change: Report 3 v1.5 BR-32 states that custom room matches give no XP or Tokenpad"),
+    "D-23": (D25, "Retested in EV-19: run 103 skipped the FastAPI and admin web checks and its deploy job succeeded; the same in the other passing runs since 18/11/2026"),
+    "D-14": (D25, "Retested in EV-20: after the opponent left, the dedicated server stopped while the player read the outcome and the summary; the summary stayed and the room was reached normally"),
 }
 
 
@@ -695,6 +816,14 @@ _BY_ID["TC-F14-01"]["note"] += " EV-17 (18/11/2026): the offline banner no longe
 _BY_ID["TC-F15-01"]["note"] += " EV-17: the header shows the real API origin (D-25 closed)."
 _BY_ID["TC-F06-01"]["note"] += " EV-17: the summary and the recommendations now name their scope (D-11 closed)."
 _BY_ID["TC-W03"]["note"] += " EV-17: after a normal ranked result the lobby shows \"Trận đã kết thúc.\" (D-14 fixed)."
+
+
+E20 = "EV-20 (25/11): "
+_BY_ID["TC-F11-04"].update(status="Passed", date=D25, tester=HUY, note="EV-18: the three cases pass (the test assemblies compile since 291542a). Checked by hand in EV-15 (17/11).")
+_BY_ID["TC-W02"]["note"] += " " + E20 + "a bot match was played to the end on the Windows build and its analysis was shown (TC-F06-04)."
+_BY_ID["TC-F08-01"]["note"] += " " + E20 + "room 1v1 by invitation, ready check, dedicated match and summary with two accounts."
+_BY_ID["TC-F15-01"]["note"] += " " + E20 + "dashboard and users page after the redesign of 20–22/11/2026."
+_BY_ID["TC-F18-01"]["note"] += " " + E20 + "the report loads on staging; the figure Hủy sau ghép is wrong (D-36)."
 
 
 def stats():

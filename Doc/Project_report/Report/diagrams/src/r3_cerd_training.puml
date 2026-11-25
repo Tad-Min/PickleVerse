@@ -19,6 +19,8 @@ entity "DRILL" as DRILL {
   * DrillId
   --
   Code
+  PublishedConfig
+  DraftConfig
 }
 entity "PLAYER_PROFILE" as PLAYER_PROFILE {
   * PlayerId
@@ -30,7 +32,7 @@ entity "TRAINING_ATTEMPT" as TRAINING_ATTEMPT {
   Accuracy
   Completed
 }
-LESSON }o--o{ DRILL : "contains"
+LESSON }o--o{ DRILL : "contains (Target, SortOrder)"
 DRILL }o--|| TECHNIQUE : "practises skill"
 PLAYER_PROFILE ||--o{ TRAINING_ATTEMPT : "makes"
 TRAINING_ATTEMPT }o--|| DRILL : "uses"

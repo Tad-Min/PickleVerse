@@ -1,0 +1,65 @@
+@startuml r4_seq_surrender
+!include _style.iuml
+autonumber
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipant underline
+hide footbox
+
+actor Player
+boundary ":SurrenderPanel\n(player)" as PA
+control ":NetworkMatch\n(match server)" as S
+control ":SurrenderDesk" as D
+boundary ":SurrenderPanel\n(partner)" as PB
+actor Partner
+Player -> PA : Đầu hàng
+activate PA
+PA -> S : AskToSurrender() : surrender-ask
+activate S
+S -> D : Ask(player)
+activate D
+alt the partner is offline or the team asked less than 15 s ago
+  D --> S : Closed(player, reason)
+  S --> PA : surrender-end
+else else
+  D --> S : Opened(player), Opened(partner)
+  deactivate D
+  S --> PA : surrender-open (20 s)
+  S -> PB : surrender-open (20 s)
+  activate PB
+  deactivate S
+  Player -> PA : ĐẦU HÀNG
+  PA -> S : AgreeToSurrender() : surrender-agree
+  activate S
+  S -> D : Agree(player)
+  activate D
+  D --> S : Opened(both, agreed)
+  deactivate D
+  S --> PA : surrender-open (waiting for the partner)
+  deactivate S
+  alt the partner confirms
+    Partner -> PB : ĐẦU HÀNG
+    PB -> S : AgreeToSurrender() : surrender-agree
+    activate S
+    S -> D : Agree(partner)
+    activate D
+    D --> S : Surrendered(team, players)
+    deactivate D
+    S -> S : SurrenderTeam(team, players) / Rules.Forfeit(team), Finish()
+    S --> PA : match finished
+    S --> PB : match finished
+    deactivate S
+  else the partner refuses, the player withdraws, 20 s pass or a connection is lost
+    PB -> S : RefuseToSurrender() : surrender-refuse
+    activate S
+    S -> D : Refuse(partner) / Tick() / Disconnected(player)
+    activate D
+    D --> S : Closed(both, reason)
+    deactivate D
+    S --> PA : surrender-end
+    S --> PB : surrender-end
+    deactivate S
+  end
+end
+deactivate PB
+deactivate PA
+@enduml

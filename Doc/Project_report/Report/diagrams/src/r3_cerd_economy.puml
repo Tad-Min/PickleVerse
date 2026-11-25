@@ -27,9 +27,19 @@ entity "ACHIEVEMENT" as ACHIEVEMENT {
   --
   Target
 }
+entity "MEMBERSHIP_ORDER" as MEMBERSHIP_ORDER {
+  * OrderCode
+  --
+  AmountVnd
+  EliteTokenBonus
+  Status
+  ExpiresAt
+  PaidAt
+}
 PLAYER_PROFILE }o--o{ CURRENCY : "holds (Balance)"
 COSMETIC }o--o{ CURRENCY : "priced in (Price)"
 PLAYER_PROFILE }o--o{ COSMETIC : "owns (Equipped)"
 PLAYER_PROFILE }o--o{ MISSION : "progresses (PeriodKey, Progress, Claimed)"
 PLAYER_PROFILE }o--o{ ACHIEVEMENT : "earns (Progress, Claimed)"
+PLAYER_PROFILE ||--o{ MEMBERSHIP_ORDER : "places"
 @enduml
