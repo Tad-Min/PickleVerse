@@ -9,12 +9,14 @@ import {
   AssignRoleRequest,
   AuthResponse,
   BanUserRequest,
-  CreateCosmeticRequest,
   CreateMissionRequest,
   LoginRequest,
   PlayerAuthResponse,
   MatchItemDto,
   ReviewReportRequest,
+  SaveShopItemRequest,
+  ShopItem,
+  ShopItems,
 } from '../types/api';
 
 export const adminApi = {
@@ -81,10 +83,24 @@ export const adminApi = {
   },
 
   // W02 - Content CMS
-  createCosmetic: async (data: CreateCosmeticRequest): Promise<{ cosmeticId: number; message: string }> => {
-    if (isMockMode) return mockAdminApi.createCosmetic(data);
-    const res = await apiClient.post<{ cosmeticId: number; message: string }>('/api/Admin/cms/cosmetics', data);
-    return res.data;
+  getShopItems: async (): Promise<ShopItems> => {
+    if (isMockMode) return mockAdminApi.getShopItems();
+    return (await apiClient.get<ShopItems>('/api/Admin/cms/cosmetics')).data;
+  },
+
+  createShopItem: async (data: SaveShopItemRequest): Promise<ShopItem> => {
+    if (isMockMode) return mockAdminApi.createShopItem(data);
+    return (await apiClient.post<ShopItem>('/api/Admin/cms/cosmetics', data)).data;
+  },
+
+  updateShopItem: async (cosmeticId: number, data: SaveShopItemRequest): Promise<ShopItem> => {
+    if (isMockMode) return mockAdminApi.updateShopItem(cosmeticId, data);
+    return (await apiClient.put<ShopItem>(`/api/Admin/cms/cosmetics/${cosmeticId}`, data)).data;
+  },
+
+  deleteShopItem: async (cosmeticId: number): Promise<void> => {
+    if (isMockMode) return mockAdminApi.deleteShopItem(cosmeticId);
+    await apiClient.delete(`/api/Admin/cms/cosmetics/${cosmeticId}`);
   },
 
   createMission: async (data: CreateMissionRequest): Promise<{ missionId: number; message: string }> => {

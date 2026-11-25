@@ -6,11 +6,14 @@ import {
   AssignRoleRequest,
   AuthResponse,
   BanUserRequest,
-  CreateCosmeticRequest,
   CreateMissionRequest,
   LoginRequest,
   MatchItemDto,
   ReviewReportRequest,
+  SaveShopItemRequest,
+  ShopItem,
+  ShopItems,
+  ShopSkin,
 } from '../types/api';
 
 const makeDate = (daysAgo: number, hoursAgo = 0) =>
@@ -40,6 +43,21 @@ let reports: AdminReportDto[] = [
 ];
 
 let nextCosmeticId = 12;
+const demoSkins: ShopSkin[] = [
+  { code: 'paddle.gemstone', title: 'GEMSTONE', description: 'Viền đá quý, sắc vàng và mặt carbon.', collection: 'BỘ SƯU TẬP TINH ANH', premium: true },
+  { code: 'paddle.thot', title: 'THOT', description: 'Hoa văn nổi bật cho phong cách thi đấu riêng.', collection: 'BỘ SƯU TẬP DẤU ẤN', premium: false },
+  { code: 'paddle.dragonruby', title: 'DRAGON RUBY', description: 'Rồng phương Đông chạm nổi trên mặt sơn mài đen.', collection: 'BỘ SƯU TẬP TINH ANH', premium: true },
+];
+const demoItem = (cosmeticId: number, data: SaveShopItemRequest): ShopItem => ({
+  cosmeticId, ...data, releaseOrder: 0, owners: 0, state: data.tokenpadPrice > 0 || data.elitePrice > 0 ? 'OnSale' : 'Stopped', issue: null, canEdit: true, canDelete: false,
+});
+let shopItems: ShopItem[] = [
+  { ...demoItem(1, { code: 'paddle.default', title: 'PICKLEVERSE', description: 'Vợt mặc định của PickleVerse.', collection: 'BỘ SƯU TẬP NGUYÊN BẢN', tokenpadPrice: 0, elitePrice: 0, premium: false }), state: 'Default', owners: 128, canEdit: false },
+  { ...demoItem(2, { ...demoSkins[0], tokenpadPrice: 0, elitePrice: 650 }), releaseOrder: 2, owners: 9 },
+  { ...demoItem(3, { ...demoSkins[1], tokenpadPrice: 900, elitePrice: 250 }), releaseOrder: 1, owners: 31 },
+  { ...demoItem(11, { code: 'PADDLE_CYBER_2026', title: 'Vợt Cyber', description: '', collection: '', tokenpadPrice: 0, elitePrice: 0, premium: false }),
+    state: 'Incomplete', issue: 'Mã không bắt đầu bằng "paddle." nên game không đọc.', canEdit: false, canDelete: true },
+];
 let nextMissionId = 16;
 
 const waitForDemo = <T,>(value: T): Promise<T> =>
@@ -97,7 +115,23 @@ export const mockAdminApi = {
     return waitForDemo({ message: 'Đã xác thực email demo.' });
   },
 
-  createCosmetic: async (data: CreateCosmeticRequest) => waitForDemo({ cosmeticId: nextCosmeticId++, message: `Đã tạo vật phẩm “${data.cosmeticName}” trong phiên demo.` }),
+  getShopItems: async (): Promise<ShopItems> => waitForDemo(structuredClone({ items: shopItems, availableSkins: demoSkins.filter((skin) => !shopItems.some((item) => item.code === skin.code)) })),
+  createShopItem: async (data: SaveShopItemRequest): Promise<ShopItem> => {
+    const item: ShopItem = { ...demoItem(nextCosmeticId++, data), releaseOrder: Math.max(...shopItems.map((x) => x.releaseOrder)) + 1 };
+    shopItems = [...shopItems, item];
+    return waitForDemo(item);
+  },
+  updateShopItem: async (cosmeticId: number, data: SaveShopItemRequest): Promise<ShopItem> => {
+    const old = shopItems.find((x) => x.cosmeticId === cosmeticId);
+    if (!old) throw new Error('Không tìm thấy vật phẩm.');
+    const item: ShopItem = { ...demoItem(cosmeticId, { ...data, code: old.code }), releaseOrder: old.releaseOrder, owners: old.owners };
+    shopItems = shopItems.map((x) => (x.cosmeticId === cosmeticId ? item : x));
+    return waitForDemo(item);
+  },
+  deleteShopItem: async (cosmeticId: number): Promise<void> => {
+    shopItems = shopItems.filter((x) => x.cosmeticId !== cosmeticId);
+    return waitForDemo(undefined);
+  },
   createMission: async (data: CreateMissionRequest) => waitForDemo({ missionId: nextMissionId++, message: `Đã tạo nhiệm vụ “${data.missionName}” trong phiên demo.` }),
 
   getRecentMatches: async (limit = 50): Promise<MatchItemDto[]> => waitForDemo(matches.slice(0, limit)),

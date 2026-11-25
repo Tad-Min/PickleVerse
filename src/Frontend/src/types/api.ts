@@ -72,13 +72,42 @@ export interface BanUserRequest {
 }
 
 // W02 - Content CMS
-export interface CreateCosmeticRequest {
-  itemCode: string;
-  cosmeticName: string;
+export type ShopItemState = 'Default' | 'OnSale' | 'Stopped' | 'Incomplete';
+
+export interface ShopItem {
+  cosmeticId: number;
+  code: string;
+  title: string;
   description: string;
-  price: number;
-  type: string; // "PADDLE", "OUTFIT", "HAT"
-  currencyId: number; // 1: Gold, 2: Gem
+  collection: string;
+  tokenpadPrice: number; // 0: không bán bằng Tokenpad
+  elitePrice: number;    // 0: không bán bằng Elite Token
+  releaseOrder: number;
+  premium: boolean;
+  owners: number;
+  state: ShopItemState;
+  issue?: string | null;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export interface ShopSkin {
+  code: string; title: string; description: string; collection: string; premium: boolean;
+}
+
+export interface ShopItems {
+  items: ShopItem[];
+  availableSkins: ShopSkin[];
+}
+
+export interface SaveShopItemRequest {
+  code: string;
+  title: string;
+  description: string;
+  collection: string;
+  tokenpadPrice: number;
+  elitePrice: number;
+  premium: boolean;
 }
 
 export interface CreateMissionRequest {

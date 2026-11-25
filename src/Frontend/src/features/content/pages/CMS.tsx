@@ -1,9 +1,10 @@
 import { TechniqueReferences } from './TechniqueReferences';
 import { LessonManager } from './LessonManager';
+import { ShopItemManager } from './ShopItemManager';
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { adminApi } from '../../../api/adminApi';
-import { CreateCosmeticRequest, CreateMissionRequest } from '../../../types/api';
+import { CreateMissionRequest } from '../../../types/api';
 import { BookOpen, ShoppingBag, Award, CheckCircle2, AlertCircle, X, FolderKanban } from 'lucide-react';
 import { PageHeader } from '../../../shared/ui/PageHeader';
 import {
@@ -14,13 +15,10 @@ type CmsTab = 'LESSON' | 'COSMETIC' | 'MISSION';
 
 const TABS: { key: CmsTab; label: string; icon: React.ElementType }[] = [
   { key: 'LESSON', label: '1. Bài học & Bài tập', icon: BookOpen },
-  { key: 'COSMETIC', label: '2. Đăng bán Vật phẩm (Cửa hàng)', icon: ShoppingBag },
+  { key: 'COSMETIC', label: '2. Vật phẩm Cửa hàng', icon: ShoppingBag },
   { key: 'MISSION', label: '3. Tạo Nhiệm vụ', icon: Award },
 ];
 
-const emptyCosmetic = (): CreateCosmeticRequest => ({
-  itemCode: '', cosmeticName: '', description: '', price: 100, type: 'PADDLE', currencyId: 1,
-});
 const emptyMission = (): CreateMissionRequest => ({
   missionName: '', description: '', type: 'DAILY', target: 5, reward: { coins: 100, gems: 0, xp: 0 },
 });
@@ -28,17 +26,7 @@ const emptyMission = (): CreateMissionRequest => ({
 export const CMS: React.FC = () => {
   const [activeTab, setActiveTab] = useState<CmsTab>('LESSON');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [cosmeticForm, setCosmeticForm] = useState<CreateCosmeticRequest>(emptyCosmetic);
   const [missionForm, setMissionForm] = useState<CreateMissionRequest>(emptyMission);
-
-  const createCosmeticMutation = useMutation({
-    mutationFn: (data: CreateCosmeticRequest) => adminApi.createCosmetic(data),
-    onSuccess: (res) => {
-      setFeedback({ type: 'success', text: `${res.message} (ID: ${res.cosmeticId})` });
-      setCosmeticForm(emptyCosmetic());
-    },
-    onError: () => setFeedback({ type: 'error', text: 'Đăng bán vật phẩm thất bại.' }),
-  });
 
   const createMissionMutation = useMutation({
     mutationFn: (data: CreateMissionRequest) => adminApi.createMission(data),
@@ -96,96 +84,7 @@ export const CMS: React.FC = () => {
 
       {activeTab === 'LESSON' && <LessonManager />}
 
-      {/* Cosmetic */}
-      {activeTab === 'COSMETIC' && (
-        <section className={`${card} max-w-3xl space-y-5`}>
-          <div>
-            <h2 className={sectionTitle}>Đăng bán Vật phẩm vào Cửa hàng</h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Vật phẩm mới sẽ hiện trong cửa hàng của game ngay sau khi đăng bán.
-            </p>
-          </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              createCosmeticMutation.mutate(cosmeticForm);
-            }}
-            className="space-y-4"
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className={fieldLabel}>
-                Mã vật phẩm *
-                <input
-                  type="text"
-                  value={cosmeticForm.itemCode}
-                  onChange={(e) => setCosmeticForm({ ...cosmeticForm, itemCode: e.target.value })}
-                  placeholder="VD: PADDLE_CYBER_2026"
-                  required
-                  className={`${inputClass} font-mono`}
-                />
-              </label>
-              <label className={fieldLabel}>
-                Phân loại
-                <select
-                  value={cosmeticForm.type}
-                  onChange={(e) => setCosmeticForm({ ...cosmeticForm, type: e.target.value })}
-                  className={inputClass}
-                >
-                  <option value="PADDLE">Vợt Pickleball</option>
-                  <option value="OUTFIT">Trang phục thi đấu</option>
-                  <option value="HAT">Mũ / Phụ kiện</option>
-                </select>
-              </label>
-            </div>
-
-            <label className={fieldLabel}>
-              Tên vật phẩm *
-              <input
-                type="text"
-                value={cosmeticForm.cosmeticName}
-                onChange={(e) => setCosmeticForm({ ...cosmeticForm, cosmeticName: e.target.value })}
-                placeholder="VD: Vợt Cyber Neon Dragon"
-                required
-                className={inputClass}
-              />
-            </label>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className={fieldLabel}>
-                Giá bán
-                <input
-                  type="number"
-                  min={0}
-                  value={cosmeticForm.price}
-                  onChange={(e) => setCosmeticForm({ ...cosmeticForm, price: Number(e.target.value) })}
-                  className={inputClass}
-                />
-              </label>
-              <label className={fieldLabel}>
-                Loại tiền tệ
-                <select
-                  value={cosmeticForm.currencyId}
-                  onChange={(e) => setCosmeticForm({ ...cosmeticForm, currencyId: Number(e.target.value) })}
-                  className={inputClass}
-                >
-                  <option value={1}>Vàng (thưởng trong game)</option>
-                  <option value={2}>Kim cương (cao cấp)</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                disabled={createCosmeticMutation.isPending || !cosmeticForm.itemCode.trim()}
-                className={btnPrimary}
-              >
-                {createCosmeticMutation.isPending ? 'Đang đăng bán…' : 'Đăng bán vật phẩm'}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
+      {activeTab === 'COSMETIC' && <ShopItemManager />}
 
       {/* Mission */}
       {activeTab === 'MISSION' && (
