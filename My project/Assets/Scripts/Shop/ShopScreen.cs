@@ -74,13 +74,8 @@ namespace PickleVerse.Shop
             description.text = Offer.description;
             ShopEffectPanel.Show(this, Offer);
             status.text = collectionMode ? "Skin chỉ thay đổi diện mạo • Không thay đổi sức mạnh" : "Tokenpad nhận từ trận đấu • Skin chỉ thay đổi diện mạo";
-            tokenpadPrice.text = "MUA • " + Offer.tokenpadPrice.ToString("N0") + " TOKENPAD";
-            elitePrice.text = "MUA • " + Offer.elitePrice.ToString("N0") + " ELITE TOKEN";
-            tokenpadBuy.gameObject.SetActive(Offer.tokenpadPrice > 0);
-            var eliteRect = (RectTransform)eliteBuy.transform;
-            eliteRect.anchorMin = new Vector2(Offer.tokenpadPrice > 0 ? .52f : 0, 0);
-            eliteRect.anchorMax = Vector2.one;
-            eliteRect.offsetMin = eliteRect.offsetMax = Vector2.zero;
+            if (!collectionMode)
+                ShowBuyButtons(false);
             for (int i = 0; i < cardBorders.Length; i++)
                 cardBorders[i].color = i == item ? new Color(.78f, .66f, .38f) : new Color(.14f, .22f, .28f);
             if (wallet != null)
@@ -112,26 +107,34 @@ namespace PickleVerse.Shop
                 return;
             }
             ownership.text = owned ? "ĐÃ SỞ HỮU" : "SKIN VỢT • DIỆN MẠO RIÊNG CỦA BẠN";
-            tokenpadBuy.gameObject.SetActive(!owned && Offer.tokenpadPrice > 0);
-            var eliteRect = (RectTransform)eliteBuy.transform;
-            eliteRect.anchorMin = new Vector2(!owned && Offer.tokenpadPrice > 0 ? .52f : 0, 0);
-            eliteRect.anchorMax = Vector2.one;
-            eliteRect.offsetMin = eliteRect.offsetMax = Vector2.zero;
-            if (owned)
-                elitePrice.text = "ĐÃ SỞ HỮU";
-            tokenpadBuy.interactable = !busy && !owned && wallet.tokenpad >= Offer.tokenpadPrice;
-            eliteBuy.interactable = !busy && !owned && wallet.elite >= Offer.elitePrice;
+            ShowBuyButtons(owned);
+            tokenpadBuy.interactable = !busy && ShopBuyButtons.CanBuy(Offer, wallet, ShopCurrency.Tokenpad);
+            eliteBuy.interactable = !busy && ShopBuyButtons.CanBuy(Offer, wallet, ShopCurrency.Elite);
             for (int i = 0; i < cardOwnership.Length && i < PlayerEconomy.Catalog.paddles.Length; i++)
             {
                 var item = PlayerEconomy.Catalog.paddles[i];
                 cardOwnership[i].text = wallet.owned.Contains(item.id) ? "ĐÃ SỞ HỮU" : "XEM 3D  →";
                 if (cardPrices != null && i < cardPrices.Length && cardPrices[i])
-                    cardPrices[i].text = (item.tokenpadPrice > 0 ? item.tokenpadPrice.ToString("N0") + " TOKENPAD  /  " : "") + item.elitePrice.ToString("N0") + " ELITE TOKEN";
+                    cardPrices[i].text = ShopProductCard.Price(item);
             }
-            if (!owned && Offer.tokenpadPrice > 0 && wallet.tokenpad < Offer.tokenpadPrice && wallet.elite < Offer.elitePrice)
-                status.text = "Chưa đủ tiền cho skin này. Hoàn thành trận để nhận Tokenpad.";
-            if (!owned && Offer.tokenpadPrice == 0 && wallet.elite < Offer.elitePrice)
-                status.text = "Chưa đủ ELITE TOKEN để sở hữu skin này. ELITE TOKEN chỉ nhận qua nạp.";
+            status.text = ShopBuyButtons.Problem(Offer, wallet) ?? status.text;
+        }
+        void ShowBuyButtons(bool owned)
+        {
+            var buttons = new ShopBuyButtons(Offer, owned);
+            tokenpadPrice.text = buttons.tokenpadLabel;
+            elitePrice.text = buttons.eliteLabel;
+            tokenpadBuy.gameObject.SetActive(buttons.tokenpad);
+            eliteBuy.gameObject.SetActive(buttons.elite);
+            Place(tokenpadBuy, 0, buttons.elite ? .48f : 1);
+            Place(eliteBuy, buttons.tokenpad ? .52f : 0, 1);
+        }
+        static void Place(Button button, float left, float right)
+        {
+            var r = (RectTransform)button.transform;
+            r.anchorMin = new Vector2(left, 0);
+            r.anchorMax = new Vector2(right, 1);
+            r.offsetMin = r.offsetMax = Vector2.zero;
         }
         public void BuyTokenpad()
         {
