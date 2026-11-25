@@ -1,6 +1,7 @@
 using System.Linq;
 using NUnit.Framework;
 using PickleVerse.ArtDirection;
+using PickleVerse.ArtDirection.Editor;
 using PickleVerse.LocalMatch;
 using PickleVerse.Rules;
 using UnityEditor;
@@ -88,6 +89,52 @@ namespace PickleVerse.ArtDirection.Tests
             Assert.AreEqual(DepthOfFieldMode.Gaussian, dof.mode.value);
             Assert.IsTrue(Looks.lowQualityProfile.TryGet<Bloom>(out var low));
             Assert.AreEqual(0f, low.intensity.value);
+        }
+
+        static VolumeProfile DepthOfFieldProfile(DepthOfFieldMode mode, bool active = true)
+        {
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            var dof = profile.Add<DepthOfField>();
+            dof.mode.Override(mode);
+            dof.active = active;
+            return profile;
+        }
+
+        [Test]
+        public void DepthOfFieldShadersFollowTheProfilesNotTheBuildMachine()
+        {
+            Assert.That(DepthOfFieldVariantKeeper.UsedShaders(new[] { DepthOfFieldProfile(DepthOfFieldMode.Gaussian) }), Is.EquivalentTo(new[] { DepthOfFieldVariantKeeper.GaussianShader }));
+            Assert.That(DepthOfFieldVariantKeeper.UsedShaders(new[] { DepthOfFieldProfile(DepthOfFieldMode.Bokeh) }), Is.EquivalentTo(new[] { DepthOfFieldVariantKeeper.BokehShader }));
+            Assert.That(DepthOfFieldVariantKeeper.UsedShaders(new[] { DepthOfFieldProfile(DepthOfFieldMode.Off), DepthOfFieldProfile(DepthOfFieldMode.Gaussian, false), null }), Is.Empty);
+        }
+
+        [Test]
+        public void FocusFadesWithoutAPopAndEndsAtTheAuthoredDistances()
+        {
+            var full = ArtDirectionRuntime.FocusDistances(8, 30, 1);
+            Assert.That(full.x, Is.EqualTo(8).Within(1e-3f));
+            Assert.That(full.y, Is.EqualTo(30).Within(1e-3f));
+            Assert.That(ArtDirectionRuntime.FocusDistances(8, 30, 0).x, Is.GreaterThan(300), "nothing on the court or skyline is blurred as the effect switches on");
+            float last = float.PositiveInfinity;
+            for (float f = 0; f <= 1; f += .05f)
+            {
+                var d = ArtDirectionRuntime.FocusDistances(8, 30, f);
+                Assert.That(d.x, Is.LessThanOrEqualTo(last));
+                Assert.That(d.y, Is.GreaterThan(d.x));
+                last = d.x;
+            }
+        }
+
+        [Test]
+        public void PlayerBuildsKeepTheCinematicDepthOfField()
+        {
+            // Command-line builds run with -nographics, where URP alone would strip this shader.
+            var keeper = new DepthOfFieldVariantKeeper();
+            var gaussian = Shader.Find(DepthOfFieldVariantKeeper.GaussianShader);
+            Assert.IsNotNull(gaussian, "URP renamed the shader: update DepthOfFieldVariantKeeper");
+            Assert.IsNotNull(Shader.Find(DepthOfFieldVariantKeeper.BokehShader), "URP renamed the shader: update DepthOfFieldVariantKeeper");
+            Assert.IsFalse(keeper.CanRemoveVariant(gaussian, default, default));
+            Assert.IsTrue(keeper.CanRemoveVariant(Shader.Find("Universal Render Pipeline/Lit"), default, default), "never vetoes other shaders");
         }
 
         [Test]

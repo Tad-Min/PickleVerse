@@ -174,7 +174,7 @@ namespace PickleVerse.ArtDirection.Editor
             dof.gaussianStart.Override(8f);
             dof.gaussianEnd.Override(30f);
             dof.gaussianMaxRadius.Override(1.1f);
-            dof.highQualitySampling.Override(false);
+            dof.highQualitySampling.Override(true);   // smoother upsampling of the blurred background
             var vignette = Add<Vignette>(p);
             vignette.color.Override(new Color(.03f, .05f, .09f));
             vignette.intensity.Override(.3f);

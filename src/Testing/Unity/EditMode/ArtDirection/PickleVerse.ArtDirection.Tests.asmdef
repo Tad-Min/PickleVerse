@@ -2,11 +2,13 @@
   "name": "PickleVerse.ArtDirection.Tests",
   "references": [
     "PickleVerse.ArtDirection",
+    "PickleVerse.ArtDirection.Editor",
     "PickleVerse.LocalMatch",
     "PickleVerse.Rules",
     "PickleVerse.Settings",
     "Unity.RenderPipelines.Universal.Runtime",
-    "Unity.RenderPipelines.Core.Runtime"
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Core.Editor"
   ],
   "includePlatforms": [
     "Editor"

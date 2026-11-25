@@ -32,7 +32,8 @@ thuộc về gameplay.
 |---|---|---|
 | Chuyển trạng thái nhân vật | SmoothStep (ease in-out) | 0,10 s (đi/đứng), ≤ 0,055 s (vào cú đánh) |
 | Camera bám | Damping hàm mũ, k = 3 | — |
-| Look điện ảnh (DoF intro/chiến thắng) | MoveTowards tuyến tính trên trọng số Volume | 0,35 s, không rò sang scene sau |
+| Look điện ảnh (vignette intro/chiến thắng) | MoveTowards tuyến tính trên trọng số Volume | 0,35 s, không rò sang scene sau |
+| DoF cảnh cận (đi vào sân, chân dung chiến thắng) | Khoảng mờ lùi/tiến theo cấp số nhân, SmoothStep | 0,5 s; tắt ngay khi kết thúc cinematic, cảnh rộng luôn nét |
 | Trọng số đêm (Menu) | SmoothStep giữa các pha ngày/hoàng hôn/đêm/bình minh | theo chu kỳ |
 | Môi trường | Gió nhiều lớp (sway 1,3 Hz + 2,9 Hz + flutter 7 Hz, gust 0,43 Hz); bụi/lá theo noise | liên tục |
 | UI | `UiButtonMotion`, `UiPanelReveal`, `UiModalPresentation` (có sẵn) | 0,12–0,3 s |
@@ -41,7 +42,8 @@ Không dùng curve tuyến tính cho chuyển động vật thể/nhân vật; t
 
 ## Đã làm trong lần nâng cấp này
 
-- Intro trận và màn chiến thắng trộn Look điện ảnh (DoF Gaussian 8 → 30 m) trong 0,35 s, tự tắt khi kết thúc/đổi scene.
+- Intro trận và màn chiến thắng trộn Look điện ảnh trong 0,35 s; DoF Gaussian 8 → 30 m chỉ ở cảnh cận (`SetCinematic(true, closeUp)`), tự tắt khi kết thúc/đổi scene.
+- Build dòng lệnh (`-nographics`) vẫn giữ shader DoF nhờ `DepthOfFieldVariantKeeper`.
 - Chuyển động môi trường: lá/cờ satin trong đấu trường có gió (`_WIND`), bụi nắng trôi, lá rơi xoay, tất cả độc lập với gameplay.
 
 ## Cố ý không làm (lý do)

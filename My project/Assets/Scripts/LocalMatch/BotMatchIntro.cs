@@ -146,6 +146,8 @@ namespace PickleVerse.LocalMatch
         }
         void Evaluate(float time)
         {
+            // Depth of field frames the two entrance close-ups; the wide court shots stay sharp.
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true, time >= establishingSeconds && time < establishingSeconds + entranceSeconds * 2);
             announcement.gameObject.SetActive(false);
             topBar.gameObject.SetActive(true);
             bottomBar.gameObject.SetActive(true);

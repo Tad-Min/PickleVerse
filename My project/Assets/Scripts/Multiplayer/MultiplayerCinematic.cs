@@ -192,6 +192,8 @@ namespace PickleVerse.Multiplayer
             var local = actors.First(p => p.player.IsLocalHuman);
             int team = local.player.Team;
             float stage = time < .8f ? 0 : time < 4.6f ? 1 : time < 8.4f ? 2 : 3;
+            // Depth of field frames the two entrance close-ups; the wide court shots stay sharp.
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true, stage == 1 || stage == 2);
             caption.text = stage == 0 ? "PICKLEVERSE / " + (actors.Length == 4 ? "ĐẤU ĐÔI 2v2" : "ĐẤU ĐƠN 1v1") : stage == 1 ? "ĐỘI CỦA BẠN" : stage == 2 ? "ĐỘI ĐỐI THỦ" : "SẴN SÀNG VÀO TRẬN";
             foreach (var p in actors)
             {
@@ -368,6 +370,7 @@ namespace PickleVerse.Multiplayer
         {
             outcomeTime += delta;
             float blend = Mathf.SmoothStep(0, 1, Mathf.Clamp01(outcomeTime / 1.25f));
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true, blend > .5f);
             int end = presented[0].capturedEnd;
             var facing = Quaternion.Euler(0, end < 0 ? 0 : 180, 0);
             var anchor = end < 0 ? stadium?.nearResult : stadium?.farResult;

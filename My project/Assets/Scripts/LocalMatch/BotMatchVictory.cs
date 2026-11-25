@@ -183,6 +183,7 @@ namespace PickleVerse.LocalMatch
             delta = Mathf.Max(0, delta);
             elapsed += delta;
             float blend = Mathf.SmoothStep(0, 1, Mathf.Clamp01(elapsed / Mathf.Max(.01f, cameraSeconds)));
+            PickleVerse.ArtDirection.ArtDirectionRuntime.SetCinematic(true, blend > .5f);
             // Keep the hero and camera on one side of the net, with clear space for the title.
             PresentedActor.transform.SetPositionAndRotation(Vector3.Lerp(actorPosition, stagePosition, blend), Quaternion.Slerp(actorRotation, Quaternion.Euler(0, PresentedActor.end < 0 ? 0 : 180, 0), blend));
             Quaternion facing = Quaternion.Euler(0, PresentedActor.end < 0 ? 0 : 180, 0);

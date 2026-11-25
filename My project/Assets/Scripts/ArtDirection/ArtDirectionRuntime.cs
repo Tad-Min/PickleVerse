@@ -28,7 +28,10 @@ namespace PickleVerse.ArtDirection
         public int Tier { get; private set; } = -1;
 
         ArtDirectionLooks looks;
-        Volume baseVolume, nightVolume, cinematicVolume, qualityVolume;
+        Volume baseVolume, nightVolume, cinematicVolume, focusVolume, qualityVolume;
+        DepthOfField focusDof;
+        float focusStart, focusEnd, focus;
+        bool closeUp;
         readonly HashSet<Camera> configured = new HashSet<Camera>();
         readonly Dictionary<ScriptableRendererFeature, bool> ssaoOriginal = new Dictionary<ScriptableRendererFeature, bool>();
         float cinematicTarget;
@@ -57,10 +60,54 @@ namespace PickleVerse.ArtDirection
         /// <summary>Look scene for an active scene while <paramref name="held"/> may override it (pure, unit-tested).</summary>
         public static string LookScene(string active, string held) => string.IsNullOrEmpty(held) ? active : held;
 
-        /// <summary>Blends in the cinematic look (shallow depth of field) for intros, victories and replays' hero shots.</summary>
-        public static void SetCinematic(bool on)
+        /// <summary>Seconds the depth of field takes to come in on a close-up (and to leave when the shot widens).</summary>
+        public const float FocusSeconds = .5f;
+
+        /// <summary>
+        /// Blends in the cinematic look for intros, victories and replays' hero shots. The shallow depth of field belongs to
+        /// close-ups only: wide shots and gameplay always show the whole court sharp, so ending a cinematic drops it at once.
+        /// </summary>
+        public static void SetCinematic(bool on, bool closeUp = false)
         {
-            if (Instance) Instance.cinematicTarget = on ? 1 : 0;
+            if (!Instance) return;
+            Instance.cinematicTarget = on ? 1 : 0;
+            Instance.closeUp = on && closeUp;
+            if (!on) Instance.ApplyFocus(0);
+        }
+
+        /// <summary>
+        /// Blur start and end distances at a focus amount (0 = everything sharp, 1 = authored). Distances recede
+        /// geometrically, so the blur slides in and out instead of popping when the effect switches on.
+        /// </summary>
+        public static Vector2 FocusDistances(float start, float end, float focus)
+        {
+            float scale = Mathf.Pow(40, 1 - Mathf.SmoothStep(0, 1, Mathf.Clamp01(focus)));
+            return new Vector2(start * scale, end * scale);
+        }
+
+        void ApplyFocus(float amount)
+        {
+            focus = amount;
+            if (!focusDof) return;
+            focusVolume.weight = amount > 0 ? 1 : 0;
+            var distances = FocusDistances(focusStart, focusEnd, amount);
+            focusDof.gaussianStart.Override(distances.x);
+            focusDof.gaussianEnd.Override(distances.y);
+        }
+
+        // Depth of field runs in its own volume: its mode cannot blend, so it is faded through its distances. Both volumes use
+        // runtime copies; the project's Look_Cinematic asset is never written.
+        void SetUpFocus()
+        {
+            if (!cinematicVolume.sharedProfile || !cinematicVolume.profile.TryGet<DepthOfField>(out var authored)) return;
+            focusStart = authored.gaussianStart.value;
+            focusEnd = authored.gaussianEnd.value;
+            focusDof = focusVolume.profile.Add<DepthOfField>();
+            focusDof.mode.Override(authored.mode.value);
+            focusDof.gaussianMaxRadius.Override(authored.gaussianMaxRadius.value);
+            focusDof.highQualitySampling.Override(authored.highQualitySampling.value);
+            authored.active = false;
+            ApplyFocus(0);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -85,10 +132,12 @@ namespace PickleVerse.ArtDirection
             baseVolume = CreateVolume("Look", 0);
             nightVolume = CreateVolume("Look Night", 1);
             cinematicVolume = CreateVolume("Look Cinematic", 2);
+            focusVolume = CreateVolume("Look Focus", 3);
             qualityVolume = CreateVolume("Look Quality", 10);
             if (looks)
             {
                 cinematicVolume.sharedProfile = looks.cinematicProfile;
+                SetUpFocus();
                 qualityVolume.sharedProfile = looks.lowQualityProfile;
                 foreach (var data in looks.ssaoRenderers)
                     if (data)
@@ -131,6 +180,8 @@ namespace PickleVerse.ArtDirection
                 appliedSceneForCinematic = scene;
                 cinematicTarget = 0;
                 cinematicVolume.weight = 0;
+                closeUp = false;
+                ApplyFocus(0);
             }
             Current = looks ? looks.Find(scene) : null;
             bool post = Current != null && Current.postProcess;
@@ -200,6 +251,9 @@ namespace PickleVerse.ArtDirection
                 nightVolume.weight = 0;
             float target = Current != null && Current.postProcess && Tier >= 1 ? cinematicTarget : 0;
             cinematicVolume.weight = Mathf.MoveTowards(cinematicVolume.weight, target, dt / .35f);
+            float focusTarget = target > 0 && closeUp ? 1 : 0;
+            if (focus != focusTarget)
+                ApplyFocus(Mathf.MoveTowards(focus, focusTarget, dt / FocusSeconds));
         }
 
         void OnDestroy()
