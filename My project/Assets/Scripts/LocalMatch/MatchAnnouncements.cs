@@ -66,7 +66,7 @@ namespace PickleVerse.LocalMatch
             elapsed = 0;
             headline.text = current.title;
             detail.text = current.body;
-            Color color = current.tone == AnnouncementTone.Fault ? new Color(1, .55f, .40f) : current.tone == AnnouncementTone.Success ? new Color(.51f, .90f, .80f) : current.tone == AnnouncementTone.ChangeEnds ? new Color(.80f, .96f, .45f) : Color.white;
+            Color color = current.tone == AnnouncementTone.Fault ? new Color(1, .33f, .33f) : current.tone == AnnouncementTone.Success ? new Color(.40f, .92f, .52f) : current.tone == AnnouncementTone.ChangeEnds ? new Color(.80f, .96f, .45f) : Color.white;
             headline.color = color;
             accent.color = color;
             panel.gameObject.SetActive(true);

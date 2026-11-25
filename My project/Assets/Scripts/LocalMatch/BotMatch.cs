@@ -508,8 +508,8 @@ namespace PickleVerse.LocalMatch
             human.Reaction(loser != 0, Rules.Winner >= 0);
             bot.Reaction(loser != 1, Rules.Winner >= 0);
             phaseTime = 0;
-            string outcome = priorServer == 1 - loser ? (loser == 1 ? "Bạn ghi điểm" : "Máy ghi điểm") : "Đổi quyền giao bóng";
-            Announcements?.Enqueue(fault == Fault.Out ? "NGOÀI SÂN" : "LỖI", FaultText(fault) + " • " + (loser == 0 ? "Bạn" : "Bot") + " phạm lỗi\n" + outcome, loser == 0 ? AnnouncementTone.Fault : AnnouncementTone.Neutral, 1.2f);
+            var call = RallyCall.For(loser == 0, priorServer == 1 - loser ? RallyCall.Serve.Point : RallyCall.Serve.SideOut, FaultText(fault), "Bot");
+            Announcements?.Enqueue(call.title, call.detail, call.tone, RallyCall.Seconds);
             if (Rules.Winner >= 0)
             {
                 SfxPlayer.Play(GameSfx.GameWhistle);

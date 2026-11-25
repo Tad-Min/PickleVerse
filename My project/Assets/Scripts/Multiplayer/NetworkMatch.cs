@@ -632,7 +632,10 @@ namespace PickleVerse.Multiplayer
                 rallyCommitted = true;
                 BetweenPoints = true;
                 rallyDeadline = Time.realtimeSinceStartupAsDouble + 2.1;
-                AnnouncementRpc(fault.Contains("ngoài sân") ? "NGOÀI SÂN" : "LỖI", fault + " • Đội " + (loser == 0 ? "A" : "B") + " phạm lỗi\n" + (priorServer == 1 - loser ? "Đội " + (priorServer == 0 ? "A" : "B") + " ghi điểm" : "Đổi quyền giao bóng"), (int)AnnouncementTone.Fault, 1.2f);
+                // Neutral facts; every client rewrites them from its own team's point of view (AnnouncementEffect).
+                string serveOutcome = priorServer == 1 - loser ? "Đội " + (priorServer == 0 ? "A" : "B") + " ghi điểm"
+                    : Rules.servingTeam != priorServer ? "Đổi quyền giao bóng" : "Chuyển người giao thứ hai";
+                AnnouncementRpc(fault.Contains("ngoài sân") ? "NGOÀI SÂN" : "LỖI", fault + " • Đội " + (loser == 0 ? "A" : "B") + " phạm lỗi\n" + serveOutcome, (int)AnnouncementTone.Fault, RallyCall.Seconds);
                 foreach (var player in players.Values)
                     player.React(player.Team != loser, Rules.complete);
                 if (Rules.complete)
@@ -862,6 +865,30 @@ namespace PickleVerse.Multiplayer
             SfxPlayer.Play((GameSfx)sound);
 #endif
         }
+        static readonly System.Text.RegularExpressions.Regex FaultCall =
+            new System.Text.RegularExpressions.Regex(@"^(?<reason>.+) • Đội (?<team>[AB]) phạm lỗi\n(?<outcome>.+)$", System.Text.RegularExpressions.RegexOptions.Singleline);
+
+        // "Đội A phạm lỗi" means nothing to a player who does not know their team letter: show a red
+        // "MẤT LƯỢT" call to the team that faulted and a green call to the team that benefits.
+        void PersonaliseRallyCall(ref string title, ref string detail, ref int tone, ref float duration)
+        {
+            if (detail == null)
+                return;
+            var m = FaultCall.Match(detail);
+            var local = NetworkPlayer.All.FirstOrDefault(p => p && p.Runner == Runner && p.IsLocalHuman);
+            if (!m.Success || !local)
+                return;
+            int loser = m.Groups["team"].Value == "A" ? 0 : 1;
+            string outcome = m.Groups["outcome"].Value;
+            var serve = outcome.Contains("ghi điểm") ? RallyCall.Serve.Point
+                : outcome.Contains("người giao thứ hai") ? RallyCall.Serve.SecondServer : RallyCall.Serve.SideOut;
+            var call = RallyCall.For(local.Team == loser, serve, m.Groups["reason"].Value, "Đối thủ", Roster != null && Roster.mode == PlayMode.Doubles);
+            title = call.title;
+            detail = call.detail;
+            tone = (int)call.tone;
+            duration = Mathf.Max(duration, RallyCall.Seconds);
+        }
+
         void AnnouncementEffect(string title, string detail, int tone, float duration)
         {
             // Protocol 18 servers from the previous release use these labels.
@@ -869,6 +896,7 @@ namespace PickleVerse.Multiplayer
             if (title == "OUT") title = "NGOÀI SÂN";
             if (title == "FAULT / LỖI") title = "LỖI";
             detail = detail?.Replace("Đổi giao bóng / Side Out", "Đổi quyền giao bóng");
+            PersonaliseRallyCall(ref title, ref detail, ref tone, ref duration);
             var ui = MultiplayerCourtUI.Instance;
             if (ui)
                 ui.ShowAnnouncement(title, detail, duration, (AnnouncementTone)tone);
