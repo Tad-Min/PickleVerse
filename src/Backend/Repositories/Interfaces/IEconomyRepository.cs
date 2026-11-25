@@ -19,6 +19,13 @@ namespace Repositories.Interfaces
         Task<Playercosmetic?> GetPlayerCosmeticAsync(Guid playerId, int cosmeticId);
         Task AddPlayerCosmeticAsync(Playercosmetic pc);
         Task UpdatePlayerCosmeticAsync(Playercosmetic pc);
-        Task<int> CreateCosmeticAsync(Cosmetic item);
+        Task<Cosmetic?> GetCosmeticByCodeAsync(string code);
+        Task AddCosmeticAsync(Cosmetic item);
+        void RemoveCosmetic(Cosmetic item);
+        Task<List<CosmeticPrice>> GetCosmeticPricesAsync();
+        /// <summary>Thay toàn bộ giá của vật phẩm (mã loại tiền → giá).</summary>
+        Task SetCosmeticPricesAsync(int cosmeticId, IReadOnlyDictionary<int, int> prices);
+        /// <summary>Số người sở hữu theo vật phẩm.</summary>
+        Task<Dictionary<int, int>> GetCosmeticOwnersAsync();
     }
 }

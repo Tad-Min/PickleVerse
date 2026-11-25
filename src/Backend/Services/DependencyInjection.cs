@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IAchievementService, AchievementService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IContentService, ContentService>();
+        services.AddScoped<IShopItemService, ShopItemService>();
         services.AddScoped<IProgressResetService, ProgressResetService>();
         services.AddScoped<IModerationService, ModerationService>();
         services.AddHostedService<ModerationExpiryWorker>();

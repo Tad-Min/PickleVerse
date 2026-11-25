@@ -14,7 +14,6 @@ namespace Services.Interfaces
         Task<bool> ManualVerifyUserEmailAsync(Guid userId);
 
         // W02 - Content CMS
-        Task<int> CreateCosmeticAsync(CreateCosmeticRequest request);
         Task<int> CreateMissionAsync(CreateMissionRequest request);
 
         // W03 - Match Monitoring
