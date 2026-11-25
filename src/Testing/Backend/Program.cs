@@ -164,7 +164,8 @@ try
     if (args.Contains("--check-content"))
     {
         await ContentChecks.Run(options, Check);
-        Console.WriteLine($"SUCCESS: {checks} CMS/version/reward checks; disposable database removed.");
+        await ShopItemChecks.Run(options, Check);
+        Console.WriteLine($"SUCCESS: {checks} CMS/version/reward/shop checks; disposable database removed.");
         return;
     }
     if (args.Contains("--check-status-enums"))

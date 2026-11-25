@@ -204,6 +204,7 @@ jobs:
           npm ci
           npm run type-check
           npm run test:session
+          npm run test:shop
 
   validate:
     name: Validate .NET, FastAPI and admin web
