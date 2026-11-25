@@ -15,12 +15,14 @@ namespace API.Controllers
     {
         private readonly IAdminService _adminService;
         private readonly IModerationService _moderation;
+        private readonly IShopItemService _shop;
         Guid Actor => Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
-        public AdminController(IAdminService adminService, IModerationService moderation)
+        public AdminController(IAdminService adminService, IModerationService moderation, IShopItemService shop)
         {
             _adminService = adminService;
             _moderation = moderation;
+            _shop = shop;
         }
 
         // W01 - User Management & RBAC
@@ -73,11 +75,20 @@ namespace API.Controllers
         }
 
         // W02 - Content CMS
+        [HttpGet("cms/cosmetics")]
+        public async Task<IActionResult> GetShopItems() => Ok(await _shop.List());
+
         [HttpPost("cms/cosmetics")]
-        public async Task<IActionResult> CreateCosmetic([FromBody] CreateCosmeticRequest request)
+        public async Task<IActionResult> CreateShopItem([FromBody] SaveShopItemRequest request) => Ok(await _shop.Create(request));
+
+        [HttpPut("cms/cosmetics/{cosmeticId:int}")]
+        public async Task<IActionResult> UpdateShopItem(int cosmeticId, [FromBody] SaveShopItemRequest request) => Ok(await _shop.Update(cosmeticId, request));
+
+        [HttpDelete("cms/cosmetics/{cosmeticId:int}")]
+        public async Task<IActionResult> DeleteShopItem(int cosmeticId)
         {
-            var id = await _adminService.CreateCosmeticAsync(request);
-            return Ok(new { cosmeticId = id, message = "Đăng bán vật phẩm thời trang mới vào Shop thành công!" });
+            await _shop.Delete(cosmeticId);
+            return Ok(new { message = "Đã xóa vật phẩm." });
         }
 
         [HttpPost("cms/missions")]

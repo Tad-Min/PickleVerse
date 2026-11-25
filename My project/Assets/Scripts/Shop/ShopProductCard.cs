@@ -79,6 +79,12 @@ namespace PickleVerse.Shop
             accent.color = owned ? accentColor : new Color(.15f, .20f, .24f, 1);
             price.text = equipped ? "VỢT ĐÃ CHỌN" : owned ? "SẴN SÀNG THI ĐẤU" : "XEM TRƯỚC SKIN";
         }
-        public static string Price(PaddleOffer item) => (item.tokenpadPrice > 0 ? item.tokenpadPrice.ToString("N0") + " TOKENPAD  /  " : "") + item.elitePrice.ToString("N0") + " ELITE TOKEN";
+        public static string Price(PaddleOffer item)
+        {
+            if (!item.ForSale)
+                return ShopBuyButtons.NotSold;
+            string tokenpad = item.tokenpadPrice > 0 ? item.tokenpadPrice.ToString("N0") + " TOKENPAD" : "", elite = item.elitePrice > 0 ? item.elitePrice.ToString("N0") + " ELITE TOKEN" : "";
+            return tokenpad + (tokenpad != "" && elite != "" ? "  /  " : "") + elite;
+        }
     }
 }

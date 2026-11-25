@@ -22,6 +22,8 @@ namespace PickleVerse.Shop
         public int releaseOrder;
         public bool HasEffect => !string.IsNullOrEmpty(effectTitle) && !string.IsNullOrEmpty(effectDetails);
         public int Price(ShopCurrency currency) => currency == ShopCurrency.Tokenpad ? tokenpadPrice : elitePrice;
+        /// <summary>False once the shop stops selling the skin; it stays in the catalog for the players who own it.</summary>
+        public bool ForSale => tokenpadPrice > 0 || elitePrice > 0;
     }
     public sealed class ShopCatalog : ScriptableObject
     {
@@ -37,6 +39,6 @@ namespace PickleVerse.Shop
         public PaddleOffer Find(string id) => id == DefaultPaddleId ? defaultPaddle : Array.Find(paddles ?? Array.Empty<PaddleOffer>(), x => x.id == id);
         public PaddleOffer[] CollectionItems => defaultPaddle == null ? paddles : new[] { defaultPaddle }.Concat(paddles ?? Array.Empty<PaddleOffer>()).ToArray();
         public Sprite Icon(ShopCurrency currency) => currency == ShopCurrency.Tokenpad ? tokenpadIcon : eliteIcon;
-        public int[] NewestFirst() => Enumerable.Range(0, paddles.Length).OrderByDescending(i => paddles[i].releaseOrder).ThenBy(i => i).ToArray();
+        public int[] NewestFirst() => Enumerable.Range(0, paddles.Length).OrderByDescending(i => paddles[i].ForSale).ThenByDescending(i => paddles[i].releaseOrder).ThenBy(i => i).ToArray();
     }
 }

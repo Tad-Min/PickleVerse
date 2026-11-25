@@ -116,28 +116,6 @@ namespace Services.Implementations
             }
         }
 
-        public async Task<int> CreateCosmeticAsync(CreateCosmeticRequest request)
-        {
-            try
-            {
-                var cosmetic = new Cosmetic
-                {
-                    Itemcode = request.ItemCode,
-                    Cosmeticname = request.CosmeticName,
-                    Description = request.Description,
-                    Price = request.Price,
-                    Type = request.Type,
-                    Currencyid = request.CurrencyId
-                };
-                return await _unitOfWork.Economy.CreateCosmeticAsync(cosmetic);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi thêm vật phẩm thời trang mới vào Shop");
-                throw new AppException("Thêm vật phẩm mới thất bại.", ex);
-            }
-        }
-
         public async Task<int> CreateMissionAsync(CreateMissionRequest request)
         {
             if (request.Type is not ("DAILY" or "WEEKLY") || request.Target < 1 || request.Target > 100000

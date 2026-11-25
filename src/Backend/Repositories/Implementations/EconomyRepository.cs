@@ -93,11 +93,44 @@ namespace Repositories.Implementations
             return Task.CompletedTask;
         }
 
-        public async Task<int> CreateCosmeticAsync(Cosmetic item)
+        public Task<Cosmetic?> GetCosmeticByCodeAsync(string code)
+        {
+            return _context.Cosmetics.FirstOrDefaultAsync(c => c.Itemcode == code);
+        }
+
+        public async Task AddCosmeticAsync(Cosmetic item)
         {
             await _context.Cosmetics.AddAsync(item);
-            await _context.SaveChangesAsync();
-            return item.Cosmeticid;
+        }
+
+        public void RemoveCosmetic(Cosmetic item)
+        {
+            _context.Cosmetics.Remove(item);
+        }
+
+        public Task<List<CosmeticPrice>> GetCosmeticPricesAsync()
+        {
+            return _context.CosmeticPrices.AsNoTracking().ToListAsync();
+        }
+
+        public async Task SetCosmeticPricesAsync(int cosmeticId, IReadOnlyDictionary<int, int> prices)
+        {
+            var current = await _context.CosmeticPrices.Where(p => p.CosmeticId == cosmeticId).ToListAsync();
+            _context.CosmeticPrices.RemoveRange(current.Where(p => !prices.ContainsKey(p.CurrencyId)));
+            foreach (var (currency, price) in prices)
+            {
+                var row = current.FirstOrDefault(p => p.CurrencyId == currency);
+                if (row != null)
+                    row.Price = price;
+                else
+                    await _context.CosmeticPrices.AddAsync(new CosmeticPrice { CosmeticId = cosmeticId, CurrencyId = currency, Price = price });
+            }
+        }
+
+        public Task<Dictionary<int, int>> GetCosmeticOwnersAsync()
+        {
+            return _context.Playercosmetics.GroupBy(p => p.Cosmeticid).Select(g => new { g.Key, Count = g.Count() })
+                .ToDictionaryAsync(g => g.Key, g => g.Count);
         }
     }
 }

@@ -402,18 +402,6 @@ namespace Entities.DTOs
         public int Count { get; set; }
     }
 
-    public class CreateCosmeticRequest
-    {
-        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
-        public string ItemCode { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Vui lòng nhập thông tin bắt buộc.")]
-        public string CosmeticName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Price { get; set; } = 100;
-        public string Type { get; set; } = "PADDLE";
-        public int CurrencyId { get; set; } = 1;
-    }
-
     public class CreateMissionRequest
     {
         public PickleVerse.Progression.ProgressMetric Metric { get; set; } = PickleVerse.Progression.ProgressMetric.Matches;

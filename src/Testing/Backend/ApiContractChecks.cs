@@ -45,6 +45,7 @@ static class ApiContractChecks
         var social = typeof(SocialContentController);
         foreach (var action in new[] { nameof(SocialContentController.Read), nameof(SocialContentController.Delete), nameof(SocialContentController.DeleteComment) })
             Check(social.GetMethod(action)?.ReturnType == typeof(Task<ApiResponse>), $"Social {action} returns an acknowledgement accepted by Unity");
+        ShopItemChecks.Rules(Check);
 
         var builder = WebApplication.CreateBuilder();
         builder.Logging.ClearProviders();
