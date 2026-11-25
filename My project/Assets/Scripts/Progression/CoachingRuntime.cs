@@ -122,12 +122,27 @@ namespace PickleVerse.Progression
             if (session == null || session.closed) return;
             session.closed = true; session.partial = partial;
             Checkpoint(session);
+            UploadSoon();
+        }
+        // A session that has just ended is usually refused once (409) because the API has not
+        // saved the match result yet; retry every few seconds for two minutes, then every 30 s.
+        float fastRetryUntil;
+        bool uploadRequested;
+        public void UploadSoon()
+        {
             nextRetry = 0;
+            uploadRequested = true;
+            fastRetryUntil = Time.unscaledTime + 120;
         }
         void Update()
         {
-            if (!uploading.IsCompleted || Time.unscaledTime < nextRetry) return;
-            nextRetry = Time.unscaledTime + 30;
+            if (!uploading.IsCompleted)
+                return;
+            if (uploadRequested)
+                nextRetry = 0; // a request made while an upload was running starts the next pass now
+            if (Time.unscaledTime < nextRetry) return;
+            nextRetry = Time.unscaledTime + (Time.unscaledTime < fastRetryUntil ? 3 : 30);
+            uploadRequested = false;
             uploading = Flush();
         }
         async Task Flush()

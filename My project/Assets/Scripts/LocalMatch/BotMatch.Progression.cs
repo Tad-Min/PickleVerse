@@ -138,6 +138,9 @@ namespace PickleVerse.LocalMatch
                 try
                 {
                     await ProgressionRuntime.Instance.FinishBotAsync(payload, request);
+                    // The API accepts match telemetry only after it has saved the result, so the
+                    // coaching upload starts now instead of waiting for the periodic retry.
+                    CoachingRuntime.Instance?.UploadSoon();
                     return;
                 }
                 catch (Exception error)

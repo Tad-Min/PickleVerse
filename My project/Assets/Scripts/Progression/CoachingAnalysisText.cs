@@ -18,11 +18,17 @@ namespace PickleVerse.Progression
                 ? "Chưa ghi nhận lỗi trong các tiêu chí đã đo ở phiên này. Hãy tiếp tục luyện giao, trả bóng và kiểm soát điểm rơi."
                 : "Phiên này chưa ghi nhận được số liệu cú đánh. Hãy hoàn thành một lượt có giao và trả bóng để HLV thống kê.";
         }
-        static string Name(string code) => code == "Net" ? "Bóng chạm lưới" : code == "Out" ? "Bóng ngoài sân" :
+        public static string Name(string code) => code == "Net" ? "Bóng chạm lưới" : code == "Out" ? "Bóng ngoài sân" :
             code == "Miss" ? "Đánh hụt" : code == "DoubleBounce" ? "Bóng nảy hai lần" :
             code == "Kitchen" ? "Vô lê trong vùng cấm" : code == "Momentum" ? "Đà vô lê vào vùng cấm" :
             code == "LateServe" ? "Giao bóng trễ" : code == "ServeFeet" ? "Lỗi chân giao bóng" :
             code == "Early" ? "Đánh sớm" : code == "Late" ? "Đánh muộn" :
-            code == "Movement" ? "Chưa hồi vị" : code == "Target" ? "Chưa trúng vùng đích" : "Tiêu chí kỹ thuật";
+            code == "Movement" ? "Chưa hồi vị" : code == "Target" ? "Chưa trúng vùng đích" :
+            code == "DinkTooHigh" ? "Bóng ngắn quá cao" : code == "WrongInput" ? "Sai tổ hợp kỹ thuật" :
+            code == "Spacing" ? "Khoảng cách đội hình" : "Tiêu chí kỹ thuật";
+        public static string Technique(string technique) => technique == "Serve" ? "giao bóng" : technique == "Return" ? "trả giao" :
+            technique == "Drive" ? "đánh bạt" : technique == "Dink" ? "dink" : technique == "Volley" ? "vô lê" :
+            technique == "Drop" ? "bỏ nhỏ" : technique == "Smash" ? "đập bóng" : technique == "Reset" ? "reset" :
+            technique == "Lob" ? "lốp bóng" : "cú khác";
     }
 }
