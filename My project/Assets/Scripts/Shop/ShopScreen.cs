@@ -72,6 +72,7 @@ namespace PickleVerse.Shop
             title.text = Offer.title;
             collection.text = Offer.collection;
             description.text = Offer.description;
+            ShopEffectPanel.Show(this, Offer);
             status.text = collectionMode ? "Skin chỉ thay đổi diện mạo • Không thay đổi sức mạnh" : "Tokenpad nhận từ trận đấu • Skin chỉ thay đổi diện mạo";
             tokenpadPrice.text = "MUA • " + Offer.tokenpadPrice.ToString("N0") + " TOKENPAD";
             elitePrice.text = "MUA • " + Offer.elitePrice.ToString("N0") + " ELITE TOKEN";

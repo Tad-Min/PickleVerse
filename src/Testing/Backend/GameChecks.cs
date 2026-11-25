@@ -53,9 +53,11 @@ static class GameChecks
                 && catalog.definitions.Single(d => d.id == "D.Serve10").title == "Giao bóng hợp lệ 10 lần"
                 && catalog.definitions.Single(d => d.id == "A.Win5").title == "Thắng 5 trận",
                 "UTF-8 catalog text survives SQL initialization and PostgreSQL reads");
-            check(catalog.cosmetics.Length == 3 && catalog.cosmetics.Single(c => c.id == "paddle.thot").tokenpadPrice == 900
+            check(catalog.cosmetics.Length == 4 && catalog.cosmetics.Single(c => c.id == "paddle.thot").tokenpadPrice == 900
                 && catalog.cosmetics.Single(c => c.id == "paddle.thot").elitePrice == 250 && catalog.cosmetics.Single(c => c.id == "paddle.gemstone").elitePrice == 650,
                 "online cosmetics retain both original currency prices");
+            check(catalog.cosmetics.Single(c => c.id == "paddle.dragonruby") is { elitePrice: 800, tokenpadPrice: 0, title: "DRAGON RUBY" },
+                "the Dragon Ruby paddle is sold for 800 Elite Token only");
             check(catalog.lessons.Single(l => l.id == "doubles-transition").prerequisites.SequenceEqual(new[] { "approach", "doubles-cover", "reset" }),
                 "advanced training prerequisites match the Unity prototype");
         }

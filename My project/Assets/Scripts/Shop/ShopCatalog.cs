@@ -14,8 +14,13 @@ namespace PickleVerse.Shop
         public GameObject gameplayPrefab;
         public Sprite thumbnail;
         public bool gemstone;
+        [Tooltip("Name of the skin's exclusive match effect, shown in the product details. Empty = no effect.")]
+        public string effectTitle;
+        [TextArea(3, 10), Tooltip("What the effect does, one line per point.")]
+        public string effectDetails;
         [Tooltip("Số lớn hơn là sản phẩm mới hơn trong Signature.")]
         public int releaseOrder;
+        public bool HasEffect => !string.IsNullOrEmpty(effectTitle) && !string.IsNullOrEmpty(effectDetails);
         public int Price(ShopCurrency currency) => currency == ShopCurrency.Tokenpad ? tokenpadPrice : elitePrice;
     }
     public sealed class ShopCatalog : ScriptableObject
