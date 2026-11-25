@@ -30,8 +30,10 @@ public sealed partial class OnlineGameService
                 var scores = input.Select(entry => CanonicalScores(entry.result, m.roster.Find(entry.onlineId).team)).ToArray();
                 if (scores.Skip(1).Any(scorecard => !GameJson.Write(scorecard).Equals(GameJson.Write(scores[0]), StringComparison.Ordinal)))
                     throw Bad("Điểm hai đội không khớp.");
+                bool surrendered = teams.Count == 1 && input.All(x => x.result.reason == MatchResult.SurrenderReason);
                 await EndOnline(match, m, players, teams.Count == 1 ? teams[0] : null,
-                    "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.", forfeits, scores[0], replayChunkCount);
+                    surrendered ? MatchResult.SurrenderReason : "Máy chủ kết thúc trận do rời trận hoặc mất kết nối.",
+                    forfeits, scores[0], replayChunkCount);
                 return true;
             }
             string? fingerprint = null;

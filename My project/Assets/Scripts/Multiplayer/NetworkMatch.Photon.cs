@@ -66,6 +66,8 @@ namespace PickleVerse.Multiplayer
                     LeaveFrom(source);
                 else if (kind == "request-results")
                     SendProgressionResults(source);
+                else
+                    SurrenderFrom(source, kind);
             }
             if (source != Object.StateAuthority)
                 return;
@@ -82,6 +84,8 @@ namespace PickleVerse.Multiplayer
                     PhotonSession.Find(Runner).Send(Object.StateAuthority, Object, "result-ack", new object[] { a[0].Value<string>() });
                 }
             }
+            else if (kind == SurrenderOpened || kind == SurrenderClosed)
+                ReceiveSurrender(kind, a);
             else if (kind == "sound" && a.Count == 1)
                 SoundEffect(a[0].Value<int>());
             else if (kind == "announce" && a.Count == 4)

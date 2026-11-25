@@ -17,7 +17,7 @@ namespace PickleVerse.Multiplayer
         /// <summary>Online matches are best of three; the server only accepts a played-out result with two games won.</summary>
         public const int GamesToWin = 2;
 
-        /// <summary>The match was decided before either side won two games (someone left or lost connection).</summary>
+        /// <summary>The match was decided before either side won two games (someone left, gave up or lost connection).</summary>
         public static bool EndedEarly(MatchResult r) => r.outcome != MatchOutcome.Interrupted &&
             (r.localForfeit || System.Math.Max(r.gamesWon, r.gamesLost) < GamesToWin);
 
@@ -26,6 +26,9 @@ namespace PickleVerse.Multiplayer
         {
             if (r.outcome == MatchOutcome.Interrupted)
                 return "Trận đã dừng trước khi có kết quả";
+            if (r.Surrendered)
+                return r.outcome == MatchOutcome.Won ? "Đối thủ đã đầu hàng · bạn được xử thắng"
+                    : (r.opponents != null && r.opponents.Count > 1 ? "Đội bạn" : "Bạn") + " đã đầu hàng · trận được xử thua";
             if (r.localForfeit)
                 return "Bạn đã rời trận · trận được xử thua";
             if (EndedEarly(r))

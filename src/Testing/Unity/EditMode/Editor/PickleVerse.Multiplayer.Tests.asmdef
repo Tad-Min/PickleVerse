@@ -8,7 +8,9 @@
     "UnityEditor.TestRunner",
     "PickleVerse.Entites",
     "PickleVerse.Progression",
-    "PickleVerse.Settings"
+    "PickleVerse.Settings",
+    "Unity.TextMeshPro",
+    "Unity.ugui"
   ],
   "includePlatforms": [
     "Editor"

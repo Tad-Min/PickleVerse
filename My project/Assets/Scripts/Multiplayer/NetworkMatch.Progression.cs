@@ -99,7 +99,7 @@ namespace PickleVerse.Multiplayer
                 r.endedUtcTicks = DateTime.UtcNow.Ticks;
                 r.outcome = Rules.winner == member.team ? MatchOutcome.Won : MatchOutcome.Lost;
                 r.localForfeit = forfeitedPlayers.Contains(member.id);
-                r.reason = Rules.reason;
+                r.reason = surrendered ? MatchResult.SurrenderReason : Rules.reason;
                 r.gamesWon = Rules.games[member.team];
                 r.gamesLost = Rules.games[1 - member.team];
                 r.points = teamPoints[member.team];

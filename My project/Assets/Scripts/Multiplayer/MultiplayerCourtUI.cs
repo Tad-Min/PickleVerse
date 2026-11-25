@@ -25,6 +25,8 @@ namespace PickleVerse.Multiplayer
         public MatchScoreboard broadcast;
         public MatchHudLayout layout;
         TMP_Text leaveLabel, returnLabel;
+        SurrenderPanel surrender;
+        public SurrenderPanel Surrender => surrender;
         NetworkPlayer localOwner;
         NetworkMatch displayedMatch;
         int displayedTeam = -1, serviceTeam = -1, serviceIndex = -1, serviceNumber = -1, resultA = -1, resultB = -1;
@@ -106,7 +108,10 @@ namespace PickleVerse.Multiplayer
             {
                 leaveLabel = leave.GetComponentInChildren<TMP_Text>(true);
                 leave.onClick.AddListener(LeaveClicked);
+                // Enter and Space must not press the button again during a rally.
+                leave.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.None };
             }
+            surrender = SurrenderPanel.Create(transform, leave ? (RectTransform)leave.transform : null, modalTitle ? modalTitle.font : null);
             if (returnToRoom)
             {
                 returnLabel = returnToRoom.GetComponentInChildren<TMP_Text>(true);
@@ -122,7 +127,14 @@ namespace PickleVerse.Multiplayer
                 SceneManager.LoadScene("PlayMultiplayer");
                 return;
             }
-            _ = app.ExecuteAsync(() => app.Searching ? app.CancelSearchAsync() : app.LeaveGameAsync());
+            if (UnityEngine.EventSystems.EventSystem.current)
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            if (app.Searching)
+                _ = app.ExecuteAsync(() => app.CancelSearchAsync());
+            else if (app.State == FlowState.Reconnecting)
+                surrender.AskLeave(() => _ = app.ExecuteAsync(() => app.LeaveGameAsync()));
+            else
+                surrender.Ask(NetworkMatch.Instance);
         }
         void ReturnClicked()
         {
@@ -165,7 +177,12 @@ namespace PickleVerse.Multiplayer
             if (readKeys && !hasOutcome && (!resultScreen || !resultScreen.IsVisible) && !SettingsOverlay.IsOpen && !SettingsOverlay.Loading)
             {
                 if (GameControls.Pressed(GameAction.Settings))
-                    OpenSettings();
+                {
+                    if (surrender && surrender.CanCancel)
+                        surrender.Cancel();
+                    else
+                        OpenSettings();
+                }
                 else if (GameControls.Pressed(GameAction.Help))
                     ToggleHelp();
             }
@@ -182,6 +199,9 @@ namespace PickleVerse.Multiplayer
                 EnsureEndAnnouncement(match.Status.ToString());
             if (!announcements && EndAnnouncementReceived && Time.unscaledTime >= announcementUntil && notices.Count == 0)
                 EndAnnouncementFinished = true;
+            if (surrender)
+                surrender.Refresh(hasMatch ? match : null, SettingsOverlay.IsOpen || hasOutcome || cinematic && cinematic.OwnsPose
+                    || help && help.activeSelf || resultScreen && resultScreen.IsVisible);
             if (cinematic && (cinematic.OwnsPose || hasOutcome && !hasMatch))
             {
                 if (intro)
@@ -247,7 +267,7 @@ namespace PickleVerse.Multiplayer
             if (status && announcements)
                 status.transform.parent.gameObject.SetActive(!hasMatch || match.Paused || !(announcements.Busy || match.BetweenPoints || match.BetweenGames || match.Finished));
             if (leaveLabel)
-                leaveLabel.text = app && app.Searching ? "Hủy" : "Rời trận";
+                leaveLabel.text = app && app.Searching ? "Hủy" : app && app.State == FlowState.Reconnecting ? SurrenderText.LeaveButton : SurrenderText.Button;
             if (server && !broadcast)
                 server.text = !hasMatch ? "" : match.WaitingServe ? $"GIAO BÓNG  {Mathf.Max(0, 10 - match.ServeElapsed):0.0}s\n<size=16>Đội {(match.ServerTeam == 0 ? "A" : "B")} • Người {match.ServerIndex + 1} • Lượt {match.ServerNumber}</size>" : match.Ball.live ? match.Bounces == 0 ? "BÓNG CHƯA NẢY" : "BÓNG ĐÃ NẢY" : "";
             if (returnLabel)
@@ -267,7 +287,7 @@ namespace PickleVerse.Multiplayer
                 returnToRoom.interactable = !app || !app.Busy;
             }
             if (leave)
-                leave.gameObject.SetActive(!hasOutcome && !ended && !nextGame);
+                leave.gameObject.SetActive(!hasOutcome && !ended && !nextGame && (!hasMatch || match.Started));
             var owner = localOwner;
             bool choosing = owner && !string.IsNullOrEmpty(owner.SelectionKeys), swinging = owner && owner.Actor && owner.Actor.Swinging && !string.IsNullOrEmpty(owner.ActiveShotKeys);
             string keys = choosing ? owner.SelectionKeys : swinging ? owner.ActiveShotKeys : "", description = choosing ? owner.Selection : swinging ? owner.Actor.Intent.ToString() : "";

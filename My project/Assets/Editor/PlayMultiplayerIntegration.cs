@@ -102,7 +102,7 @@ namespace PickleVerse.EditorTools
             foreach(var button in new[]{ui.leave,ui.returnToRoom})
             {
                 var rect=(RectTransform)button.transform;rect.anchorMin=rect.anchorMax=Vector2.one;rect.pivot=Vector2.one;rect.anchoredPosition=new Vector2(-15,-188);
-                button.GetComponentInChildren<TMP_Text>().text=button==ui.leave?"Rời trận":"Về phòng";
+                button.GetComponentInChildren<TMP_Text>().text=button==ui.leave?SurrenderText.Button:"Về phòng";
                 var cap=button.transform.Find("ShortcutCap");if(cap)cap.gameObject.SetActive(false);
                 var symbol=button.GetComponentInChildren<PickleVerse.Settings.UiLineIcon>();if(symbol)symbol.SetGlyph(button==ui.leave?PickleVerse.Settings.ArenaGlyph.Close:PickleVerse.Settings.ArenaGlyph.Arrow);
             }

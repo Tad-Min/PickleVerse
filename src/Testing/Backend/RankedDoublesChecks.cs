@@ -229,6 +229,48 @@ static class RankedDoublesChecks
             check(await db.Ratingledgers.CountAsync(r => r.Matchid == fullId) == 4,
                 "an all-human match from the doubles queue rates each player");
         }
+        // Both partners confirmed "Đầu hàng" on the match server; any other text of a server stays the general reason.
+        foreach (bool agreed in new[] { true, false })
+        {
+            var pair = await Players(400, 440);
+            string region = Region();
+            var searches = pair.ToDictionary(id => id, _ => Search(region, pair));
+            foreach (var (id, search) in searches) await Begin(id, search);
+            clock.Now = clock.Now.AddSeconds(waitSeconds);
+            var ticket = await Poll(pair[0], searches[pair[0]]);
+            await Start(ticket, searches);
+            var lostId = Guid.Parse(ticket.matchId);
+            await using (var db = new PickleVerseContext(options))
+                await db.Gamematches.Where(m => m.Matchid == lostId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(m => m.Authoritymode, MatchAuthorityMode.Dedicated));
+            int losers = ticket.roster!.Find(pair[0].ToString("N")).team;
+            var coins = new Dictionary<Guid, long>();
+            foreach (var id in pair) coins[id] = (await Game(g => g.Read(id), true)).player.coins;
+            var given = ticket.roster.members.Select(member => new DedicatedPlayerResult
+            {
+                onlineId = member.id,
+                result = new MatchResult
+                {
+                    id = ticket.matchId, playerId = member.id, kind = MatchKind.MatchedDoubles,
+                    outcome = member.team == losers ? MatchOutcome.Lost : MatchOutcome.Won,
+                    localForfeit = member.team == losers && !member.bot,
+                    reason = agreed ? MatchResult.SurrenderReason : "Một lý do khác",
+                    scores = [member.team == 0 ? new(3, 5, false) : new(5, 3, false)]
+                }
+            }).ToList();
+            await Game(async g => { await g.CompleteDedicated(lostId, given); return true; }, true);
+            foreach (var id in pair)
+            {
+                var player = (await Game(g => g.Read(id), true)).player;
+                var result = player.history.Single(r => r.id == ticket.matchId);
+                check(player.pendingMatch == null && result.outcome == MatchOutcome.Lost && result.localForfeit
+                    && result.eloDelta == EloPolicy.StandardDelta(result.ownElo, result.opponentElo, false) && player.coins == coins[id],
+                    "a surrendered doubles match is a rated loss without reward for both partners");
+                check(result.Surrendered == agreed && result.OutcomeLabel == (agreed ? "Thua · Đầu hàng" : "Thua · Bỏ trận")
+                    && result.reason != "Một lý do khác",
+                    agreed ? "the history names a surrender" : "a server text other than the surrender reason is not stored");
+            }
+        }
         var older = (await Players(400))[0];
         var oldSearch = Search(Region(), protocol: RankedSearchRequest.RankedDoublesProtocol - 1);
         await Begin(older, oldSearch);

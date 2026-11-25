@@ -59,7 +59,7 @@ namespace PickleVerse.FrontEnd
         }
 
         // Older workers and shared matches can publish replay after the score.
-        static bool ExpectReplaySoon(MatchResult match) => !match.localForfeit && match.outcome != MatchOutcome.Interrupted
+        static bool ExpectReplaySoon(MatchResult match) => (!match.localForfeit || match.Surrendered) && match.outcome != MatchOutcome.Interrupted
             && match.endedUtcTicks >= DateTime.UtcNow.AddMinutes(-2).Ticks;
 
         HistoryReplayState GetHistoryReplayState(HistoryReplayRow row)

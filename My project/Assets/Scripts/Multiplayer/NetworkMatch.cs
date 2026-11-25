@@ -427,6 +427,7 @@ namespace PickleVerse.Multiplayer
             }
             if (!IsServer)
                 return; // Client ball presentation runs at render rate in LateUpdate.
+            surrenderDesk?.Tick();
             if (Paused)
             {
                 foreach (var r in reservations.ToArray())
@@ -778,6 +779,7 @@ namespace PickleVerse.Multiplayer
             Body.isKinematic = true;
             Status = "Tạm dừng — chờ người chơi kết nối lại, tối đa 30 giây";
             app.RemoveClientIdentity(client);
+            surrenderDesk?.Disconnected(id);
         }
         void PlayerConnected(ulong client)
         {

@@ -115,12 +115,15 @@ namespace PickleVerse.Progression
         public List<OpponentInfo> opponents = new List<OpponentInfo>();
         public List<GameScore> scores = new List<GameScore>();
         public const string DoublesStandardRating = "doubles-elo-v2", DoublesLegacyRating = "doubles-legacy-v1";
+        // Stored as the end reason of every participant; the labels below recognise it.
+        public const string SurrenderReason = "Đội thua đã đầu hàng.";
+        public bool Surrendered => outcome != MatchOutcome.Interrupted && reason == SurrenderReason;
         public bool Ranked => kind == MatchKind.RankedSingles || kind == MatchKind.RankedBot
             || kind == MatchKind.MatchedDoubles && (ratingPolicyVersion == DoublesStandardRating || ratingPolicyVersion == DoublesLegacyRating);
         public bool Bot => kind == MatchKind.BotPractice || kind == MatchKind.RankedBot;
         public bool Eligible => kind != MatchKind.Custom;
         public string KindLabel => kind == MatchKind.BotPractice ? "Đấu máy" : kind == MatchKind.RankedBot ? "Xếp hạng · Máy" : kind == MatchKind.RankedSingles ? "Xếp hạng · 1v1" : kind == MatchKind.MatchedDoubles ? "Tìm trận · 2v2" : "Phòng riêng";
-        public string OutcomeLabel => outcome == MatchOutcome.Interrupted ? "Gián đoạn" : localForfeit ? "Thua · Bỏ trận" : outcome == MatchOutcome.Won ? "Thắng" : "Thua";
+        public string OutcomeLabel => outcome == MatchOutcome.Interrupted ? "Gián đoạn" : localForfeit ? Surrendered ? "Thua · Đầu hàng" : "Thua · Bỏ trận" : outcome == MatchOutcome.Won ? "Thắng" : "Thua";
     }
     [Serializable]
     public sealed class PlayerProfile
