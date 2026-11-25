@@ -22,6 +22,7 @@ namespace PickleVerse.VFX
             public Transform root;
             public Renderer shell;
             public ParticleSystem[] particles;
+            public BallSkinMotion[] motions;
             public float fade;
             public bool emitting = true;
         }
@@ -135,6 +136,10 @@ namespace PickleVerse.VFX
         {
             var profile = Library ? Library.Find(SkinOf(actor)) : null;
             Apply(profile);
+            if (profile && ballEffects.TryGetValue(profile, out var effect) && effect.root)
+                foreach (var motion in effect.motions)
+                    if (motion)
+                        motion.Restart(point);
             if (profile && profile.impactEffect)
                 PlayImpact(profile, point);
         }
@@ -180,7 +185,7 @@ namespace PickleVerse.VFX
             var s = transform.lossyScale;
             root.localScale = new Vector3(1 / Mathf.Max(s.x, 1e-4f), 1 / Mathf.Max(s.y, 1e-4f), 1 / Mathf.Max(s.z, 1e-4f));
             var shell = root.Find("Glitter Shell");
-            var effect = new BallEffect { root = root, shell = shell ? shell.GetComponent<Renderer>() : null, particles = root.GetComponentsInChildren<ParticleSystem>(true) };
+            var effect = new BallEffect { root = root, shell = shell ? shell.GetComponent<Renderer>() : null, particles = root.GetComponentsInChildren<ParticleSystem>(true), motions = root.GetComponentsInChildren<BallSkinMotion>(true) };
             FitShell(shell);
             ballEffects[profile] = effect;
             Show(effect, 0, false);
@@ -209,6 +214,9 @@ namespace PickleVerse.VFX
                 effect.shell.enabled = fade > .001f;
             }
             effect.fade = fade;
+            foreach (var motion in effect.motions)
+                if (motion)
+                    motion.SetShown(emitting);
             if (effect.emitting == emitting)
                 return;
             effect.emitting = emitting;

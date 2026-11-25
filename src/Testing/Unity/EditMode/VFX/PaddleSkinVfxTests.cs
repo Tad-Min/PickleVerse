@@ -131,6 +131,27 @@ namespace PickleVerse.Tests.VFX
         }
 
         [Test]
+        public void ShippedLibraryGivesTheDragonRubyPaddleItsDragon()
+        {
+            var shipped = Resources.Load<PaddleSkinVfxLibrary>(PaddleSkinVfxLibrary.ResourcePath);
+            var dragon = shipped.Find("paddle.dragonruby");
+            Assert.IsNotNull(dragon);
+            Assert.IsNotNull(dragon.trailMaterial);
+            Assert.IsNotNull(dragon.impactEffect);
+            var motion = dragon.ballEffect.GetComponent<DragonBallMotion>();
+            Assert.IsNotNull(motion, "the dragon follows the ball by itself");
+            Assert.That(motion.renderers.Length, Is.EqualTo(3), "dragon, sine ribbon, counter ribbon");
+            foreach (var r in motion.renderers)
+            {
+                Assert.IsNotNull(r.sharedMaterial);
+                Assert.IsFalse(r.enabled, "hidden until this paddle hits the ball");
+                Assert.IsNotNull(r.GetComponent<MeshFilter>().sharedMesh);
+            }
+            foreach (var material in dragon.ballEffect.GetComponentsInChildren<Renderer>(true))
+                Assert.IsFalse(material.sharedMaterial.shader.name.StartsWith("Hidden/"), material.name);
+        }
+
+        [Test]
         public void ShippedLibraryGivesTheGemstonePaddleItsEffect()
         {
             var shipped = Resources.Load<PaddleSkinVfxLibrary>(PaddleSkinVfxLibrary.ResourcePath);
