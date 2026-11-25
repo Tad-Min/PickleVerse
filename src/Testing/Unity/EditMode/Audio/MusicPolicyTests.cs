@@ -24,9 +24,9 @@ namespace PickleVerse.Tests
             finally{FrontEndModalInput.Release(music);}
             Assert.That(FrontEndModalInput.IsOpen,Is.False);
         }
-        [Test] public void CatalogContainsFourMatchingDiscsAndAudio()
+        [Test] public void CatalogContainsTenMatchingDiscsAndAudio()
         {
-            var library=Resources.Load<MusicLibrary>("Audio/Front End Music");Assert.That(library);Assert.That(library.uiPrefab);Assert.That(library.tracks.Length,Is.EqualTo(4));
+            var library=Resources.Load<MusicLibrary>("Audio/Front End Music");Assert.That(library);Assert.That(library.uiPrefab);Assert.That(library.tracks.Length,Is.EqualTo(10));
             foreach(var track in library.tracks){Assert.That(track.clip);Assert.That(track.disc);Assert.That(track.clip.channels,Is.EqualTo(2));Assert.That(track.clip.loadType,Is.EqualTo(AudioClipLoadType.Streaming));Assert.That(track.clip.length,Is.GreaterThan(140));var importer=(AudioImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(track.clip));Assert.That(importer.loadInBackground);Assert.That(importer.defaultSampleSettings.preloadAudioData,Is.False);}
         }
     }

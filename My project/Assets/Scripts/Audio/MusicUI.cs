@@ -88,8 +88,43 @@ namespace PickleVerse.Audio
             });
             progress.onValueChanged.AddListener(value => player?.Seek(value));
         }
+        // Every track of the library is NoCopyrightSounds music: mark the player as such in its top-right
+        // corner, next to the close button (same band as the button, prefab anchors .865–.95 / .916–.972).
+        void AddNcsBadge()
+        {
+            var parent = closeButton ? closeButton.transform.parent : panel.transform;
+            if (parent.Find("NCS Badge"))
+                return;
+            var badge = new GameObject("NCS Badge", typeof(RectTransform), typeof(Image));
+            var rect = (RectTransform)badge.transform;
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(.775f, .922f);
+            rect.anchorMax = new Vector2(.852f, .966f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var image = badge.GetComponent<Image>();
+            image.color = new Color(.56f, .91f, .85f, .16f);
+            image.raycastTarget = false;
+            var label = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            var labelRect = (RectTransform)label.transform;
+            labelRect.SetParent(rect, false);
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
+            var text = label.GetComponent<TextMeshProUGUI>();
+            text.font = title ? title.font : text.font;
+            text.text = "NCS";
+            text.fontStyle = FontStyles.Bold;
+            text.characterSpacing = 6;
+            text.enableAutoSizing = true;
+            text.fontSizeMin = 10;
+            text.fontSizeMax = 24;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = new Color(.56f, .91f, .85f, 1);
+            text.raycastTarget = false;
+        }
         public void Bind(MusicPlayer value)
         {
+            AddNcsBadge();
             player = value;
             player.Changed += Refresh;
             libraryCount.text = "THƯ VIỆN  /  " + player.Library.tracks.Length + " BÀI";

@@ -65,6 +65,84 @@ MonoBehaviour:
       width: 0.9472656
       height: 0.9375
     accent: {r: 1, g: 0.38, b: 0.44, a: 1}
+  - id: music.redline
+    title: "Red Line"
+    artist: "Anna Yvette"
+    genre: NCS Release
+    clip: {fileID: 8300000, guid: 373dfa8c0d354504a18ee185c21c3c78, type: 3}
+    disc: {fileID: 21300000, guid: 4d735ecdee7548a78bb33c57ac2202f3, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.020734
+      y: 0.030303
+      width: 0.951356
+      height: 0.962520
+    accent: {r: 1, g: 0.23, b: 0.8, a: 1}
+  - id: music.symphony
+    title: "Symphony"
+    artist: "Arc North ft. Donna Tella"
+    genre: NCS Release
+    clip: {fileID: 8300000, guid: f1e28b2a319c467f84094fd1cbe9f5e5, type: 3}
+    disc: {fileID: 21300000, guid: d0257c817cf7408b89d8673e3fe912fb, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.002930
+      y: 0.000000
+      width: 0.996094
+      height: 0.990234
+    accent: {r: 0.56, g: 0.91, b: 0.85, a: 1}
+  - id: music.limbo
+    title: "Limbo"
+    artist: "Floatinurboat ft. ELLIØT"
+    genre: NCS Release
+    clip: {fileID: 8300000, guid: b7df9847ab0e4a06ac1add3f7549fc14, type: 3}
+    disc: {fileID: 21300000, guid: e027689109ad413a9e9d2949e0dc9ed5, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.000000
+      y: 0.000000
+      width: 0.985352
+      height: 0.989258
+    accent: {r: 0.68, g: 0.17, b: 1, a: 1}
+  - id: music.freedom
+    title: "Freedom"
+    artist: "Goodknight."
+    genre: Trap
+    clip: {fileID: 8300000, guid: 4844e93ffb7a4125bd94f792847139c6, type: 3}
+    disc: {fileID: 21300000, guid: d70920a00d014ec59788f506d5d777c9, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.014648
+      y: 0.002930
+      width: 0.985352
+      height: 0.988281
+    accent: {r: 1, g: 0.69, b: 0.19, a: 1}
+  - id: music.runaway
+    title: "Runaway"
+    artist: "N3WPORT & Meggie York"
+    genre: NCS Release
+    clip: {fileID: 8300000, guid: 094f76e15d3640278da2a98dd6f2861b, type: 3}
+    disc: {fileID: 21300000, guid: 6c83c5c3b4c54a45a39e467b4be731e4, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.000977
+      y: 0.000000
+      width: 0.999023
+      height: 0.993164
+    accent: {r: 0.34, g: 1, b: 0.15, a: 1}
+  - id: music.runhide
+    title: "Run & Hide"
+    artist: "Zeus X Crona & Shiah Maisel"
+    genre: NCS Release
+    clip: {fileID: 8300000, guid: 65f9e27e1989471d88114dfaeb7a40d4, type: 3}
+    disc: {fileID: 21300000, guid: 42db468665f1448982b64683c1575355, type: 3}
+    discBounds:
+      serializedVersion: 2
+      x: 0.000000
+      y: 0.000000
+      width: 0.987305
+      height: 0.991211
+    accent: {r: 1, g: 0.18, b: 0.63, a: 1}
   uiPrefab: {fileID: 8610401936002494606, guid: ba7f62a669e00a642828d9d06e345062, type: 3}
   gain: 0.45
   crossfade: 0.65
