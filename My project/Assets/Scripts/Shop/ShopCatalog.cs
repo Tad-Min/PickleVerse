@@ -34,6 +34,12 @@ namespace PickleVerse.Shop
         public Sprite tokenpadIcon, eliteIcon;
         public Material tokenpadSheen, eliteSheen;
         public PaddleOffer[] paddles;
+        [NonSerialized] PaddleOffer[] modelled;
+        /// <summary>
+        /// Every skin this build has a model for, as shipped. <see cref="paddles"/> narrows to what the server sells; a skin
+        /// an admin publishes later is found here, so it appears without restarting the game.
+        /// </summary>
+        public PaddleOffer[] Modelled => modelled ??= paddles ?? Array.Empty<PaddleOffer>();
         public const string DefaultPaddleId = "paddle.default";
         public PaddleOffer defaultPaddle;
         public PaddleOffer Find(string id) => id == DefaultPaddleId ? defaultPaddle : Array.Find(paddles ?? Array.Empty<PaddleOffer>(), x => x.id == id);

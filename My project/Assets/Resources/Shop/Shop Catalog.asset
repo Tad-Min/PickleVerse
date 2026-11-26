@@ -62,6 +62,19 @@ MonoBehaviour:
     effectTitle: "X\xCDCH LONG TRUY CH\xC2U"
     effectDetails: "\u0110\xE1nh tr\xFAng b\xF3ng, r\u1ED3ng \u0111\u1ECF lao ra t\u1EEB m\u1EB7t v\u1EE3t v\xE0 \u0111u\u1ED5i theo b\xF3ng.\nTh\xE2n r\u1ED3ng u\u1ED1n l\u01B0\u1EE3n theo \u0111\u01B0\u1EDDng s\xF3ng h\xECnh sin, k\xE9o theo v\u1EC7t l\u1EEDa \u0111\u1ECF v\xE0 d\u1EA3i v\xE0ng \u0111\u1ED1i x\u1EE9ng.\nB\xF3ng h\xF3a vi\xEAn ng\u1ECDc r\u1EF1c s\xE1ng; \u0111\u1EA7u r\u1ED3ng g\u1EA7m c\xF9ng v\xF2ng l\u1EEDa b\xF9ng l\xEAn t\u1EA1i \u0111i\u1EC3m ch\u1EA1m.\nCh\u1EC9 xu\u1EA5t hi\u1EC7n sau c\xFA \u0111\xE1nh c\u1EE7a ng\u01B0\u1EDDi c\u1EA7m v\u1EE3t n\xE0y, khi thi \u0111\u1EA5u v\xE0 luy\u1EC7n t\u1EADp. \u0110\u1ED1i th\u1EE7 \u0111\xE1nh tr\u1EA3, r\u1ED3ng tan th\xE0nh tro l\u1EEDa."
     releaseOrder: 3
+  - id: paddle.bluephoenix
+    title: BLUE PHOENIX
+    description: "Ph\u01B0\u1EE3ng ho\xE0ng l\u1EEDa xanh ch\u1EA1m n\u1ED5i gi\u1EEFa m\xE2y b\u1EA1c tr\xEAn n\u1EC1n \u0111\xE1 \u0111en. C\xE1n b\u1ECDc da qu\u1EA5n d\u1EA3i l\u1EEDa xanh v\xE0 d\xE2y b\u1EA1c, chu\xF4i kh\u1EAFc bi\u1EC3u t\u01B0\u1EE3ng ph\u01B0\u1EE3ng ho\xE0ng."
+    collection: ELITE COLLECTION
+    tokenpadPrice: 0
+    elitePrice: 900
+    previewPrefab: {fileID: 8652650794575959525, guid: ae7aaa08e11986140aa4b207548382e9, type: 3}
+    gameplayPrefab: {fileID: 7494326808089805166, guid: 2c7ba9245f3dc614890977936c2fec47, type: 3}
+    thumbnail: {fileID: -7541759722041312375, guid: 3750b53f7e456e34188c547b2a377277, type: 3}
+    gemstone: 1
+    effectTitle: "LAM PH\u01AF\u1EE2NG TUNG C\xC1NH"
+    effectDetails: "\u0110\xE1nh tr\xFAng b\xF3ng, ph\u01B0\u1EE3ng ho\xE0ng l\u1EEDa xanh dang r\u1ED9ng \u0111\xF4i c\xE1nh lao ra t\u1EEB m\u1EB7t v\u1EE3t v\xE0 v\u1ED7 c\xE1nh bay theo sau b\xF3ng.\n\u0110u\xF4i l\xF4ng v\u0169 d\xE0i k\xE9o v\u1EC7t l\u1EEDa xanh, song song l\xE0 d\u1EA3i kh\xF3i l\u1EEDa \u0111en; tro \u0111en \u0111i\u1EC3m than xanh r\u01A1i t\u1EEB \u0111\xF4i c\xE1nh.\nB\xF3ng r\u1EF1c s\xE1ng xanh \u0111i\u1EC7n; v\xF2ng l\u1EEDa xanh c\xF9ng h\xECnh ph\u01B0\u1EE3ng ho\xE0ng b\xF9ng l\xEAn t\u1EA1i \u0111i\u1EC3m ch\u1EA1m.\nCh\u1EC9 xu\u1EA5t hi\u1EC7n sau c\xFA \u0111\xE1nh c\u1EE7a ng\u01B0\u1EDDi c\u1EA7m v\u1EE3t n\xE0y, khi thi \u0111\u1EA5u v\xE0 luy\u1EC7n t\u1EADp. \u0110\u1ED1i th\u1EE7 \u0111\xE1nh tr\u1EA3, ph\u01B0\u1EE3ng ho\xE0ng tan th\xE0nh tro \u0111en."
+    releaseOrder: 4
   defaultPaddle:
     id: paddle.default
     title: PICKLEVERSE

@@ -11,7 +11,9 @@ using Services.Implementations;
 /// <summary>Trang quản trị đăng bán, sửa giá và ngừng bán vật phẩm; game phải hiện và bán đúng như vậy.</summary>
 static class ShopItemChecks
 {
-    const string Dragon = "paddle.dragonruby";
+    const string Dragon = "paddle.dragonruby", Phoenix = "paddle.bluephoenix";
+    /// <summary>Skins that have a model in the game but are not in Database.sql: an administrator publishes them.</summary>
+    static readonly string[] Unpublished = [Phoenix];
     static SaveShopItemRequest Request(string code = Dragon, int tokenpad = 0, int elite = 800, string title = "DRAGON RUBY", string description = "Rồng phương Đông.",
         string collection = "BỘ SƯU TẬP TINH ANH") => new()
         { Code = code, Title = title, Description = description, Collection = collection, TokenpadPrice = tokenpad, ElitePrice = elite, Premium = true };
@@ -107,16 +109,21 @@ static class ShopItemChecks
         GameCommand Buy(string currency, string code = Dragon) => new() { RequestId = Guid.NewGuid().ToString("N"), Code = code, Currency = currency };
 
         var seeded = await Shop(s => s.List());
-        check(PaddleSkins.All.All(skin => seeded.Items.Single(i => i.Code == skin.Code) is { State: ShopItemState.OnSale, Issue: null, CanEdit: true, CanDelete: false }),
+        check(PaddleSkins.All.Where(skin => !Unpublished.Contains(skin.Code)).All(skin => seeded.Items.Single(i => i.Code == skin.Code) is { State: ShopItemState.OnSale, Issue: null, CanEdit: true, CanDelete: false }),
             "every seeded skin is on sale and its shown price equals its purchase price");
         check(seeded.Items.Single(i => i.Code == PaddleSkins.Default) is { State: ShopItemState.Default, CanEdit: false, CanDelete: false }, "default paddle is listed read-only");
-        check(seeded.AvailableSkins.Count == 0, "no skin is left to publish on a fresh database");
+        check(seeded.AvailableSkins.Select(s => s.Code).SequenceEqual(Unpublished) && seeded.Items.All(i => !Unpublished.Contains(i.Code)),
+            "on a fresh database only the Blue Phoenix waits for an administrator to publish it");
+        check(seeded.AvailableSkins.Single(s => s.Code == Phoenix) is { Title: "BLUE PHOENIX", Premium: true } phoenixSkin && phoenixSkin.Description.Contains("Phượng hoàng"),
+            "the publishing form is filled in with the Blue Phoenix text");
+        check(await InGame(Phoenix) == null, "the game does not sell the Blue Phoenix before it is published");
         await Reject(() => Shop(s => s.Create(Request())), HttpStatusCode.Conflict, "an item cannot be published twice");
 
         // A database that existed before the skin (staging): the administrator publishes it on the web page.
         using (var db = new PickleVerseContext(options))
             await db.Cosmetics.Where(c => c.Itemcode == Dragon).ExecuteDeleteAsync();
-        check((await Shop(s => s.List())).AvailableSkins.Select(s => s.Code).SequenceEqual([Dragon]) && await InGame(Dragon) == null, "a skin missing from the shop is offered for publishing");
+        check((await Shop(s => s.List())).AvailableSkins.Select(s => s.Code).Order().SequenceEqual(new[] { Dragon, Phoenix }.Order()) && await InGame(Dragon) == null,
+            "a skin missing from the shop is offered for publishing");
         foreach (var bad in new[] { Request("paddle.unknown"), Request("PADDLE_CYBER_2026"), Request(PaddleSkins.Default), Request(elite: -5), Request(elite: 0), Request(title: "") })
             await Reject(() => Shop(s => s.Create(bad)), HttpStatusCode.BadRequest, "invalid item is not published: " + bad.Code + " " + bad.Title + " " + bad.ElitePrice);
         using (var db = new PickleVerseContext(options))
@@ -153,6 +160,19 @@ static class ShopItemChecks
         var equipped = await Game(s => s.Equip(player, Buy("EliteToken")));
         check(equipped.inventory.equippedPaddle == Dragon, "owners keep using a stopped item");
         check((await Shop(s => s.Update(created.CosmeticId, Request()))).State == ShopItemState.OnSale && (await Prices(Dragon))["ELITE TOKEN"] == 800, "a stopped item can be sold again");
+
+        // The administrator publishes the Blue Phoenix from the form the page fills in, as for the Dragon Ruby.
+        var skin = PaddleSkins.Find(Phoenix)!;
+        var phoenix = await Shop(s => s.Create(Request(Phoenix, 0, 900, skin.Title, skin.Description, skin.Collection)));
+        check(phoenix is { Code: Phoenix, State: ShopItemState.OnSale, Issue: null, ElitePrice: 900, TokenpadPrice: 0, Premium: true }
+            && phoenix.ReleaseOrder > created.ReleaseOrder, "the Blue Phoenix is published and leads the shop");
+        check(await InGame(Phoenix) is { title: "BLUE PHOENIX", elitePrice: 900, tokenpadPrice: 0, gemstone: true } && (await Prices(Phoenix))["ELITE TOKEN"] == 900,
+            "the game receives the Blue Phoenix with the price that is charged");
+        var fan = await Player(0, 1000);
+        var owned = await Game(s => s.Purchase(fan, Buy("EliteToken", Phoenix)));
+        check(owned.inventory.owned.Contains(Phoenix) && owned.player.gems == 100, "a player buys the Blue Phoenix for 900 ELITE TOKEN");
+        check((await Game(s => s.Equip(fan, Buy("EliteToken", Phoenix)))).inventory.equippedPaddle == Phoenix, "and plays with it");
+        check(!(await Shop(s => s.List())).AvailableSkins.Any(), "nothing is left to publish");
 
         // Rows of the old form: neither game configuration nor purchase prices.
         using (var db = new PickleVerseContext(options))

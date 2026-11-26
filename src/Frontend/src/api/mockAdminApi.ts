@@ -47,6 +47,7 @@ const demoSkins: ShopSkin[] = [
   { code: 'paddle.gemstone', title: 'GEMSTONE', description: 'Viền đá quý, sắc vàng và mặt carbon.', collection: 'BỘ SƯU TẬP TINH ANH', premium: true },
   { code: 'paddle.thot', title: 'THOT', description: 'Hoa văn nổi bật cho phong cách thi đấu riêng.', collection: 'BỘ SƯU TẬP DẤU ẤN', premium: false },
   { code: 'paddle.dragonruby', title: 'DRAGON RUBY', description: 'Rồng phương Đông chạm nổi trên mặt sơn mài đen.', collection: 'BỘ SƯU TẬP TINH ANH', premium: true },
+  { code: 'paddle.bluephoenix', title: 'BLUE PHOENIX', description: 'Phượng hoàng lửa xanh chạm nổi giữa mây bạc trên nền đá đen.', collection: 'BỘ SƯU TẬP TINH ANH', premium: true },
 ];
 const demoItem = (cosmeticId: number, data: SaveShopItemRequest): ShopItem => ({
   cosmeticId, ...data, releaseOrder: 0, owners: 0, state: data.tokenpadPrice > 0 || data.elitePrice > 0 ? 'OnSale' : 'Stopped', issue: null, canEdit: true, canDelete: false,

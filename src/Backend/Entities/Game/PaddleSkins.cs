@@ -16,6 +16,8 @@ public static class PaddleSkins
         new("paddle.gemstone", "GEMSTONE", "Viền đá quý, sắc vàng và mặt carbon. Ánh lấp lánh tinh tế khi xoay dưới ánh sáng.", "BỘ SƯU TẬP TINH ANH", true),
         new("paddle.thot", "THOT", "Hoa văn nổi bật cho phong cách thi đấu riêng. Chọn Tokenpad hoặc Elite để sở hữu.", "BỘ SƯU TẬP DẤU ẤN", false),
         new("paddle.dragonruby", "DRAGON RUBY", "Rồng phương Đông chạm nổi trên mặt sơn mài đen. Thân rồng hồng ngọc quấn quanh cán bọc da, đầu rồng sừng vàng ngự ở chuôi.", "BỘ SƯU TẬP TINH ANH", true),
+        // Chưa có trong Database.sql: quản trị viên đăng bán trên trang web sau khi bản game có model đã được phát hành.
+        new("paddle.bluephoenix", "BLUE PHOENIX", "Phượng hoàng lửa xanh chạm nổi giữa mây bạc trên nền đá đen. Cán bọc da quấn dải lửa xanh và dây bạc, chuôi khắc biểu tượng phượng hoàng.", "BỘ SƯU TẬP TINH ANH", true),
     ];
 
     public static Skin? Find(string? code) => All.FirstOrDefault(s => s.Code == code);

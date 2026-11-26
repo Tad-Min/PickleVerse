@@ -39,5 +39,20 @@ namespace PickleVerse.Tests
             OnlinePlayerEconomy.Merge(catalog, new[] { new OnlineCosmeticOffer { id = "paddle.b", title = "B2" } });
             Assert.That(catalog.paddles.Select(p => p.id), Is.EqualTo(new[] { "paddle.b" }));
         }
+
+        // The game ships a skin before it is sold; an admin publishes it while players are online.
+        [Test]
+        public void ASkinPublishedLaterAppearsWithoutRestartingTheGame()
+        {
+            var catalog = Catalog();
+            OnlinePlayerEconomy.Merge(catalog, new[] { new OnlineCosmeticOffer { id = "paddle.a", title = "A" } });
+            Assert.That(catalog.paddles.Select(p => p.id), Is.EqualTo(new[] { "paddle.a" }));
+            Assert.That(catalog.Find("paddle.b"), Is.Null, "not sold yet");
+
+            OnlinePlayerEconomy.Merge(catalog, new[] { new OnlineCosmeticOffer { id = "paddle.a", title = "A" }, new OnlineCosmeticOffer { id = "paddle.b", title = "Mới", elitePrice = 900 } });
+            Assert.That(catalog.paddles.Select(p => p.id), Is.EqualTo(new[] { "paddle.a", "paddle.b" }));
+            Assert.That(catalog.Find("paddle.b").title, Is.EqualTo("Mới"));
+            Assert.That(catalog.Find("paddle.b").elitePrice, Is.EqualTo(900));
+        }
     }
 }

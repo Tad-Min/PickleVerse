@@ -50,9 +50,11 @@ namespace PickleVerse.Shop
         /// </summary>
         public static void Merge(ShopCatalog catalog, IReadOnlyCollection<OnlineCosmeticOffer> offers)
         {
+            var modelled = catalog.Modelled;   // the full list, kept across merges: a skin published later comes back
             foreach (var remote in offers)
             {
-                var item = string.IsNullOrEmpty(remote.id) ? null : catalog.Find(remote.id);
+                var item = string.IsNullOrEmpty(remote.id) ? null
+                    : remote.id == ShopCatalog.DefaultPaddleId ? catalog.defaultPaddle : Array.Find(modelled, p => p.id == remote.id);
                 if (item == null)
                     continue;
                 item.title = remote.title;
@@ -63,7 +65,7 @@ namespace PickleVerse.Shop
                 item.gemstone = remote.gemstone;
                 item.releaseOrder = remote.releaseOrder;
             }
-            catalog.paddles = catalog.paddles.Where(p => offers.Any(c => c.id == p.id)).ToArray();
+            catalog.paddles = modelled.Where(p => offers.Any(c => c.id == p.id)).ToArray();
         }
         public async Task<PlayerEconomyState> ReadAsync()
         {
