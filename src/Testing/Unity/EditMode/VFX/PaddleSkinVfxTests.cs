@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using PickleVerse.LocalMatch;
 using PickleVerse.Shop;
@@ -149,6 +151,51 @@ namespace PickleVerse.Tests.VFX
             }
             foreach (var material in dragon.ballEffect.GetComponentsInChildren<Renderer>(true))
                 Assert.IsFalse(material.sharedMaterial.shader.name.StartsWith("Hidden/"), material.name);
+        }
+
+        [Test]
+        public void ShippedLibraryGivesTheBluePhoenixPaddleItsPhoenix()
+        {
+            var shipped = Resources.Load<PaddleSkinVfxLibrary>(PaddleSkinVfxLibrary.ResourcePath);
+            var phoenix = shipped.Find("paddle.bluephoenix");
+            Assert.IsNotNull(phoenix);
+            Assert.IsNotNull(phoenix.trailMaterial);
+            Assert.IsNotNull(phoenix.impactEffect);
+            var motion = phoenix.ballEffect.GetComponent<PhoenixBallMotion>();
+            Assert.IsNotNull(motion, "the phoenix follows the ball by itself");
+            Assert.That(motion.renderers.Length, Is.EqualTo(3), "phoenix, blue fire ribbon, black smoke ribbon");
+            Assert.That(motion.renderers[0].sharedMaterial.shader.name, Is.EqualTo("PickleVerse/VFX/Phoenix Spirit"));
+            foreach (var r in motion.renderers)
+            {
+                Assert.IsNotNull(r.sharedMaterial);
+                Assert.IsFalse(r.enabled, "hidden until this paddle hits the ball");
+            }
+            var ash = phoenix.ballEffect.GetComponentsInChildren<ParticleSystemRenderer>(true).Where(p => p.sharedMaterial.shader.name == "PickleVerse/VFX/Black Ash").ToArray();
+            Assert.That(ash.Length, Is.GreaterThanOrEqualTo(3), "black ash and black flames along the wings and tail");
+            Assert.That(motion.riders.Length, Is.EqualTo(motion.riderDistances.Length));
+            foreach (var ps in phoenix.ballEffect.GetComponentsInChildren<ParticleSystem>(true).Concat(phoenix.impactEffect.GetComponentsInChildren<ParticleSystem>(true)))
+                Assert.That(ps.main.maxParticles, Is.LessThanOrEqualTo(150), ps.name);
+            foreach (var r in phoenix.ballEffect.GetComponentsInChildren<Renderer>(true).Concat(phoenix.impactEffect.GetComponentsInChildren<Renderer>(true)))
+                Assert.IsFalse(r.sharedMaterial.shader.name.StartsWith("Hidden/"), r.name + " uses a shader that did not compile or was not found");
+        }
+
+        [Test]
+        public void ThePhoenixMeshKeepsItsSpineLayout()
+        {
+            var shipped = Resources.Load<PaddleSkinVfxLibrary>(PaddleSkinVfxLibrary.ResourcePath);
+            var mesh = shipped.Find("paddle.bluephoenix").ballEffect.transform.Find("Phoenix").GetComponent<MeshFilter>().sharedMesh;
+            var b = mesh.bounds;
+            // x: beak at the front, tail tips 1.9 m behind; y: spread wings; z: the back, thin
+            Assert.That(b.min.x, Is.InRange(-.08f, 0f), "beak");
+            Assert.That(b.max.x, Is.InRange(1.6f, 2.0f), "tail");
+            Assert.That(b.size.y, Is.InRange(1.2f, 1.7f), "wing span");
+            Assert.That(b.size.z, Is.LessThan(.4f), "flat across the back");
+            var attr = new List<Vector2>();
+            mesh.GetUVs(1, attr);
+            Assert.That(attr.Count, Is.EqualTo(mesh.vertexCount), "flap and ash weights");
+            Assert.IsTrue(attr.Any(a => a.x > .9f) && attr.Any(a => a.x == 0), "wing tips flap, body and tail do not");
+            Assert.IsTrue(attr.Any(a => a.y > .95f), "feather tips burn to ash");
+            Assert.That(mesh.colors.Length + mesh.colors32.Length, Is.GreaterThan(0), "glow colour per vertex");
         }
 
         [Test]

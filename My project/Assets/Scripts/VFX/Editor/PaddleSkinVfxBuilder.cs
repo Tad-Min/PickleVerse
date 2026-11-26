@@ -20,7 +20,15 @@ namespace PickleVerse.VFX.Editor
         public static string BuildAll()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(LibraryPath));
-            var built = new[] { BuildGemstone(), BuildDragonRuby() };
+            return Register(BuildGemstone(), BuildDragonRuby(), BuildBluePhoenix());
+        }
+
+        /// <summary>Builds only the Blue Phoenix effect and registers it, leaving the other effects' assets as they are.</summary>
+        [MenuItem("PickleVerse/VFX/Rebuild Blue Phoenix effect")]
+        public static string BuildBluePhoenixEffect() => Register(BuildBluePhoenix());
+
+        static string Register(params PaddleSkinVfxProfile[] built)
+        {
             var library = AssetDatabase.LoadAssetAtPath<PaddleSkinVfxLibrary>(LibraryPath);
             if (!library)
             {
@@ -265,6 +273,246 @@ namespace PickleVerse.VFX.Editor
             return profile;
         }
 
+        /// <summary>
+        /// Blue Phoenix: a glowing blue phoenix bursts out of the paddle with wings spread and flies after the ball, its long
+        /// tail trailing a blue fire ribbon and a ribbon of black smoke; black ash with blue embers falls from its wings.
+        /// </summary>
+        static PaddleSkinVfxProfile BuildBluePhoenix()
+        {
+            string dir = Root + "/PaddleSkins/BluePhoenix";
+            Directory.CreateDirectory(dir + "/Materials");
+            Directory.CreateDirectory(dir + "/Prefabs");
+            var feathers = Texture(dir + "/Textures/T_BluePhoenix_Feathers.png", TextureWrapMode.Clamp);
+            var featherImporter = (TextureImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(feathers));
+            featherImporter.sRGBTexture = false;                      // brightness and coverage, not a colour
+            featherImporter.mipMapsPreserveCoverage = true;           // feathers keep their shape far from the camera
+            featherImporter.alphaTestReferenceValue = .42f;
+            featherImporter.SaveAndReimport();
+            var fire = Texture(dir + "/Textures/T_BluePhoenix_Fire.png", TextureWrapMode.Repeat);
+            var flame = Texture(dir + "/Textures/T_BluePhoenix_Flame.png", TextureWrapMode.Clamp);
+            var ashSheet = Texture(dir + "/Textures/T_BluePhoenix_Ash.png", TextureWrapMode.Clamp);
+            var ring = Texture(dir + "/Textures/T_BluePhoenix_Ring.png", TextureWrapMode.Clamp);
+            var emblem = Texture(dir + "/Textures/T_BluePhoenix_Emblem.png", TextureWrapMode.Clamp);
+            var halo = Texture(dir + "/Textures/T_BluePhoenix_Glow.png", TextureWrapMode.Clamp);
+            Color white = new Color(.86f, .96f, 1f), cyan = new Color(.35f, .82f, 1f), electric = new Color(.10f, .45f, 1f), deep = new Color(.04f, .16f, .85f);
+            var whiteCore = new Vector4(.80f, .95f, 1f, 1);
+
+            var spirit = Material(dir + "/Materials/M_BluePhoenix_Spirit.mat", "PickleVerse/VFX/Phoenix Spirit");
+            spirit.SetTexture("_BaseMap", feathers);
+            spirit.SetFloat("_Glow", 2.2f);
+            spirit.SetColor("_Deep", new Color(.004f, .03f, .38f));
+            spirit.SetColor("_Rim", new Color(.25f, 1.1f, 4.2f));
+            spirit.SetFloat("_Flap", 34);
+            spirit.SetFloat("_FlapSpeed", 12);
+            spirit.SetFloat("_Dihedral", 10);
+            spirit.SetFloat("_Roll", 0);
+            spirit.SetFloat("_Scale", 1.3f);                    // wings about 2 m across, tail 2.5 m
+            spirit.SetFloat("_AshReach", .38f);
+            var fireRibbon = Material(dir + "/Materials/M_BluePhoenix_FireRibbon.mat", "PickleVerse/VFX/Dragon Ribbon");
+            fireRibbon.SetTexture("_BaseMap", fire);
+            fireRibbon.SetTextureScale("_BaseMap", new Vector2(.8f, 1));
+            fireRibbon.SetFloat("_Width", .26f);
+            fireRibbon.SetFloat("_Cover", .55f);
+            fireRibbon.SetFloat("_Sign", 1);
+            fireRibbon.SetFloat("_Start", .55f);
+            fireRibbon.SetFloat("_Scroll", 1.8f);
+            fireRibbon.SetColor("_Hot", new Color(1.8f, 3.8f, 8f));
+            fireRibbon.SetColor("_Mid", new Color(.15f, 1.2f, 6.5f));
+            fireRibbon.SetColor("_Tail", new Color(.02f, .18f, 2.4f));
+            var smokeRibbon = Material(dir + "/Materials/M_BluePhoenix_SmokeRibbon.mat", "PickleVerse/VFX/Dragon Ribbon");
+            smokeRibbon.SetTexture("_BaseMap", fire);
+            smokeRibbon.SetTextureScale("_BaseMap", new Vector2(1.2f, 1));
+            smokeRibbon.SetFloat("_Width", .15f);
+            smokeRibbon.SetFloat("_Sign", -1);
+            smokeRibbon.SetFloat("_Start", .40f);
+            smokeRibbon.SetFloat("_Scroll", 1.1f);
+            smokeRibbon.SetFloat("_Cover", .92f);
+            smokeRibbon.SetColor("_Hot", new Color(.03f, .10f, .30f));
+            smokeRibbon.SetColor("_Mid", new Color(.012f, .016f, .03f));
+            smokeRibbon.SetColor("_Tail", new Color(.005f, .006f, .01f));
+            var trail = Fire(dir + "/Materials/M_BluePhoenix_Trail.mat", fire, 2.2f, .55f, .45f);
+            trail.SetTextureScale("_BaseMap", new Vector2(2, 1));
+            trail.SetFloat("_Scroll", 2.4f);
+            trail.SetVector("_HotColor", whiteCore);
+            var sparkMat = Fire(dir + "/Materials/M_BluePhoenix_Flame.mat", flame, 2.6f, .45f, .55f);
+            sparkMat.SetVector("_HotColor", whiteCore);
+            var shock = Fire(dir + "/Materials/M_BluePhoenix_Ring.mat", ring, 2.4f, .55f, .5f);
+            shock.SetVector("_HotColor", whiteCore);
+            var cry = Fire(dir + "/Materials/M_BluePhoenix_Emblem.mat", emblem, 1.9f, .7f, .15f);
+            cry.SetVector("_HotColor", whiteCore);
+            var glow = Fire(dir + "/Materials/M_BluePhoenix_Glow.mat", halo, 2.6f, .2f, .75f);
+            glow.SetVector("_HotColor", whiteCore);
+            var ash = Material(dir + "/Materials/M_BluePhoenix_Ash.mat", "PickleVerse/VFX/Black Ash");
+            ash.SetTexture("_BaseMap", ashSheet);
+            ash.SetFloat("_Intensity", 4f);
+            ash.SetFloat("_Cover", .9f);
+            ash.SetFloat("_EmberRed", 1);
+            ash.SetFloat("_EmberEdge", 0);
+            var blackFlame = Material(dir + "/Materials/M_BluePhoenix_BlackFlame.mat", "PickleVerse/VFX/Black Ash");
+            blackFlame.SetTexture("_BaseMap", flame);
+            blackFlame.SetFloat("_Intensity", 3.2f);
+            blackFlame.SetFloat("_Cover", .8f);
+            blackFlame.SetFloat("_EmberRed", 0);
+            blackFlame.SetFloat("_EmberEdge", 1);
+
+            // Ball: the phoenix, its blue fire ribbon and black smoke ribbon, ash and embers, and the glowing ball.
+            var ballRoot = new GameObject("BluePhoenix_BallFx");
+            var motion = ballRoot.AddComponent<PhoenixBallMotion>();
+            motion.amplitude = .07f;
+            motion.wavelength = 1.7f;
+            motion.ramp = .55f;
+            motion.gap = .10f;
+            motion.reach = 2.9f;
+            motion.floor = .12f;
+            motion.appear = .10f;
+            motion.dissolve = .35f;
+            var body = Visual(ballRoot.transform, "Phoenix", ImportedMesh(dir + "/Models/BluePhoenixSpirit.fbx", false), spirit);
+            var strip = StripMesh(dir + "/Models/PhoenixRibbon.asset", 96);
+            var main = Visual(ballRoot.transform, "Fire Ribbon", strip, fireRibbon);
+            var smoke = Visual(ballRoot.transform, "Smoke Ribbon", strip, smokeRibbon);
+            motion.renderers = new Renderer[] { body, main, smoke };
+            var aura = Particles(ballRoot.transform, "Ball Glow", glow, 4, ParticleSystemSimulationSpace.Local);
+            Main(aura, new Vector2(.5f, .5f), Vector2.zero, new Vector2(.32f, .40f));
+            var am = aura.main; am.startColor = new Color(.35f, .7f, 1f, .85f); am.startRotation = 0;
+            var ae = aura.emission; ae.rateOverTime = 6;
+            var ash_ = aura.shape; ash_.enabled = false;
+            Pulse(aura);
+            var sparks = Particles(ballRoot.transform, "Ball Sparks", sparkMat, 50, ParticleSystemSimulationSpace.World);
+            Main(sparks, new Vector2(.25f, .5f), new Vector2(0f, .2f), new Vector2(.04f, .10f));
+            SetColors(sparks, white, cyan, electric);
+            var e = sparks.emission; e.rateOverTime = 0; e.rateOverDistance = 10;
+            Sphere(sparks, .04f);
+            Flipbook(sparks, true);
+            Noise(sparks, .2f);
+            var riders = new System.Collections.Generic.List<Transform>();
+            var distances = new[] { .34f, 1.2f, 2.05f };
+            foreach (var distance in distances)
+            {
+                var rider = new GameObject("Rider " + distance.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)).transform;
+                rider.SetParent(ballRoot.transform, false);
+                riders.Add(rider);
+                bool wings = distance < .5f;
+                // black ash flakes with blue embers, tumbling and falling away from the wings and tail
+                var flakes = Particles(rider, wings ? "Wing Ash" : "Tail Ash", ash, wings ? 60 : 40, ParticleSystemSimulationSpace.World);
+                Main(flakes, new Vector2(.6f, 1.2f), new Vector2(.05f, .35f), new Vector2(.022f, .06f));
+                SetColors(flakes, cyan, electric, white);
+                var fm = flakes.main; fm.gravityModifier = .18f;
+                e = flakes.emission; e.rateOverTime = 0; e.rateOverDistance = wings ? 16 : 8;
+                Sphere(flakes, wings ? .55f : .25f);
+                Ash(flakes);
+                Noise(flakes, .35f);
+                if (wings)
+                {
+                    // the blue light the phoenix sheds around itself, so it glows even where the bloom is weak
+                    var light = Particles(rider, "Phoenix Light", glow, 12, ParticleSystemSimulationSpace.World);
+                    Main(light, new Vector2(.22f, .32f), Vector2.zero, new Vector2(1.1f, 1.6f));
+                    var lm = light.main; lm.startColor = new Color(.18f, .5f, 1f, .32f); lm.startRotation = 0;
+                    e = light.emission; e.rateOverTime = 30; e.rateOverDistance = 0;
+                    var ls = light.shape; ls.enabled = false;
+                    Pulse(light);
+                    light.GetComponent<ParticleSystemRenderer>().maxParticleSize = 1.5f;
+                    var embers = Particles(rider, "Wing Embers", sparkMat, 50, ParticleSystemSimulationSpace.World);
+                    Main(embers, new Vector2(.3f, .6f), new Vector2(.05f, .3f), new Vector2(.025f, .06f));
+                    SetColors(embers, white, cyan, electric);
+                    var em = embers.main; em.gravityModifier = -.05f;
+                    e = embers.emission; e.rateOverTime = 0; e.rateOverDistance = 12;
+                    Sphere(embers, .58f);
+                    Flipbook(embers, true);
+                    Noise(embers, .3f);
+                }
+                else
+                {
+                    // black fire licking off the tail
+                    var dark = Particles(rider, "Black Flames", blackFlame, 36, ParticleSystemSimulationSpace.World);
+                    Main(dark, new Vector2(.35f, .6f), new Vector2(.02f, .18f), new Vector2(.09f, .18f));
+                    SetColors(dark, electric, cyan, deep);
+                    var dm = dark.main; dm.gravityModifier = -.08f;
+                    e = dark.emission; e.rateOverTime = 0; e.rateOverDistance = 7;
+                    Sphere(dark, .14f);
+                    Flipbook(dark, true);
+                    Noise(dark, .2f);
+                }
+            }
+            motion.riders = riders.ToArray();
+            motion.riderDistances = distances;
+            var ballFx = PrefabUtility.SaveAsPrefabAsset(ballRoot, dir + "/Prefabs/BluePhoenix_BallFx.prefab");
+            Object.DestroyImmediate(ballRoot);
+
+            // Contact: the phoenix cries out of the paddle inside a ring of blue fire, with blue sparks and a burst of ash.
+            var impactRoot = new GameObject("BluePhoenix_Impact");
+            var burst = Particles(impactRoot.transform, "Blue Sparks", sparkMat, 26, ParticleSystemSimulationSpace.World);
+            Main(burst, new Vector2(.28f, .55f), new Vector2(1.4f, 3.4f), new Vector2(.05f, .12f));
+            SetColors(burst, white, cyan, electric);
+            Once(burst, 18, .6f);
+            Sphere(burst, .05f);
+            var limit = burst.limitVelocityOverLifetime; limit.enabled = true; limit.dampen = .22f; limit.limit = .4f;
+            Flipbook(burst, true);
+            var shockwave = Particles(impactRoot.transform, "Fire Ring", shock, 2, ParticleSystemSimulationSpace.World);
+            Main(shockwave, new Vector2(.36f, .36f), Vector2.zero, new Vector2(.95f, 1.05f));
+            SetColors(shockwave, cyan, cyan, electric);
+            Once(shockwave, 1, .4f);
+            Grow(shockwave, .15f, 1f);
+            var call = Particles(impactRoot.transform, "Phoenix Cry", cry, 2, ParticleSystemSimulationSpace.World);
+            Main(call, new Vector2(.5f, .5f), Vector2.zero, new Vector2(.80f, .80f));
+            var cm = call.main; cm.startRotation = 0; cm.startColor = Color.white;
+            Once(call, 1, .55f);
+            Grow(call, .4f, 1.2f);
+            var ashBurst = Particles(impactRoot.transform, "Ash Burst", ash, 24, ParticleSystemSimulationSpace.World);
+            Main(ashBurst, new Vector2(.7f, 1.3f), new Vector2(.5f, 1.6f), new Vector2(.03f, .07f));
+            SetColors(ashBurst, cyan, electric, white);
+            var abm = ashBurst.main; abm.gravityModifier = .25f;
+            Once(ashBurst, 16, .9f);
+            Sphere(ashBurst, .08f);
+            var al = ashBurst.limitVelocityOverLifetime; al.enabled = true; al.dampen = .25f; al.limit = .35f;
+            Ash(ashBurst);
+            var impact = PrefabUtility.SaveAsPrefabAsset(impactRoot, dir + "/Prefabs/BluePhoenix_Impact.prefab");
+            Object.DestroyImmediate(impactRoot);
+
+            string profilePath = dir + "/BluePhoenix.asset";
+            var profile = AssetDatabase.LoadAssetAtPath<PaddleSkinVfxProfile>(profilePath);
+            if (!profile)
+            {
+                profile = ScriptableObject.CreateInstance<PaddleSkinVfxProfile>();
+                AssetDatabase.CreateAsset(profile, profilePath);
+            }
+            profile.skinId = "paddle.bluephoenix";
+            profile.displayName = "Lam Phượng Tung Cánh";
+            profile.trailMaterial = trail;
+            profile.trailTime = .12f;
+            profile.trailWidth = .07f;
+            profile.trailWidthCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(.3f, .6f), new Keyframe(1, 0));
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(white, 0), new GradientColorKey(cyan, .3f), new GradientColorKey(electric, 1) },
+                new[] { new GradientAlphaKey(1, 0), new GradientAlphaKey(.8f, .4f), new GradientAlphaKey(0, 1) });
+            profile.trailColor = gradient;
+            profile.ballEffect = ballFx;
+            profile.impactEffect = impact;
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
+        /// <summary>4x4 sheet of ash flakes: each particle keeps one random flake and tumbles; its embers fade with it.</summary>
+        static void Ash(ParticleSystem ps)
+        {
+            var sheet = ps.textureSheetAnimation;
+            sheet.enabled = true;
+            sheet.numTilesX = 4;
+            sheet.numTilesY = 4;
+            sheet.animation = ParticleSystemAnimationType.WholeSheet;
+            sheet.frameOverTime = new ParticleSystem.MinMaxCurve(0);
+            sheet.startFrame = new ParticleSystem.MinMaxCurve(0, 15);
+            var spin = ps.rotationOverLifetime;
+            spin.enabled = true;
+            spin.z = new ParticleSystem.MinMaxCurve(-4f, 4f);
+            var color = ps.colorOverLifetime;
+            color.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(new Color(.5f, .5f, .5f), 1) },
+                new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, .08f), new GradientAlphaKey(.85f, .6f), new GradientAlphaKey(0, 1) });
+            color.color = g;
+        }
+
         static Material Fire(string path, Texture2D sprite, float intensity, float cover, float hot)
         {
             var m = Material(path, "PickleVerse/VFX/Dragon Fire");
@@ -327,9 +575,14 @@ namespace PickleVerse.VFX.Editor
         }
 
         /// <summary>The straight dragon from ArtSource/VFX/DragonRuby (x = distance behind the ball, y = back, z = side).</summary>
-        static Mesh DragonMesh(string dir)
+        static Mesh DragonMesh(string dir) => ImportedMesh(dir + "/Models/DragonRubySpirit.fbx", true);
+
+        /// <summary>
+        /// A creature mesh bent by its shader: no materials, animation or tangents. The phoenix keeps every vertex as authored
+        /// (its second UV channel and the shared vertices of its feather cards must not be welded or reordered).
+        /// </summary>
+        static Mesh ImportedMesh(string path, bool optimise)
         {
-            string path = dir + "/Models/DragonRubySpirit.fbx";
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.materialImportMode = ModelImporterMaterialImportMode.None;
             importer.importAnimation = false;
@@ -338,6 +591,11 @@ namespace PickleVerse.VFX.Editor
             importer.importTangents = ModelImporterTangents.None;
             importer.importBlendShapes = false;
             importer.isReadable = false;
+            if (!optimise)
+            {
+                importer.weldVertices = false;
+                importer.meshCompression = ModelImporterMeshCompression.Off;
+            }
             importer.SaveAndReimport();
             return AssetDatabase.LoadAllAssetsAtPath(path).OfType<Mesh>().First();
         }

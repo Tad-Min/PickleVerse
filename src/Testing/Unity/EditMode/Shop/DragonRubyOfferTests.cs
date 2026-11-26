@@ -16,7 +16,8 @@ namespace PickleVerse.Tests
         {
             Assert.That(Offer.Price(ShopCurrency.Elite), Is.EqualTo(800));
             Assert.That(Offer.Price(ShopCurrency.Tokenpad), Is.EqualTo(0));
-            Assert.That(Catalog.paddles[Catalog.NewestFirst()[0]].id, Is.EqualTo("paddle.dragonruby"), "the newest skin leads the shop");
+            var newest = Catalog.NewestFirst().Select(i => Catalog.paddles[i].id).ToArray();
+            Assert.That(newest.Take(2), Is.EqualTo(new[] { "paddle.bluephoenix", "paddle.dragonruby" }), "newest first: Blue Phoenix, then Dragon Ruby");
         }
 
         [Test]
