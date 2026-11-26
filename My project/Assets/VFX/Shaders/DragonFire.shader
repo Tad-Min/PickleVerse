@@ -1,4 +1,4 @@
-// PickleVerse VFX - fire sprites of the Dragon Ruby effect (particles and the ball trail). Premultiplied: the flame covers
+// PickleVerse VFX - fire sprites of the Dragon Ruby and Blue Phoenix effects (particles and the ball trail). Premultiplied: the flame covers
 // what is behind it (_Cover), so red fire stays red over the blue court instead of adding up to pink.
 Shader "PickleVerse/VFX/Dragon Fire"
 {
@@ -8,6 +8,7 @@ Shader "PickleVerse/VFX/Dragon Fire"
         _Intensity("Intensity", Range(0, 8)) = 2.2
         _Cover("Background cover", Range(0, 1)) = .75
         _Hot("White-hot core", Range(0, 1)) = .5
+        _HotColor("Core colour (linear rgb)", Vector) = (1, .86, .55, 1)
         _Scroll("Texture flow (trail)", Float) = 0
     }
     SubShader
@@ -29,6 +30,7 @@ Shader "PickleVerse/VFX/Dragon Fire"
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
+                half4 _HotColor;
                 half _Intensity, _Cover, _Hot, _Scroll;
             CBUFFER_END
             struct A { float4 positionOS : POSITION; half4 color : COLOR; float2 uv : TEXCOORD0; };
@@ -47,7 +49,7 @@ Shader "PickleVerse/VFX/Dragon Fire"
                 half4 s = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
                 half a = s.a * i.color.a;
                 half value = max(s.r, max(s.g, s.b));
-                half3 c = s.rgb * lerp(i.color.rgb, half3(1, .86, .55), value * value * _Hot) * _Intensity;
+                half3 c = s.rgb * lerp(i.color.rgb, _HotColor.rgb, value * value * _Hot) * _Intensity;
                 return half4(c * a * ComputeFogIntensity(i.fog), a * _Cover);
             }
             ENDHLSL

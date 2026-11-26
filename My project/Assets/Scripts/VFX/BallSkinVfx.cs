@@ -5,6 +5,7 @@ using PickleVerse.Shop;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo("PickleVerse.VFX.Tests")]
+[assembly: InternalsVisibleTo("PickleVerse.VFX.Editor")]
 
 namespace PickleVerse.VFX
 {

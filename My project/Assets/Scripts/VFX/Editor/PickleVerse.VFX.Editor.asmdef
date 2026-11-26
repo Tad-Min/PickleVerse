@@ -1,6 +1,6 @@
 {
   "name": "PickleVerse.VFX.Editor",
   "rootNamespace": "PickleVerse.VFX.Editor",
-  "references": ["PickleVerse.VFX", "PickleVerse.Shop"],
+  "references": ["PickleVerse.VFX", "PickleVerse.Shop", "Unity.RenderPipelines.Universal.Runtime"],
   "includePlatforms": ["Editor"]
 }
